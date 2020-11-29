@@ -1,0 +1,38 @@
+#
+# SEC Input device configuration
+#
+
+config INPUT_SEC_INPUT
+	tristate "Support for SEC input layer"
+	default y
+
+config SEC_DEBUG_TSP_LOG
+	tristate "Support for tsp_msg"
+	default n
+
+config INPUT_TOUCHSCREEN_TCLMV2
+	bool "touchscreen tclmv2"
+	depends on I2C
+	help
+	  Say Y here if you need to use tclm.
+
+	  If unsure, say N.
+
+config INPUT_SEC_SECURE_TOUCH
+	bool "input sec secure touch"
+	depends on INPUT
+	help
+	  Say Y here if you need to use sec secure touch.
+
+	  If unsure, say N.
+
+config TOUCHSCREEN_DUMP_MODE
+	bool "touchscreen dump mode"
+	depends on I2C
+	help
+	  Say Y here if you need to get raw data.
+	  
+	  If unsure, say N.
+
+source "drivers/input/sec_input/slsi/Kconfig"
+

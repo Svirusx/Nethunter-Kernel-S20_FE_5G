@@ -1,0 +1,5 @@
+/dts-v1/;
+
+/ {
+	dtbo-version = <0x1>;
+};

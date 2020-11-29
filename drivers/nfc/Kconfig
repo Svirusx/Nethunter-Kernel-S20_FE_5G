@@ -1,0 +1,183 @@
+#
+# Near Field Communication (NFC) devices
+#
+
+menu "Near Field Communication (NFC) devices"
+	depends on NFC
+
+config NFC_TRF7970A
+	tristate "Texas Instruments TRF7970a NFC driver"
+	depends on SPI && NFC_DIGITAL && GPIOLIB
+	help
+	  This option enables the NFC driver for Texas Instruments' TRF7970a
+	  device. Such device supports 5 different protocols: ISO14443A,
+	  ISO14443B, FeLiCa, ISO15693 and ISO18000-3.
+
+	  Say Y here to compile support for TRF7970a into the kernel or
+	  say M  to compile it as a module. The module will be called
+	  trf7970a.ko.
+
+config NFC_MEI_PHY
+	tristate "MEI bus NFC device support"
+	depends on INTEL_MEI && NFC_HCI
+	help
+	  This adds support to use an mei bus nfc device. Select this if you
+	  will use an HCI NFC driver for an NFC chip connected behind an
+	  Intel's Management Engine chip.
+
+	  If unsure, say N.
+
+config NFC_SIM
+	tristate "NFC hardware simulator driver"
+	depends on NFC_DIGITAL
+	help
+	  This driver declares two virtual NFC devices supporting NFC-DEP
+	  protocol. An LLCP connection can be established between them and
+	  all packets sent from one device is sent back to the other, acting as
+	  loopback devices.
+
+	  If unsure, say N.
+
+config NFC_PORT100
+	tristate "Sony NFC Port-100 Series USB device support"
+	depends on USB
+	depends on NFC_DIGITAL
+	help
+	  This adds support for Sony Port-100 chip based USB devices such as the
+	  RC-S380 dongle.
+
+	  If unsure, say N.
+
+source "drivers/nfc/fdp/Kconfig"
+source "drivers/nfc/pn544/Kconfig"
+source "drivers/nfc/pn533/Kconfig"
+source "drivers/nfc/microread/Kconfig"
+source "drivers/nfc/nfcmrvl/Kconfig"
+source "drivers/nfc/st21nfca/Kconfig"
+source "drivers/nfc/st-nci/Kconfig"
+source "drivers/nfc/nxp-nci/Kconfig"
+source "drivers/nfc/s3fwrn5/Kconfig"
+source "drivers/nfc/st95hf/Kconfig"
+endmenu
+
+config NFC_NQ
+        tristate "QTI NCI based NFC Controller Driver for NQx"
+        depends on I2C
+        help
+          This enables the NFC driver for NQx based devices.
+          This is for i2c connected version. NCI protocol logic
+          resides in the usermode and it has no other NFC dependencies.
+
+config SAMSUNG_NFC
+	bool "Samsung NFC driver"
+	default n
+	help
+	  Say Y here if you want to build support for NFC (Near field
+	  communication) devices.
+	  To compile this support as a module, choose M here: the module will
+	  be called nfc.
+
+config NFC_PN547
+	bool "NXP PN547 Controller"
+	default n
+	help
+	  NXP PN547 Near Field Communication controller support.
+	  This option enables device driver support for the NFC.
+	  It is used by many services. NFC is fully controlled using I2C
+	  to communicate the AP chip.
+
+config NFC_PN547_ESE_SUPPORT
+	bool "NXP eSE Controller"
+	default n
+	help
+	  NXP PN547 Near Field Communication controller support.
+	  This option enables device driver support for the NFC.
+	  It is used by many services. NFC is fully controlled using I2C
+	  to communicate the AP chip.
+
+config NFC_FEATURE_SN100U
+	bool "NXP SN100U Feature"
+	default n
+	help
+	  NXP SN100U Near Field Communication controller support
+	  This option enables device driver support for the NFC.
+	  It is used by many services. NFC is fully controlled using I2C
+	  to communicate the AP chip.
+
+config ESE_SECURE
+        bool "ese driver"
+        depends on !SEC_FACTORY
+        default n
+        help
+          eSE Driver.
+          This driver provides support for ESE products.
+          This option enables device spi communication
+          via secured OS only.
+
+config ESE_SPI_GPIO_START
+        int "ese start num"
+        default -1
+        help
+          eSE Driver.
+          This driver provides support for ESE products.
+
+config ESE_SPI_GPIO_END
+        int "ese end num"
+        default -1
+        help
+          eSE Driver.
+          This driver provides support for ESE products.
+
+config ESE_SPI_NUMBER
+        int "ese bus num"
+        default 99
+        help
+          eSE Driver.
+          This driver provides support for ESE products.
+
+config ESE_SECURE_GPIO
+        int "ese secure gpio num"
+        default -1
+        help
+          eSE Driver.
+          This driver provides support for ESE products.
+
+config SEC_NFC
+	bool "Samsung NFC driver"
+	default n
+	help
+	  SAMSUNG NFC Driver.
+	  This driver provides support for SAMSUNG NFC products.
+	  You should select your NFC product and interface.
+	  Say Y here to compile support for SAMSUNG NFC driver into the
+	  kernel.
+
+config SEC_NFC_V2
+	bool "Samsung NFC V2 driver"
+	default n
+	help
+	  SAMSUNG NFC Driver for latest NFC IC.(ex. SEN4/RN4V/SN4V)
+	  This driver provides support for SAMSUNG NFC products.
+	  You should select your NFC product and interface.
+	  Say Y here to compile support for SAMSUNG NFC driver into the
+	  kernel.
+
+config ESE_P3_LSI
+        bool "LSI ese driver"
+        depends on SPI
+        default n
+        help
+          Gemalto Driver.
+          This driver provides support for LSI NFC combined ESE products.
+          You should select your NFC product and interface.
+
+config ESE_P3_V2_LSI
+        bool "LSI ese V2 driver"
+        depends on SPI
+        default n
+        help
+          It's samsung eSE Driver for latest eSE supported IC.(ex. SEN4/SN4V)
+          This driver provides support for LSI NFC combined ESE products.
+          You should select your NFC product and interface.
+
+source "drivers/nfc/nfc_logger/Kconfig"

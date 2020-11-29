@@ -1,0 +1,38 @@
+#
+# Combo redriver devices
+#
+
+comment "Redriver IC driver configs"
+
+config REDRIVER
+	bool "redriver support"
+        default n
+	help
+	  If you say yes here you will get support for
+          redriver ic.
+
+config COMBO_REDRIVER_PTN36502
+	bool "ptn36503 support"
+	depends on I2C
+	depends on REDRIVER
+	default n
+	help
+	  If you say yes here you will get support for
+          ptn36502 redriver ic.
+
+config COMBO_REDRIVER_PS5169
+	bool "ps5169 support"
+	depends on I2C
+	depends on REDRIVER
+	default n
+	help
+	  If you say yes here you will get support for
+          ps5169 redriver ic.
+
+config SUPPORT_PS5169_ADBTUNE
+	bool "ps5169 adb tuning support"
+	depends on COMBO_REDRIVER_PS5169
+	default n
+	help
+	  If you say yes here you will get support for
+          ps5169 redriver adb tuning.

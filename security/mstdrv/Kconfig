@@ -1,0 +1,103 @@
+# @file Kconfig
+# @brief Kconfig for MST drivers
+# Copyright (c) 2015-2019, Samsung Electronics Corporation. All rights reserved.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2 and
+# only version 2 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+config MST_LDO
+	bool "MST LDO kernel driver"
+	depends on !(MACH_X1Q_CHN_OPEN && !(MACH_X1Q_CHN_HKX) && !(SEC_FACTORY)) \
+			&& !(MACH_Y2Q_CHN_OPEN && !(MACH_Y2Q_CHN_HKX) && !(SEC_FACTORY)) \
+			&& !(MACH_Z3Q_CHN_OPEN && !(MACH_Z3Q_CHN_HKX) && !(SEC_FACTORY)) \
+			&& !(SEC_GTS7XL_PROJECT) && !(SEC_GTS7L_PROJECT) \
+			&& !(MACH_C1Q_CHN_OPEN && !(MACH_C1Q_CHN_HK) && !(SEC_FACTORY)) \
+			&& !(MACH_C2Q_CHN_OPEN && !(MACH_C2Q_CHN_HK) && !(SEC_FACTORY)) \
+			&& !(MACH_F2Q_CHN_OPEN && !(MACH_F2Q_CHN_HKX) && !(SEC_FACTORY)) \
+			&& !(MACH_BLOOMXQ_CHN_OPEN && !(MACH_BLOOMXQ_CHN_HKX) && !(SEC_FACTORY)) \
+			&& !(MACH_R8Q_CAN_SINGLE) && !(MACH_R8Q_CHN_HKX) && !(MACH_R8Q_CHN_OPEN) && !(MACH_R8Q_EUR_OPEN) \
+			&& !(SEC_VICTORY_PROJECT)
+	default n
+	help
+	This enables the MST LDO kernel driver
+
+config MST_V2
+	bool "MST V2"
+	depends on !(MACH_X1Q_CHN_OPEN && !(MACH_X1Q_CHN_HKX) && !(SEC_FACTORY)) \
+			&& !(MACH_Y2Q_CHN_OPEN && !(MACH_Y2Q_CHN_HKX) && !(SEC_FACTORY)) \
+			&& !(MACH_Z3Q_CHN_OPEN && !(MACH_Z3Q_CHN_HKX) && !(SEC_FACTORY)) \
+			&& !(SEC_GTS7XL_PROJECT) && !(SEC_GTS7L_PROJECT) \
+			&& !(MACH_C1Q_CHN_OPEN && !(MACH_C1Q_CHN_HK) && !(SEC_FACTORY)) \
+			&& !(MACH_C2Q_CHN_OPEN && !(MACH_C2Q_CHN_HK) && !(SEC_FACTORY)) \
+			&& !(MACH_F2Q_CHN_OPEN && !(MACH_F2Q_CHN_HKX) && !(SEC_FACTORY)) \
+			&& !(MACH_BLOOMXQ_CHN_OPEN && !(MACH_BLOOMXQ_CHN_HKX) && !(SEC_FACTORY)) \
+			&& !(MACH_R8Q_CAN_SINGLE) && !(MACH_R8Q_CHN_HKX) && !(MACH_R8Q_CHN_OPEN) && !(MACH_R8Q_EUR_OPEN) \
+			&& !(SEC_VICTORY_PROJECT)
+	default n
+	help
+	This enables the MST V2 codes
+
+config MST_REGULATOR
+	bool "MST uses regulator API"
+	default n
+	help
+	This enables regulator API code
+
+config MST_SUPPORT_GPIO
+	bool "MST uses support gpio"
+	default n
+	help
+	This enables support gpio check code
+
+config MST_NONSECURE
+	bool "MST before TrustZone bringup"
+	default n
+	help
+	This enables the MST operation in Normal kernel
+
+config MST_IF_PMIC
+	bool "MST is used in IF PMIC"
+	default n
+	help
+	This enables the MST IF PMIC function
+
+config MFC_CHARGER
+	bool "MFC IC using model"
+	depends on !(MACH_X1Q_CHN_OPEN && !(MACH_X1Q_CHN_HKX) && !(SEC_FACTORY)) \
+			&& !(MACH_Y2Q_CHN_OPEN && !(MACH_Y2Q_CHN_HKX) && !(SEC_FACTORY)) \
+			&& !(MACH_Z3Q_CHN_OPEN && !(MACH_Z3Q_CHN_HKX) && !(SEC_FACTORY)) \
+			&& !(SEC_GTS7XL_PROJECT) && !(SEC_GTS7L_PROJECT) \
+			&& !(MACH_C1Q_CHN_OPEN && !(MACH_C1Q_CHN_HK) && !(SEC_FACTORY)) \
+			&& !(MACH_C2Q_CHN_OPEN && !(MACH_C2Q_CHN_HK) && !(SEC_FACTORY)) \
+			&& !(MACH_F2Q_CHN_OPEN && !(MACH_F2Q_CHN_HKX) && !(SEC_FACTORY)) \
+			&& !(MACH_BLOOMXQ_CHN_OPEN && !(MACH_BLOOMXQ_CHN_HKX) && !(SEC_FACTORY)) \
+			&& !(MACH_R8Q_CAN_SINGLE) && !(MACH_R8Q_CHN_HKX) && !(MACH_R8Q_CHN_OPEN) && !(MACH_R8Q_EUR_OPEN) \
+			&& !(SEC_VICTORY_PROJECT)
+	default n
+	help
+	This enables the MFC IC sysfs node
+
+config MST_TEEGRIS
+	bool "MST running on TEEGRIS"
+	default n
+	help
+	This enables the MST TEEGRIS function
+
+config MST_LPM_DISABLE
+	bool "MST LPM Disable, this works only in eng binary version"
+	default n
+	help
+	This enables the MST LPM disable funtion in eng binary version
+
+config MST_LPM_CONTROL
+	bool "MST control LPM mode for performace"
+	default n
+	help
+	This enables the MST LPM control code
+

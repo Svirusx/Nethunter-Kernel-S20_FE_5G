@@ -1,0 +1,41 @@
+config GPS_BCMxxxxx
+    tristate "Common Broadcom GNSS chipset support"
+	bool "BROADCOM_GPS_CHIPSET_COMMON"
+	default n
+	help
+	  Say yes here to support for Broadcom GNSS chipset.
+
+config GPS_BCM4752
+    tristate "GPS_BCM4752 Broadcom GNSS chipset support"
+	bool "BROADCOM_GPS_CHIPSET_4752"
+	default n
+	help
+	  Say yes here to support for Broadcom GPS_BCM4752 chipset.
+
+config GPS_BCM47521
+    tristate "GPS_BCM47521 Broadcom GNSS chipset support"
+	bool "BROADCOM_GPS_CHIPSET_47521"
+	default n
+    help
+	  Say yes here to support for Broadcom GPS_BCM47521 chipset.
+
+config GPS_BCM4753
+    tristate "GPS_BCM4753 Broadcom GNSS chipset support"
+	bool "BROADCOM_GPS_CHIPSET_4753"
+	default n
+    help
+	  Say yes here to support for Broadcom GPS_BCM4753 chipset.
+
+config GPS_BCM47531
+    tristate "GPS_BCM47531 Broadcom GNSS chipset support"
+	bool "BROADCOM_GPS_CHIPSET_47531"
+	default n
+    help
+	  Say yes here to support for Broadcom GPS_BCM47531 chipset.
+
+config GPS_BCM4773
+    tristate "GPS_BCM4773 Broadcom GNSS chipset support"
+	bool "BROADCOM_GPS_CHIPSET_4773"
+	default n
+    help
+	  Say yes here to support for Broadcom GPS_BCM4773 chipset.

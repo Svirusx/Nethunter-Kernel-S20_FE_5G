@@ -1,0 +1,188 @@
+/* Copyright (c) 2020, Samsung Electronics Corporation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&soc {
+	ss_mafpc_XA1_dtsi: ss_mafpc_XA1_dtsi {
+		label = "mafpc_XA1_dtsi";
+
+		/*
+		 *************************************************************************************************************************
+		 * mAFPC Operation
+		 *************************************************************************************************************************
+		 */
+
+ 		samsung,mafpc_brightness_scale_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A		/* Test Key Enable */
+			29 00 00 00 00 00 03 B0 08 87		/* Global Para */
+			29 00 00 00 00 00 04 87 FF FF FF	/* Scale Factor */
+			29 00 00 00 00 00 03 F0 A5 A5		/* Test Key Disable */
+		];
+
+		samsung,mafpc_setting_pre_revA = [
+			29 01 00 00 01 00 02 75 40
+			29 01 00 00 00 00 02 87 00
+			/* image data (4C,5C) ... */
+		];
+
+		samsung,mafpc_setting_post_revA = [
+			29 01 00 00 00 00 02 75 01
+		];
+
+		samsung,mafpc_on_revA = [
+			29 01 00 00 00 00 03 F0 5A 5A	/* TEST KEY Enable */
+			29 01 00 00 00 00 2D 87			/* Dummy Data Default */
+								11 09 0C 00 00 81 81 81	FF FF
+								FF FF FF FF FF FF FF FF FF FF
+								FF FF FF FF FF FF FF FF FF FF
+								FF FF FF FF FF FF FF FF FF FF
+								FF FF FF FF
+			29 01 00 00 00 00 03 F0 A5 A5	/* TEST KEY Disable */
+		];
+
+		samsung,mafpc_on_revC = [
+			29 01 00 00 00 00 03 F0 5A 5A	/* TEST KEY Enable */
+			29 01 00 00 00 00 2D 87			/* Dummy Data Default */
+								11 09 10 00 00 81 81 81	FF FF
+								FF FF FF FF FF FF FF FF FF FF
+								FF FF FF FF FF FF FF FF FF FF
+								FF FF FF FF FF FF FF FF FF FF
+								FF FF FF FF
+			29 01 00 00 00 00 03 F0 A5 A5	/* TEST KEY Disable */
+		];
+
+		samsung,mafpc_on_factory_revA = [ 	/* "samsung,mafpc_on_factory",TX_MAFPC_ON_FACTORY */
+			29 01 00 00 00 00 03 F0 5A 5A	/* TEST KEY Enable */
+			29 01 00 00 00 00 2D 87			/* Sample Data For Factory */
+								11 09 10 00 00 81 81 81	FF FF
+								FF FF FF FF FF FF FF FF FF FF
+								FF FF FF FF FF FF FF FF FF FF
+								FF FF FF FF FF FF FF FF FF FF
+								FF F0 F0 F0
+			29 01 00 00 00 00 03 F0 A5 A5	/* TEST KEY Disable */
+		];
+
+		samsung,mafpc_off_revA = [
+			29 01 00 00 00 00 03 F0 5A 5A	/* TEST KEY Enable */
+			29 01 00 00 00 00 02 87 00
+			29 01 00 00 00 00 03 F0 A5 A5	/* TEST KEY Disable */
+		];
+
+		samsung,mafpc_te_on_revA = [
+			29 01 00 00 00 00 03 9F A5 A5	/* TEST KEY Enable */
+			05 01 00 00 00 00 01 35
+			29 01 00 00 00 00 03 9F 5A 5A	/* TEST KEY Disable */
+		];
+
+		samsung,mafpc_te_off_revA = [
+			29 01 00 00 00 00 03 9F A5 A5	/* TEST KEY Enable */
+			05 01 00 00 00 00 01 34
+			29 01 00 00 00 00 03 9F 5A 5A	/* TEST KEY Disable */
+		];
+
+		/*
+		 *************************************************************************************************************************
+		 * mAFPC DEBUGGING FEATURE
+		 *************************************************************************************************************************
+		 */
+
+		samsung,mafpc_check_tx_pre1_revA = [ /*TX_MAFPC_CRC_CHECK_PRE1*/
+			29 01 00 00 00 00 03 9F A5 A5	/* TEST KEY Enable */
+			29 01 00 00 00 00 03 F0 5A 5A	/* TEST KEY Enable */
+			29 01 00 00 00 00 03 FC 5A 5A	/* TEST KEY Enable */
+
+			/* CRC ON & Memory Select */
+			29 01 00 00 00 00 03 B0 27 D8
+			29 01 00 00 00 00 02 D8 15		/* CRC On */
+
+			/* DBIST ON */
+			29 01 00 00 00 00 0A BF 01 07 FF 00 00 10 00 00 00
+
+			/* mAFPC ON */
+			29 01 00 00 00 00 2D 87
+							11 09 0C 00 00 81 81 81
+							FF FF FF FF FF FF FF FF
+							FF FF FF FF FF FF FF FF
+							FF FF FF FF FF FF FF FF
+							FF FF FF FF FF FF FF FF
+							FF F0 F0 F0
+
+			29 01 00 00 22 00 02 DD 00		/* mDNIe off */
+			/* delay 2frame */
+
+			29 01 00 00 00 00 03 FC A5 A5	/* TEST KEY Disable */
+			29 01 00 00 00 00 03 F0 A5 A5	/* TEST KEY Disable */
+			29 01 00 00 00 00 03 9F 5A 5A	/* TEST KEY Enable */
+		];
+
+		samsung,mafpc_check_rx_cmds_revA = [ 06 01 00 00 00 00 01 14 02 00];	/* read 14h 1st ~ 2nd */
+
+		samsung,mafpc_check_tx_post_revA = [
+			29 01 00 00 00 00 03 9F A5 A5	/* TEST KEY Enable */
+			29 01 00 00 00 00 03 F0 5A 5A	/* TEST KEY Enable */
+			29 01 00 00 00 00 03 FC 5A 5A	/* TEST KEY Enable */
+
+			29 01 00 00 00 00 0A BF 00 07 FF 00 00 10 00 00 00	/* Exit DBIST */
+			29 01 00 00 00 00 02 87 00		/* mAFPC Off */
+			29 01 00 00 00 00 02 DD 01		/* mDNIe Restore */
+
+			29 01 00 00 00 00 03 FC A5 A5	/* TEST KEY Disable */
+			29 01 00 00 00 00 03 F0 A5 A5	/* TEST KEY Disable */
+			29 01 00 00 00 00 03 9F 5A 5A	/* TEST KEY Enable */
+		];
+		samsung,mafpc_check_tx_pre1_revC = [ /*TX_MAFPC_CRC_CHECK_PRE1*/
+			29 01 00 00 00 00 03 9F A5 A5	/* TEST KEY Enable */
+			29 01 00 00 00 00 03 F0 5A 5A	/* TEST KEY Enable */
+			29 01 00 00 00 00 03 FC 5A 5A	/* TEST KEY Enable */
+
+			29 01 00 00 00 00 02 BD 00		/* LFD Disable */
+
+			/* CRC ON & Memory Select */
+			29 01 00 00 00 00 03 B0 27 D8
+			29 01 00 00 00 00 02 D8 15		/* CRC On */
+
+			/* DBIST ON */
+			29 01 00 00 00 00 0A BF 01 07 FF 00 00 10 00 00 00
+
+			/* mAFPC ON */
+			29 01 00 00 00 00 2D 87
+							11 09 10 00 00 81 81 81
+							FF FF FF FF FF FF FF FF
+							FF FF FF FF FF FF FF FF
+							FF FF FF FF FF FF FF FF
+							FF FF FF FF FF FF FF FF
+							FF F0 F0 F0
+
+			29 01 00 00 00 00 02 DD 00		/* mDNIe off */
+			29 01 00 00 22 00 02 7A 00		/* Self Mask off */
+			/* delay 2frame */
+
+			29 01 00 00 00 00 03 FC A5 A5	/* TEST KEY Disable */
+			29 01 00 00 00 00 03 F0 A5 A5	/* TEST KEY Disable */
+			29 01 00 00 00 00 03 9F 5A 5A	/* TEST KEY Enable */
+		];
+		samsung,mafpc_check_tx_post_revC = [
+			29 01 00 00 00 00 03 9F A5 A5	/* TEST KEY Enable */
+			29 01 00 00 00 00 03 F0 5A 5A	/* TEST KEY Enable */
+			29 01 00 00 00 00 03 FC 5A 5A	/* TEST KEY Enable */
+
+			29 01 00 00 00 00 0A BF 00 07 FF 00 00 10 00 00 00	/* Exit DBIST */
+			29 01 00 00 00 00 02 87 00		/* mAFPC Off */
+			29 01 00 00 00 00 02 DD 01		/* mDNIe Restore */
+			29 01 00 00 00 00 02 7A 21		/* Self Mask Restore */
+
+			29 01 00 00 00 00 02 BD 01		/* LFD Enable */
+			29 01 00 00 00 00 03 FC A5 A5	/* TEST KEY Disable */
+			29 01 00 00 00 00 03 F0 A5 A5	/* TEST KEY Disable */
+			29 01 00 00 00 00 03 9F 5A 5A	/* TEST KEY Enable */
+		];
+	};
+};

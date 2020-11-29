@@ -1,0 +1,66 @@
+BCM4375 DHD 101.10.168 for Android Hubble Project
+
+DHD 101.10.168 - 2019.10.25
+Others
+ - CS4315656(By Kwak Hogil) Changed the file name string for EWP log from USER to FORUSER
+ - CS8455727(By Yoon YeJi) Supported NCHO New Requirement
+ - CS8762150(By Choi Hyeonu) Fixed to update proper channel list when change COUNTRY code
+ - CS8867309(By Choi Hyeonu) Added Legacy scan parameter SET/GET private command
+ - CS8898926(By Sunghee Lee) Remove excessive kernel log
+ - CS8927006(By Min SungBin) Disable IFACE_HANG_FORCE_DEV_CLOSE feature for hang recovery
+ - CS8945476(By Choi Hyeonu) Fixed prevent issues (CID:55057, CID:66360, CID:56879)
+ - CS8960563(By Lim Junhak) Added Legacy private command for Set/Get roam trigger, reassoc
+ - CS8988158(By Choi Hyeonu) Added random mac address scan enable/disable control due to scan request flags
+ - CS9036586(By Choi Jongmin) Added 802.11ax information for Samsung Mobile HotSpot BigData Logging
+ - CS9107187(By Jongmin Choi) Disabled random mac for P2P and SoftAP
+ - CS9132743(By Jun-young Park) Fixed PM mode set issue in RF Test mode
+ - Added additional information to roaming related log
+   (This patch should be sync up with FW 18.35.420.1 or higher version)
+ - Disabling HE while doing p2p operations for better interop with buggy peers
+ - Don't set UDR bit for ICMP packets for CERT TC 5.2.50
+ - Enabled Analytics beacon loss report in DHD
+ - Enabled ARP offload for P2P and SoftAP
+ - Enabled RTT feature for BCM4375
+ - Fixed COMMS NAN ranging issues
+ - Fixed non-fatal kernel warning when rebooting the device having sta in 2g and p2p group in 5g
+ - Fixed scan failure issue during MTBF Test
+ - Refactored connection related API
+ - Removed unnecessary print logs
+
+APPS 1.354
+- wl UTIL (wlarm64_android)
+
+
+DHD 101.10.156 - 2019.10.11
+New Feature
+ - Support User Defined Rate (UDR) feature - EAP, DHCP, ARP, DNS and ICMP will be transmitted with basic rate
+
+Kernel Panic
+ - CS8915346(By Choi Jongmin) Fixed kernel panic from non-initialized local station info
+
+Others
+ - CS7362375(By Gu Ja Heon) Added Private command in order to receive every beacon in Suspend
+ - CS8054447(By Nam Counjong) Enabled GET_CU operation
+ - CS8287681(By Choi Hyeonu) Setting TSQ_MULTIPLIER define to 200 for resolving Low TCP Tx TPUT under congested environment
+ - CS8787545(By Nam Counjong) Fixed VTS fail for ROAM HAL function
+ - CS8924992(By Kim Tae-Yong) Removed unused feature (CONFIG_BCM_DETECT_CONSECUTIVE_HANG) for the factory binary
+ - CS8945476(By Choi Hyeonu) Fixed prevent issues (CIDs: 36532, 66352, 66342, 66363, 36284, 41382, 47273, 45222, 54112, 54336, 54733)
+ - Added missing feature flags to Makefile
+ - Enable ARPOE from dhd preinit context for virtual i/f
+ - Filter out unnecessary RTT related event
+ - Fixed kernel panic during skb copying
+ - Fixed network order of keepalive UDP packet properly
+ - Fixed P2P interface creation failure issue and moved STA random mac address configuration in HAL initialize context
+ - Fixed RTT configuration failure due to RTT enable state mismatch between DHD & F/W
+ - WPA3-SAE : Cleaned up PMK info at DHD layer to be controlled by supplicant for Next production
+ - [RCC] Avoided to use RCC list if supplicant inform target explicitly
+
+DHD 101.10.145.1 - 2019.09.24
+
+
+- Initial Release for Hubble Project
+
+Vendor HAL Library
+ - HAL_REL_1_59_3
+
+

@@ -1,0 +1,23 @@
+#
+# RMNET MAP driver
+#
+
+menuconfig RMNET
+	tristate "RmNet MAP driver"
+	default n
+	select GRO_CELLS
+	---help---
+	  If you select this, you will enable the RMNET module which is used
+	  for handling data in the multiplexing and aggregation protocol (MAP)
+	  format in the embedded data path. RMNET devices can be attached to
+	  any IP mode physical device.
+
+menuconfig RMNET_ARGOS
+	tristate "RmNet Argos extension"
+	default n
+	depends on RMNET
+	---help---
+	  argos for rmnet driver
+
+source "drivers/net/ethernet/qualcomm/rmnet/shs/Kconfig"
+source "drivers/net/ethernet/qualcomm/rmnet/perf/Kconfig"

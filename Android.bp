@@ -1,0 +1,37 @@
+cc_binary_host {
+    name: "unifdef",
+    srcs: ["scripts/unifdef.c"],
+    sanitize: {
+        never: true,
+    }
+}
+
+gensrcs {
+    name: "qseecom-kernel-includes",
+
+    // move to out/ as root for header generation because of scripts/unifdef
+    // storage - at the expense of extra ../ references
+    cmd: "pushd out && mkdir -p scripts && rm -f scripts/unifdef && ln -s ../../$(location unifdef) scripts/unifdef && ../$(location scripts/headers_install.sh) `dirname ../$(out)` ../ $(in) && popd",
+
+    tools: ["unifdef"],
+    tool_files: ["scripts/headers_install.sh"],
+    export_include_dirs: ["include/uapi"],
+    srcs: [
+          "include/uapi/linux/qseecom.h",
+          "include/uapi/linux/msm_ion.h",
+          "include/uapi/linux/ion.h",
+          "include/uapi/linux/msm_kgsl.h",
+          "include/uapi/linux/types.h",
+          "include/uapi/linux/spcom.h",
+          "include/uapi/linux/spss_utils.h",
+          "include/uapi/media/msm_media_info.h",
+    ],
+    output_extension: "h",
+}
+
+cc_library_headers {
+    name: "qseecom-kernel-headers",
+    generated_headers: ["qseecom-kernel-includes"],
+    vendor_available: true,
+    export_generated_headers: ["qseecom-kernel-includes"],
+}

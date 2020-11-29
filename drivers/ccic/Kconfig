@@ -1,0 +1,94 @@
+#
+# CCIC devices
+#
+
+comment "CCIC configs"
+
+config CCIC_NOTIFIER
+	bool "CCIC notifier support"
+	depends on I2C
+	default n
+	help
+	  If you say yes here you will get support for
+	  the CCIC attached device status change notification.
+
+config CCIC_S2MM003
+	bool "CCIC S2MM003"
+	depends on I2C
+	default n
+	help
+	  If you say yes here you will get support for
+	  s2mm003 ccic full version chipset
+
+config CCIC_S2MM005
+	bool "CCIC S2MM005"
+	depends on I2C
+	default n
+	help
+	  If you say yes here you will get support for
+	  s2mm005 ccic full version chipset
+
+config CCIC_MAX77705
+	bool "CCIC 77705"
+	depends on I2C
+	default n
+	help
+	  If you say yes here you will get support for
+	  max77705 ccic full version chipset
+
+config CCIC_MAX77705_DEBUG
+	bool "CCIC 77705 DEBUG"
+	depends on CCIC_MAX77705
+	default n
+	help
+	  If you say yes here you will get support for
+	  debugging feature with max77705 ccic chipset
+
+config CCIC_ALTERNATE_MODE
+	bool "support CCIC alternate mode"
+	depends on I2C
+	default n
+	help
+	  If you say yes here you will get support for
+	  alternate mode
+
+config CCIC_LPM_ENABLE
+	bool "Support LPM ENABLE"
+	depends on CCIC_S2MM005
+	default n
+	help
+	  If you say yes here you will get support for
+	  lpm enable
+
+config CCIC_WATER_DETECT
+	bool "support WATER DETECT"
+	depends on CCIC_S2MM005
+	default n
+	help
+	  If you say yes here you will get support for
+	  water detect Enable
+
+config PDIC_PD30
+	bool "support PD30"
+	depends on CCIC_MAX77705
+	default n
+	help
+	  If you say yes here you will get support for PD30
+
+config MAX77705_GRL_ENABLE
+	bool "support Eye Diagram"
+	depends on CCIC_MAX77705
+	default n
+	help
+	  If you say yes here you will get support for Eye Diagram
+	  This isn't needed for MAX77705C(MD15)	
+
+config CC_ATTACH_LOG
+	bool "cc attach detach log"
+	depends on CCIC_MAX77705
+	default n
+	help
+	  write cc attach time. 
+	  If detach - attach irq is repeated during specific time
+          we will report abnormal state.
+          We can define specific duration and specific repeat times.
