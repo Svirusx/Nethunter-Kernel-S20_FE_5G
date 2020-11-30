@@ -411,7 +411,7 @@ fi
 # CFP instrumentation will change binary, need to be before FIPS
 if [ -n "${CONFIG_CFP}" ]; then
 	echo '  CFP : instrumenting vmlinux... '
-	python "${srctree}/scripts/cfp/instrument.py" --vmlinux "${objtree}/vmlinux" \
+	python2 "${srctree}/scripts/cfp/instrument.py" --vmlinux "${objtree}/vmlinux" \
 	--config "${objtree}/.config"  --inplace
 fi
 
