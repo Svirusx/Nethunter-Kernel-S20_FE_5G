@@ -184,7 +184,6 @@ config SENSORS_A96T3X6_BLOCK_SAR_ONLY
 config SENSORS_A96T365IF
 	bool "Choose A96T365IF"
 	default n
-	help
 
 config SENSORS_A96T3X6_UNSUPPORT_OTG
 	depends on I2C
