@@ -17,7 +17,6 @@
 #include <linux/types.h>
 #include <linux/netfilter.h>
 #include <linux/module.h>
-#include <linux/sched.h>
 #include <linux/skbuff.h>
 #include <linux/proc_fs.h>
 #include <linux/vmalloc.h>
@@ -55,9 +54,12 @@
 #include <net/netfilter/nf_nat_core.h>
 #include <net/netfilter/nf_nat_helper.h>
 #include <net/netns/hash.h>
+#ifdef CONFIG_KNOX_NCM
 // SEC_PRODUCT_FEATURE_KNOX_SUPPORT_NPA {
+#include <linux/sched.h>
 #include <net/ncm.h>
 // SEC_PRODUCT_FEATURE_KNOX_SUPPORT_NPA }
+#endif
 
 #include <net/ip.h>
 
@@ -473,7 +475,7 @@ clean_from_lists(struct nf_conn *ct)
 static void nf_ct_add_to_dying_list(struct nf_conn *ct)
 {
 	struct ct_pcpu *pcpu;
-
+	#ifdef CONFIG_KNOX_NCM
 	// SEC_PRODUCT_FEATURE_KNOX_SUPPORT_NPA {
 	/* Add 'del_timer(&ct->npa_timeout)' if struct nf_conn->timeout is of type struct timer_list; */
 	/* send dying conntrack entry to collect data */
@@ -481,7 +483,7 @@ static void nf_ct_add_to_dying_list(struct nf_conn *ct)
 		knox_collect_conntrack_data(ct, NCM_FLOW_TYPE_CLOSE, 10);
 	}
 	// SEC_PRODUCT_FEATURE_KNOX_SUPPORT_NPA }
-
+	#endif
 	/* add this conntrack to the (per cpu) dying list */
 	ct->cpu = smp_processor_id();
 	pcpu = per_cpu_ptr(nf_ct_net(ct)->ct.pcpu_lists, ct->cpu);
@@ -1237,8 +1239,10 @@ static void gc_worker(struct work_struct *work)
 			if (nf_ct_is_expired(tmp)) {
 				nf_ct_gc_expired(tmp);
 				continue;
+			}
+			#ifdef CONFIG_KNOX_NCM
 			// SEC_PRODUCT_FEATURE_KNOX_SUPPORT_NPA {
-			} else if ( (tmp != NULL) && (check_ncm_flag()) && (check_intermediate_flag()) && (atomic_read(&tmp->startFlow)) && (atomic_read(&tmp->intermediateFlow)) ) {
+			else if ( (tmp != NULL) && (check_ncm_flag()) && (check_intermediate_flag()) && (atomic_read(&tmp->startFlow)) && (atomic_read(&tmp->intermediateFlow)) ) {
 				s32 npa_timeout = tmp->npa_timeout - ((u32)(jiffies));
 				if (npa_timeout <= 0) {
 					tmp->npa_timeout = ((u32)(jiffies)) + (get_intermediate_timeout() * HZ);
@@ -1246,7 +1250,8 @@ static void gc_worker(struct work_struct *work)
 				}
 			}
 			// SEC_PRODUCT_FEATURE_KNOX_SUPPORT_NPA }
-
+			#endif
+			
 			if (nf_conntrack_max95 == 0 || gc_worker_skip_ct(tmp))
 				continue;
 
@@ -1315,9 +1320,12 @@ __nf_conntrack_alloc(struct net *net,
 		     gfp_t gfp, u32 hash)
 {
 	struct nf_conn *ct;
+	
+	#ifdef CONFIG_KNOX_NCM
 	// SEC_PRODUCT_FEATURE_KNOX_SUPPORT_NPA {
 	struct timespec open_timespec;
 	// SEC_PRODUCT_FEATURE_KNOX_SUPPORT_NPA }
+	#endif
 
 	/* We don't want any race condition at early drop stage */
 	atomic_inc(&net->ct.count);
@@ -1343,6 +1351,7 @@ __nf_conntrack_alloc(struct net *net,
 
 	spin_lock_init(&ct->lock);
 
+	#ifdef CONFIG_KNOX_NCM
 	// SEC_PRODUCT_FEATURE_KNOX_SUPPORT_NPA {
 	/* initialize the conntrack structure members when memory is allocated */
 	if (ct != NULL) {
@@ -1365,7 +1374,8 @@ __nf_conntrack_alloc(struct net *net,
 		atomic_set(&ct->intermediateFlow, 0);
 	}
 	// SEC_PRODUCT_FEATURE_KNOX_SUPPORT_NPA }
-
+	#endif
+	
 	ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple = *orig;
 	ct->tuplehash[IP_CT_DIR_ORIGINAL].hnnode.pprev = NULL;
 	ct->tuplehash[IP_CT_DIR_REPLY].tuple = *repl;
