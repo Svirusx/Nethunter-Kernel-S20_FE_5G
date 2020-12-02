@@ -15,26 +15,26 @@ KERNEL_LLVM_BIN=$PARENT_DIR/toolchains/llvm-arm-toolchain-ship_8.0.6/bin/clang
 CLANG_TRIPLE=aarch64-linux-gnu-
 KERNEL_MAKE_ENV="DTC_EXT=$(pwd)/tools/dtc CONFIG_BUILD_ARM64_DT_OVERLAY=y LOCALVERSION=-WirusMODv1"
 
-DTS_DIR=$(pwd)/out/arch/$ARCH/boot/dts
+DTS_DIR=$PARENT_DIR/out/arch/$ARCH/boot/dts
 
 #Compile kernel:
-[ ! -d "out" ] && mkdir out
-  make -j$(nproc) -C $(pwd) O=$(pwd)/out $KERNEL_MAKE_ENV ARCH=arm64 CROSS_COMPILE=$BUILD_CROSS_COMPILE REAL_CC=$KERNEL_LLVM_BIN CLANG_TRIPLE=$CLANG_TRIPLE CFP_CC=$KERNEL_LLVM_BIN $DEFCONFIG_NAME
-  make -j$(nproc) -C $(pwd) O=$(pwd)/out $KERNEL_MAKE_ENV ARCH=arm64 CROSS_COMPILE=$BUILD_CROSS_COMPILE REAL_CC=$KERNEL_LLVM_BIN CLANG_TRIPLE=$CLANG_TRIPLE CFP_CC=$KERNEL_LLVM_BIN
+[ ! -d "$PARENT_DIR/out" ] && mkdir $PARENT_DIR/out
+  make -j$(nproc) -C $(pwd) O=$PARENT_DIR/out $KERNEL_MAKE_ENV ARCH=arm64 CROSS_COMPILE=$BUILD_CROSS_COMPILE REAL_CC=$KERNEL_LLVM_BIN CLANG_TRIPLE=$CLANG_TRIPLE CFP_CC=$KERNEL_LLVM_BIN $DEFCONFIG_NAME
+  make -j$(nproc) -C $(pwd) O=$PARENT_DIR/out $KERNEL_MAKE_ENV ARCH=arm64 CROSS_COMPILE=$BUILD_CROSS_COMPILE REAL_CC=$KERNEL_LLVM_BIN CLANG_TRIPLE=$CLANG_TRIPLE CFP_CC=$KERNEL_LLVM_BIN
 
 #Generate boot.img:
- [ -e out/arch/arm64/boot/Image.gz ] && cp out/arch/arm64/boot/Image.gz $(pwd)/out/Image.gz
-  if [ -e out/arch/arm64/boot/Image.gz-dtb ]; then
-    cp out/arch/arm64/boot/Image.gz-dtb $(pwd)/out/Image.gz-dtb
+ [ -e $PARENT_DIR/out/arch/arm64/boot/Image.gz ] && cp $PARENT_DIR/out/arch/arm64/boot/Image.gz $PARENT_DIR/out/Image.gz
+  if [ -e $PARENT_DIR/out/arch/arm64/boot/Image.gz-dtb ]; then
+    cp $PARENT_DIR/out/arch/arm64/boot/Image.gz-dtb $PARENT_DIR/out/Image.gz-dtb
 
     DTBO_FILES=$(find ${DTS_DIR}/samsung/ -name ${CHIPSET_NAME}-sec-${VARIANT}-*-r*.dtbo)
-    cat ${DTS_DIR}/vendor/qcom/*.dtb > $(pwd)/out/dtb.img
-    $(pwd)/tools/mkdtimg create $(pwd)/out/dtbo.img --page_size=4096 ${DTBO_FILES}
+    cat ${DTS_DIR}/vendor/qcom/*.dtb > $PARENT_DIR/out/dtb.img
+    $(pwd)/tools/mkdtimg create $PARENT_DIR/out/dtbo.img --page_size=4096 ${DTBO_FILES}
 fi
 
 #Create flashable zip:
   if [ ! -d $PARENT_DIR/AnyKernel3 ]; then
-    pause 'clone AnyKernel3 - Flashable Zip Template'
+    echo "clone AnyKernel3 - Flashable Zip Template"
     git clone https://github.com/osm0sis/AnyKernel3 $PARENT_DIR/AnyKernel3
   fi
 
@@ -44,7 +44,7 @@ fi
   elif [ -e out/arch/arm64/boot/Image.gz ]; then
     cp out/arch/arm64/boot/Image.gz $PARENT_DIR/AnyKernel3/zImage
   else
-    pause 'return to Main menu' 'Build kernel first, '
+    echo "Error"
   fi
   cd $PARENT_DIR/AnyKernel3
   git reset --hard
