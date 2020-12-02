@@ -15,6 +15,10 @@
 
 #include <linux/sec_param.h>
 #include <linux/sec_debug.h>
+#include <linux/moduleparam.h>
+
+static int wl_polling = 10;
+module_param(wl_polling, int, 0644);
 
 #ifdef CONFIG_SAMSUNG_BATTERY_DISALLOW_DEEP_SLEEP
 #include <linux/clk.h>
@@ -2373,7 +2377,7 @@ static bool sec_bat_ovp_uvlo_result(
 			__func__, health);
 		battery->is_recharging = false;
 		battery->health_check_count = DEFAULT_HEALTH_CHECK_COUNT;
-		__pm_wakeup_event(battery->vbus_wake_lock, jiffies_to_msecs(HZ * 10));
+		__pm_wakeup_event(battery->vbus_wake_lock, jiffies_to_msecs(HZ * wl_polling));
 		/* Enable charging anyway to check actual DC's health */
 		val.intval = SEC_BAT_CHG_MODE_CHARGING_OFF;
 		psy_do_property(battery->pdata->charger_name, set,
@@ -2415,7 +2419,7 @@ static bool sec_bat_ovp_uvlo_result(
 #endif
 			/* Take the wakelock during 10 seconds
 			   when over-voltage status is detected	 */
-			__pm_wakeup_event(battery->vbus_wake_lock, jiffies_to_msecs(HZ * 10));
+			__pm_wakeup_event(battery->vbus_wake_lock, jiffies_to_msecs(HZ * wl_polling));
 			break;
 		}
 		power_supply_changed(battery->psy_bat);
@@ -3841,7 +3845,7 @@ static void sec_bat_do_fullcharged(
 	 * activated wake lock in a few seconds
 	 */
 	if (battery->pdata->polling_type == SEC_BATTERY_MONITOR_ALARM)
-		__pm_wakeup_event(battery->vbus_wake_lock, jiffies_to_msecs(HZ * 10));
+		__pm_wakeup_event(battery->vbus_wake_lock, jiffies_to_msecs(HZ * wl_polling));
 }
 
 static bool sec_bat_fullcharged_check(
@@ -5409,7 +5413,7 @@ void sec_bat_fw_update_work(struct sec_battery_info *battery, int mode)
 
 	dev_info(battery->dev, "%s \n", __func__);
 
-	__pm_wakeup_event(battery->vbus_wake_lock, jiffies_to_msecs(HZ * 10));
+	__pm_wakeup_event(battery->vbus_wake_lock, jiffies_to_msecs(HZ * wl_polling));
 
 	switch (mode) {
 		case SEC_WIRELESS_RX_SDCARD_MODE:
@@ -6605,7 +6609,7 @@ static void sec_bat_cable_work(struct work_struct *work)
 	 * if cable is connected and disconnected,
 	 * activated wake lock in a few seconds
 	 */
-	__pm_wakeup_event(battery->vbus_wake_lock, jiffies_to_msecs(HZ * 10));
+	__pm_wakeup_event(battery->vbus_wake_lock, jiffies_to_msecs(HZ * wl_polling));
 
 	if (is_nocharge_type(current_wire_status)) {
 		battery->prev_usb_conf = USB_CURRENT_NONE;
@@ -10373,3 +10377,4 @@ module_exit(sec_battery_exit);
 MODULE_DESCRIPTION("Samsung Battery Driver");
 MODULE_AUTHOR("Samsung Electronics");
 MODULE_LICENSE("GPL");
+
