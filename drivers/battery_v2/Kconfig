@@ -911,13 +911,22 @@ config TX_5V_DISABLE
 	  apply this concept since bloom.
 
 config DISABLE_MFC_IC
-    bool "disable mfc ic because of burnt issue"
+    bool "disable mfc ic because of unknown pad"
     default n
     help
-	  Say Y to enable CONFIG_DISABLE_MFC_IC
-	  High vrect occurs when No load scenario.
-	  so mfc ic burnt.
+	  Say Y to enable
+	  CONFIG_DISABLE_MFC_IC
+	  for unknown pad.
 	  disable mfc ic in this case.
+
+config CHECK_UNKNOWN_PAD
+    bool "check unknown pad"
+    default n
+    help
+	  Say Y to enable CONFIG_CHECK_UNKNOWN_PAD
+	  do not charge rapidly
+	  when put device
+	  on the unknown pad.
 
 config TX_GEAR_PHM_VOUT_CTRL
     bool "control vout when gear`s phm"
