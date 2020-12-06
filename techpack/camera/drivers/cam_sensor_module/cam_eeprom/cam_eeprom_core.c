@@ -99,6 +99,9 @@ extern int ois_sr_rear_result;
 #if defined(CONFIG_SAMSUNG_REAR_TRIPLE)
 extern uint8_t ois_wide_center_shift[OIS_CENTER_SHIFT_SIZE];
 extern uint8_t ois_tele_xygg[OIS_XYGG_SIZE];
+#if defined(CONFIG_SEC_R8Q_PROJECT)
+#define M2_YGG_LMT        0x3F733333        //0.95f    Limit Value
+#endif
 extern uint8_t ois_tele_center_shift[OIS_CENTER_SHIFT_SIZE];
 extern uint8_t ois_tele_cal_mark;
 uint8_t ois_tele_xysr[OIS_XYSR_SIZE] = { 0, };
@@ -1463,6 +1466,17 @@ static int cam_eeprom_update_module_info(struct cam_eeprom_ctrl_t *e_ctrl)
 
 			ConfAddr += OIS_XYGG_START_OFFSET;
 			memcpy(ois_tele_xygg, &e_ctrl->cal_data.mapdata[ConfAddr], OIS_XYGG_SIZE);
+#if defined(CONFIG_SEC_R8Q_PROJECT)
+			{
+				uint32_t ygg = 0;
+				uint8_t M2_YGG_STD[4] = {0x52,0xB8,0x1E,0x3F};        //0.62f    Standard Value
+
+				memcpy(&ygg, &ois_tele_xygg[4], 4);
+				if (ygg > M2_YGG_LMT)
+					memcpy(&ois_tele_xygg[4], M2_YGG_STD, 4);
+			}
+#endif
+
 			ConfAddr -= OIS_XYGG_START_OFFSET;
 
 			ConfAddr += OIS_XYSR_START_OFFSET;

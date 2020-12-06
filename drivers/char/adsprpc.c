@@ -849,9 +849,11 @@ static void fastrpc_mmap_free(struct fastrpc_mmap *map, uint32_t flags)
 	fl = map->fl;
 	if (map->flags == ADSP_MMAP_HEAP_ADDR ||
 				map->flags == ADSP_MMAP_REMOTE_HEAP_ADDR) {
+		spin_lock(&me->hlock);
 		map->refs--;
 		if (!map->refs)
 			hlist_del_init(&map->hn);
+		spin_unlock(&me->hlock);
 		if (map->refs > 0)
 			return;
 	} else {
@@ -3127,7 +3129,7 @@ static int fastrpc_internal_munmap(struct fastrpc_file *fl,
 		pr_err("adsprpc: ERROR: %s: user application %s trying to unmap without initialization\n",
 			 __func__, current->comm);
 		err = EBADR;
-		goto bail;
+		return err;
 	}
 	mutex_lock(&fl->internal_map_mutex);
 
@@ -3184,14 +3186,15 @@ static int fastrpc_internal_munmap_fd(struct fastrpc_file *fl,
 
 	VERIFY(err, (fl && ud));
 	if (err)
-		goto bail;
+		return err;
 	VERIFY(err, fl->dsp_proc_init == 1);
 	if (err) {
 		pr_err("adsprpc: ERROR: %s: user application %s trying to unmap without initialization\n",
 			__func__, current->comm);
 		err = EBADR;
-		goto bail;
+		return err;
 	}
+	mutex_lock(&fl->internal_map_mutex);
 	mutex_lock(&fl->map_mutex);
 	if (fastrpc_mmap_find(fl, ud->fd, ud->va, ud->len, 0, 0, &map)) {
 		pr_err("adsprpc: mapping not found to unmap fd 0x%x, va 0x%llx, len 0x%x\n",
@@ -3201,10 +3204,13 @@ static int fastrpc_internal_munmap_fd(struct fastrpc_file *fl,
 		mutex_unlock(&fl->map_mutex);
 		goto bail;
 	}
-	if (map)
+	if (map && (map->attr & FASTRPC_ATTR_KEEP_MAP)) {
+		map->attr = map->attr & (~FASTRPC_ATTR_KEEP_MAP);
 		fastrpc_mmap_free(map, 0);
+	}
 	mutex_unlock(&fl->map_mutex);
 bail:
+	mutex_unlock(&fl->internal_map_mutex);
 	return err;
 }
 
@@ -3223,7 +3229,7 @@ static int fastrpc_internal_mmap(struct fastrpc_file *fl,
 		pr_err("adsprpc: ERROR: %s: user application %s trying to map without initialization\n",
 			__func__, current->comm);
 		err = EBADR;
-		goto bail;
+		return err;
 	}
 	mutex_lock(&fl->internal_map_mutex);
 	if ((ud->flags == ADSP_MMAP_ADD_PAGES) ||

@@ -20,7 +20,6 @@
 #ifndef __LINUX_FIVE_CACHE_H
 #define __LINUX_FIVE_CACHE_H
 
-//#include "security/integrity/integrity.h"
 #include "../../integrity/integrity.h"
 
 enum five_file_integrity five_get_cache_status(
