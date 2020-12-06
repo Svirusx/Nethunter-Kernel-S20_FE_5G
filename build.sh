@@ -9,11 +9,13 @@ DEFCONFIG_NAME=wirus_defconfig
 CHIPSET_NAME=kona
 VARIANT=r8q
 ARCH=arm64
+VERSION=Nethunter_${VARIANT}_v0.0
+
 
 BUILD_CROSS_COMPILE=$PARENT_DIR/toolchains/aarch64-linux-android-4.9/bin/aarch64-linux-android-
 KERNEL_LLVM_BIN=$PARENT_DIR/toolchains/llvm-arm-toolchain-ship_8.0.6/bin/clang
 CLANG_TRIPLE=aarch64-linux-gnu-
-KERNEL_MAKE_ENV="DTC_EXT=$(pwd)/tools/dtc CONFIG_BUILD_ARM64_DT_OVERLAY=y LOCALVERSION=-WirusMODv1"
+KERNEL_MAKE_ENV="DTC_EXT=$(pwd)/tools/dtc CONFIG_BUILD_ARM64_DT_OVERLAY=y LOCALVERSION=-${VERSION}"
 
 DTS_DIR=$PARENT_DIR/out/arch/$ARCH/boot/dts
 
@@ -38,7 +40,7 @@ fi
     git clone https://github.com/osm0sis/AnyKernel3 $PARENT_DIR/AnyKernel3
   fi
 
-  [ -e $PARENT_DIR/${VARIANT}_kernel.zip ] && rm $PARENT_DIR/${VARIANT}_kernel.zip
+  [ -e $PARENT_DIR/${VERSION}.zip ] && rm $PARENT_DIR/${VERSION}.zip
   if [ -e $PARENT_DIR/out/arch/arm64/boot/Image.gz-dtb ]; then
     cp $PARENT_DIR/out/arch/arm64/boot/Image.gz-dtb $PARENT_DIR/AnyKernel3/zImage
   elif [ -e $PARENT_DIR/out/arch/arm64/boot/Image.gz ]; then
@@ -59,7 +61,14 @@ fi
   sed -i "s/insert_line/#insert_line/g" anykernel.sh
   sed -i "s/append_file/#append_file/g" anykernel.sh
   sed -i "s/patch_fstab/#patch_fstab/g" anykernel.sh
-  zip -r9 $PARENT_DIR/${VARIANT}_kernel.zip * -x .git README.md *placeholder
+
+  mkdir -p $PARENT_DIR/build/$VARIANT/modules
+  zip -r9 $PARENT_DIR/build/$VARIANT/${VERSION}.zip * -x .git README.md *placeholder
   cd $DIR
+
+find $PARENT_DIR/out/ -name '*.ko'  -not -path "$PARENT_DIR/build/*" -exec cp --parents -f '{}' $PARENT_DIR/build/$VARIANT/modules  \;
+mv -f $PARENT_DIR/build/$VARIANT/modules/home/svirusx/out/* $PARENT_DIR/build/$VARIANT/modules
+
+
 
 
