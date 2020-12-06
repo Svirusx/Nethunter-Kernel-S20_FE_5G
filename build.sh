@@ -39,10 +39,10 @@ fi
   fi
 
   [ -e $PARENT_DIR/${VARIANT}_kernel.zip ] && rm $PARENT_DIR/${VARIANT}_kernel.zip
-  if [ -e out/arch/arm64/boot/Image.gz-dtb ]; then
-    cp out/arch/arm64/boot/Image.gz-dtb $PARENT_DIR/AnyKernel3/zImage
-  elif [ -e out/arch/arm64/boot/Image.gz ]; then
-    cp out/arch/arm64/boot/Image.gz $PARENT_DIR/AnyKernel3/zImage
+  if [ -e $PARENT_DIR/out/arch/arm64/boot/Image.gz-dtb ]; then
+    cp $PARENT_DIR/out/arch/arm64/boot/Image.gz-dtb $PARENT_DIR/AnyKernel3/zImage
+  elif [ -e $PARENT_DIR/out/arch/arm64/boot/Image.gz ]; then
+    cp $PARENT_DIR/out/arch/arm64/boot/Image.gz $PARENT_DIR/AnyKernel3/zImage
   else
     echo "Error"
   fi
