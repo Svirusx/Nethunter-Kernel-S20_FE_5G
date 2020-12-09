@@ -15270,6 +15270,13 @@ bool sme_validate_channel_list(mac_handle_t mac_handle,
 
 	return true;
 }
+ 
+void sme_set_pmf_wep_cfg(mac_handle_t mac_handle, uint8_t pmf_wep)
+{
+	struct mac_context *mac_ctx = MAC_CONTEXT(mac_handle);
+
+	mac_ctx->is_usr_cfg_pmf_wep = pmf_wep;
+}
 
 void sme_set_amsdu(mac_handle_t mac_handle, bool enable)
 {
@@ -15353,6 +15360,7 @@ void sme_reset_he_caps(mac_handle_t mac_handle, uint8_t vdev_id)
 	mac_ctx->mlme_cfg->he_caps.dot11_he_cap =
 		mac_ctx->mlme_cfg->he_caps.he_cap_orig;
 	csr_update_session_he_cap(mac_ctx, session);
+	mac_ctx->is_usr_cfg_pmf_wep = PMF_CORRECT_KEY;
 }
 #endif
 
