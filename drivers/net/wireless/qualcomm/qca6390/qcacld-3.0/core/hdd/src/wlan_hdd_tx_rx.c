@@ -1010,11 +1010,15 @@ static void __hdd_hard_start_xmit(struct sk_buff *skb,
 		goto drop_pkt;
 	}
 
-	hdd_ctx = adapter->hdd_ctx;
-	if (wlan_hdd_validate_context(hdd_ctx)) {
-		QDF_TRACE_DEBUG_RL(QDF_MODULE_ID_HDD_DATA,
-				   "Invalid HDD context");
-		goto drop_pkt;
+		hdd_ctx = adapter->hdd_ctx;
+
+	/*Disable content validation in monitor mode*/
+	if (hdd_get_conparam() != QDF_GLOBAL_MONITOR_MODE) {
+		if (wlan_hdd_validate_context(hdd_ctx)) {
+			QDF_TRACE_DEBUG_RL(QDF_MODULE_ID_HDD_DATA,
+					   "Invalid HDD context");
+			goto drop_pkt;
+		}
 	}
 
 	wlan_hdd_classify_pkt(skb);
@@ -1033,13 +1037,16 @@ static void __hdd_hard_start_xmit(struct sk_buff *skb,
 		hdd_tx_rx_collect_connectivity_stats_info(skb, adapter,
 						PKT_TYPE_REQ, &pkt_type);
 
-	hdd_get_transmit_mac_addr(adapter, skb, &mac_addr_tx_allowed);
-	if (qdf_is_macaddr_zero(&mac_addr_tx_allowed)) {
-		QDF_TRACE(QDF_MODULE_ID_HDD_DATA, QDF_TRACE_LEVEL_INFO_HIGH,
-			  "tx not allowed, transmit operation suspended");
-		goto drop_pkt;
-	}
 
+		hdd_get_transmit_mac_addr(adapter, skb, &mac_addr_tx_allowed);
+        /* Allow tx in monitor mode */
+	if (hdd_get_conparam() != QDF_GLOBAL_MONITOR_MODE) {
+		if (qdf_is_macaddr_zero(&mac_addr_tx_allowed)) {
+			QDF_TRACE(QDF_MODULE_ID_HDD_DATA, QDF_TRACE_LEVEL_INFO_HIGH,
+				  "tx not allowed, transmit operation suspended");
+			goto drop_pkt;
+		}
+	}
 	hdd_get_tx_resource(adapter, &mac_addr,
 			    WLAN_HDD_TX_FLOW_CONTROL_OS_Q_BLOCK_TIME);
 
