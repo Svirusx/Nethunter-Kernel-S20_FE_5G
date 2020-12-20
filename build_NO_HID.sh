@@ -36,8 +36,8 @@ fi
 
 #Create flashable zip:
   if [ ! -d $PARENT_DIR/AnyKernel3 ]; then
-    echo "Copy AnyKernel3 to Parent DIR - Flashable Zip Template"
-    cp -rf ${DIR}/AnyKernel3 $PARENT_DIR/AnyKernel3
+    echo "clone AnyKernel3 - Flashable Zip Template"
+    git clone https://github.com/osm0sis/AnyKernel3 $PARENT_DIR/AnyKernel3
   fi
 
   [ -e $PARENT_DIR/${VERSION}.zip ] && rm $PARENT_DIR/${VERSION}.zip
@@ -49,6 +49,18 @@ fi
     echo "Error"
   fi
   cd $PARENT_DIR/AnyKernel3
+  git reset --hard
+  sed -i "s/ExampleKernel by osm0sis/${VARIANT} kernel by Svirusx/g" anykernel.sh
+  sed -i "s/=maguro/=${VARIANT}/g" anykernel.sh
+  sed -i "s/=toroplus/=/g" anykernel.sh
+  sed -i "s/=toro/=/g" anykernel.sh
+  sed -i "s/=tuna/=/g" anykernel.sh
+  sed -i "s/omap\/omap_hsmmc\.0\/by-name\/boot/soc\/1d84000\.ufshc\/by-name\/boot/g" anykernel.sh
+  sed -i "s/backup_file/#backup_file/g" anykernel.sh
+  sed -i "s/replace_string/#replace_string/g" anykernel.sh
+  sed -i "s/insert_line/#insert_line/g" anykernel.sh
+  sed -i "s/append_file/#append_file/g" anykernel.sh
+  sed -i "s/patch_fstab/#patch_fstab/g" anykernel.sh
 
   mkdir -p $PARENT_DIR/build/$VARIANT/modules
   zip -r9 $PARENT_DIR/build/$VARIANT/${VERSION}.zip * -x .git README.md *placeholder
