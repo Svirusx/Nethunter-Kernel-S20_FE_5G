@@ -34,6 +34,7 @@ ramdisk_compression=auto;
 
 SYSTEM="/system";
 SYSTEM_ROOT="/system_root";
+VENDOR="/vendor";
 
 setperm() {
 	find "$3" -type d -exec chmod "$1" {} \;
@@ -49,8 +50,8 @@ install() {
 	cp -r "$home$1" "$(dirname "$1")/";
 }
 
-[ -d $home/system/etc/firmware ] && {
-	install "/system/etc/firmware" 0755 0644 "$SYSTEM/etc/firmware";
+[ -d $home/vendor/firmware_mnt/image ] && {
+	install "/vendor/firmware_mnt/image" 0755 0644 "$VENDOR/firmware_mnt/image";
 }
 
 [ -d $home/system/etc/init.d ] && {
