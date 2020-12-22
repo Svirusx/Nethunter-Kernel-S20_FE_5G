@@ -82,21 +82,21 @@ u32 halrf_get_psd_data(
 		psd_start = 0x00400000;
 	}
 
-	psd_val = odm_get_bb_reg(dm, psd_reg, MASKDWORD);
+	psd_val = odm_get_bb_regx(dm, psd_reg, MASKDWORD);
 
 	psd_val &= psd_point;
 	psd_val |= point;
 
-	odm_set_bb_reg(dm, psd_reg, MASKDWORD, psd_val);
+	odm_set_bb_regx(dm, psd_reg, MASKDWORD, psd_val);
 
 	psd_val |= psd_start;
 
-	odm_set_bb_reg(dm, psd_reg, MASKDWORD, psd_val);
+	odm_set_bb_regx(dm, psd_reg, MASKDWORD, psd_val);
 
 	for (i = 0; i < delay_time; i++)
-		ODM_delay_us(1);
+		ODM_delay_usx(1);
 
-	psd_val = odm_get_bb_reg(dm, psd_report, MASKDWORD);
+	psd_val = odm_get_bb_regx(dm, psd_report, MASKDWORD);
 
 	if (dm->support_ic_type & (ODM_RTL8821C | ODM_RTL8710B)) {
 		psd_val &= MASKL3BYTES;
@@ -145,15 +145,15 @@ void halrf_psd(
 		psd->psd_data[i] = 0;
 
 	if (dm->support_ic_type & ODM_RTL8710B)
-		avg_org = odm_get_bb_reg(dm, psd_reg, 0x30000);
+		avg_org = odm_get_bb_regx(dm, psd_reg, 0x30000);
 	else
-		avg_org = odm_get_bb_reg(dm, psd_reg, 0x3000);
+		avg_org = odm_get_bb_regx(dm, psd_reg, 0x3000);
 
 	if (mode == 1) {
 		if (dm->support_ic_type & ODM_RTL8710B)
-			odm_set_bb_reg(dm, psd_reg, 0x30000, 0x1);
+			odm_set_bb_regx(dm, psd_reg, 0x30000, 0x1);
 		else
-			odm_set_bb_reg(dm, psd_reg, 0x3000, 0x1);
+			odm_set_bb_regx(dm, psd_reg, 0x3000, 0x1);
 	}
 
 #if 0
@@ -209,9 +209,9 @@ void halrf_psd(
 #endif
 
 	if (dm->support_ic_type & ODM_RTL8710B)
-		odm_set_bb_reg(dm, psd_reg, 0x30000, avg_org);
+		odm_set_bb_regx(dm, psd_reg, 0x30000, avg_org);
 	else
-		odm_set_bb_reg(dm, psd_reg, 0x3000, avg_org);
+		odm_set_bb_regx(dm, psd_reg, 0x3000, avg_org);
 }
 
 void backup_bb_register(struct dm_struct *dm, u32 *bb_backup, u32 *backup_bb_reg, u32 counter)
@@ -219,7 +219,7 @@ void backup_bb_register(struct dm_struct *dm, u32 *bb_backup, u32 *backup_bb_reg
 	u32 i ;
 
 	for (i = 0; i < counter; i++)
-		bb_backup[i] = odm_get_bb_reg(dm, backup_bb_reg[i], MASKDWORD);
+		bb_backup[i] = odm_get_bb_regx(dm, backup_bb_reg[i], MASKDWORD);
 }
 
 void restore_bb_register(struct dm_struct *dm, u32 *bb_backup, u32 *backup_bb_reg, u32 counter)
@@ -227,38 +227,38 @@ void restore_bb_register(struct dm_struct *dm, u32 *bb_backup, u32 *backup_bb_re
 	u32 i ;
 
 	for (i = 0; i < counter; i++)
-		odm_set_bb_reg(dm, backup_bb_reg[i], MASKDWORD, bb_backup[i]);
+		odm_set_bb_regx(dm, backup_bb_reg[i], MASKDWORD, bb_backup[i]);
 }
 
 
 
 void _halrf_psd_iqk_init(struct dm_struct *dm)
 {
-	odm_set_bb_reg(dm, 0x1b04, MASKDWORD, 0x0);
-	odm_set_bb_reg(dm, 0x1b08, MASKDWORD, 0x80);
-	odm_set_bb_reg(dm, 0x1b0c, 0xc00, 0x3);
-	odm_set_bb_reg(dm, 0x1b14, MASKDWORD, 0x0);
-	odm_set_bb_reg(dm, 0x1b18, BIT(0), 0x1);
+	odm_set_bb_regx(dm, 0x1b04, MASKDWORD, 0x0);
+	odm_set_bb_regx(dm, 0x1b08, MASKDWORD, 0x80);
+	odm_set_bb_regx(dm, 0x1b0c, 0xc00, 0x3);
+	odm_set_bb_regx(dm, 0x1b14, MASKDWORD, 0x0);
+	odm_set_bb_regx(dm, 0x1b18, BIT(0), 0x1);
 
 	if (dm->support_ic_type & ODM_RTL8197G)
-		odm_set_bb_reg(dm, 0x1b20, MASKDWORD, 0x00040008);
+		odm_set_bb_regx(dm, 0x1b20, MASKDWORD, 0x00040008);
 	if (dm->support_ic_type & ODM_RTL8198F) {
-		odm_set_bb_reg(dm, 0x1b20, MASKDWORD, 0x00000000);
-		odm_set_bb_reg(dm, 0x1b1c, 0xfff, 0xd21);
-		odm_set_bb_reg(dm, 0x1b1c, 0xfff00000, 0x821);
+		odm_set_bb_regx(dm, 0x1b20, MASKDWORD, 0x00000000);
+		odm_set_bb_regx(dm, 0x1b1c, 0xfff, 0xd21);
+		odm_set_bb_regx(dm, 0x1b1c, 0xfff00000, 0x821);
 	}
 
 	if (dm->support_ic_type & (ODM_RTL8197G | ODM_RTL8198F)) {
-		odm_set_bb_reg(dm, 0x1b24, MASKDWORD, 0x00030000);
-		odm_set_bb_reg(dm, 0x1b28, MASKDWORD, 0x00000000);
-		odm_set_bb_reg(dm, 0x1b2c, MASKDWORD, 0x00180018);
-		odm_set_bb_reg(dm, 0x1b30, MASKDWORD, 0x20000000);
-		/*odm_set_bb_reg(dm, 0x1b38, MASKDWORD, 0x20000000);*/
-		/*odm_set_bb_reg(dm, 0x1b3C, MASKDWORD, 0x20000000);*/
+		odm_set_bb_regx(dm, 0x1b24, MASKDWORD, 0x00030000);
+		odm_set_bb_regx(dm, 0x1b28, MASKDWORD, 0x00000000);
+		odm_set_bb_regx(dm, 0x1b2c, MASKDWORD, 0x00180018);
+		odm_set_bb_regx(dm, 0x1b30, MASKDWORD, 0x20000000);
+		/*odm_set_bb_regx(dm, 0x1b38, MASKDWORD, 0x20000000);*/
+		/*odm_set_bb_regx(dm, 0x1b3C, MASKDWORD, 0x20000000);*/
 	}
 
-	odm_set_bb_reg(dm, 0x1b28, MASKDWORD, 0x0);
-	odm_set_bb_reg(dm, 0x1bcc, 0x3f, 0x3f);	
+	odm_set_bb_regx(dm, 0x1b28, MASKDWORD, 0x0);
+	odm_set_bb_regx(dm, 0x1bcc, 0x3f, 0x3f);	
 }
 
 
@@ -286,7 +286,7 @@ u32 halrf_get_iqk_psd_data(
 			delay_time = 150;
 	}
 #endif
-	psd_point = odm_get_bb_reg(dm, R_0x1b2c, MASKDWORD);
+	psd_point = odm_get_bb_regx(dm, R_0x1b2c, MASKDWORD);
 
 	psd_point &= 0xF000FFFF;
 
@@ -294,43 +294,43 @@ u32 halrf_get_iqk_psd_data(
 
 	psd_point = psd_point | (point << 16);
 
-	odm_set_bb_reg(dm, R_0x1b2c, MASKDWORD, psd_point);
+	odm_set_bb_regx(dm, R_0x1b2c, MASKDWORD, psd_point);
 
-	odm_set_bb_reg(dm, R_0x1b34, MASKDWORD, 0x1);
+	odm_set_bb_regx(dm, R_0x1b34, MASKDWORD, 0x1);
 
-	odm_set_bb_reg(dm, R_0x1b34, MASKDWORD, 0x0);
+	odm_set_bb_regx(dm, R_0x1b34, MASKDWORD, 0x0);
 
 	for (i = 0; i < delay_time; i++)
-		ODM_delay_us(1);
+		ODM_delay_usx(1);
 
 	if (dm->support_ic_type & (ODM_RTL8197G | ODM_RTL8198F)) {
 		if (dm->support_ic_type & ODM_RTL8197G)
-			odm_set_bb_reg(dm, R_0x1bd4, MASKDWORD, 0x001a0001);
+			odm_set_bb_regx(dm, R_0x1bd4, MASKDWORD, 0x001a0001);
 		else
-			odm_set_bb_reg(dm, R_0x1bd4, MASKDWORD, 0x00250001);
+			odm_set_bb_regx(dm, R_0x1bd4, MASKDWORD, 0x00250001);
 
-		psd_val1 = odm_get_bb_reg(dm, R_0x1bfc, MASKDWORD);
+		psd_val1 = odm_get_bb_regx(dm, R_0x1bfc, MASKDWORD);
 
 		psd_val1 = (psd_val1 & 0x001f0000) >> 16;
 
 		if (dm->support_ic_type & ODM_RTL8197G)
-			odm_set_bb_reg(dm, R_0x1bd4, MASKDWORD, 0x001b0001);
+			odm_set_bb_regx(dm, R_0x1bd4, MASKDWORD, 0x001b0001);
 		else
-			odm_set_bb_reg(dm, R_0x1bd4, MASKDWORD, 0x002e0001);
+			odm_set_bb_regx(dm, R_0x1bd4, MASKDWORD, 0x002e0001);
 
-		psd_val2 = odm_get_bb_reg(dm, R_0x1bfc, MASKDWORD);
+		psd_val2 = odm_get_bb_regx(dm, R_0x1bfc, MASKDWORD);
 
 		psd_val = (psd_val1 << 27) + (psd_val2 >> 5);
 	} else {
-		odm_set_bb_reg(dm, R_0x1bd4, MASKDWORD, 0x00250001);
+		odm_set_bb_regx(dm, R_0x1bd4, MASKDWORD, 0x00250001);
 
-		psd_val1 = odm_get_bb_reg(dm, R_0x1bfc, MASKDWORD);
+		psd_val1 = odm_get_bb_regx(dm, R_0x1bfc, MASKDWORD);
 
 		psd_val1 = (psd_val1 & 0x07FF0000) >> 16;
 
-		odm_set_bb_reg(dm, R_0x1bd4, MASKDWORD, 0x002e0001);
+		odm_set_bb_regx(dm, R_0x1bd4, MASKDWORD, 0x002e0001);
 
-		psd_val2 = odm_get_bb_reg(dm, R_0x1bfc, MASKDWORD);
+		psd_val2 = odm_get_bb_regx(dm, R_0x1bfc, MASKDWORD);
 
 		psd_val = (psd_val1 << 21) + (psd_val2 >> 11);
 	}
@@ -361,7 +361,7 @@ void halrf_iqk_psd(
 		if (dm->support_ic_type & ODM_RTL8822C)
 			average_tmp = 1;
 		else {
-			reg_tmp = odm_get_bb_reg(dm, R_0x1b1c, 0x000e0000);
+			reg_tmp = odm_get_bb_regx(dm, R_0x1b1c, 0x000e0000);
 			if (reg_tmp == 0)
 				average_tmp = 1;
 			else if (reg_tmp == 3)
@@ -370,10 +370,10 @@ void halrf_iqk_psd(
 				average_tmp = 16;
 			else if (reg_tmp == 5)
 				average_tmp = 32;
-			odm_set_bb_reg(dm, R_0x1b1c, 0x000e0000, 0x0);
+			odm_set_bb_regx(dm, R_0x1b1c, 0x000e0000, 0x0);
 		}
 	} else {
-		reg_tmp = odm_get_bb_reg(dm, R_0x1b1c, 0x000e0000);
+		reg_tmp = odm_get_bb_regx(dm, R_0x1b1c, 0x000e0000);
 		if (reg_tmp == 0)
 			average_tmp = 1;
 		else if (reg_tmp == 3)
@@ -382,7 +382,7 @@ void halrf_iqk_psd(
 			average_tmp = 16;
 		else if (reg_tmp == 5)
 			average_tmp = 32;
-		odm_set_bb_reg(dm, R_0x1b1c, 0x000e0000, 0x0);
+		odm_set_bb_regx(dm, R_0x1b1c, 0x000e0000, 0x0);
 	}
 
 #if 0
@@ -431,7 +431,7 @@ void halrf_iqk_psd(
 	}
 
 	if (dm->support_ic_type & (ODM_RTL8814B | ODM_RTL8198F | ODM_RTL8197G))
-		odm_set_bb_reg(dm, R_0x1b1c, 0x000e0000, reg_tmp);
+		odm_set_bb_regx(dm, R_0x1b1c, 0x000e0000, reg_tmp);
 
 #if 0
 	DbgPrint("\n [iqk psd]psd result:\n");
@@ -493,7 +493,7 @@ halrf_psd_query(
 	if (psd->psd_progress)
 		ret_status = RT_STATUS_PENDING;
 	else
-		odm_move_memory(dm, outbuf, psd->psd_data,
+		odm_move_memoryx(dm, outbuf, psd->psd_data,
 				sizeof(u32) * psd->buf_size);
 
 	return ret_status;
@@ -524,7 +524,7 @@ halrf_psd_init_query(
 	} else {
 		psd->psd_progress = 1;
 		halrf_psd(dm, psd->point, psd->start_point, psd->stop_point, psd->average);
-		odm_move_memory(dm, outbuf, psd->psd_data, 0x400);
+		odm_move_memoryx(dm, outbuf, psd->psd_data, 0x400);
 		psd->psd_progress = 0;
 	}
 

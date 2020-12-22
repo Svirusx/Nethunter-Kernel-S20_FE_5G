@@ -49,7 +49,7 @@ void phydm_dynamicsoftmletting(void *dm_void)
 				return;
 			}
 
-			ret_val = odm_get_bb_reg(dm, R_0xf8c, MASKBYTE0);
+			ret_val = odm_get_bb_regx(dm, R_0xf8c, MASKBYTE0);
 			PHYDM_DBG(dm, ODM_COMP_API,
 				  "PHYDM_DynamicSoftMLSetting(): Read 0xF8C = 0x%08X\n",
 				  ret_val);
@@ -60,7 +60,7 @@ void phydm_dynamicsoftmletting(void *dm_void)
 					  ret_val);
 				phydm_somlrxhp_setting(dm, true);
 #if 0
-			/*odm_set_bb_reg(dm, R_0x19a8, MASKDWORD, 0xc10a0000);*/
+			/*odm_set_bb_regx(dm, R_0x19a8, MASKDWORD, 0xc10a0000);*/
 #endif
 				dm->bsomlenabled = true;
 			}
@@ -78,7 +78,7 @@ void phydm_soml_on_off(void *dm_void, u8 swch)
 		PHYDM_DBG(dm, DBG_ADPTV_SOML, "(( Turn on )) SOML\n");
 
 		if (dm->support_ic_type & (ODM_RTL8197F | ODM_RTL8192F))
-			odm_set_bb_reg(dm, R_0x998, BIT(6), swch);
+			odm_set_bb_regx(dm, R_0x998, BIT(6), swch);
 #if (RTL8822B_SUPPORT == 1)
 		else if (dm->support_ic_type == ODM_RTL8822B)
 			phydm_somlrxhp_setting(dm, true);
@@ -88,7 +88,7 @@ void phydm_soml_on_off(void *dm_void, u8 swch)
 		PHYDM_DBG(dm, DBG_ADPTV_SOML, "(( Turn off )) SOML\n");
 
 		if (dm->support_ic_type & (ODM_RTL8197F | ODM_RTL8192F))
-			odm_set_bb_reg(dm, R_0x998, BIT(6), swch);
+			odm_set_bb_regx(dm, R_0x998, BIT(6), swch);
 #if (RTL8822B_SUPPORT == 1)
 		else if (dm->support_ic_type == ODM_RTL8822B)
 			phydm_somlrxhp_setting(dm, false);
@@ -147,7 +147,7 @@ void phydm_adaptive_soml_callback(void *dm_void)
 		phydm_adsl(dm);
 	else {
 		/* @Can't do I/O in timer callback*/
-		phydm_run_in_thread_cmd(dm,
+		phydm_run_in_thread_cmdx(dm,
 					phydm_adaptive_soml_workitem_callback,
 					dm);
 	}
@@ -283,10 +283,10 @@ void phydm_soml_cfo_process(void *dm_void, s32 *diff_a, s32 *diff_b)
 	u32 value32, value32_1, value32_2, value32_3;
 	s32 cfo_acq_a, cfo_acq_b, cfo_end_a, cfo_end_b;
 
-	value32 = odm_get_bb_reg(dm, R_0xd10, MASKDWORD);
-	value32_1 = odm_get_bb_reg(dm, R_0xd14, MASKDWORD);
-	value32_2 = odm_get_bb_reg(dm, R_0xd50, MASKDWORD);
-	value32_3 = odm_get_bb_reg(dm, R_0xd54, MASKDWORD);
+	value32 = odm_get_bb_regx(dm, R_0xd10, MASKDWORD);
+	value32_1 = odm_get_bb_regx(dm, R_0xd14, MASKDWORD);
+	value32_2 = odm_get_bb_regx(dm, R_0xd50, MASKDWORD);
+	value32_3 = odm_get_bb_regx(dm, R_0xd54, MASKDWORD);
 
 	cfo_acq_a = (s32)((value32 & 0x1fff0000) >> 16);
 	cfo_end_a = (s32)((value32_1 & 0x1fff0000) >> 16);
@@ -534,17 +534,17 @@ void phydm_adsl_init_state(void *dm_void)
 	u8 size = sizeof(ht_reset[0]);
 
 	phydm_soml_reset_rx_rate(dm);
-	odm_move_memory(dm, soml_tab->ht_byte, ht_reset,
+	odm_move_memoryx(dm, soml_tab->ht_byte, ht_reset,
 			HT_RATE_IDX * size);
-	odm_move_memory(dm, soml_tab->ht_byte_on, ht_reset,
+	odm_move_memoryx(dm, soml_tab->ht_byte_on, ht_reset,
 			HT_RATE_IDX * size);
-	odm_move_memory(dm, soml_tab->ht_byte_off, ht_reset,
+	odm_move_memoryx(dm, soml_tab->ht_byte_off, ht_reset,
 			HT_RATE_IDX * size);
-	odm_move_memory(dm, soml_tab->vht_byte, vht_reset,
+	odm_move_memoryx(dm, soml_tab->vht_byte, vht_reset,
 			VHT_RATE_IDX * size);
-	odm_move_memory(dm, soml_tab->vht_byte_on, vht_reset,
+	odm_move_memoryx(dm, soml_tab->vht_byte_on, vht_reset,
 			VHT_RATE_IDX * size);
-	odm_move_memory(dm, soml_tab->vht_byte_off, vht_reset,
+	odm_move_memoryx(dm, soml_tab->vht_byte_off, vht_reset,
 			VHT_RATE_IDX * size);
 	if (dm->support_ic_type == ODM_RTL8822B) {
 		soml_tab->cfo_cnt++;
@@ -561,14 +561,14 @@ void phydm_adsl_init_state(void *dm_void)
 
 	soml_tab->is_soml_method_enable = 1;
 	#if (DM_ODM_SUPPORT_TYPE == ODM_AP)
-	odm_set_mac_reg(dm, R_0x608, BIT(8), 1);
+	odm_set_mac_regx(dm, R_0x608, BIT(8), 1);
 	/*RCR accepts CRC32-Error packets*/
 	#endif
 	soml_tab->get_stats = false;
 	soml_tab->soml_state_cnt++;
 	next_on_off = (soml_tab->soml_on_off == SOML_ON) ? SOML_ON : SOML_OFF;
 	phydm_soml_on_off(dm, next_on_off);
-	odm_set_timer(dm, &soml_tab->phydm_adaptive_soml_timer,
+	odm_set_timerx(dm, &soml_tab->phydm_adaptive_soml_timer,
 		      soml_tab->soml_delay_time); /*@ms*/
 }
 
@@ -581,13 +581,13 @@ void phydm_adsl_odd_state(void *dm_void)
 
 	soml_tab->get_stats = true;
 	soml_tab->soml_state_cnt++;
-	odm_move_memory(dm, soml_tab->pre_ht_cnt, soml_tab->ht_cnt,
+	odm_move_memoryx(dm, soml_tab->pre_ht_cnt, soml_tab->ht_cnt,
 			HT_RATE_IDX * size);
-	odm_move_memory(dm, soml_tab->pre_vht_cnt, soml_tab->vht_cnt,
+	odm_move_memoryx(dm, soml_tab->pre_vht_cnt, soml_tab->vht_cnt,
 			VHT_RATE_IDX * size);
-	odm_move_memory(dm, soml_tab->pre_ht_byte, soml_tab->ht_byte,
+	odm_move_memoryx(dm, soml_tab->pre_ht_byte, soml_tab->ht_byte,
 			HT_RATE_IDX * size);
-	odm_move_memory(dm, soml_tab->pre_vht_byte, soml_tab->vht_byte,
+	odm_move_memoryx(dm, soml_tab->pre_vht_byte, soml_tab->vht_byte,
 			VHT_RATE_IDX * size);
 
 	if (dm->support_ic_type == ODM_RTL8822B) {
@@ -602,7 +602,7 @@ void phydm_adsl_odd_state(void *dm_void)
 		soml_tab->cfo_diff_sum_a += soml_tab->cfo_diff_a;
 		soml_tab->cfo_diff_sum_b += soml_tab->cfo_diff_b;
 	}
-	odm_set_timer(dm, &soml_tab->phydm_adaptive_soml_timer,
+	odm_set_timerx(dm, &soml_tab->phydm_adaptive_soml_timer,
 		      soml_tab->soml_intvl); /*@ms*/
 }
 
@@ -629,7 +629,7 @@ void phydm_adsl_even_state(void *dm_void)
 	phydm_soml_statistics(dm, soml_tab->soml_on_off);
 	next_on_off = (soml_tab->soml_on_off == SOML_ON) ? SOML_OFF : SOML_ON;
 	phydm_soml_on_off(dm, next_on_off);
-	odm_set_timer(dm, &soml_tab->phydm_adaptive_soml_timer,
+	odm_set_timerx(dm, &soml_tab->phydm_adaptive_soml_timer,
 		      soml_tab->soml_delay_time); /*@ms*/
 }
 
@@ -655,7 +655,7 @@ void phydm_adsl_decision_state(void *dm_void)
 	u32 total_vht_rate_on = 0, total_vht_rate_off = 0;
 	u32 rate_per_pkt_on = 0, rate_per_pkt_off = 0;
 	s32 cfo_diff_avg_a, cfo_diff_avg_b;
-	u16 vht_phy_rate_table[] = {
+	u16 vht_phy_rate_tablex[] = {
 		/*@20M*/
 		6, 13, 19, 26, 39, 52, 58, 65, 78, 90, /*@1SS MCS0~9*/
 		13, 26, 39, 52, 78, 104, 117, 130, 156, 180 /*@2SSMCS0~9*/
@@ -680,7 +680,7 @@ void phydm_adsl_decision_state(void *dm_void)
 			 dm->support_ic_type);
 	soml_tab->get_stats = false;
 	#if (DM_ODM_SUPPORT_TYPE == ODM_AP)
-	odm_set_mac_reg(dm, R_0x608, BIT(8), 0);
+	odm_set_mac_regx(dm, R_0x608, BIT(8), 0);
 	/* NOT Accept CRC32 Error packets. */
 	#endif
 	PHYDM_DBG(dm, DBG_ADPTV_SOML, "[Decisoin state ]\n");
@@ -780,9 +780,9 @@ void phydm_adsl_decision_state(void *dm_void)
 			ht_total_cnt_on += soml_tab->ht_cnt_on[i - mcs0];
 			ht_total_cnt_off += soml_tab->ht_cnt_off[i - mcs0];
 			total_ht_rate_on += (soml_tab->ht_cnt_on[i - mcs0] *
-					    phy_rate_table[i]);
+					    phy_rate_tablex[i]);
 			total_ht_rate_off += (soml_tab->ht_cnt_off[i - mcs0] *
-					     phy_rate_table[i]);
+					     phy_rate_tablex[i]);
 			if (soml_tab->ht_cnt_on[i - mcs0] > cnt_max_on) {
 				cnt_max_on = soml_tab->ht_cnt_on[i - mcs0];
 				max_idx_on = i - mcs0;
@@ -1012,9 +1012,9 @@ void phydm_adsl_decision_state(void *dm_void)
 			vht_total_cnt_on += soml_tab->vht_cnt_on[i - vht0];
 			vht_total_cnt_off += soml_tab->vht_cnt_off[i - vht0];
 			total_vht_rate_on += (soml_tab->vht_cnt_on[i - vht0] *
-					     vht_phy_rate_table[i - vht0]);
+					     vht_phy_rate_tablex[i - vht0]);
 			total_vht_rate_off += (soml_tab->vht_cnt_off[i - vht0] *
-					      vht_phy_rate_table[i - vht0]);
+					      vht_phy_rate_tablex[i - vht0]);
 
 			if (soml_tab->vht_cnt_on[i - vht0] > cnt_max_on) {
 				cnt_max_on = soml_tab->vht_cnt_on[i - vht0];
@@ -1227,7 +1227,7 @@ void phydm_soml_bytes_acq(void *dm_void, u8 rate_id, u32 length)
 #if defined(CONFIG_RTL_TRIBAND_SUPPORT) && defined(CONFIG_USB_HCI)
 #define INIT_TIMER_EVENT_ENTRY(_entry, _func, _data) \
 	do { \
-		_rtw_init_listhead(&(_entry)->list); \
+		_rtw_init_listheadx(&(_entry)->list); \
 		(_entry)->data = (_data); \
 		(_entry)->function = (_func); \
 	} while (0)
@@ -1263,9 +1263,9 @@ void phydm_adaptive_soml_timers_usb(void *dm_void, u8 state)
 				       phydm_adaptive_soml_callback,
 				       (unsigned long)dm);
 	} else if (state == CANCEL_SOML_TIMMER) {
-		odm_cancel_timer(dm, &soml_tab->phydm_adaptive_soml_timer);
+		odm_cancel_timerx(dm, &soml_tab->phydm_adaptive_soml_timer);
 	} else if (state == RELEASE_SOML_TIMMER) {
-		odm_release_timer(dm, &soml_tab->phydm_adaptive_soml_timer);
+		odm_release_timerx(dm, &soml_tab->phydm_adaptive_soml_timer);
 	}
 }
 #endif /* defined(CONFIG_RTL_TRIBAND_SUPPORT) && defined(CONFIG_USB_HCI) */
@@ -1284,13 +1284,13 @@ void phydm_adaptive_soml_timers(void *dm_void, u8 state)
 #endif /* defined(CONFIG_RTL_TRIBAND_SUPPORT) && defined(CONFIG_USB_HCI) */
 	{
 	if (state == INIT_SOML_TIMMER) {
-		odm_initialize_timer(dm, &soml_tab->phydm_adaptive_soml_timer,
+		odm_initialize_timerx(dm, &soml_tab->phydm_adaptive_soml_timer,
 				     (void *)phydm_adaptive_soml_callback, NULL,
 				     "phydm_adaptive_soml_timer");
 	} else if (state == CANCEL_SOML_TIMMER) {
-		odm_cancel_timer(dm, &soml_tab->phydm_adaptive_soml_timer);
+		odm_cancel_timerx(dm, &soml_tab->phydm_adaptive_soml_timer);
 	} else if (state == RELEASE_SOML_TIMMER) {
-		odm_release_timer(dm, &soml_tab->phydm_adaptive_soml_timer);
+		odm_release_timerx(dm, &soml_tab->phydm_adaptive_soml_timer);
 	}
 	}
 }
@@ -1335,7 +1335,7 @@ void phydm_adaptive_soml_init(void *dm_void)
 	soml_tab->qam256_dist_th = 20;
 
 	if (dm->support_ic_type & (ODM_RTL8197F | ODM_RTL8192F))
-		odm_set_bb_reg(dm, 0x988, BIT(25), 1);
+		odm_set_bb_regx(dm, 0x988, BIT(25), 1);
 }
 
 void phydm_adaptive_soml(void *dm_void)
@@ -1415,7 +1415,7 @@ void phydm_adaptive_soml_para_set(void *dm_void, u8 train_num, u8 intvl,
 }
 #endif /* @end of CONFIG_ADAPTIVE_SOML*/
 
-void phydm_init_soft_ml_setting(void *dm_void)
+void phydm_init_soft_ml_settingx(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 soml_mask = BIT(31) | BIT(30) | BIT(29) | BIT(28);
@@ -1424,7 +1424,7 @@ void phydm_init_soft_ml_setting(void *dm_void)
 	if (!*dm->mp_mode) {
 		if (dm->support_ic_type & ODM_RTL8822B) {
 #if 0
-			/*odm_set_bb_reg(dm, R_0x19a8, MASKDWORD, 0xd10a0000);*/
+			/*odm_set_bb_regx(dm, R_0x19a8, MASKDWORD, 0xd10a0000);*/
 #endif
 			phydm_somlrxhp_setting(dm, true);
 			dm->bsomlenabled = true;
@@ -1434,13 +1434,13 @@ void phydm_init_soft_ml_setting(void *dm_void)
 #if (RTL8821C_SUPPORT == 1)
 	if (!*dm->mp_mode) {
 		if (dm->support_ic_type & ODM_RTL8821C)
-			odm_set_bb_reg(dm, R_0x19a8, soml_mask, 0xd);
+			odm_set_bb_regx(dm, R_0x19a8, soml_mask, 0xd);
 	}
 #endif
 #if (RTL8195B_SUPPORT == 1)
 	if (!*dm->mp_mode) {
 		if (dm->support_ic_type & ODM_RTL8195B)
-			odm_set_bb_reg(dm, R_0x19a8, soml_mask, 0xd);
+			odm_set_bb_regx(dm, R_0x19a8, soml_mask, 0xd);
 	}
 #endif
 }

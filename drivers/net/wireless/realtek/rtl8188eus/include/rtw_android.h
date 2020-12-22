@@ -76,8 +76,8 @@ enum ANDROID_WIFI_CMD {
 	ANDROID_WIFI_CMD_MAX
 };
 
-int rtw_android_cmdstr_to_num(char *cmdstr);
-int rtw_android_priv_cmd(struct net_device *net, struct ifreq *ifr, int cmd);
+int rtw_android_cmdstr_to_numx(char *cmdstr);
+int rtw_android_priv_cmdx(struct net_device *net, struct ifreq *ifr, int cmd);
 
 #if defined(CONFIG_PNO_SUPPORT) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 0, 0))
 int rtw_android_pno_enable(struct net_device *net, int pno_enable);

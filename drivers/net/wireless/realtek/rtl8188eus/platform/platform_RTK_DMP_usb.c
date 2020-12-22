@@ -14,7 +14,7 @@
  *****************************************************************************/
 #include <drv_types.h>
 
-int platform_wifi_power_on(void)
+int platform_wifi_power_onx(void)
 {
 	int ret = 0;
 	u32 tmp;
@@ -25,6 +25,6 @@ int platform_wifi_power_on(void)
 	return ret;
 }
 
-void platform_wifi_power_off(void)
+void platform_wifi_power_offx(void)
 {
 }

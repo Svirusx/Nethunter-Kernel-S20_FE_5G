@@ -38,7 +38,7 @@ int rtw_rhashtable_walk_enter(rtw_rhashtable *ht, rtw_rhashtable_iter *iter)
 	spin_lock(&ht->lock);
 	iter->walker->tbl =
 		rcu_dereference_protected(ht->tbl, lockdep_is_held(&ht->lock));
-	list_add(&iter->walker->list, &iter->walker->tbl->walkers);
+	list_addx(&iter->walker->list, &iter->walker->tbl->walkers);
 	spin_unlock(&ht->lock);
 
 	return 0;

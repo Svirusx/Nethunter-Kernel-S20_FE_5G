@@ -85,19 +85,19 @@ struct txpwrtrack_cfg {
 };
 
 void
-configure_txpower_track(
+configure_txpower_trackx(
 	struct dm_struct		*dm,
 	struct txpwrtrack_cfg	*config
 );
 
 
 void
-odm_clear_txpowertracking_state(
+odm_clear_txpowertracking_statex(
 	struct dm_struct		*dm
 );
 
 void
-odm_txpowertracking_callback_thermal_meter(
+odm_txpowertracking_callback_thermal_meterx(
 #if (DM_ODM_SUPPORT_TYPE & ODM_AP)
 	struct dm_struct		*dm
 #else
@@ -114,16 +114,16 @@ odm_txpowertracking_new_callback_thermal_meter(void *dm_void);
 
 
 void
-odm_reset_iqk_result(
+odm_reset_iqk_resultx(
 	struct dm_struct	*dm
 );
 u8
-odm_get_right_chnl_place_for_iqk(
+odm_get_right_chnl_place_for_iqkx(
 	u8 chnl
 );
 
-void odm_iq_calibrate(struct dm_struct	*dm);
-void phydm_rf_init(struct dm_struct		*dm);
-void phydm_rf_watchdog(struct dm_struct		*dm);
+void odm_iq_calibratex(struct dm_struct	*dm);
+void phydm_rf_initx(struct dm_struct		*dm);
+void phydm_rf_watchdogx(struct dm_struct		*dm);
 
 #endif	/*#ifndef __HALPHYRF_H__*/

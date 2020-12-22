@@ -62,7 +62,7 @@ sic_IsSICReady(
 		/* if(RT_SDIO_CANNOT_IO(Adapter)) */
 		/*	return _FALSE; */
 
-		sic_cmd = rtw_read8(Adapter, SIC_CMD_REG);
+		sic_cmd = rtw_read8x(Adapter, SIC_CMD_REG);
 		/* sic_cmd = PlatformEFIORead1Byte(Adapter, SIC_CMD_REG); */
 #if (SIC_HW_SUPPORT == 1)
 		sic_cmd &= 0xf0;	/* [7:4] */
@@ -71,7 +71,7 @@ sic_IsSICReady(
 		if (sic_cmd == SIC_CMD_READY)
 			return _TRUE;
 		else {
-			rtw_msleep_os(1);
+			rtw_msleep_osx(1);
 			/* delay_ms(1); */
 		}
 	}
@@ -112,33 +112,33 @@ sic_Read4Byte(
 
 	if (sic_IsSICReady(Adapter)) {
 #if (SIC_HW_SUPPORT == 1)
-		rtw_write8(Adapter, SIC_CMD_REG, SIC_CMD_PREREAD);
+		rtw_write8x(Adapter, SIC_CMD_REG, SIC_CMD_PREREAD);
 		/* PlatformEFIOWrite1Byte(Adapter, SIC_CMD_REG, SIC_CMD_PREREAD); */
 		/* RTPRINT(FPHY, PHY_SICR, ("write cmdreg 0x%x = 0x%x\n", SIC_CMD_REG, SIC_CMD_PREREAD)); */
 #endif
-		rtw_write8(Adapter, SIC_ADDR_REG, (u8)(offset & 0xff));
+		rtw_write8x(Adapter, SIC_ADDR_REG, (u8)(offset & 0xff));
 		/* PlatformEFIOWrite1Byte(Adapter, SIC_ADDR_REG, (u8)(offset&0xff)); */
 		/* RTPRINT(FPHY, PHY_SICR, ("write 0x%x = 0x%x\n", SIC_ADDR_REG, (u8)(offset&0xff))); */
-		rtw_write8(Adapter, SIC_ADDR_REG + 1, (u8)((offset & 0xff00) >> 8));
+		rtw_write8x(Adapter, SIC_ADDR_REG + 1, (u8)((offset & 0xff00) >> 8));
 		/* PlatformEFIOWrite1Byte(Adapter, SIC_ADDR_REG+1, (u8)((offset&0xff00)>>8)); */
 		/* RTPRINT(FPHY, PHY_SICR, ("write 0x%x = 0x%x\n", SIC_ADDR_REG+1, (u8)((offset&0xff00)>>8))); */
-		rtw_write8(Adapter, SIC_CMD_REG, SIC_CMD_READ);
+		rtw_write8x(Adapter, SIC_CMD_REG, SIC_CMD_READ);
 		/* PlatformEFIOWrite1Byte(Adapter, SIC_CMD_REG, SIC_CMD_READ); */
 		/* RTPRINT(FPHY, PHY_SICR, ("write cmdreg 0x%x = 0x%x\n", SIC_CMD_REG, SIC_CMD_READ)); */
 
 #if RTL8188E_SUPPORT == 1
 		retry = 4;
 		while (retry--) {
-			rtw_udelay_os(50);
+			rtw_udelay_osx(50);
 			/* PlatformStallExecution(50); */
 		}
 #else
-		rtw_udelay_os(200);
+		rtw_udelay_osx(200);
 		/* PlatformStallExecution(200); */
 #endif
 
 		if (sic_IsSICReady(Adapter)) {
-			u4ret = rtw_read32(Adapter, SIC_DATA_REG);
+			u4ret = rtw_read32x(Adapter, SIC_DATA_REG);
 			/* u4ret = PlatformEFIORead4Byte(Adapter, SIC_DATA_REG); */
 			/* RTPRINT(FPHY, PHY_SICR, ("read 0x%x = 0x%x\n", SIC_DATA_REG, u4ret)); */
 			/* DbgPrint("<===Read 0x%x = 0x%x\n", offset, u4ret); */
@@ -162,29 +162,29 @@ sic_Write4Byte(
 	/* RTPRINT(FPHY, PHY_SICW, ("[SIC], sic_Write4Byte(): write offset(%#x)=0x%x\n", offset, data)); */
 	if (sic_IsSICReady(Adapter)) {
 #if (SIC_HW_SUPPORT == 1)
-		rtw_write8(Adapter, SIC_CMD_REG, SIC_CMD_PREWRITE);
+		rtw_write8x(Adapter, SIC_CMD_REG, SIC_CMD_PREWRITE);
 		/* PlatformEFIOWrite1Byte(Adapter, SIC_CMD_REG, SIC_CMD_PREWRITE); */
 		/* RTPRINT(FPHY, PHY_SICW, ("write data 0x%x = 0x%x\n", SIC_CMD_REG, SIC_CMD_PREWRITE)); */
 #endif
-		rtw_write8(Adapter, SIC_ADDR_REG, (u8)(offset & 0xff));
+		rtw_write8x(Adapter, SIC_ADDR_REG, (u8)(offset & 0xff));
 		/* PlatformEFIOWrite1Byte(Adapter, SIC_ADDR_REG, (u8)(offset&0xff)); */
 		/* RTPRINT(FPHY, PHY_SICW, ("write 0x%x=0x%x\n", SIC_ADDR_REG, (u8)(offset&0xff))); */
-		rtw_write8(Adapter, SIC_ADDR_REG + 1, (u8)((offset & 0xff00) >> 8));
+		rtw_write8x(Adapter, SIC_ADDR_REG + 1, (u8)((offset & 0xff00) >> 8));
 		/* PlatformEFIOWrite1Byte(Adapter, SIC_ADDR_REG+1, (u8)((offset&0xff00)>>8)); */
 		/* RTPRINT(FPHY, PHY_SICW, ("write 0x%x=0x%x\n", (SIC_ADDR_REG+1), (u8)((offset&0xff00)>>8))); */
-		rtw_write32(Adapter, SIC_DATA_REG, (u32)data);
+		rtw_write32x(Adapter, SIC_DATA_REG, (u32)data);
 		/* PlatformEFIOWrite4Byte(Adapter, SIC_DATA_REG, (u32)data); */
 		/* RTPRINT(FPHY, PHY_SICW, ("write data 0x%x = 0x%x\n", SIC_DATA_REG, data)); */
-		rtw_write8(Adapter, SIC_CMD_REG, SIC_CMD_WRITE);
+		rtw_write8x(Adapter, SIC_CMD_REG, SIC_CMD_WRITE);
 		/* PlatformEFIOWrite1Byte(Adapter, SIC_CMD_REG, SIC_CMD_WRITE); */
 		/* RTPRINT(FPHY, PHY_SICW, ("write data 0x%x = 0x%x\n", SIC_CMD_REG, SIC_CMD_WRITE)); */
 #if RTL8188E_SUPPORT == 1
 		while (retry--) {
-			rtw_udelay_os(50);
+			rtw_udelay_osx(50);
 			/* PlatformStallExecution(50); */
 		}
 #else
-		rtw_udelay_os(150);
+		rtw_udelay_osx(150);
 		/* PlatformStallExecution(150); */
 #endif
 
@@ -227,7 +227,7 @@ SIC_SetBBReg(
 	if (BitMask != bMaskDWord) { /* if not "double word" write */
 		OriginalValue = sic_Read4Byte(Adapter, RegAddr);
 		/* BitShift = sic_CalculateBitShift(BitMask); */
-		BitShift = PHY_CalculateBitShift(BitMask);
+		BitShift = PHY_CalculateBitShiftx(BitMask);
 		Data = (((OriginalValue)&(~BitMask)) | (Data << BitShift));
 	}
 
@@ -264,7 +264,7 @@ SIC_QueryBBReg(
 #endif
 	OriginalValue = sic_Read4Byte(Adapter, RegAddr);
 	/* BitShift = sic_CalculateBitShift(BitMask); */
-	BitShift = PHY_CalculateBitShift(BitMask);
+	BitShift = PHY_CalculateBitShiftx(BitMask);
 	ReturnValue = (OriginalValue & BitMask) >> BitShift;
 
 	/* RTPRINT(FPHY, PHY_SICR, ("[SIC], SIC_QueryBBReg(), 0x%x=0x%x\n", RegAddr, OriginalValue)); */
@@ -285,17 +285,17 @@ SIC_Init(
 #if (SIC_HW_SUPPORT == 1)
 	/* RTPRINT(FPHY, PHY_SICR, ("[SIC], SIC_Init(), write 0x%x = 0x%x\n",  */
 	/*	SIC_INIT_REG, SIC_INIT_VAL)); */
-	rtw_write8(Adapter, SIC_INIT_REG, SIC_INIT_VAL);
+	rtw_write8x(Adapter, SIC_INIT_REG, SIC_INIT_VAL);
 	/* PlatformEFIOWrite1Byte(Adapter, SIC_INIT_REG, SIC_INIT_VAL); */
 	/* RTPRINT(FPHY, PHY_SICR, ("[SIC], SIC_Init(), write 0x%x = 0x%x\n",  */
 	/*	SIC_CMD_REG, SIC_CMD_INIT)); */
-	rtw_write8(Adapter, SIC_CMD_REG, SIC_CMD_INIT);
+	rtw_write8x(Adapter, SIC_CMD_REG, SIC_CMD_INIT);
 	/* PlatformEFIOWrite1Byte(Adapter, SIC_CMD_REG, SIC_CMD_INIT); */
 #else
 	/* RTPRINT(FPHY, PHY_SICR, ("[SIC], SIC_Init(), write 0x1b8~0x1bf = 0x0\n")); */
-	rtw_write32(Adapter, SIC_CMD_REG, 0);
+	rtw_write32x(Adapter, SIC_CMD_REG, 0);
 	/* PlatformEFIOWrite4Byte(Adapter, SIC_CMD_REG, 0); */
-	rtw_write32(Adapter, SIC_CMD_REG + 4, 0);
+	rtw_write32x(Adapter, SIC_CMD_REG + 4, 0);
 	/* PlatformEFIOWrite4Byte(Adapter, SIC_CMD_REG+4, 0); */
 #endif
 }
@@ -344,8 +344,8 @@ PHY_QueryBBReg8188E(
 #endif
 
 
-	OriginalValue = rtw_read32(Adapter, RegAddr);
-	BitShift = PHY_CalculateBitShift(BitMask);
+	OriginalValue = rtw_read32x(Adapter, RegAddr);
+	BitShift = PHY_CalculateBitShiftx(BitMask);
 	ReturnValue = (OriginalValue & BitMask) >> BitShift;
 
 	/* RTPRINT(FPHY, PHY_BBR, ("BBR MASK=0x%lx Addr[0x%lx]=0x%lx\n", BitMask, RegAddr, OriginalValue)); */
@@ -396,12 +396,12 @@ PHY_SetBBReg8188E(
 
 
 	if (BitMask != bMaskDWord) { /* if not "double word" write */
-		OriginalValue = rtw_read32(Adapter, RegAddr);
-		BitShift = PHY_CalculateBitShift(BitMask);
+		OriginalValue = rtw_read32x(Adapter, RegAddr);
+		BitShift = PHY_CalculateBitShiftx(BitMask);
 		Data = ((OriginalValue & (~BitMask)) | ((Data << BitShift) & BitMask));
 	}
 
-	rtw_write32(Adapter, RegAddr, Data);
+	rtw_write32x(Adapter, RegAddr, Data);
 
 	/* RTPRINT(FPHY, PHY_BBW, ("BBW MASK=0x%lx Addr[0x%lx]=0x%lx\n", BitMask, RegAddr, Data)); */
 
@@ -480,13 +480,13 @@ phy_RFSerialRead(
 	tmplong2 = (tmplong2 & (~bLSSIReadAddress)) | (NewOffset << 23) | bLSSIReadEdge;	/* T65 RF */
 
 	phy_set_bb_reg(Adapter, rFPGA0_XA_HSSIParameter2, bMaskDWord, tmplong & (~bLSSIReadEdge));
-	rtw_udelay_os(10);/* PlatformStallExecution(10); */
+	rtw_udelay_osx(10);/* PlatformStallExecution(10); */
 
 	phy_set_bb_reg(Adapter, pPhyReg->rfHSSIPara2, bMaskDWord, tmplong2);
-	rtw_udelay_os(100);/* PlatformStallExecution(100); */
+	rtw_udelay_osx(100);/* PlatformStallExecution(100); */
 
 	/* phy_set_bb_reg(Adapter, rFPGA0_XA_HSSIParameter2, bMaskDWord, tmplong|bLSSIReadEdge); */
-	rtw_udelay_os(10);/* PlatformStallExecution(10); */
+	rtw_udelay_osx(10);/* PlatformStallExecution(10); */
 
 	if (eRFPath == RF_PATH_A)
 		RfPiEnable = (u8)phy_query_bb_reg(Adapter, rFPGA0_XA_HSSIParameter1, BIT8);
@@ -651,7 +651,7 @@ PHY_QueryRFReg8188E(
 
 	Original_Value = phy_RFSerialRead(Adapter, eRFPath, RegAddr);
 
-	BitShift =  PHY_CalculateBitShift(BitMask);
+	BitShift =  PHY_CalculateBitShiftx(BitMask);
 	Readback_Value = (Original_Value & BitMask) >> BitShift;
 
 #ifdef CONFIG_USB_HCI
@@ -717,7 +717,7 @@ PHY_SetRFReg8188E(
 	/* RF data is 12 bits only */
 	if (BitMask != bRFRegOffsetMask) {
 		Original_Value = phy_RFSerialRead(Adapter, eRFPath, RegAddr);
-		BitShift =  PHY_CalculateBitShift(BitMask);
+		BitShift =  PHY_CalculateBitShiftx(BitMask);
 		Data = ((Original_Value & (~BitMask)) | (Data << BitShift));
 	}
 
@@ -765,12 +765,12 @@ s32 PHY_MACConfig8188E(PADAPTER Adapter)
 	/* Config MAC */
 	/*  */
 #ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
-	rtStatus = phy_ConfigMACWithParaFile(Adapter, PHY_FILE_MAC_REG);
+	rtStatus = phy_ConfigMACWithParaFilex(Adapter, PHY_FILE_MAC_REG);
 	if (rtStatus == _FAIL)
 #endif
 	{
 #ifdef CONFIG_EMBEDDED_FWIMG
-		if (HAL_STATUS_FAILURE == odm_config_mac_with_header_file(&pHalData->odmpriv))
+		if (HAL_STATUS_FAILURE == odm_config_mac_with_header_filex(&pHalData->odmpriv))
 			rtStatus = _FAIL;
 		else
 			rtStatus = _SUCCESS;
@@ -781,8 +781,8 @@ s32 PHY_MACConfig8188E(PADAPTER Adapter)
 	val |= MAX_AGGR_NUM;
 	val = val << 8;
 	val |= MAX_AGGR_NUM;
-	rtw_write16(Adapter, REG_MAX_AGGR_NUM, val);
-	/* rtw_write8(Adapter, REG_MAX_AGGR_NUM, 0x0B); */
+	rtw_write16x(Adapter, REG_MAX_AGGR_NUM, val);
+	/* rtw_write8x(Adapter, REG_MAX_AGGR_NUM, 0x0B); */
 
 	return rtStatus;
 
@@ -855,11 +855,11 @@ phy_BB8188E_Config_ParaFile(
 	/* 1. Read PHY_REG.TXT BB INIT!! */
 	/*  */
 #ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
-	if (phy_ConfigBBWithParaFile(Adapter, PHY_FILE_PHY_REG, CONFIG_BB_PHY_REG) == _FAIL)
+	if (phy_ConfigBBWithParaFilex(Adapter, PHY_FILE_PHY_REG, CONFIG_BB_PHY_REG) == _FAIL)
 #endif
 	{
 #ifdef CONFIG_EMBEDDED_FWIMG
-		if (HAL_STATUS_FAILURE == odm_config_bb_with_header_file(&pHalData->odmpriv, CONFIG_BB_PHY_REG))
+		if (HAL_STATUS_FAILURE == odm_config_bb_with_header_filex(&pHalData->odmpriv, CONFIG_BB_PHY_REG))
 			rtStatus = _FAIL;
 #endif
 	}
@@ -875,11 +875,11 @@ phy_BB8188E_Config_ParaFile(
 	if (Adapter->registrypriv.mp_mode == 1) {
 		/* 3 Read PHY_REG.TXT BB INIT!! */
 #ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
-		if (phy_ConfigBBWithMpParaFile(Adapter, PHY_FILE_PHY_REG_MP) == _FAIL)
+		if (phy_ConfigBBWithMpParaFilex(Adapter, PHY_FILE_PHY_REG_MP) == _FAIL)
 #endif
 		{
 #ifdef CONFIG_EMBEDDED_FWIMG
-			if (HAL_STATUS_SUCCESS != odm_config_bb_with_header_file(&pHalData->odmpriv, CONFIG_BB_PHY_REG_MP))
+			if (HAL_STATUS_SUCCESS != odm_config_bb_with_header_filex(&pHalData->odmpriv, CONFIG_BB_PHY_REG_MP))
 				rtStatus = _FAIL;
 #endif
 		}
@@ -895,11 +895,11 @@ phy_BB8188E_Config_ParaFile(
 	/* 3. BB AGC table Initialization */
 	/*  */
 #ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
-	if (phy_ConfigBBWithParaFile(Adapter, PHY_FILE_AGC_TAB, CONFIG_BB_AGC_TAB) == _FAIL)
+	if (phy_ConfigBBWithParaFilex(Adapter, PHY_FILE_AGC_TAB, CONFIG_BB_AGC_TAB) == _FAIL)
 #endif
 	{
 #ifdef CONFIG_EMBEDDED_FWIMG
-		if (HAL_STATUS_FAILURE == odm_config_bb_with_header_file(&pHalData->odmpriv,  CONFIG_BB_AGC_TAB))
+		if (HAL_STATUS_FAILURE == odm_config_bb_with_header_filex(&pHalData->odmpriv,  CONFIG_BB_AGC_TAB))
 			rtStatus = _FAIL;
 #endif
 	}
@@ -930,33 +930,33 @@ PHY_BBConfig8188E(
 
 
 	/* Enable BB and RF */
-	RegVal = rtw_read16(Adapter, REG_SYS_FUNC_EN);
-	rtw_write16(Adapter, REG_SYS_FUNC_EN, (u16)(RegVal | BIT13 | BIT0 | BIT1));
+	RegVal = rtw_read16x(Adapter, REG_SYS_FUNC_EN);
+	rtw_write16x(Adapter, REG_SYS_FUNC_EN, (u16)(RegVal | BIT13 | BIT0 | BIT1));
 
 	/* 20090923 Joseph: Advised by Steven and Jenyu. Power sequence before init RF. */
-	/* rtw_write8(Adapter, REG_AFE_PLL_CTRL, 0x83); */
-	/* rtw_write8(Adapter, REG_AFE_PLL_CTRL+1, 0xdb); */
+	/* rtw_write8x(Adapter, REG_AFE_PLL_CTRL, 0x83); */
+	/* rtw_write8x(Adapter, REG_AFE_PLL_CTRL+1, 0xdb); */
 
-	rtw_write8(Adapter, REG_RF_CTRL, RF_EN | RF_RSTB | RF_SDMRSTB);
+	rtw_write8x(Adapter, REG_RF_CTRL, RF_EN | RF_RSTB | RF_SDMRSTB);
 
 #ifdef CONFIG_USB_HCI
-	rtw_write8(Adapter, REG_SYS_FUNC_EN, FEN_USBA | FEN_USBD | FEN_BB_GLB_RSTn | FEN_BBRSTB);
+	rtw_write8x(Adapter, REG_SYS_FUNC_EN, FEN_USBA | FEN_USBD | FEN_BB_GLB_RSTn | FEN_BBRSTB);
 #elif defined CONFIG_PCI_HCI
-	rtw_write8(Adapter, REG_SYS_FUNC_EN, FEN_PPLL | FEN_PCIEA | FEN_DIO_PCIE | FEN_BB_GLB_RSTn | FEN_BBRSTB);
+	rtw_write8x(Adapter, REG_SYS_FUNC_EN, FEN_PPLL | FEN_PCIEA | FEN_DIO_PCIE | FEN_BB_GLB_RSTn | FEN_BBRSTB);
 #endif
 
 #if 0
 #ifdef CONFIG_USB_HCI
 	/* To Fix MAC loopback mode fail. Suggested by SD4 Johnny. 2010.03.23. */
-	rtw_write8(Adapter, REG_LDOHCI12_CTRL, 0x0f);
-	rtw_write8(Adapter, 0x15, 0xe9);
+	rtw_write8x(Adapter, REG_LDOHCI12_CTRL, 0x0f);
+	rtw_write8x(Adapter, 0x15, 0xe9);
 #endif
 
-	rtw_write8(Adapter, REG_AFE_XTAL_CTRL + 1, 0x80);
+	rtw_write8x(Adapter, REG_AFE_XTAL_CTRL + 1, 0x80);
 #endif
 
 #ifdef CONFIG_USB_HCI
-	/* rtw_write8(Adapter, 0x15, 0xe9); */
+	/* rtw_write8x(Adapter, 0x15, 0xe9); */
 #endif
 
 
@@ -964,8 +964,8 @@ PHY_BBConfig8188E(
 #ifdef CONFIG_RTW_LED
 	/* Force use left antenna by default for 88C. */
 	if (adapter_to_led(Adapter)->LedStrategy != SW_LED_MODE10) {
-		RegVal = rtw_read32(Adapter, REG_LEDCFG0);
-		rtw_write32(Adapter, REG_LEDCFG0, RegVal | BIT23);
+		RegVal = rtw_read32x(Adapter, REG_LEDCFG0);
+		rtw_write32x(Adapter, REG_LEDCFG0, RegVal | BIT23);
 	}
 #endif
 #endif
@@ -975,7 +975,7 @@ PHY_BBConfig8188E(
 	/*  */
 	rtStatus = phy_BB8188E_Config_ParaFile(Adapter);
 
-	if (rtw_phydm_set_crystal_cap(Adapter, pHalData->crystal_cap) == _FALSE) {
+	if (rtw_phydm_set_crystal_capx(Adapter, pHalData->crystal_cap) == _FALSE) {
 		RTW_ERR("Init crystal_cap failed\n");
 		rtw_warn_on(1);
 		rtStatus = _FAIL;
@@ -1023,7 +1023,7 @@ PHY_RFConfig8188E(
 
 
 /*-----------------------------------------------------------------------------
- * Function:    PHY_ConfigRFWithParaFile()
+ * Function:    PHY_ConfigRFWithParaFilex()
  *
  * Overview:    This function read RF parameters from general file format, and do RF 3-wire
  *
@@ -1038,7 +1038,7 @@ PHY_RFConfig8188E(
  * Note:		Delay may be required for RF configuration
  *---------------------------------------------------------------------------*/
 int
-rtl8188e_PHY_ConfigRFWithParaFile(
+rtl8188e_PHY_ConfigRFWithParaFilex(
 		PADAPTER		Adapter,
 		u8				*pFileName,
 		enum rf_path		eRFPath
@@ -1073,7 +1073,7 @@ u32 Rtl8192S_HighPower_RadioA_Array[HighPowerRadioAArrayLen] = {
 };
 
 /*-----------------------------------------------------------------------------
- * Function:    SetTxPowerLevel8190()
+ * Function:    SetTxPowerxLevel8190()
  *
  * Overview:    This function is export to "HalCommon" moudule
  *			We must consider RF path later!!!!!!!
@@ -1090,16 +1090,16 @@ u32 Rtl8192S_HighPower_RadioA_Array[HighPowerRadioAArrayLen] = {
  *
  *---------------------------------------------------------------------------*/
 void
-PHY_SetTxPowerLevel8188E(
+PHY_SetTxPowerxLevel8188E(
 		PADAPTER	Adapter,
 		u8			Channel
 )
 {
-	phy_set_tx_power_level_by_path(Adapter, Channel, RF_PATH_A);
+	phy_set_tx_power_level_by_pathx(Adapter, Channel, RF_PATH_A);
 }
 
 void
-PHY_SetTxPowerIndex_8188E(
+PHY_SetTxPowerxIndexx_8188E(
 		PADAPTER			Adapter,
 		u32					PowerIndex,
 		enum rf_path			RFPath,
@@ -1338,10 +1338,10 @@ PHY_GetTxPowerIndex_8188E(
 
 	pg = phy_get_pg_txpwr_idx(pAdapter, RFPath, Rate, RF_1TX, BandWidth, Channel, &bIn24G);
 
-	by_rate_diff = PHY_GetTxPowerByRate(pAdapter, BAND_ON_2_4G, RFPath, Rate);
-	limit = PHY_GetTxPowerLimit(pAdapter, NULL, (u8)(!bIn24G), pHalData->current_channel_bw, RFPath, Rate, RF_1TX, pHalData->current_channel);
+	by_rate_diff = PHY_GetTxPowerByRatex(pAdapter, BAND_ON_2_4G, RFPath, Rate);
+	limit = PHY_GetTxPowerLimitx(pAdapter, NULL, (u8)(!bIn24G), pHalData->current_channel_bw, RFPath, Rate, RF_1TX, pHalData->current_channel);
 
-	tpt_offset = PHY_GetTxPowerTrackingOffset(pAdapter, RFPath, Rate);
+	tpt_offset = PHY_GetTxPowerTrackingOffsetx(pAdapter, RFPath, Rate);
 
 	if (pAdapter->registrypriv.mp_mode != 1)
 		extra_bias = tx_power_extra_bias(RFPath, Rate, BandWidth, Channel);
@@ -1373,13 +1373,13 @@ PHY_ScanOperationBackup8188E(
 		switch (Operation) {
 		case SCAN_OPT_BACKUP:
 			IoType = IO_CMD_PAUSE_DM_BY_SCAN;
-			rtw_hal_set_hwreg(Adapter, HW_VAR_IO_CMD, (u8 *)&IoType);
+			rtw_hal_set_hwregx(Adapter, HW_VAR_IO_CMD, (u8 *)&IoType);
 
 			break;
 
 		case SCAN_OPT_RESTORE:
 			IoType = IO_CMD_RESUME_DM_BY_SCAN;
-			rtw_hal_set_hwreg(Adapter, HW_VAR_IO_CMD, (u8 *)&IoType);
+			rtw_hal_set_hwregx(Adapter, HW_VAR_IO_CMD, (u8 *)&IoType);
 			break;
 
 		default:
@@ -1466,24 +1466,24 @@ _PHY_SetBWMode88E(
 	/* 3 */
 	/* Adapter->hal_func.SetBWModeHandler(); */
 
-	regBwOpMode = rtw_read8(Adapter, REG_BWOPMODE);
-	regRRSR_RSC = rtw_read8(Adapter, REG_RRSR + 2);
-	/* regBwOpMode = rtw_hal_get_hwreg(Adapter,HW_VAR_BWMODE,(u8 *)&regBwOpMode); */
+	regBwOpMode = rtw_read8x(Adapter, REG_BWOPMODE);
+	regRRSR_RSC = rtw_read8x(Adapter, REG_RRSR + 2);
+	/* regBwOpMode = rtw_hal_get_hwregx(Adapter,HW_VAR_BWMODE,(u8 *)&regBwOpMode); */
 
 	switch (pHalData->current_channel_bw) {
 	case CHANNEL_WIDTH_20:
 		regBwOpMode |= BW_OPMODE_20MHZ;
 		/* 2007/02/07 Mark by Emily becasue we have not verify whether this register works */
-		rtw_write8(Adapter, REG_BWOPMODE, regBwOpMode);
+		rtw_write8x(Adapter, REG_BWOPMODE, regBwOpMode);
 		break;
 
 	case CHANNEL_WIDTH_40:
 		regBwOpMode &= ~BW_OPMODE_20MHZ;
 		/* 2007/02/07 Mark by Emily becasue we have not verify whether this register works */
-		rtw_write8(Adapter, REG_BWOPMODE, regBwOpMode);
+		rtw_write8x(Adapter, REG_BWOPMODE, regBwOpMode);
 
 		regRRSR_RSC = (regRRSR_RSC & 0x90) | (pHalData->nCur40MhzPrimeSC << 5);
-		rtw_write8(Adapter, REG_RRSR + 2, regRRSR_RSC);
+		rtw_write8x(Adapter, REG_RRSR + 2, regRRSR_RSC);
 		break;
 
 	default:
@@ -1551,7 +1551,7 @@ _PHY_SetBWMode88E(
 		break;
 
 	case RF_6052:
-		rtl8188e_PHY_RF6052SetBandwidth(Adapter, pHalData->current_channel_bw);
+		rtl8188e_PHY_RF6052SetBandwidthx(Adapter, pHalData->current_channel_bw);
 		break;
 
 	default:
@@ -1652,8 +1652,8 @@ static void _PHY_SwChnl8188E(PADAPTER Adapter, u8 channel)
 	if (Adapter->bNotifyChannelChange)
 		RTW_INFO("[%s] ch = %d\n", __FUNCTION__, channel);
 
-	/* s1. pre common command - CmdID_SetTxPowerLevel */
-	rtw_hal_set_tx_power_level(Adapter, channel);
+	/* s1. pre common command - CmdID_SetTxPowerxLevel */
+	rtw_hal_set_tx_power_levelx(Adapter, channel);
 
 	/* s2. RF dependent command - CmdID_RF_WriteReg, param1=RF_CHNLBW, param2=channel */
 	param1 = RF_CHNLBW;
@@ -1690,7 +1690,7 @@ PHY_SwChnl8188E(/* Call after initialization */
 	/*	return; */
 
 	while (pHalData->odmpriv.rf_calibrate_info.is_lck_in_progress)
-		rtw_msleep_os(50);
+		rtw_msleep_osx(50);
 
 	/* -------------------------------------------- */
 	switch (pHalData->CurrentWirelessMode) {
@@ -1771,7 +1771,7 @@ PHY_SetSwChnlBWMode8188E(
 	if (pHalData->bNeedIQK == _TRUE) {
 		if (pHalData->neediqk_24g == _TRUE) {
 
-			halrf_iqk_trigger(&pHalData->odmpriv, _FALSE);
+			halrf_iqk_triggerx(&pHalData->odmpriv, _FALSE);
 			pHalData->bIQKInitialized = _TRUE;
 			pHalData->neediqk_24g = _FALSE;
 		}

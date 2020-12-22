@@ -147,9 +147,9 @@ struct phydm_cckpd_struct {
  * 1  function prototype
  * 1 ============================================================
  */
-void phydm_set_cckpd_val(void *dm_void, u32 *val_buf, u8 val_len);
+void phydm_set_cckpd_valx(void *dm_void, u32 *val_buf, u8 val_len);
 
-void phydm_cck_pd_th(void *dm_void);
+void phydm_cck_pd_thx(void *dm_void);
 
-void phydm_cck_pd_init(void *dm_void);
+void phydm_cck_pd_initx(void *dm_void);
 #endif

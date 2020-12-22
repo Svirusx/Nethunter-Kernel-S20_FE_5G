@@ -217,7 +217,7 @@
 #define RF_0x52			0x52
 #define RF_WeLut_Jaguar		0xEF	/* rtl8822c_phy.c */
 
-/* rtw_lps_state_chk()@hal_com.c */
+/* rtw_lps_state_chkx()@hal_com.c */
 #define BIT_PWRBIT_OW_EN	BIT_WMAC_TCRPWRMGT_HWDATA_EN_8822C 
 
 /* General Functions */

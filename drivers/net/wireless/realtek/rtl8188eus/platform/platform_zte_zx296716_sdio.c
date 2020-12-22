@@ -22,7 +22,7 @@
  *	0:	power on successfully
  *	others:	power on failed
  */
-int platform_wifi_power_on(void)
+int platform_wifi_power_onx(void)
 {
 	int ret = 0;
 
@@ -37,13 +37,13 @@ int platform_wifi_power_on(void)
 	return ret;
 }
 
-void platform_wifi_power_off(void)
+void platform_wifi_power_offx(void)
 {
 	int card_val;
 
 	pr_info("######%s:\n", __func__);
 #ifdef CONFIG_A16T03_BOARD
-	card_val = sdio_host_is_null();
+	card_val = sdio_host_is_nullx();
 	if (card_val)
 		remove_card();
 #endif /* CONFIG_A16T03_BOARD */

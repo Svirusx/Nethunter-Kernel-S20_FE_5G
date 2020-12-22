@@ -88,7 +88,7 @@ static int hisi_wlan_set_carddetect(bool present)
  *	0:	power on successfully
  *	others: power on failed
  */
-int platform_wifi_power_on(void)
+int platform_wifi_power_onx(void)
 {
 	int ret = 0;
 
@@ -102,7 +102,7 @@ int platform_wifi_power_on(void)
 	return ret;
 }
 
-void platform_wifi_power_off(void)
+void platform_wifi_power_offx(void)
 {
 	hisi_wlan_set_carddetect(0);
 	mdelay(100);

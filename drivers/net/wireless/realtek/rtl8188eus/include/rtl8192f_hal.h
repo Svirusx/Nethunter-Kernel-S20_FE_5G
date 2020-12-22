@@ -257,10 +257,10 @@ void Hal_EfuseParseBoardType_8192F(PADAPTER Adapter,
 u8	Hal_ReadRFEType_8192F(PADAPTER Adapter, u8 *PROMContent, BOOLEAN AutoloadFail);
 void rtl8192f_set_hal_ops(struct hal_ops *pHalFunc);
 void init_hal_spec_8192f(_adapter *adapter);
-u8 SetHwReg8192F(PADAPTER padapter, u8 variable, u8 *val);
-void GetHwReg8192F(PADAPTER padapter, u8 variable, u8 *val);
-u8 SetHalDefVar8192F(PADAPTER padapter, HAL_DEF_VARIABLE variable, void *pval);
-u8 GetHalDefVar8192F(PADAPTER padapter, HAL_DEF_VARIABLE variable, void *pval);
+u8 SetHwRegx8192F(PADAPTER padapter, u8 variable, u8 *val);
+void GetHwRegx8192F(PADAPTER padapter, u8 variable, u8 *val);
+u8 SetHalDefVarx8192F(PADAPTER padapter, HAL_DEF_VARIABLE variable, void *pval);
+u8 GetHalDefVarx8192F(PADAPTER padapter, HAL_DEF_VARIABLE variable, void *pval);
 
 /* register */
 void rtl8192f_InitBeaconParameters(PADAPTER padapter);
@@ -290,7 +290,7 @@ int FirmwareDownloadBT(PADAPTER Adapter, PRT_MP_FIRMWARE pFirmware);
 #endif
 void CCX_FwC2HTxRpt_8192f(PADAPTER padapter, u8 *pdata, u8 len);
 
-u8 MRateToHwRate8192F(u8 rate);
+u8 MRateToHwRatex8192F(u8 rate);
 u8 HwRateToMRate8192F(u8 rate);
 
 #if defined(CONFIG_CHECK_BT_HANG) && defined(CONFIG_BT_COEXIST)

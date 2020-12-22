@@ -381,7 +381,7 @@ static struct chplan_ent_t RTW_ChannelPlanMap[RTW_CHPLAN_MAX] = {
 static struct chplan_ent_t RTW_CHANNEL_PLAN_MAP_REALTEK_DEFINE =
 	CHPLAN_ENT(RTW_RD_2G_WORLD,		RTW_RD_5G_FCC1,		TXPWR_LMT_FCC);		/* 0x7F, Realtek Define */
 
-u8 rtw_chplan_get_default_regd(u8 id)
+u8 rtw_chplan_get_default_regdx(u8 id)
 {
 	u8 regd;
 
@@ -393,7 +393,7 @@ u8 rtw_chplan_get_default_regd(u8 id)
 	return regd;
 }
 
-bool rtw_chplan_is_empty(u8 id)
+bool rtw_chplan_is_emptyx(u8 id)
 {
 	struct chplan_ent_t *chplan_map;
 
@@ -412,7 +412,7 @@ bool rtw_chplan_is_empty(u8 id)
 	return _FALSE;
 }
 
-bool rtw_regsty_is_excl_chs(struct registry_priv *regsty, u8 ch)
+bool rtw_regsty_is_excl_chsx(struct registry_priv *regsty, u8 ch)
 {
 	int i;
 
@@ -461,7 +461,7 @@ inline static u8 rtw_rd_5g_band4_passive(u8 rtw_rd_5g)
 	return passive;
 }
 
-u8 init_channel_set(_adapter *padapter, u8 ChannelPlan, RT_CHANNEL_INFO *channel_set)
+u8 init_channel_setx(_adapter *padapter, u8 ChannelPlan, RT_CHANNEL_INFO *channel_set)
 {
 	struct registry_priv *regsty = adapter_to_regsty(padapter);
 	u8	index, chanset_size = 0;
@@ -476,12 +476,12 @@ u8 init_channel_set(_adapter *padapter, u8 ChannelPlan, RT_CHANNEL_INFO *channel
 		return chanset_size;
 	}
 
-	_rtw_memset(channel_set, 0, sizeof(RT_CHANNEL_INFO) * MAX_CHANNEL_NUM);
+	_rtw_memsetx(channel_set, 0, sizeof(RT_CHANNEL_INFO) * MAX_CHANNEL_NUM);
 
-	if (IsSupported24G(regsty->wireless_mode) && hal_chk_band_cap(padapter, BAND_CAP_2G))
+	if (IsSupported24G(regsty->wireless_mode) && hal_chk_band_capx(padapter, BAND_CAP_2G))
 		b2_4GBand = _TRUE;
 
-	if (is_supported_5g(regsty->wireless_mode) && hal_chk_band_cap(padapter, BAND_CAP_5G))
+	if (is_supported_5g(regsty->wireless_mode) && hal_chk_band_capx(padapter, BAND_CAP_5G))
 		b5GBand = _TRUE;
 
 	if (b2_4GBand == _FALSE && b5GBand == _FALSE) {
@@ -496,7 +496,7 @@ u8 init_channel_set(_adapter *padapter, u8 ChannelPlan, RT_CHANNEL_INFO *channel
 			rd_2g = RTW_ChannelPlanMap[ChannelPlan].rd_2g;
 
 		for (index = 0; index < CH_LIST_LEN(RTW_ChannelPlan2G[rd_2g]); index++) {
-			if (rtw_regsty_is_excl_chs(regsty, CH_LIST_CH(RTW_ChannelPlan2G[rd_2g], index)) == _TRUE)
+			if (rtw_regsty_is_excl_chsx(regsty, CH_LIST_CH(RTW_ChannelPlan2G[rd_2g], index)) == _TRUE)
 				continue;
 
 			if (chanset_size >= MAX_CHANNEL_NUM) {
@@ -538,10 +538,10 @@ u8 init_channel_set(_adapter *padapter, u8 ChannelPlan, RT_CHANNEL_INFO *channel
 			rd_5g = RTW_ChannelPlanMap[ChannelPlan].rd_5g;
 
 		for (index = 0; index < CH_LIST_LEN(RTW_ChannelPlan5G[rd_5g]); index++) {
-			if (rtw_regsty_is_excl_chs(regsty, CH_LIST_CH(RTW_ChannelPlan5G[rd_5g], index)) == _TRUE)
+			if (rtw_regsty_is_excl_chsx(regsty, CH_LIST_CH(RTW_ChannelPlan5G[rd_5g], index)) == _TRUE)
 				continue;
 			#ifndef CONFIG_DFS
-			if (rtw_is_dfs_ch(CH_LIST_CH(RTW_ChannelPlan5G[rd_5g], index)))
+			if (rtw_is_dfs_chx(CH_LIST_CH(RTW_ChannelPlan5G[rd_5g], index)))
 				continue;
 			#endif
 
@@ -557,7 +557,7 @@ u8 init_channel_set(_adapter *padapter, u8 ChannelPlan, RT_CHANNEL_INFO *channel
 					&& rtw_rd_5g_band1_passive(rd_5g)) /* band1 passive */
 				|| (rtw_is_5g_band4(channel_set[chanset_size].ChannelNum)
 					&& rtw_rd_5g_band4_passive(rd_5g)) /* band4 passive */
-				|| (rtw_is_dfs_ch(channel_set[chanset_size].ChannelNum)) /* DFS channel(band2, 3) passive */
+				|| (rtw_is_dfs_chx(channel_set[chanset_size].ChannelNum)) /* DFS channel(band2, 3) passive */
 			)
 				channel_set[chanset_size].ScanType = SCAN_PASSIVE;
 			else
@@ -569,7 +569,7 @@ u8 init_channel_set(_adapter *padapter, u8 ChannelPlan, RT_CHANNEL_INFO *channel
 
 	#ifdef CONFIG_DFS_MASTER
 	for (i = 0; i < chanset_size; i++)
-		channel_set[i].non_ocp_end_time = rtw_get_current_time();
+		channel_set[i].non_ocp_end_time = rtw_get_current_timex();
 	#endif
 #endif /* CONFIG_IEEE80211_BAND_5GHZ */
 
@@ -1079,12 +1079,12 @@ static const struct country_chplan country_chplan_map[] = {
 };
 
 /*
-* rtw_get_chplan_from_country -
+* rtw_get_chplan_from_countryx -
 * @country_code: string of country code
 *
 * Return pointer of struct country_chplan entry or NULL when unsupported country_code is given
 */
-const struct country_chplan *rtw_get_chplan_from_country(const char *country_code)
+const struct country_chplan *rtw_get_chplan_from_countryx(const char *country_code)
 {
 #if RTW_DEF_MODULE_REGULATORY_CERT
 	const struct country_chplan *exc_ent = NULL;
@@ -1095,8 +1095,8 @@ const struct country_chplan *rtw_get_chplan_from_country(const char *country_cod
 	char code[2];
 	int i;
 
-	code[0] = alpha_to_upper(country_code[0]);
-	code[1] = alpha_to_upper(country_code[1]);
+	code[0] = alpha_to_upperx(country_code[0]);
+	code[1] = alpha_to_upperx(country_code[1]);
 
 #ifdef CONFIG_CUSTOMIZED_COUNTRY_CHPLAN_MAP
 	map = CUSTOMIZED_country_chplan_map;
@@ -1126,7 +1126,7 @@ const struct country_chplan *rtw_get_chplan_from_country(const char *country_cod
 	return ent;
 }
 
-void dump_country_chplan(void *sel, const struct country_chplan *ent)
+void dump_country_chplanx(void *sel, const struct country_chplan *ent)
 {
 	RTW_PRINT_SEL(sel, "\"%c%c\", 0x%02X%s\n"
 		, ent->alpha2[0], ent->alpha2[1], ent->chplan
@@ -1134,7 +1134,7 @@ void dump_country_chplan(void *sel, const struct country_chplan *ent)
 	);
 }
 
-void dump_country_chplan_map(void *sel)
+void dump_country_chplanx_map(void *sel)
 {
 	const struct country_chplan *ent;
 	u8 code[2];
@@ -1148,16 +1148,16 @@ void dump_country_chplan_map(void *sel)
 
 	for (code[0] = 'A'; code[0] <= 'Z'; code[0]++) {
 		for (code[1] = 'A'; code[1] <= 'Z'; code[1]++) {
-			ent = rtw_get_chplan_from_country(code);
+			ent = rtw_get_chplan_from_countryx(code);
 			if (!ent)
 				continue;
 
-			dump_country_chplan(sel, ent);
+			dump_country_chplanx(sel, ent);
 		}
 	}
 }
 
-void dump_chplan_id_list(void *sel)
+void dump_chplan_id_listx(void *sel)
 {
 	u8 first = 1;
 	int i;
@@ -1176,14 +1176,14 @@ void dump_chplan_id_list(void *sel)
 	_RTW_PRINT_SEL(sel, "0x7F\n");
 }
 
-void dump_chplan_test(void *sel)
+void dump_chplan_testx(void *sel)
 {
 	int i, j;
 
 	/* check invalid channel */
 	for (i = 0; i < RTW_RD_2G_MAX; i++) {
 		for (j = 0; j < CH_LIST_LEN(RTW_ChannelPlan2G[i]); j++) {
-			if (rtw_ch2freq(CH_LIST_CH(RTW_ChannelPlan2G[i], j)) == 0)
+			if (rtw_ch2freqx(CH_LIST_CH(RTW_ChannelPlan2G[i], j)) == 0)
 				RTW_PRINT_SEL(sel, "invalid ch:%u at (%d,%d)\n", CH_LIST_CH(RTW_ChannelPlan2G[i], j), i, j);
 		}
 	}
@@ -1191,14 +1191,14 @@ void dump_chplan_test(void *sel)
 #ifdef CONFIG_IEEE80211_BAND_5GHZ
 	for (i = 0; i < RTW_RD_5G_MAX; i++) {
 		for (j = 0; j < CH_LIST_LEN(RTW_ChannelPlan5G[i]); j++) {
-			if (rtw_ch2freq(CH_LIST_CH(RTW_ChannelPlan5G[i], j)) == 0)
+			if (rtw_ch2freqx(CH_LIST_CH(RTW_ChannelPlan5G[i], j)) == 0)
 				RTW_PRINT_SEL(sel, "invalid ch:%u at (%d,%d)\n", CH_LIST_CH(RTW_ChannelPlan5G[i], j), i, j);
 		}
 	}
 #endif
 }
 
-void dump_chplan_ver(void *sel)
+void dump_chplan_verx(void *sel)
 {
 	RTW_PRINT_SEL(sel, "%s-%s\n", RTW_DOMAIN_MAP_VER, RTW_COUNTRY_MAP_VER);
 }

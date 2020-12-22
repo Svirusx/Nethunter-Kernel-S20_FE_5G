@@ -116,13 +116,13 @@ phydm_sta_info_init(struct dm_struct *dm, u16 sta_idx, u8 *my_mac_addr)
 	}
 
 #if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
-	/*odm_move_memory(dm, (PVOID)(entry->my_mac_addr),*/
+	/*odm_move_memoryx(dm, (PVOID)(entry->my_mac_addr),*/
 	/*(PVOID)(adapter->CurrentAddress), 6);*/
-	odm_move_memory(dm, entry->my_mac_addr, my_mac_addr, 6);
+	odm_move_memoryx(dm, entry->my_mac_addr, my_mac_addr, 6);
 #elif (DM_ODM_SUPPORT_TYPE == ODM_CE)
-	/*odm_move_memory(dm, entry->my_mac_addr,*/
+	/*odm_move_memoryx(dm, entry->my_mac_addr,*/
 	/*adapter_mac_addr(sta->padapter), 6);*/
-	odm_move_memory(dm, entry->my_mac_addr, my_mac_addr, 6);
+	odm_move_memoryx(dm, entry->my_mac_addr, my_mac_addr, 6);
 #endif
 
 	entry->aid = cmn_sta->aid;
@@ -158,7 +158,7 @@ phydm_sta_info_init(struct dm_struct *dm, u16 sta_idx, u8 *my_mac_addr)
 		  entry->cur_beamform, entry->cur_beamform_vht);
 	return entry;
 }
-void phydm_sta_info_update(
+void phydm_sta_info_updatex(
 	struct dm_struct *dm,
 	u16 sta_idx,
 	struct _RT_BEAMFORMEE_ENTRY *beamform_entry)
@@ -341,7 +341,7 @@ beamforming_add_bfee_entry(
 		entry->aid = sta->aid;
 		entry->mac_id = sta->mac_id;
 		entry->sound_bw = sta->bw;
-		odm_move_memory(dm, entry->my_mac_addr, sta->my_mac_addr, 6);
+		odm_move_memoryx(dm, entry->my_mac_addr, sta->my_mac_addr, 6);
 
 		if (phydm_acting_determine(dm, phydm_acting_as_ap)) {
 			/*@BSSID[44:47] xor BSSID[40:43]*/
@@ -414,7 +414,7 @@ beamforming_add_bfer_entry(
 
 	if (entry != NULL) {
 		entry->is_used = true;
-		odm_move_memory(dm, entry->my_mac_addr, sta->my_mac_addr, 6);
+		odm_move_memoryx(dm, entry->my_mac_addr, sta->my_mac_addr, 6);
 		if (phydm_acting_determine(dm, phydm_acting_as_ap)) {
 			/*@BSSID[44:47] xor BSSID[40:43]*/
 			u16 bssid = ((sta->my_mac_addr[5] & 0xf0) >> 4) ^ (sta->my_mac_addr[5] & 0xf);
@@ -870,22 +870,22 @@ phydm_beamforming_start_period(
 	phydm_beamforming_select_beam_entry(dm, beam_info); /* @Modified */
 
 	if (sound_info->sound_mode == SOUNDING_SW_VHT_TIMER || sound_info->sound_mode == SOUNDING_SW_HT_TIMER)
-		odm_set_timer(dm, &beam_info->beamforming_timer, sound_info->sound_period);
+		odm_set_timerx(dm, &beam_info->beamforming_timer, sound_info->sound_period);
 	else if (sound_info->sound_mode == SOUNDING_HW_VHT_TIMER || sound_info->sound_mode == SOUNDING_HW_HT_TIMER ||
 		 sound_info->sound_mode == SOUNDING_AUTO_VHT_TIMER || sound_info->sound_mode == SOUNDING_AUTO_HT_TIMER) {
 		HAL_HW_TIMER_TYPE timer_type = HAL_TIMER_TXBF;
 		u32 val = (sound_info->sound_period | (timer_type << 16));
 
 		/* @HW timer stop: All IC has the same setting */
-		phydm_set_hw_reg_handler_interface(dm, HW_VAR_HW_REG_TIMER_STOP, (u8 *)(&timer_type));
-		/* odm_write_1byte(dm, 0x15F, 0); */
+		phydm_set_hw_reg_handler_interfacex(dm, HW_VAR_HW_REG_TIMER_STOP, (u8 *)(&timer_type));
+		/* odm_write_1bytex(dm, 0x15F, 0); */
 		/* @HW timer init: All IC has the same setting, but 92E & 8812A only write 2 bytes */
-		phydm_set_hw_reg_handler_interface(dm, HW_VAR_HW_REG_TIMER_INIT, (u8 *)(&val));
-		/* odm_write_1byte(dm, 0x164, 1); */
-		/* odm_write_4byte(dm, 0x15C, val); */
+		phydm_set_hw_reg_handler_interfacex(dm, HW_VAR_HW_REG_TIMER_INIT, (u8 *)(&val));
+		/* odm_write_1bytex(dm, 0x164, 1); */
+		/* odm_write_4bytex(dm, 0x15C, val); */
 		/* @HW timer start: All IC has the same setting */
-		phydm_set_hw_reg_handler_interface(dm, HW_VAR_HW_REG_TIMER_START, (u8 *)(&timer_type));
-		/* odm_write_1byte(dm, 0x15F, 0x5); */
+		phydm_set_hw_reg_handler_interfacex(dm, HW_VAR_HW_REG_TIMER_START, (u8 *)(&timer_type));
+		/* odm_write_1bytex(dm, 0x15F, 0x5); */
 	} else if (sound_info->sound_mode == SOUNDING_FW_VHT_TIMER || sound_info->sound_mode == SOUNDING_FW_HT_TIMER)
 		ret = beamforming_start_fw(dm, sound_info->sound_idx);
 	else
@@ -914,12 +914,12 @@ void phydm_beamforming_end_period_sw(
 	PHYDM_DBG(dm, DBG_TXBF, "%s Start!\n", __func__);
 
 	if (sound_info->sound_mode == SOUNDING_SW_VHT_TIMER || sound_info->sound_mode == SOUNDING_SW_HT_TIMER)
-		odm_cancel_timer(dm, &beam_info->beamforming_timer);
+		odm_cancel_timerx(dm, &beam_info->beamforming_timer);
 	else if (sound_info->sound_mode == SOUNDING_HW_VHT_TIMER || sound_info->sound_mode == SOUNDING_HW_HT_TIMER ||
 		 sound_info->sound_mode == SOUNDING_AUTO_VHT_TIMER || sound_info->sound_mode == SOUNDING_AUTO_HT_TIMER)
 		/*@HW timer stop: All IC has the same setting*/
-		phydm_set_hw_reg_handler_interface(dm, HW_VAR_HW_REG_TIMER_STOP, (u8 *)(&timer_type));
-	/*odm_write_1byte(dm, 0x15F, 0);*/
+		phydm_set_hw_reg_handler_interfacex(dm, HW_VAR_HW_REG_TIMER_STOP, (u8 *)(&timer_type));
+	/*odm_write_1bytex(dm, 0x15F, 0);*/
 }
 
 void phydm_beamforming_end_period_fw(
@@ -1106,8 +1106,8 @@ void phydm_beamforming_notify(
 			  __func__);
 		if (beam_info->beamformee_mu_cnt == 2) {
 			/*@if (sound_info->sound_mode == SOUNDING_SW_VHT_TIMER || sound_info->sound_mode == SOUNDING_SW_HT_TIMER)
-				odm_set_timer(dm, &beam_info->beamforming_timer, sound_info->sound_period);*/
-			odm_set_timer(dm, &beam_info->beamforming_timer, 1000); /*@Do MU sounding every 1sec*/
+				odm_set_timerx(dm, &beam_info->beamforming_timer, sound_info->sound_period);*/
+			odm_set_timerx(dm, &beam_info->beamforming_timer, 1000); /*@Do MU sounding every 1sec*/
 		} else
 			PHYDM_DBG(dm, DBG_TXBF,
 				  "%s: Less or larger than 2 MU STAs, not to set timer\n",
@@ -1119,7 +1119,7 @@ void phydm_beamforming_notify(
 			  __func__);
 		if (beam_info->beamformee_mu_cnt == 1) {
 			/*@if (sound_info->sound_mode == SOUNDING_SW_VHT_TIMER || sound_info->sound_mode == SOUNDING_SW_HT_TIMER)*/ {
-				odm_cancel_timer(dm, &beam_info->beamforming_timer);
+				odm_cancel_timerx(dm, &beam_info->beamforming_timer);
 				PHYDM_DBG(dm, DBG_TXBF,
 					  "%s: Less than 2 MU STAs, stop sounding\n",
 					  __func__);
@@ -1282,7 +1282,7 @@ beamforming_init_entry(void *dm_void, u16 sta_idx, u8 *bfer_bfee_idx,
 				beamform_entry->beamform_entry_state = BEAMFORMING_ENTRY_STATE_INITIALIZEING;
 		}
 		beamform_entry->beamform_entry_state = BEAMFORMING_ENTRY_STATE_INITIALIZED;
-		phydm_sta_info_update(dm, sta_idx, beamform_entry);
+		phydm_sta_info_updatex(dm, sta_idx, beamform_entry);
 	}
 
 	*bfer_bfee_idx = (bfer_idx << 4) | bfee_idx;
@@ -1681,10 +1681,10 @@ void beamforming_timer_callback(
 
 	if (beam_info->beamformee_su_cnt != 0 || beam_info->beamformee_mu_cnt > 1) {
 		if (sound_info->sound_mode == SOUNDING_SW_VHT_TIMER || sound_info->sound_mode == SOUNDING_SW_HT_TIMER)
-			odm_set_timer(dm, &beam_info->beamforming_timer, sound_info->sound_period);
+			odm_set_timerx(dm, &beam_info->beamforming_timer, sound_info->sound_period);
 		else {
 			u32 val = (sound_info->sound_period << 16) | HAL_TIMER_TXBF;
-			phydm_set_hw_reg_handler_interface(dm, HW_VAR_HW_REG_TIMER_RESTART, (u8 *)(&val));
+			phydm_set_hw_reg_handler_interfacex(dm, HW_VAR_HW_REG_TIMER_RESTART, (u8 *)(&val));
 		}
 	}
 }
@@ -1710,7 +1710,7 @@ void beamforming_sw_timer_callback(
 
 	if (*dm->is_net_closed == true)
 		return;
-	phydm_run_in_thread_cmd(dm, beamforming_timer_callback, adapter);
+	phydm_run_in_thread_cmdx(dm, beamforming_timer_callback, adapter);
 #endif
 }
 
@@ -1774,9 +1774,9 @@ phydm_acting_determine(
 	struct mlme_priv *pmlmepriv = &adapter->mlmepriv;
 
 	if (type == phydm_acting_as_ap)
-		ret = check_fwstate(pmlmepriv, WIFI_AP_STATE);
+		ret = check_fwstatex(pmlmepriv, WIFI_AP_STATE);
 	else if (type == phydm_acting_as_ibss)
-		ret = check_fwstate(pmlmepriv, WIFI_ADHOC_STATE) || check_fwstate(pmlmepriv, WIFI_ADHOC_MASTER_STATE);
+		ret = check_fwstatex(pmlmepriv, WIFI_ADHOC_STATE) || check_fwstatex(pmlmepriv, WIFI_ADHOC_MASTER_STATE);
 #endif
 
 	return ret;

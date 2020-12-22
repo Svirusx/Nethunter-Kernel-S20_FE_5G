@@ -31,7 +31,7 @@
 #include "phydm_precomp.h"
 
 boolean
-odm_check_power_status(void *dm_void)
+odm_check_power_statusx(void *dm_void)
 {
 #if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -50,7 +50,7 @@ odm_check_power_status(void *dm_void)
 	/*
 	 *	2011/07/19 MH We can not execute tx pwoer tracking/ LLC calibrate or IQK.
 	 */
-	((PADAPTER)adapter)->HalFunc.GetHwRegHandler((PADAPTER)adapter, HW_VAR_RF_STATE, (u8 *)(&rt_state));
+	((PADAPTER)adapter)->HalFunc.GetHwRegxHandler((PADAPTER)adapter, HW_VAR_RF_STATE, (u8 *)(&rt_state));
 	if (((PADAPTER)adapter)->bDriverStopped || ((PADAPTER)adapter)->bDriverIsGoingToPnpSetPowerSleep || rt_state == eRfOff) {
 		RF_DBG(dm, DBG_RF_INIT,
 		       "check_pow_status Return false, due to %d/%d/%d\n",
@@ -64,7 +64,7 @@ odm_check_power_status(void *dm_void)
 }
 
 #if (DM_ODM_SUPPORT_TYPE & (ODM_WIN | ODM_CE))
-void halrf_update_pwr_track(void *dm_void, u8 rate)
+void halrf_update_pwr_trackx(void *dm_void, u8 rate)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 #if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
@@ -158,16 +158,16 @@ void halrf_set_pwr_track(void *dm_void, u8 enable)
 	struct txpwrtrack_cfg c;
 	u8 i;
 
-	configure_txpower_track(dm, &c);
+	configure_txpower_trackx(dm, &c);
 	if (enable)
 		rf->rf_supportability = rf->rf_supportability | HAL_RF_TX_PWR_TRACK;
 	else {
 		rf->rf_supportability = rf->rf_supportability & ~HAL_RF_TX_PWR_TRACK;
-		odm_clear_txpowertracking_state(dm);
+		odm_clear_txpowertracking_statex(dm);
 		for (i = 0; i < c.rf_path_count; i++)
 			(*c.odm_tx_pwr_track_set_pwr)(dm, CLEAN_MODE, i, 0);
 	}
 
-	/*halrf_do_tssi(dm);*/
+	/*halrf_do_tssix(dm);*/
 }
 

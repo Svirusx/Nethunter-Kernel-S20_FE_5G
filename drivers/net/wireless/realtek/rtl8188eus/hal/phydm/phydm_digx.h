@@ -87,7 +87,7 @@ enum dig_goupcheck_level {
 	DIG_GOUPCHECK_LEVEL_2
 };
 
-enum phydm_dig_mode {
+enum phydm_digx_mode {
 	PHYDM_DIG_PERFORAMNCE_MODE	= 0,
 	PHYDM_DIG_COVERAGE_MODE		= 1,
 };
@@ -120,7 +120,7 @@ enum tdma_dig_state {
 
 /*@--------------------Define Struct-----------------------------------*/
 #ifdef CFG_DIG_DAMPING_CHK
-struct phydm_dig_recorder_strcut {
+struct phydm_digx_recorder_strcut {
 	u8		igi_bitmap; /*@Don't add any new parameter before this*/
 	u8		igi_history[DIG_RECORD_NUM];
 	u32		fa_history[DIG_RECORD_NUM];
@@ -136,9 +136,9 @@ struct phydm_mcc_dig {
 	u8		mcc_rssi_B;
 };
 
-struct phydm_dig_struct {
+struct phydm_digx_struct {
 #ifdef CFG_DIG_DAMPING_CHK
-	struct phydm_dig_recorder_strcut dig_recorder_t;
+	struct phydm_digx_recorder_strcut dig_recorder_t;
 	u8		dig_dl_en; /*@damping limit function enable*/
 #endif
 	boolean		is_dbg_fa_th;
@@ -266,26 +266,26 @@ struct phydm_fa_acc_struct {
 #endif	/*@#ifdef PHYDM_TDMA_DIG_SUPPORT*/
 
 /*@--------------------Function declaration-----------------------------*/
-void phydm_write_dig_reg(void *dm_void, u8 igi);
+void phydm_write_dig_regx(void *dm_void, u8 igi);
 
-void odm_write_dig(void *dm_void, u8 current_igi);
+void odm_write_digx(void *dm_void, u8 current_igi);
 
-u8 phydm_get_igi(void *dm_void, enum bb_path path);
+u8 phydm_get_igix(void *dm_void, enum bb_path path);
 
-void phydm_set_dig_val(void *dm_void, u32 *val_buf, u8 val_len);
+void phydm_set_dig_valx(void *dm_void, u32 *val_buf, u8 val_len);
 
-void odm_pause_dig(void *dm_void, enum phydm_pause_type pause_type,
+void odm_pause_digx(void *dm_void, enum phydm_pause_type pause_type,
 		   enum phydm_pause_level pause_level, u8 igi_value);
 
-void phydm_dig_init(void *dm_void);
+void phydm_digx_init(void *dm_void);
 
-void phydm_dig(void *dm_void);
+void phydm_digx(void *dm_void);
 
-void phydm_dig_lps_32k(void *dm_void);
+void phydm_digx_lps_32k(void *dm_void);
 
-void phydm_dig_by_rssi_lps(void *dm_void);
+void phydm_digx_by_rssi_lps(void *dm_void);
 
-void phydm_false_alarm_counter_statistics(void *dm_void);
+void phydm_false_alarm_counter_statisticsx(void *dm_void);
 
 #ifdef PHYDM_TDMA_DIG_SUPPORT
 void phydm_set_tdma_dig_timer(void *dm_void);
@@ -326,7 +326,7 @@ void phydm_fa_cnt_acc(void *dm_void, boolean rssi_dump_en,
 
 void phydm_set_ofdm_agc_tab(void *dm_void, u8 tab_sel);
 
-void phydm_dig_debug(void *dm_void, char input[][16], u32 *_used, char *output,
+void phydm_digx_debug(void *dm_void, char input[][16], u32 *_used, char *output,
 		     u32 *_out_len);
 
 #ifdef CONFIG_MCC_DM

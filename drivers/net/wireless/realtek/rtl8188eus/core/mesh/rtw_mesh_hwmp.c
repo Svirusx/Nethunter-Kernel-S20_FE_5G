@@ -145,8 +145,8 @@ static inline u16 rtw_u16_field_get(const u8 *preq_elem, int shift, BOOLEAN ae)
 #define RTW_PERR_IE_TARGET_SN(x)	rtw_u32_field_get(x, 9, 0)
 #define RTW_PERR_IE_TARGET_RCODE(x)	rtw_u16_field_get(x, 13, 0)
 
-#define RTW_TU_TO_SYSTIME(x)	(rtw_us_to_systime((x) * 1024))
-#define RTW_TU_TO_EXP_TIME(x)	(rtw_get_current_time() + RTW_TU_TO_SYSTIME(x))
+#define RTW_TU_TO_SYSTIME(x)	(rtw_us_to_systimex((x) * 1024))
+#define RTW_TU_TO_EXP_TIME(x)	(rtw_get_current_timex() + RTW_TU_TO_SYSTIME(x))
 #define RTW_MSEC_TO_TU(x) (x*1000/1024)
 #define RTW_SN_GT(x, y) ((s32)(y - x) < 0)
 #define RTW_SN_LT(x, y) ((s32)(x - y) < 0)
@@ -158,20 +158,20 @@ static inline u32 RTW_SN_DELTA(u32 x, u32 y)
 }
 
 #define rtw_net_traversal_jiffies(adapter) \
-	rtw_ms_to_systime(adapter->mesh_cfg.dot11MeshHWMPnetDiameterTraversalTime)
+	rtw_ms_to_systimex(adapter->mesh_cfg.dot11MeshHWMPnetDiameterTraversalTime)
 #define rtw_default_lifetime(adapter) \
 	RTW_MSEC_TO_TU(adapter->mesh_cfg.dot11MeshHWMPactivePathTimeout)
 #define rtw_min_preq_int_jiff(adapter) \
-	(rtw_ms_to_systime(adapter->mesh_cfg.dot11MeshHWMPpreqMinInterval))
+	(rtw_ms_to_systimex(adapter->mesh_cfg.dot11MeshHWMPpreqMinInterval))
 #define rtw_max_preq_retries(adapter) (adapter->mesh_cfg.dot11MeshHWMPmaxPREQretries)
 #define rtw_disc_timeout_jiff(adapter) \
-	rtw_ms_to_systime(adapter->mesh_cfg.min_discovery_timeout)
+	rtw_ms_to_systimex(adapter->mesh_cfg.min_discovery_timeout)
 #define rtw_root_path_confirmation_jiffies(adapter) \
-	rtw_ms_to_systime(adapter->mesh_cfg.dot11MeshHWMPconfirmationInterval)
+	rtw_ms_to_systimex(adapter->mesh_cfg.dot11MeshHWMPconfirmationInterval)
 
 static inline BOOLEAN rtw_ether_addr_equal(const u8 *addr1, const u8 *addr2)
 {
-	return _rtw_memcmp(addr1, addr2, ETH_ALEN);
+	return _rtw_memcmpx(addr1, addr2, ETH_ALEN);
 }
 
 #ifdef PLATFORM_LINUX
@@ -224,13 +224,13 @@ static int rtw_mesh_path_sel_frame_tx(enum rtw_mpath_frame_type mpath_action, u8
 	u8 *pos, ie_len;
 
 
-	pmgntframe = alloc_mgtxmitframe(pxmitpriv);
+	pmgntframe = alloc_mgtxmitframex(pxmitpriv);
 	if (pmgntframe == NULL)
 		return -1;
 
 	pattrib = &pmgntframe->attrib;
-	update_mgntframe_attrib(adapter, pattrib);
-	_rtw_memset(pmgntframe->buf_addr, 0, WLANHDR_OFFSET + TXDESC_OFFSET);
+	update_mgntframe_attribx(adapter, pattrib);
+	_rtw_memsetx(pmgntframe->buf_addr, 0, WLANHDR_OFFSET + TXDESC_OFFSET);
 
 	pos = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pos;
@@ -239,9 +239,9 @@ static int rtw_mesh_path_sel_frame_tx(enum rtw_mpath_frame_type mpath_action, u8
 	fctrl = &(pwlanhdr->frame_ctl);
 	*(fctrl) = 0;
 
-	_rtw_memcpy(pwlanhdr->addr1, da, ETH_ALEN);
-	_rtw_memcpy(pwlanhdr->addr2, adapter_mac_addr(adapter), ETH_ALEN);
-	_rtw_memcpy(pwlanhdr->addr3, adapter_mac_addr(adapter), ETH_ALEN);
+	_rtw_memcpyx(pwlanhdr->addr1, da, ETH_ALEN);
+	_rtw_memcpyx(pwlanhdr->addr2, adapter_mac_addr(adapter), ETH_ALEN);
+	_rtw_memcpyx(pwlanhdr->addr3, adapter_mac_addr(adapter), ETH_ALEN);
 
 	SetSeqNum(pwlanhdr, pmlmeext->mgnt_seq);
 	pmlmeext->mgnt_seq++;
@@ -250,8 +250,8 @@ static int rtw_mesh_path_sel_frame_tx(enum rtw_mpath_frame_type mpath_action, u8
 	pos += sizeof(struct rtw_ieee80211_hdr_3addr);
 	pattrib->pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
 
-	pos = rtw_set_fixed_ie(pos, 1, &(category), &(pattrib->pktlen));
-	pos = rtw_set_fixed_ie(pos, 1, &(action), &(pattrib->pktlen));
+	pos = rtw_set_fixed_iex(pos, 1, &(category), &(pattrib->pktlen));
+	pos = rtw_set_fixed_iex(pos, 1, &(action), &(pattrib->pktlen));
 
 	switch (mpath_action) {
 	case RTW_MPATH_PREQ:
@@ -273,8 +273,8 @@ static int rtw_mesh_path_sel_frame_tx(enum rtw_mpath_frame_type mpath_action, u8
 		*pos++ = WLAN_EID_RANN;
 		break;
 	default:
-		rtw_free_xmitbuf(pxmitpriv, pmgntframe->pxmitbuf);
-		rtw_free_xmitframe(pxmitpriv, pmgntframe);
+		rtw_free_xmitbufx(pxmitpriv, pmgntframe->pxmitbuf);
+		rtw_free_xmitframex(pxmitpriv, pmgntframe);
 		return _FAIL;
 	}
 	*pos++ = ie_len;
@@ -282,7 +282,7 @@ static int rtw_mesh_path_sel_frame_tx(enum rtw_mpath_frame_type mpath_action, u8
 	*pos++ = hopcount;
 	*pos++ = ttl;
 	if (mpath_action == RTW_MPATH_PREP) {
-		_rtw_memcpy(pos, target, ETH_ALEN);
+		_rtw_memcpyx(pos, target, ETH_ALEN);
 		pos += ETH_ALEN;
 		*(u32 *)pos = cpu_to_le32(target_sn);
 		pos += 4;
@@ -291,7 +291,7 @@ static int rtw_mesh_path_sel_frame_tx(enum rtw_mpath_frame_type mpath_action, u8
 			*(u32 *)pos = cpu_to_le32(preq_id);
 			pos += 4;
 		}
-		_rtw_memcpy(pos, originator_addr, ETH_ALEN);
+		_rtw_memcpyx(pos, originator_addr, ETH_ALEN);
 		pos += ETH_ALEN;
 		*(u32 *)pos = cpu_to_le32(originator_sn);
 		pos += 4;
@@ -303,19 +303,19 @@ static int rtw_mesh_path_sel_frame_tx(enum rtw_mpath_frame_type mpath_action, u8
 	if (mpath_action == RTW_MPATH_PREQ) {
 		*pos++ = 1; /* support only 1 destination now */
 		*pos++ = target_flags;
-		_rtw_memcpy(pos, target, ETH_ALEN);
+		_rtw_memcpyx(pos, target, ETH_ALEN);
 		pos += ETH_ALEN;
 		*(u32 *)pos = cpu_to_le32(target_sn);
 		pos += 4;
 	} else if (mpath_action == RTW_MPATH_PREP) {
-		_rtw_memcpy(pos, originator_addr, ETH_ALEN);
+		_rtw_memcpyx(pos, originator_addr, ETH_ALEN);
 		pos += ETH_ALEN;
 		*(u32 *)pos = cpu_to_le32(originator_sn);
 		pos += 4;
 	}
 
 	pattrib->last_txcmdsz = pattrib->pktlen;
-	dump_mgntframe(adapter, pmgntframe);
+	dump_mgntframex(adapter, pmgntframe);
 	return 0;
 }
 
@@ -335,16 +335,16 @@ int rtw_mesh_path_error_tx(_adapter *adapter,
 	u8 *pos, ie_len;
 	u16 *fctrl = NULL;
 
-	if (rtw_time_before(rtw_get_current_time(), minfo->next_perr))
+	if (rtw_time_before(rtw_get_current_timex(), minfo->next_perr))
 		return -1;
 
-	pmgntframe = alloc_mgtxmitframe(pxmitpriv);
+	pmgntframe = alloc_mgtxmitframex(pxmitpriv);
 	if (pmgntframe == NULL)
 		return -1;
 
 	pattrib = &pmgntframe->attrib;
-	update_mgntframe_attrib(adapter, pattrib);
-	_rtw_memset(pmgntframe->buf_addr, 0, WLANHDR_OFFSET + TXDESC_OFFSET);
+	update_mgntframe_attribx(adapter, pattrib);
+	_rtw_memsetx(pmgntframe->buf_addr, 0, WLANHDR_OFFSET + TXDESC_OFFSET);
 
 	pos = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pos;
@@ -352,9 +352,9 @@ int rtw_mesh_path_error_tx(_adapter *adapter,
 	fctrl = &(pwlanhdr->frame_ctl);
 	*(fctrl) = 0;
 
-	_rtw_memcpy(pwlanhdr->addr1, ra, ETH_ALEN);
-	_rtw_memcpy(pwlanhdr->addr2, adapter_mac_addr(adapter), ETH_ALEN);
-	_rtw_memcpy(pwlanhdr->addr3, adapter_mac_addr(adapter), ETH_ALEN);
+	_rtw_memcpyx(pwlanhdr->addr1, ra, ETH_ALEN);
+	_rtw_memcpyx(pwlanhdr->addr2, adapter_mac_addr(adapter), ETH_ALEN);
+	_rtw_memcpyx(pwlanhdr->addr3, adapter_mac_addr(adapter), ETH_ALEN);
 
 	SetSeqNum(pwlanhdr, pmlmeext->mgnt_seq);
 	pmlmeext->mgnt_seq++;
@@ -363,8 +363,8 @@ int rtw_mesh_path_error_tx(_adapter *adapter,
 	pos += sizeof(struct rtw_ieee80211_hdr_3addr);
 	pattrib->pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
 
-	pos = rtw_set_fixed_ie(pos, 1, &(category), &(pattrib->pktlen));
-	pos = rtw_set_fixed_ie(pos, 1, &(action), &(pattrib->pktlen));
+	pos = rtw_set_fixed_iex(pos, 1, &(category), &(pattrib->pktlen));
+	pos = rtw_set_fixed_iex(pos, 1, &(action), &(pattrib->pktlen));
 
 	ie_len = 15;
 	pattrib->pktlen += (2 + ie_len);
@@ -377,7 +377,7 @@ int rtw_mesh_path_error_tx(_adapter *adapter,
 	/* Flags format | B7 | B6 | B5:B0 | = | rsvd | AE | rsvd | */
 	*pos = 0;
 	pos++;
-	_rtw_memcpy(pos, target, ETH_ALEN);
+	_rtw_memcpyx(pos, target, ETH_ALEN);
 	pos += ETH_ALEN;
 	*(u32 *)pos = cpu_to_le32(target_sn);
 	pos += 4;
@@ -387,7 +387,7 @@ int rtw_mesh_path_error_tx(_adapter *adapter,
 				adapter->mesh_cfg.dot11MeshHWMPperrMinInterval);
 	pattrib->last_txcmdsz = pattrib->pktlen;
 	/* Send directly. Rewrite it if deferred tx is needed */
-	dump_mgntframe(adapter, pmgntframe);
+	dump_mgntframex(adapter, pmgntframe);
 
 	RTW_HWMP_DBG("TX PERR toward "MAC_FMT", ra = "MAC_FMT"\n", MAC_ARG(target), MAC_ARG(ra));
 	
@@ -553,7 +553,7 @@ static u32 rtw_desc_rate_to_bitrate(u8 bw, u8 rate_idx, u8 sgi)
 static u32 rtw_airtime_link_metric_get(_adapter *adapter, struct sta_info *sta)
 {
 	struct dm_struct *dm = adapter_to_phydm(adapter);
-	int device_constant = phydm_get_plcp(dm, sta->cmn.mac_id) << RTW_ARITH_SHIFT;
+	int device_constant = phydm_get_plcpx(dm, sta->cmn.mac_id) << RTW_ARITH_SHIFT;
 	u32 test_frame_len = RTW_TEST_FRAME_LEN << RTW_ARITH_SHIFT;
 	u32 s_unit = 1 << RTW_ARITH_SHIFT;
 	u32 err;
@@ -612,7 +612,7 @@ void rtw_ieee80211s_update_metric(_adapter *adapter, u8 mac_id,
 	if (total_pkt < RTW_TOTAL_PKT_MIN_THRESHOLD)
 		return;
 
-	/* TBD: sta->metrics.overhead = phydm_get_plcp(void *dm_void, u16 macid); */
+	/* TBD: sta->metrics.overhead = phydm_get_plcpx(void *dm_void, u16 macid); */
 	sta->metrics.total_pkt = total_pkt;
 
 	rtw_ewma_err_rate_add(&sta->metrics.err_rate, per);
@@ -669,11 +669,11 @@ static void rtw_hwmp_preq_frame_process(_adapter *adapter,
 		reply = _TRUE;
 		to_gate_ask = 1;
 		target_metric = 0;
-		if (rtw_time_after(rtw_get_current_time(), minfo->last_sn_update +
+		if (rtw_time_afterx(rtw_get_current_timex(), minfo->last_sn_update +
 					rtw_net_traversal_jiffies(adapter)) ||
-		    rtw_time_before(rtw_get_current_time(), minfo->last_sn_update)) {
+		    rtw_time_before(rtw_get_current_timex(), minfo->last_sn_update)) {
 			++minfo->sn;
-			minfo->last_sn_update = rtw_get_current_time();
+			minfo->last_sn_update = rtw_get_current_timex();
 		}
 		target_sn = minfo->sn;
 	} else if (is_broadcast_mac_addr(target_addr) &&
@@ -686,7 +686,7 @@ static void rtw_hwmp_preq_frame_process(_adapter *adapter,
 				target_addr = adapter_mac_addr(adapter);
 				target_sn = ++minfo->sn;
 				target_metric = 0;
-				minfo->last_sn_update = rtw_get_current_time();
+				minfo->last_sn_update = rtw_get_current_timex();
 			}
 
 			if (preq_is_gate) {
@@ -862,7 +862,7 @@ static void rtw_hwmp_prep_frame_process(_adapter *adapter,
 		exit_critical_bh(&path->state_lock);
 		goto fail;
 	}
-	_rtw_memcpy(next_hop, rtw_next_hop_deref_protected(path)->cmn.mac_addr, ETH_ALEN);
+	_rtw_memcpyx(next_hop, rtw_next_hop_deref_protected(path)->cmn.mac_addr, ETH_ALEN);
 	exit_critical_bh(&path->state_lock);
 	--ttl;
 	flags = RTW_PREP_IE_FLAGS(prep_elem);
@@ -973,7 +973,7 @@ static void rtw_hwmp_rann_frame_process(_adapter *adapter,
 		  MAC_ARG(originator_addr), MAC_ARG(mgmt->addr2), root_is_gate);
 
 	rtw_rcu_read_lock();
-	sta = rtw_get_stainfo(pstapriv, mgmt->addr2);
+	sta = rtw_get_stainfox(pstapriv, mgmt->addr2);
 	if (!sta) {
 		rtw_rcu_read_unlock();
 		return;
@@ -998,9 +998,9 @@ static void rtw_hwmp_rann_frame_process(_adapter *adapter,
 	}
 
 	if ((!(path->flags & (RTW_MESH_PATH_ACTIVE | RTW_MESH_PATH_RESOLVING)) ||
-	     (rtw_time_after(rtw_get_current_time(), path->last_preq_to_root +
+	     (rtw_time_afterx(rtw_get_current_timex(), path->last_preq_to_root +
 				  rtw_root_path_confirmation_jiffies(adapter)) ||
-	     rtw_time_before(rtw_get_current_time(), path->last_preq_to_root))) &&
+	     rtw_time_before(rtw_get_current_timex(), path->last_preq_to_root))) &&
 	     !(path->flags & RTW_MESH_PATH_FIXED) && (ttl != 0)) {
 		u8 preq_node_flag = RTW_PREQ_Q_F_START | RTW_PREQ_Q_F_REFRESH;
 
@@ -1009,20 +1009,20 @@ static void rtw_hwmp_rann_frame_process(_adapter *adapter,
 #ifdef CONFIG_RTW_MESH_ADD_ROOT_CHK
 		if (RTW_SN_LT(path->sn, originator_sn) &&
 		    (path->rann_metric + mshcfg->sane_metric_delta < metric) &&
-		    _rtw_memcmp(bcast_addr, path->rann_snd_addr, ETH_ALEN) == _FALSE) {
+		    _rtw_memcmpx(bcast_addr, path->rann_snd_addr, ETH_ALEN) == _FALSE) {
 			RTW_HWMP_DBG("Trigger additional check for root "
 				     "confirm PREQ. rann_snd_addr = "MAC_FMT
 				     "add_chk_rann_snd_addr= "MAC_FMT"\n",
 					MAC_ARG(mgmt->addr2),
 					MAC_ARG(path->rann_snd_addr));
-			_rtw_memcpy(path->add_chk_rann_snd_addr,
+			_rtw_memcpyx(path->add_chk_rann_snd_addr,
 				    path->rann_snd_addr, ETH_ALEN);
 			preq_node_flag |= RTW_PREQ_Q_F_CHK;
 			
 		}
 #endif
 		rtw_mesh_queue_preq(path, preq_node_flag);
-		path->last_preq_to_root = rtw_get_current_time();
+		path->last_preq_to_root = rtw_get_current_timex();
 	}
 
 	path->sn = originator_sn;
@@ -1030,7 +1030,7 @@ static void rtw_hwmp_rann_frame_process(_adapter *adapter,
 	path->is_root = _TRUE;
 	/* Recording RANNs sender address to send individually
 	 * addressed PREQs destined for root mesh STA */
-	_rtw_memcpy(path->rann_snd_addr, mgmt->addr2, ETH_ALEN);
+	_rtw_memcpyx(path->rann_snd_addr, mgmt->addr2, ETH_ALEN);
 
 	if (root_is_gate) {
 		path->gate_ann_int = interval;
@@ -1074,7 +1074,7 @@ static u32 rtw_hwmp_route_info_get(_adapter *adapter,
 	BOOLEAN process = _TRUE;
 
 	rtw_rcu_read_lock();
-	sta = rtw_get_stainfo(pstapriv, mgmt->addr2);
+	sta = rtw_get_stainfox(pstapriv, mgmt->addr2);
 	if (!sta) {
 		rtw_rcu_read_unlock();
 		return 0;
@@ -1154,12 +1154,12 @@ static u32 rtw_hwmp_route_info_get(_adapter *adapter,
 			path->flags |= RTW_MESH_PATH_SN_VALID;
 			path->metric = new_metric;
 			path->sn = originator_sn;
-			path->exp_time = rtw_time_after(path->exp_time, exp_time)
+			path->exp_time = rtw_time_afterx(path->exp_time, exp_time)
 					  ?  path->exp_time : exp_time;
 			rtw_mesh_path_activate(path);
 #ifdef CONFIG_RTW_MESH_ADD_ROOT_CHK
 			if (path->is_root && (action == RTW_MPATH_PREP)) {
-				_rtw_memcpy(path->rann_snd_addr, 
+				_rtw_memcpyx(path->rann_snd_addr, 
 				mgmt->addr2, ETH_ALEN);
 				path->rann_metric = new_metric;
 			}
@@ -1196,7 +1196,7 @@ static u32 rtw_hwmp_route_info_get(_adapter *adapter,
 		if (fresh_info) {
 			rtw_mesh_path_assign_nexthop(path, sta);
 			path->metric = last_hop_metric;
-			path->exp_time = rtw_time_after(path->exp_time, exp_time)
+			path->exp_time = rtw_time_afterx(path->exp_time, exp_time)
 					  ?  path->exp_time : exp_time;
 			rtw_mesh_path_activate(path);
 			exit_critical_bh(&path->state_lock);
@@ -1214,7 +1214,7 @@ static void rtw_mesh_rx_hwmp_frame_cnts(_adapter *adapter, u8 *addr)
 {
 	struct sta_info *sta;
 
-	sta = rtw_get_stainfo(&adapter->stapriv, addr);
+	sta = rtw_get_stainfox(&adapter->stapriv, addr);
 	if (sta)
 		sta->sta_stats.rx_hwmp_pkts++;
 }
@@ -1242,7 +1242,7 @@ void rtw_mesh_rx_path_sel_frame(_adapter *adapter, union recv_frame *rframe)
 	left = frame_len - attrib->hdrlen - attrib->iv_len - attrib->icv_len - 2;
 	start = pframe + attrib->hdrlen + 2;
 
-	parse_res = rtw_ieee802_11_parse_elems(start, left, &elems, 1);
+	parse_res = rtw_ieee802_11_parse_elemsx(start, left, &elems, 1);
 	if (parse_res == ParseFailed)
 		RTW_HWMP_INFO(FUNC_ADPT_FMT" Path Select Frame ParseFailed\n"
 			, FUNC_ADPT_ARG(adapter));
@@ -1286,7 +1286,7 @@ void rtw_mesh_queue_preq(struct rtw_mesh_path *path, u8 flags)
 	struct rtw_mesh_info *minfo = &adapter->mesh_info;
 	struct rtw_mesh_preq_queue *preq_node;
 
-	preq_node = rtw_malloc(sizeof(struct rtw_mesh_preq_queue));
+	preq_node = rtw_mallocx(sizeof(struct rtw_mesh_preq_queue));
 	if (!preq_node) {
 		RTW_HWMP_INFO("could not allocate PREQ node\n");
 		return;
@@ -1295,21 +1295,21 @@ void rtw_mesh_queue_preq(struct rtw_mesh_path *path, u8 flags)
 	enter_critical_bh(&minfo->mesh_preq_queue_lock);
 	if (minfo->preq_queue_len == RTW_MAX_PREQ_QUEUE_LEN) {
 		exit_critical_bh(&minfo->mesh_preq_queue_lock);
-		rtw_mfree(preq_node, sizeof(struct rtw_mesh_preq_queue));
+		rtw_mfreex(preq_node, sizeof(struct rtw_mesh_preq_queue));
 		if (rtw_print_ratelimit())
 			RTW_HWMP_INFO("PREQ node queue full\n");
 		return;
 	}
 
-	_rtw_spinlock(&path->state_lock);
+	_rtw_spinlockx(&path->state_lock);
 	if (path->flags & RTW_MESH_PATH_REQ_QUEUED) {
-		_rtw_spinunlock(&path->state_lock);
+		_rtw_spinunlockx(&path->state_lock);
 		exit_critical_bh(&minfo->mesh_preq_queue_lock);
-		rtw_mfree(preq_node, sizeof(struct rtw_mesh_preq_queue));
+		rtw_mfreex(preq_node, sizeof(struct rtw_mesh_preq_queue));
 		return;
 	}
 
-	_rtw_memcpy(preq_node->dst, path->dst, ETH_ALEN);
+	_rtw_memcpyx(preq_node->dst, path->dst, ETH_ALEN);
 	preq_node->flags = flags;
 
 	path->flags |= RTW_MESH_PATH_REQ_QUEUED;
@@ -1321,18 +1321,18 @@ void rtw_mesh_queue_preq(struct rtw_mesh_path *path, u8 flags)
 		path->flags |= RTW_MESH_PATH_PEER_AKA;
 	if (flags & RTW_PREQ_Q_F_BCAST_PREQ)
 		path->flags |= RTW_MESH_PATH_BCAST_PREQ;
-	_rtw_spinunlock(&path->state_lock);
+	_rtw_spinunlockx(&path->state_lock);
 
-	rtw_list_insert_tail(&preq_node->list, &minfo->preq_queue.list);
+	rtw_list_insert_tailx(&preq_node->list, &minfo->preq_queue.list);
 	++minfo->preq_queue_len;
 	exit_critical_bh(&minfo->mesh_preq_queue_lock);
 
-	if (rtw_time_after(rtw_get_current_time(), minfo->last_preq + rtw_min_preq_int_jiff(adapter)))
+	if (rtw_time_afterx(rtw_get_current_timex(), minfo->last_preq + rtw_min_preq_int_jiff(adapter)))
 		rtw_mesh_work(&adapter->mesh_work);
 
-	else if (rtw_time_before(rtw_get_current_time(), minfo->last_preq)) {
+	else if (rtw_time_before(rtw_get_current_timex(), minfo->last_preq)) {
 		/* systime wrapped around issue */
-		minfo->last_preq = rtw_get_current_time() - rtw_min_preq_int_jiff(adapter) - 1;
+		minfo->last_preq = rtw_get_current_timex() - rtw_min_preq_int_jiff(adapter) - 1;
 		rtw_mesh_work(&adapter->mesh_work);
 	} else
 		rtw_mod_timer(&adapter->mesh_path_timer, minfo->last_preq +
@@ -1377,7 +1377,7 @@ void rtw_mesh_path_start_discovery(_adapter *adapter)
 
 	enter_critical_bh(&minfo->mesh_preq_queue_lock);
 	if (!minfo->preq_queue_len ||
-		rtw_time_before(rtw_get_current_time(), minfo->last_preq +
+		rtw_time_before(rtw_get_current_timex(), minfo->last_preq +
 				rtw_min_preq_int_jiff(adapter))) {
 		exit_critical_bh(&minfo->mesh_preq_queue_lock);
 		return;
@@ -1417,13 +1417,13 @@ void rtw_mesh_path_start_discovery(_adapter *adapter)
 		goto enddiscovery;
 	}
 
-	minfo->last_preq = rtw_get_current_time();
+	minfo->last_preq = rtw_get_current_timex();
 
-	if (rtw_time_after(rtw_get_current_time(), minfo->last_sn_update +
+	if (rtw_time_afterx(rtw_get_current_timex(), minfo->last_sn_update +
 				rtw_net_traversal_jiffies(adapter)) ||
-	    rtw_time_before(rtw_get_current_time(), minfo->last_sn_update)) {
+	    rtw_time_before(rtw_get_current_timex(), minfo->last_sn_update)) {
 		++minfo->sn;
-		minfo->last_sn_update = rtw_get_current_time();
+		minfo->last_sn_update = rtw_get_current_timex();
 	}
 	lifetime = rtw_default_lifetime(adapter);
 	ttl = mshcfg->element_ttl;
@@ -1455,11 +1455,11 @@ void rtw_mesh_path_start_discovery(_adapter *adapter)
 	rtw_mesh_path_sel_frame_tx(RTW_MPATH_PREQ, flags, adapter_mac_addr(adapter), minfo->sn,
 				   target_flags, path->dst, path->sn, da, 0,
 				   ttl, lifetime, 0, minfo->preq_id++, adapter);
-	rtw_mod_timer(&path->timer, rtw_get_current_time() + path->discovery_timeout);
+	rtw_mod_timer(&path->timer, rtw_get_current_timex() + path->discovery_timeout);
 
 enddiscovery:
 	rtw_rcu_read_unlock();
-	rtw_mfree(preq_node, sizeof(struct rtw_mesh_preq_queue));
+	rtw_mfreex(preq_node, sizeof(struct rtw_mesh_preq_queue));
 }
 
 void rtw_mesh_path_timer(void *ctx)
@@ -1505,7 +1505,7 @@ void rtw_mesh_path_timer(void *ctx)
 				  RTW_MESH_PATH_ROOT_ADD_CHK |
 				  RTW_MESH_PATH_PEER_AKA |
 				  RTW_MESH_PATH_BCAST_PREQ);
-		path->exp_time = rtw_get_current_time();
+		path->exp_time = rtw_get_current_timex();
 		exit_critical_bh(&path->state_lock);
 		if (!path->is_gate && rtw_mesh_gate_num(adapter) > 0) {
 			ret = rtw_mesh_path_send_to_gates(path);
@@ -1568,7 +1568,7 @@ void rtw_ieee80211_mesh_path_root_timer(void *ctx)
 {
 	_adapter *adapter = (_adapter *)ctx;
 
-	rtw_set_bit(RTW_MESH_WORK_ROOT, &adapter->wrkq_flags);
+	rtw_set_bitxx(RTW_MESH_WORK_ROOT, &adapter->wrkq_flags);
 
 	rtw_mesh_work(&adapter->mesh_work);
 }
@@ -1593,11 +1593,11 @@ BOOLEAN rtw_ieee80211_mesh_root_setup(_adapter *adapter)
 	BOOLEAN root_enabled = _FALSE;
 
 	if (adapter->mesh_cfg.dot11MeshHWMPRootMode > RTW_IEEE80211_ROOTMODE_ROOT) {
-		rtw_set_bit(RTW_MESH_WORK_ROOT, &adapter->wrkq_flags);
+		rtw_set_bitxx(RTW_MESH_WORK_ROOT, &adapter->wrkq_flags);
 		root_enabled = _TRUE;
 	}
 	else {
-		rtw_clear_bit(RTW_MESH_WORK_ROOT, &adapter->wrkq_flags);
+		rtw_clear_bitx(RTW_MESH_WORK_ROOT, &adapter->wrkq_flags);
 		/* stop running timer */
 		_cancel_timer_ex(&adapter->mesh_path_root_timer);
 		root_enabled = _FALSE;
@@ -1611,7 +1611,7 @@ void rtw_mesh_work_hdl(_workitem *work)
 	_adapter *adapter = container_of(work, _adapter, mesh_work);
 
 	while(adapter->mesh_info.preq_queue_len) {
-		if (rtw_time_after(rtw_get_current_time(),
+		if (rtw_time_afterx(rtw_get_current_timex(),
 		       adapter->mesh_info.last_preq + rtw_min_preq_int_jiff(adapter)))
 		       /* It will consume preq_queue_len */
 		       rtw_mesh_path_start_discovery(adapter);
@@ -1624,7 +1624,7 @@ void rtw_mesh_work_hdl(_workitem *work)
 		}
 	}
 
-	if (rtw_test_and_clear_bit(RTW_MESH_WORK_ROOT, &adapter->wrkq_flags))
+	if (rtw_test_and_clear_bitxx(RTW_MESH_WORK_ROOT, &adapter->wrkq_flags))
 		rtw_ieee80211_mesh_rootpath(adapter);
 }
 
@@ -1645,8 +1645,8 @@ static void rtw_update_metric_directly(_adapter *adapter)
 
 			if (!sta)
 				continue;
-			rate_idx = rtw_get_current_tx_rate(adapter, sta);
-			sgi = rtw_get_current_tx_sgi(adapter, sta);
+			rate_idx = rtw_get_current_tx_ratex(adapter, sta);
+			sgi = rtw_get_current_tx_sgix(adapter, sta);
 			bw = sta->cmn.bw_mode;
 			rate = rtw_desc_rate_to_bitrate(bw, rate_idx, sgi);
 			sta->metrics.data_rate = rate;

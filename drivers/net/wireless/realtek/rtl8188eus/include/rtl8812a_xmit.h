@@ -354,7 +354,7 @@ s32 rtl8812ae_xmit_buf_handler(_adapter *padapter);
 void UpdateEarlyModeInfo8812(struct xmit_priv *pxmitpriv, struct xmit_buf *pxmitbuf);
 #endif
 
-void _dbg_dump_tx_info(_adapter	*padapter, int frame_tag, u8 *ptxdesc);
+void _dbg_dump_tx_infox(_adapter	*padapter, int frame_tag, u8 *ptxdesc);
 
 u8	BWMapping_8812(PADAPTER Adapter, struct pkt_attrib *pattrib);
 

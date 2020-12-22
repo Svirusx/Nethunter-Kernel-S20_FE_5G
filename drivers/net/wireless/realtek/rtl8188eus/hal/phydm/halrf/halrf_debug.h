@@ -115,9 +115,9 @@ static __inline void RF_DBG(struct dm_struct *dm, int comp, char *fmt, ...)
 /*@ function prototype */
 /*@============================================================*/
 
-void halrf_cmd_parser(void *dm_void, char input[][16], u32 *_used, char *output,
+void halrf_cmd_parserx(void *dm_void, char input[][16], u32 *_used, char *output,
 		      u32 *_out_len, u32 input_num);
 
-void halrf_init_debug_setting(void *dm_void);
+void halrf_initx_debug_setting(void *dm_void);
 
 #endif /*__HALRF_H__*/

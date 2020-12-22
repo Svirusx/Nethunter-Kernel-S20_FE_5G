@@ -258,18 +258,18 @@ enum h2c_cmd {
 #define H2C_MSR_ROLE_MESH	7
 #define H2C_MSR_ROLE_MAX	8
 
-extern const char *const _h2c_msr_role_str[];
-#define h2c_msr_role_str(role) (((role) >= H2C_MSR_ROLE_MAX) ? _h2c_msr_role_str[H2C_MSR_ROLE_MAX] : _h2c_msr_role_str[(role)])
+extern const char *const _h2c_msr_role_strx[];
+#define h2c_msr_role_strx(role) (((role) >= H2C_MSR_ROLE_MAX) ? _h2c_msr_role_strx[H2C_MSR_ROLE_MAX] : _h2c_msr_role_strx[(role)])
 
 #define H2C_MSR_FMT "%s %s%s"
 #define H2C_MSR_ARG(h2c_msr) \
 	GET_H2CCMD_MSRRPT_PARM_OPMODE((h2c_msr)) ? " C" : "", \
-	h2c_msr_role_str(GET_H2CCMD_MSRRPT_PARM_ROLE((h2c_msr))), \
+	h2c_msr_role_strx(GET_H2CCMD_MSRRPT_PARM_ROLE((h2c_msr))), \
 	GET_H2CCMD_MSRRPT_PARM_MIRACAST((h2c_msr)) ? (GET_H2CCMD_MSRRPT_PARM_MIRACAST_SINK((h2c_msr)) ? " MSINK" : " MSRC") : ""
 
-s32 rtw_hal_set_FwMediaStatusRpt_cmd(_adapter *adapter, bool opmode, bool miracast, bool miracast_sink, u8 role, u8 macid, bool macid_ind, u8 macid_end);
-s32 rtw_hal_set_FwMediaStatusRpt_single_cmd(_adapter *adapter, bool opmode, bool miracast, bool miracast_sink, u8 role, u8 macid);
-s32 rtw_hal_set_FwMediaStatusRpt_range_cmd(_adapter *adapter, bool opmode, bool miracast, bool miracast_sink, u8 role, u8 macid, u8 macid_end);
+s32 rtw_hal_set_FwMediaStatusRpt_cmdx(_adapter *adapter, bool opmode, bool miracast, bool miracast_sink, u8 role, u8 macid, bool macid_ind, u8 macid_end);
+s32 rtw_hal_set_FwMediaStatusRpt_single_cmdx(_adapter *adapter, bool opmode, bool miracast, bool miracast_sink, u8 role, u8 macid);
+s32 rtw_hal_set_FwMediaStatusRpt_range_cmdx(_adapter *adapter, bool opmode, bool miracast, bool miracast_sink, u8 role, u8 macid, u8 macid_end);
 
 /* _KEEP_ALIVE_CMD_0x03 */
 #define SET_H2CCMD_KEEPALIVE_PARM_ENABLE(__pH2CCmd, __Value)		SET_BITS_TO_LE_1BYTE(__pH2CCmd, 0, 1, __Value)
@@ -631,13 +631,13 @@ struct rsvd_page_cache_t {
 
 bool rsvd_page_cache_update_all(struct rsvd_page_cache_t *cache, u8 loc
 	, u8 txdesc_len, u32 page_size, u8 *info, u32 info_len);
-bool rsvd_page_cache_update_data(struct rsvd_page_cache_t *cache, u8 *info
+bool rsvd_page_cache_update_datax(struct rsvd_page_cache_t *cache, u8 *info
 	, u32 info_len);
 void rsvd_page_cache_free_data(struct rsvd_page_cache_t *cache);
 void rsvd_page_cache_free(struct rsvd_page_cache_t *cache);
 
 #endif
-void dump_TX_FIFO(PADAPTER padapter, u8 page_num, u16 page_size);
+void dump_TX_FIFOx(PADAPTER padapter, u8 page_num, u16 page_size);
 u8 rtw_hal_set_fw_media_status_cmd(_adapter *adapter, u8 mstatus, u8 macid);
 #if defined(CONFIG_WOWLAN) || defined(CONFIG_AP_WOWLAN)
 	/* WOW command function */

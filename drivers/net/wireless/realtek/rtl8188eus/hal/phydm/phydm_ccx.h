@@ -242,50 +242,50 @@ void phydm_fahm_dbg(void *dm_void, char input[][16], u32 *_used, char *output,
 
 /*@NHM*/
 #ifdef NHM_SUPPORT
-void phydm_nhm_trigger(void *dm_void);
+void phydm_nhm_triggerx(void *dm_void);
 
-void phydm_nhm_init(void *dm_void);
+void phydm_nhm_initx(void *dm_void);
 
-void phydm_nhm_dbg(void *dm_void, char input[][16], u32 *_used, char *output,
+void phydm_nhm_dbgx(void *dm_void, char input[][16], u32 *_used, char *output,
 		   u32 *_out_len);
-u8 phydm_get_igi(void *dm_void, enum bb_path path);
+u8 phydm_get_igix(void *dm_void, enum bb_path path);
 #endif
 
 /*@CLM*/
 #ifdef CLM_SUPPORT
-void phydm_clm_c2h_report_handler(void *dm_void, u8 *cmd_buf, u8 cmd_len);
+void phydm_clm_c2h_report_handlerx(void *dm_void, u8 *cmd_buf, u8 cmd_len);
 
-void phydm_clm_h2c(void *dm_void, u16 obs_time, u8 fw_clm_en);
+void phydm_clm_h2cx(void *dm_void, u16 obs_time, u8 fw_clm_en);
 
-void phydm_clm_setting(void *dm_void, u16 clm_period);
+void phydm_clm_settingx(void *dm_void, u16 clm_period);
 
-void phydm_clm_trigger(void *dm_void);
+void phydm_clm_triggerx(void *dm_void);
 
-boolean phydm_clm_check_rdy(void *dm_void);
+boolean phydm_clm_check_rdyx(void *dm_void);
 
-void phydm_clm_get_utility(void *dm_void);
+void phydm_clm_get_utilityx(void *dm_void);
 
-boolean phydm_clm_get_result(void *dm_void);
+boolean phydm_clm_get_resultx(void *dm_void);
 
-u8 phydm_clm_mntr_set(void *dm_void, struct clm_para_info *clm_para);
+u8 phydm_clm_mntr_setx(void *dm_void, struct clm_para_info *clm_para);
 
-void phydm_set_clm_mntr_mode(void *dm_void, enum clm_monitor_mode mode);
+void phydm_set_clm_mntr_modex(void *dm_void, enum clm_monitor_mode mode);
 
-void phydm_clm_dbg(void *dm_void, char input[][16], u32 *_used, char *output,
+void phydm_clm_dbgx(void *dm_void, char input[][16], u32 *_used, char *output,
 		   u32 *_out_len);
 #endif
 
-u8 phydm_env_mntr_trigger(void *dm_void, struct nhm_para_info *nhm_para,
+u8 phydm_env_mntr_triggerx(void *dm_void, struct nhm_para_info *nhm_para,
 			  struct clm_para_info *clm_para,
 			  struct env_trig_rpt *rpt);
 
-u8 phydm_env_mntr_result(void *dm_void, struct env_mntr_rpt *rpt);
+u8 phydm_env_mntr_resultx(void *dm_void, struct env_mntr_rpt *rpt);
 
-void phydm_env_mntr_watchdog(void *dm_void);
+void phydm_env_mntr_watchdogx(void *dm_void);
 
-void phydm_env_monitor_init(void *dm_void);
+void phydm_env_monitor_initx(void *dm_void);
 
-void phydm_env_mntr_dbg(void *dm_void, char input[][16], u32 *_used,
+void phydm_env_mntr_dbgx(void *dm_void, char input[][16], u32 *_used,
 			char *output, u32 *_out_len);
 
 #endif

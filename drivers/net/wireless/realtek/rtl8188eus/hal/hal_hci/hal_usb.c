@@ -17,7 +17,7 @@
 #include <drv_types.h>
 #include <hal_data.h>
 
-int	usb_init_recv_priv(_adapter *padapter, u16 ini_in_buf_sz)
+int	usb_init_recv_privx(_adapter *padapter, u16 ini_in_buf_sz)
 {
 	struct recv_priv	*precvpriv = &padapter->recvpriv;
 	int	i, res = _SUCCESS;
@@ -25,7 +25,7 @@ int	usb_init_recv_priv(_adapter *padapter, u16 ini_in_buf_sz)
 
 #ifdef PLATFORM_LINUX
 	tasklet_init(&precvpriv->recv_tasklet,
-		     (void(*)(unsigned long))usb_recv_tasklet,
+		     (void(*)(unsigned long))usb_recv_taskletx,
 		     (unsigned long)padapter);
 #endif /* PLATFORM_LINUX */
 
@@ -44,7 +44,7 @@ int	usb_init_recv_priv(_adapter *padapter, u16 ini_in_buf_sz)
 		goto exit;
 	}
 #endif /* PLATFORM_LINUX */
-	precvpriv->int_in_buf = rtw_zmalloc(ini_in_buf_sz);
+	precvpriv->int_in_buf = rtw_zmallocx(ini_in_buf_sz);
 	if (precvpriv->int_in_buf == NULL) {
 		res = _FAIL;
 		RTW_INFO("alloc_mem for interrupt in endpoint fail !!!!\n");
@@ -53,8 +53,8 @@ int	usb_init_recv_priv(_adapter *padapter, u16 ini_in_buf_sz)
 #endif /* CONFIG_USB_INTERRUPT_IN_PIPE */
 
 	/* init recv_buf */
-	_rtw_init_queue(&precvpriv->free_recv_buf_queue);
-	_rtw_init_queue(&precvpriv->recv_buf_pending_queue);
+	_rtw_init_queuex(&precvpriv->free_recv_buf_queue);
+	_rtw_init_queuex(&precvpriv->recv_buf_pending_queue);
 #ifndef CONFIG_USE_USB_BUFFER_ALLOC_RX
 	/* this is used only when RX_IOBUF is sk_buff */
 	skb_queue_head_init(&precvpriv->free_recv_skb_queue);
@@ -62,7 +62,7 @@ int	usb_init_recv_priv(_adapter *padapter, u16 ini_in_buf_sz)
 
 	RTW_INFO("NR_RECVBUFF: %d\n", NR_RECVBUFF);
 	RTW_INFO("MAX_RECVBUF_SZ: %d\n", MAX_RECVBUF_SZ);
-	precvpriv->pallocated_recv_buf = rtw_zmalloc(NR_RECVBUFF * sizeof(struct recv_buf) + 4);
+	precvpriv->pallocated_recv_buf = rtw_zmallocx(NR_RECVBUFF * sizeof(struct recv_buf) + 4);
 	if (precvpriv->pallocated_recv_buf == NULL) {
 		res = _FAIL;
 		goto exit;
@@ -73,20 +73,20 @@ int	usb_init_recv_priv(_adapter *padapter, u16 ini_in_buf_sz)
 	precvbuf = (struct recv_buf *)precvpriv->precv_buf;
 
 	for (i = 0; i < NR_RECVBUFF ; i++) {
-		_rtw_init_listhead(&precvbuf->list);
+		_rtw_init_listheadx(&precvbuf->list);
 
-		_rtw_spinlock_init(&precvbuf->recvbuf_lock);
+		_rtw_spinlockx_init(&precvbuf->recvbuf_lock);
 
 		precvbuf->alloc_sz = MAX_RECVBUF_SZ;
 
-		res = rtw_os_recvbuf_resource_alloc(padapter, precvbuf);
+		res = rtw_os_recvbuf_resource_allocx(padapter, precvbuf);
 		if (res == _FAIL)
 			break;
 
 		precvbuf->ref_cnt = 0;
 		precvbuf->adapter = padapter;
 
-		/* rtw_list_insert_tail(&precvbuf->list, &(precvpriv->free_recv_buf_queue.queue)); */
+		/* rtw_list_insert_tailx(&precvbuf->list, &(precvpriv->free_recv_buf_queue.queue)); */
 
 		precvbuf++;
 	}
@@ -118,7 +118,7 @@ int	usb_init_recv_priv(_adapter *padapter, u16 ini_in_buf_sz)
 #ifdef CONFIG_PREALLOC_RX_SKB_BUFFER
 			pskb = rtw_alloc_skb_premem(MAX_RECVBUF_SZ);
 #else
-			pskb = rtw_skb_alloc(MAX_RECVBUF_SZ + RECVBUFF_ALIGN_SZ);
+			pskb = rtw_skb_allocx(MAX_RECVBUF_SZ + RECVBUFF_ALIGN_SZ);
 #endif /* CONFIG_PREALLOC_RX_SKB_BUFFER */
 
 			if (pskb) {
@@ -146,7 +146,7 @@ exit:
 	return res;
 }
 
-void usb_free_recv_priv(_adapter *padapter, u16 ini_in_buf_sz)
+void usb_free_recv_privx(_adapter *padapter, u16 ini_in_buf_sz)
 {
 	int i;
 	struct recv_buf *precvbuf;
@@ -155,12 +155,12 @@ void usb_free_recv_priv(_adapter *padapter, u16 ini_in_buf_sz)
 	precvbuf = (struct recv_buf *)precvpriv->precv_buf;
 
 	for (i = 0; i < NR_RECVBUFF ; i++) {
-		rtw_os_recvbuf_resource_free(padapter, precvbuf);
+		rtw_os_recvbuf_resource_freex(padapter, precvbuf);
 		precvbuf++;
 	}
 
 	if (precvpriv->pallocated_recv_buf)
-		rtw_mfree(precvpriv->pallocated_recv_buf, NR_RECVBUFF * sizeof(struct recv_buf) + 4);
+		rtw_mfreex(precvpriv->pallocated_recv_buf, NR_RECVBUFF * sizeof(struct recv_buf) + 4);
 
 #ifdef CONFIG_USB_INTERRUPT_IN_PIPE
 #ifdef PLATFORM_LINUX
@@ -168,7 +168,7 @@ void usb_free_recv_priv(_adapter *padapter, u16 ini_in_buf_sz)
 		usb_free_urb(precvpriv->int_in_urb);
 #endif
 	if (precvpriv->int_in_buf)
-		rtw_mfree(precvpriv->int_in_buf, ini_in_buf_sz);
+		rtw_mfreex(precvpriv->int_in_buf, ini_in_buf_sz);
 #endif /* CONFIG_USB_INTERRUPT_IN_PIPE */
 
 #ifdef PLATFORM_LINUX
@@ -176,7 +176,7 @@ void usb_free_recv_priv(_adapter *padapter, u16 ini_in_buf_sz)
 	if (skb_queue_len(&precvpriv->rx_skb_queue))
 		RTW_WARN("rx_skb_queue not empty\n");
 
-	rtw_skb_queue_purge(&precvpriv->rx_skb_queue);
+	rtw_skb_queue_purgex(&precvpriv->rx_skb_queue);
 
 	if (skb_queue_len(&precvpriv->free_recv_skb_queue))
 		RTW_WARN("free_recv_skb_queue not empty, %d\n", skb_queue_len(&precvpriv->free_recv_skb_queue));
@@ -188,11 +188,11 @@ void usb_free_recv_priv(_adapter *padapter, u16 ini_in_buf_sz)
 
 		while ((skb = skb_dequeue(&precvpriv->free_recv_skb_queue)) != NULL) {
 			if (rtw_free_skb_premem(skb) != 0)
-				rtw_skb_free(skb);
+				rtw_skb_freex(skb);
 		}
 	}
 #else
-	rtw_skb_queue_purge(&precvpriv->free_recv_skb_queue);
+	rtw_skb_queue_purgex(&precvpriv->free_recv_skb_queue);
 #endif /* defined(CONFIG_PREALLOC_RX_SKB_BUFFER) && defined(CONFIG_PREALLOC_RECV_SKB) */
 #endif /* !defined(CONFIG_USE_USB_BUFFER_ALLOC_RX) */
 
@@ -201,10 +201,10 @@ void usb_free_recv_priv(_adapter *padapter, u16 ini_in_buf_sz)
 #ifdef PLATFORM_FREEBSD
 	struct sk_buff  *pskb;
 	while (NULL != (pskb = skb_dequeue(&precvpriv->rx_skb_queue)))
-		rtw_skb_free(pskb);
+		rtw_skb_freex(pskb);
 
 #if !defined(CONFIG_USE_USB_BUFFER_ALLOC_RX)
-	rtw_skb_queue_purge(&precvpriv->free_recv_skb_queue);
+	rtw_skb_queue_purgex(&precvpriv->free_recv_skb_queue);
 #endif
 
 #ifdef CONFIG_RX_INDICATE_QUEUE
@@ -213,7 +213,7 @@ void usb_free_recv_priv(_adapter *padapter, u16 ini_in_buf_sz)
 		IF_DEQUEUE(&precvpriv->rx_indicate_queue, m);
 		if (m == NULL)
 			break;
-		rtw_os_pkt_free(m);
+		rtw_os_pkt_freex(m);
 	}
 	mtx_destroy(&precvpriv->rx_indicate_queue.ifq_mtx);
 #endif /* CONFIG_RX_INDICATE_QUEUE */
@@ -234,23 +234,23 @@ void usb_c2h_hisr_hdl(_adapter *adapter, u8 *buf)
 	if (0)
 		RTW_PRINT("%s C2H == %d\n", __func__, id);
 
-	if (rtw_hal_c2h_id_handle_directly(adapter, id, seq, plen, payload)) {
+	if (rtw_hal_c2h_id_handle_directlyx(adapter, id, seq, plen, payload)) {
 		/* Handle directly */
-		rtw_hal_c2h_handler(adapter, id, seq, plen, payload);
+		rtw_hal_c2h_handlerxx(adapter, id, seq, plen, payload);
 
 		/* Replace with special pointer to trigger c2h_evt_clear only */
-		if (rtw_cbuf_push(adapter->evtpriv.c2h_queue, (void*)&adapter->evtpriv) != _SUCCESS)
-			RTW_ERR("%s rtw_cbuf_push fail\n", __func__);
+		if (rtw_cbuf_pushx(adapter->evtpriv.c2h_queue, (void*)&adapter->evtpriv) != _SUCCESS)
+			RTW_ERR("%s rtw_cbuf_pushx fail\n", __func__);
 	} else {
-		c2h_evt = rtw_malloc(C2H_REG_LEN);
+		c2h_evt = rtw_mallocx(C2H_REG_LEN);
 		if (c2h_evt != NULL) {
-			_rtw_memcpy(c2h_evt, buf, C2H_REG_LEN);
-			if (rtw_cbuf_push(adapter->evtpriv.c2h_queue, (void*)c2h_evt) != _SUCCESS)
-				RTW_ERR("%s rtw_cbuf_push fail\n", __func__);
+			_rtw_memcpyx(c2h_evt, buf, C2H_REG_LEN);
+			if (rtw_cbuf_pushx(adapter->evtpriv.c2h_queue, (void*)c2h_evt) != _SUCCESS)
+				RTW_ERR("%s rtw_cbuf_pushx fail\n", __func__);
 		} else {
 			/* Error handling for malloc fail */
-			if (rtw_cbuf_push(adapter->evtpriv.c2h_queue, (void*)NULL) != _SUCCESS)
-				RTW_ERR("%s rtw_cbuf_push fail\n", __func__);
+			if (rtw_cbuf_pushx(adapter->evtpriv.c2h_queue, (void*)NULL) != _SUCCESS)
+				RTW_ERR("%s rtw_cbuf_pushx fail\n", __func__);
 		}
 	}
 	_set_workitem(&adapter->evtpriv.c2h_wk);
@@ -272,7 +272,7 @@ int usb_write_async(struct usb_device *udev, u32 addr, void *pdata, u16 len)
 
 	wvalue = (u16)(addr & 0x0000ffff);
 
-	ret = _usbctrl_vendorreq_async_write(udev, request, wvalue, index, pdata, len, requesttype);
+	ret = _usbctrl_vendorreqx_async_write(udev, request, wvalue, index, pdata, len, requesttype);
 
 	return ret;
 }
@@ -317,7 +317,7 @@ int usb_async_write32(struct intf_hdl *pintfhdl, u32 addr, u32 val)
 }
 #endif /* CONFIG_USB_SUPPORT_ASYNC_VDN_REQ */
 
-u8 usb_read8(struct intf_hdl *pintfhdl, u32 addr)
+u8 usb_read8x(struct intf_hdl *pintfhdl, u32 addr)
 {
 	u8 request;
 	u8 requesttype;
@@ -340,14 +340,14 @@ u8 usb_read8(struct intf_hdl *pintfhdl, u32 addr)
 		wvalue |= 0x8000;
 #endif
 
-	usbctrl_vendorreq(pintfhdl, request, wvalue, index,
+	usbctrl_vendorreqx(pintfhdl, request, wvalue, index,
 			  &data, len, requesttype);
 
 
 	return data;
 }
 
-u16 usb_read16(struct intf_hdl *pintfhdl, u32 addr)
+u16 usb_read16x(struct intf_hdl *pintfhdl, u32 addr)
 {
 	u8 request;
 	u8 requesttype;
@@ -370,7 +370,7 @@ u16 usb_read16(struct intf_hdl *pintfhdl, u32 addr)
 		wvalue |= 0x8000;
 #endif
 
-	usbctrl_vendorreq(pintfhdl, request, wvalue, index,
+	usbctrl_vendorreqx(pintfhdl, request, wvalue, index,
 			  &data, len, requesttype);
 
 
@@ -378,7 +378,7 @@ u16 usb_read16(struct intf_hdl *pintfhdl, u32 addr)
 
 }
 
-u32 usb_read32(struct intf_hdl *pintfhdl, u32 addr)
+u32 usb_read32x(struct intf_hdl *pintfhdl, u32 addr)
 {
 	u8 request;
 	u8 requesttype;
@@ -401,14 +401,14 @@ u32 usb_read32(struct intf_hdl *pintfhdl, u32 addr)
 		wvalue |= 0x8000;
 #endif
 
-	usbctrl_vendorreq(pintfhdl, request, wvalue, index,
+	usbctrl_vendorreqx(pintfhdl, request, wvalue, index,
 			  &data, len, requesttype);
 
 
 	return data;
 }
 
-int usb_write8(struct intf_hdl *pintfhdl, u32 addr, u8 val)
+int usb_write8x(struct intf_hdl *pintfhdl, u32 addr, u8 val)
 {
 	u8 request;
 	u8 requesttype;
@@ -433,14 +433,14 @@ int usb_write8(struct intf_hdl *pintfhdl, u32 addr, u8 val)
 		wvalue |= 0x8000;
 #endif
 
-	ret = usbctrl_vendorreq(pintfhdl, request, wvalue, index,
+	ret = usbctrl_vendorreqx(pintfhdl, request, wvalue, index,
 				&data, len, requesttype);
 
 
 	return ret;
 }
 
-int usb_write16(struct intf_hdl *pintfhdl, u32 addr, u16 val)
+int usb_write16x(struct intf_hdl *pintfhdl, u32 addr, u16 val)
 {
 	u8 request;
 	u8 requesttype;
@@ -465,7 +465,7 @@ int usb_write16(struct intf_hdl *pintfhdl, u32 addr, u16 val)
 		wvalue |= 0x8000;
 #endif
 
-	ret = usbctrl_vendorreq(pintfhdl, request, wvalue, index,
+	ret = usbctrl_vendorreqx(pintfhdl, request, wvalue, index,
 				&data, len, requesttype);
 
 
@@ -473,7 +473,7 @@ int usb_write16(struct intf_hdl *pintfhdl, u32 addr, u16 val)
 
 }
 
-int usb_write32(struct intf_hdl *pintfhdl, u32 addr, u32 val)
+int usb_write32x(struct intf_hdl *pintfhdl, u32 addr, u32 val)
 {
 	u8 request;
 	u8 requesttype;
@@ -498,7 +498,7 @@ int usb_write32(struct intf_hdl *pintfhdl, u32 addr, u32 val)
 		wvalue |= 0x8000;
 #endif
 
-	ret = usbctrl_vendorreq(pintfhdl, request, wvalue, index,
+	ret = usbctrl_vendorreqx(pintfhdl, request, wvalue, index,
 				&data, len, requesttype);
 
 
@@ -506,7 +506,7 @@ int usb_write32(struct intf_hdl *pintfhdl, u32 addr, u32 val)
 
 }
 
-int usb_writeN(struct intf_hdl *pintfhdl, u32 addr, u32 length, u8 *pdata)
+int usb_writeNx(struct intf_hdl *pintfhdl, u32 addr, u32 length, u8 *pdata)
 {
 	u8 request;
 	u8 requesttype;
@@ -523,39 +523,39 @@ int usb_writeN(struct intf_hdl *pintfhdl, u32 addr, u32 length, u8 *pdata)
 
 	wvalue = (u16)(addr & 0x0000ffff);
 	len = length;
-	_rtw_memcpy(buf, pdata, len);
-	ret = usbctrl_vendorreq(pintfhdl, request, wvalue, index,
+	_rtw_memcpyx(buf, pdata, len);
+	ret = usbctrl_vendorreqx(pintfhdl, request, wvalue, index,
 				buf, len, requesttype);
 
 
 	return ret;
 }
 
-void usb_set_intf_ops(_adapter *padapter, struct _io_ops *pops)
+void usb_set_intf_opsx(_adapter *padapter, struct _io_ops *pops)
 {
-	_rtw_memset((u8 *)pops, 0, sizeof(struct _io_ops));
+	_rtw_memsetx((u8 *)pops, 0, sizeof(struct _io_ops));
 
-	pops->_read8 = &usb_read8;
-	pops->_read16 = &usb_read16;
-	pops->_read32 = &usb_read32;
-	pops->_read_mem = &usb_read_mem;
-	pops->_read_port = &usb_read_port;
+	pops->_read8 = &usb_read8x;
+	pops->_read16 = &usb_read16x;
+	pops->_read32 = &usb_read32x;
+	pops->_read_mem = &usb_read_memx;
+	pops->_read_port = &usb_read_portx;
 
-	pops->_write8 = &usb_write8;
-	pops->_write16 = &usb_write16;
-	pops->_write32 = &usb_write32;
-	pops->_writeN = &usb_writeN;
+	pops->_write8 = &usb_write8x;
+	pops->_write16 = &usb_write16x;
+	pops->_write32 = &usb_write32x;
+	pops->_writeN = &usb_writeNx;
 
 #ifdef CONFIG_USB_SUPPORT_ASYNC_VDN_REQ
 	pops->_write8_async = &usb_async_write8;
 	pops->_write16_async = &usb_async_write16;
 	pops->_write32_async = &usb_async_write32;
 #endif
-	pops->_write_mem = &usb_write_mem;
-	pops->_write_port = &usb_write_port;
+	pops->_write_mem = &usb_write_memx;
+	pops->_write_port = &usb_write_portx;
 
-	pops->_read_port_cancel = &usb_read_port_cancel;
-	pops->_write_port_cancel = &usb_write_port_cancel;
+	pops->_read_port_cancel = &usb_read_portx_cancel;
+	pops->_write_port_cancel = &usb_write_portx_cancel;
 
 #ifdef CONFIG_USB_INTERRUPT_IN_PIPE
 	pops->_read_interrupt = &usb_read_interrupt;
