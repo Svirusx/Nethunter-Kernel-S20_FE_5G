@@ -39,7 +39,7 @@
  *
  *************************************************/
 
-void phydm_set_noise_data_sum(struct noise_level *noise_data, u8 max_rf_path)
+void phydm_set_noise_data_sumx(struct noise_level *noise_data, u8 max_rf_path)
 {
 	u8 i = 0;
 
@@ -52,7 +52,7 @@ void phydm_set_noise_data_sum(struct noise_level *noise_data, u8 max_rf_path)
 }
 
 #if (ODM_IC_11N_SERIES_SUPPORT)
-s16 odm_inband_noise_monitor_n(struct dm_struct *dm, u8 is_pause_dig, u8 igi,
+s16 odm_inband_noise_monitorx_n(struct dm_struct *dm, u8 is_pause_dig, u8 igi,
 			       u32 max_time)
 {
 	u32 tmp4b;
@@ -62,7 +62,7 @@ s16 odm_inband_noise_monitor_n(struct dm_struct *dm, u8 is_pause_dig, u8 igi,
 	u64 start = 0, func_start = 0, func_end = 0;
 	s8 val_s8 = 0;
 
-	func_start = odm_get_current_time(dm);
+	func_start = odm_get_current_timex(dm);
 	dm->noise_level.noise_all = 0;
 
 	if (dm->rf_type == RF_1T2R || dm->rf_type == RF_2T2R)
@@ -73,25 +73,25 @@ s16 odm_inband_noise_monitor_n(struct dm_struct *dm, u8 is_pause_dig, u8 igi,
 	PHYDM_DBG(dm, DBG_ENV_MNTR,
 		  "odm_DebugControlInbandNoise_Nseries() ==>\n");
 
-	odm_memory_set(dm, &noise_data, 0, sizeof(struct noise_level));
+	odm_memory_setx(dm, &noise_data, 0, sizeof(struct noise_level));
 	/* step 1. Disable DIG && Set initial gain. */
 
 	if (is_pause_dig)
-		odm_pause_dig(dm, PHYDM_PAUSE, PHYDM_PAUSE_LEVEL_1, igi);
+		odm_pause_digx(dm, PHYDM_PAUSE, PHYDM_PAUSE_LEVEL_1, igi);
 
 	/* step 3. Get noise power level */
-	start = odm_get_current_time(dm);
+	start = odm_get_current_timex(dm);
 	while (1) {
 		/* Stop updating idle time pwer report (for driver read) */
-		odm_set_bb_reg(dm, REG_FPGA0_TX_GAIN_STAGE, BIT(25), 1);
+		odm_set_bb_regx(dm, REG_FPGA0_TX_GAIN_STAGE, BIT(25), 1);
 
 		/* Read Noise Floor Report */
-		tmp4b = odm_get_bb_reg(dm, R_0x8f8, MASKDWORD);
+		tmp4b = odm_get_bb_regx(dm, R_0x8f8, MASKDWORD);
 
 		/* update idle time pwer report per 5us */
-		odm_set_bb_reg(dm, REG_FPGA0_TX_GAIN_STAGE, BIT(25), 0);
+		odm_set_bb_regx(dm, REG_FPGA0_TX_GAIN_STAGE, BIT(25), 0);
 
-		ODM_delay_us(5);
+		ODM_delay_usx(5);
 
 		noise_data.value[RF_PATH_A] = (u8)(tmp4b & 0xff);
 		noise_data.value[RF_PATH_B] = (u8)((tmp4b & 0xff00) >> 8);
@@ -116,19 +116,19 @@ s16 odm_inband_noise_monitor_n(struct dm_struct *dm, u8 is_pause_dig, u8 igi,
 				valid_done++;
 		}
 		if (valid_done == max_rf_path ||
-		    (odm_get_progressing_time(dm, start) > max_time)) {
-			phydm_set_noise_data_sum(&noise_data, max_rf_path);
+		    (odm_get_progressing_timex(dm, start) > max_time)) {
+			phydm_set_noise_data_sumx(&noise_data, max_rf_path);
 			break;
 		}
 	}
-	reg_c50 = (u8)odm_get_bb_reg(dm, REG_OFDM_0_XA_AGC_CORE1, MASKBYTE0);
+	reg_c50 = (u8)odm_get_bb_regx(dm, REG_OFDM_0_XA_AGC_CORE1, MASKBYTE0);
 	reg_c50 &= ~BIT(7);
 	val_s8 = (s8)(-110 + reg_c50 + noise_data.sum[RF_PATH_A]);
 	dm->noise_level.noise[RF_PATH_A] = val_s8;
 	dm->noise_level.noise_all += dm->noise_level.noise[RF_PATH_A];
 
 	if (max_rf_path == 2) {
-		reg_c58 = (u8)odm_get_bb_reg(dm, R_0xc58, MASKBYTE0);
+		reg_c58 = (u8)odm_get_bb_regx(dm, R_0xc58, MASKBYTE0);
 		reg_c58 &= ~BIT(7);
 		val_s8 = (s8)(-110 + reg_c58 + noise_data.sum[RF_PATH_B]);
 		dm->noise_level.noise[RF_PATH_B] = val_s8;
@@ -143,8 +143,8 @@ s16 odm_inband_noise_monitor_n(struct dm_struct *dm, u8 is_pause_dig, u8 igi,
 
 	/* step 4. Recover the Dig */
 	if (is_pause_dig)
-		odm_pause_dig(dm, PHYDM_RESUME, PHYDM_PAUSE_LEVEL_1, igi);
-	func_end = odm_get_progressing_time(dm, func_start);
+		odm_pause_digx(dm, PHYDM_RESUME, PHYDM_PAUSE_LEVEL_1, igi);
+	func_end = odm_get_progressing_timex(dm, func_start);
 
 	PHYDM_DBG(dm, DBG_ENV_MNTR, "end\n");
 	return dm->noise_level.noise_all;
@@ -162,7 +162,7 @@ s16 phydm_idle_noise_measure_ac(struct dm_struct *dm, u8 pause_dig,
 	struct noise_level noise_data;
 	s8 val_s8 = 0;
 
-	func_start = odm_get_current_time(dm);
+	func_start = odm_get_current_timex(dm);
 	dm->noise_level.noise_all = 0;
 
 	if (dm->rf_type == RF_1T2R || dm->rf_type == RF_2T2R)
@@ -172,27 +172,27 @@ s16 phydm_idle_noise_measure_ac(struct dm_struct *dm, u8 pause_dig,
 
 	PHYDM_DBG(dm, DBG_ENV_MNTR, "%s==>\n", __func__);
 
-	odm_memory_set(dm, &noise_data, 0, sizeof(struct noise_level));
+	odm_memory_setx(dm, &noise_data, 0, sizeof(struct noise_level));
 
 	/*Step 1. Disable DIG && Set initial gain.*/
 
 	if (pause_dig)
-		odm_pause_dig(dm, PHYDM_PAUSE, PHYDM_PAUSE_LEVEL_1, igi);
+		odm_pause_digx(dm, PHYDM_PAUSE, PHYDM_PAUSE_LEVEL_1, igi);
 
 	/*Step 2. Get noise power level*/
-	start = odm_get_current_time(dm);
+	start = odm_get_current_timex(dm);
 
 	while (1) {
 		/*Stop updating idle time pwer report (for driver read)*/
-		odm_set_bb_reg(dm, R_0x9e4, BIT(30), 0x1);
+		odm_set_bb_regx(dm, R_0x9e4, BIT(30), 0x1);
 
 		/*Read Noise Floor Report*/
-		tmp4b = odm_get_bb_reg(dm, R_0xff0, MASKDWORD);
+		tmp4b = odm_get_bb_regx(dm, R_0xff0, MASKDWORD);
 
 		/*update idle time pwer report per 5us*/
-		odm_set_bb_reg(dm, R_0x9e4, BIT(30), 0x0);
+		odm_set_bb_regx(dm, R_0x9e4, BIT(30), 0x0);
 
-		ODM_delay_us(5);
+		ODM_delay_usx(5);
 
 		noise_data.value[RF_PATH_A] = (u8)(tmp4b & 0xff);
 		noise_data.value[RF_PATH_B] = (u8)((tmp4b & 0xff00) >> 8);
@@ -217,19 +217,19 @@ s16 phydm_idle_noise_measure_ac(struct dm_struct *dm, u8 pause_dig,
 		}
 
 		if (valid_done == max_rf_path ||
-		    (odm_get_progressing_time(dm, start) > max_time)) {
-			phydm_set_noise_data_sum(&noise_data, max_rf_path);
+		    (odm_get_progressing_timex(dm, start) > max_time)) {
+			phydm_set_noise_data_sumx(&noise_data, max_rf_path);
 			break;
 		}
 	}
-	reg_c50 = (u8)odm_get_bb_reg(dm, R_0xc50, MASKBYTE0);
+	reg_c50 = (u8)odm_get_bb_regx(dm, R_0xc50, MASKBYTE0);
 	reg_c50 &= ~BIT(7);
 	val_s8 = (s8)(-110 + reg_c50 + noise_data.sum[RF_PATH_A]);
 	dm->noise_level.noise[RF_PATH_A] = val_s8;
 	dm->noise_level.noise_all += dm->noise_level.noise[RF_PATH_A];
 
 	if (max_rf_path == 2) {
-		reg_e50 = (u8)odm_get_bb_reg(dm, R_0xe50, MASKBYTE0);
+		reg_e50 = (u8)odm_get_bb_regx(dm, R_0xe50, MASKBYTE0);
 		reg_e50 &= ~BIT(7);
 		val_s8 = (s8)(-110 + reg_e50 + noise_data.sum[RF_PATH_B]);
 		dm->noise_level.noise[RF_PATH_B] = val_s8;
@@ -244,14 +244,14 @@ s16 phydm_idle_noise_measure_ac(struct dm_struct *dm, u8 pause_dig,
 
 	/*Step 3. Recover the Dig*/
 	if (pause_dig)
-		odm_pause_dig(dm, PHYDM_RESUME, PHYDM_PAUSE_LEVEL_1, igi);
-	func_end = odm_get_progressing_time(dm, func_start);
+		odm_pause_digx(dm, PHYDM_RESUME, PHYDM_PAUSE_LEVEL_1, igi);
+	func_end = odm_get_progressing_timex(dm, func_start);
 
 	PHYDM_DBG(dm, DBG_ENV_MNTR, "end\n");
 	return dm->noise_level.noise_all;
 }
 
-s16 odm_inband_noise_monitor_ac(struct dm_struct *dm, u8 pause_dig, u8 igi,
+s16 odm_inband_noise_monitorx_ac(struct dm_struct *dm, u8 pause_dig, u8 igi,
 				u32 max_time)
 {
 	s32 rxi_buf_anta, rxq_buf_anta; /*rxi_buf_antb, rxq_buf_antb;*/
@@ -271,29 +271,29 @@ s16 odm_inband_noise_monitor_ac(struct dm_struct *dm, u8 pause_dig, u8 igi,
 	if (!(dm->support_ic_type & (ODM_RTL8812 | ODM_RTL8821 | ODM_RTL8814A)))
 		return 0;
 
-	func_start = odm_get_current_time(dm);
+	func_start = odm_get_current_timex(dm);
 	dm->noise_level.noise_all = 0;
 
 	PHYDM_DBG(dm, DBG_ENV_MNTR, "%s ==>\n", __func__);
 
 	/* step 1. Disable DIG && Set initial gain. */
 	if (pause_dig)
-		odm_pause_dig(dm, PHYDM_PAUSE, PHYDM_PAUSE_LEVEL_1, igi);
+		odm_pause_digx(dm, PHYDM_PAUSE, PHYDM_PAUSE_LEVEL_1, igi);
 
 	/* step 3. Get noise power level */
-	start = odm_get_current_time(dm);
+	start = odm_get_current_timex(dm);
 
 	/* step 3. Get noise power level */
 	while (1) {
 		/*Set IGI=0x1C */
-		odm_write_dig(dm, 0x1C);
+		odm_write_digx(dm, 0x1C);
 		/*stop CK320&CK88 */
-		odm_set_bb_reg(dm, R_0x8b4, BIT(6), 1);
+		odm_set_bb_regx(dm, R_0x8b4, BIT(6), 1);
 		/*Read path-A */
 		/*set debug port*/
-		odm_set_bb_reg(dm, R_0x8fc, MASKDWORD, 0x200);
+		odm_set_bb_regx(dm, R_0x8fc, MASKDWORD, 0x200);
 		/*read debug port*/
-		value32 = odm_get_bb_reg(dm, R_0xfa0, MASKDWORD);
+		value32 = odm_get_bb_regx(dm, R_0xfa0, MASKDWORD);
 		/*rxi_buf_anta=RegFA0[19:10]*/
 		rxi_buf_anta = (value32 & 0xFFC00) >> 10;
 		rxq_buf_anta = value32 & 0x3FF; /*rxq_buf_anta=RegFA0[19:10]*/
@@ -303,13 +303,13 @@ s16 odm_inband_noise_monitor_ac(struct dm_struct *dm, u8 pause_dig, u8 igi,
 		/*Not in packet detection period or Tx state */
 		if (!pd_flag || rxi_buf_anta != 0x200) {
 			/*sign conversion*/
-			rxi_buf_anta = odm_sign_conversion(rxi_buf_anta, 10);
-			rxq_buf_anta = odm_sign_conversion(rxq_buf_anta, 10);
+			rxi_buf_anta = odm_sign_conversionx(rxi_buf_anta, 10);
+			rxq_buf_anta = odm_sign_conversionx(rxq_buf_anta, 10);
 
 			val_s32 = rxi_buf_anta * rxi_buf_anta +
 				  rxq_buf_anta * rxq_buf_anta;
 			/*S(10,9)*S(10,9)=S(20,18)*/
-			pwdb_A = odm_pwdb_conversion(val_s32, 20, 18);
+			pwdb_A = odm_pwdb_conversionx(val_s32, 20, 18);
 
 			PHYDM_DBG(dm, DBG_ENV_MNTR,
 				  "pwdb_A= %d dB, rxi_buf_anta= 0x%x, rxq_buf_anta= 0x%x\n",
@@ -317,23 +317,23 @@ s16 odm_inband_noise_monitor_ac(struct dm_struct *dm, u8 pause_dig, u8 igi,
 				  rxq_buf_anta & 0x3FF);
 		}
 		/*Start CK320&CK88*/
-		odm_set_bb_reg(dm, R_0x8b4, BIT(6), 0);
+		odm_set_bb_regx(dm, R_0x8b4, BIT(6), 0);
 		/*@BB Reset*/
-		val_u8 = odm_read_1byte(dm, 0x02) & (~BIT(0));
-		odm_write_1byte(dm, 0x02, val_u8);
-		val_u8 = odm_read_1byte(dm, 0x02) | BIT(0);
-		odm_write_1byte(dm, 0x02, val_u8);
+		val_u8 = odm_read_1bytex(dm, 0x02) & (~BIT(0));
+		odm_write_1bytex(dm, 0x02, val_u8);
+		val_u8 = odm_read_1bytex(dm, 0x02) | BIT(0);
+		odm_write_1bytex(dm, 0x02, val_u8);
 		/*PMAC Reset*/
-		val_u8 = odm_read_1byte(dm, 0xB03) & (~BIT(0));
-		odm_write_1byte(dm, 0xB03, val_u8);
-		val_u8 = odm_read_1byte(dm, 0xB03) | BIT(0);
-		odm_write_1byte(dm, 0xB03, val_u8);
+		val_u8 = odm_read_1bytex(dm, 0xB03) & (~BIT(0));
+		odm_write_1bytex(dm, 0xB03, val_u8);
+		val_u8 = odm_read_1bytex(dm, 0xB03) | BIT(0);
+		odm_write_1bytex(dm, 0xB03, val_u8);
 		/*@CCK Reset*/
-		if (odm_read_1byte(dm, 0x80B) & BIT(4)) {
-			val_u8 = odm_read_1byte(dm, 0x80B) & (~BIT(4));
-			odm_write_1byte(dm, 0x80B, val_u8);
-			val_u8 = odm_read_1byte(dm, 0x80B) | BIT(4);
-			odm_write_1byte(dm, 0x80B, val_u8);
+		if (odm_read_1bytex(dm, 0x80B) & BIT(4)) {
+			val_u8 = odm_read_1bytex(dm, 0x80B) & (~BIT(4));
+			odm_write_1bytex(dm, 0x80B, val_u8);
+			val_u8 = odm_read_1bytex(dm, 0x80B) | BIT(4);
+			odm_write_1bytex(dm, 0x80B, val_u8);
 		}
 
 		sval = pwdb_A;
@@ -344,7 +344,7 @@ s16 odm_inband_noise_monitor_ac(struct dm_struct *dm, u8 pause_dig, u8 igi,
 			PHYDM_DBG(dm, DBG_ENV_MNTR, "Valid sval = %d\n", sval);
 			PHYDM_DBG(dm, DBG_ENV_MNTR, "Sum of sval = %d,\n", sum);
 			if (valid_cnt >= VALID_CNT ||
-			    (odm_get_progressing_time(dm, start) > max_time)) {
+			    (odm_get_progressing_timex(dm, start) > max_time)) {
 				sum /= VALID_CNT;
 				PHYDM_DBG(dm, DBG_ENV_MNTR,
 					  "After divided, sum = %d\n", sum);
@@ -364,9 +364,9 @@ s16 odm_inband_noise_monitor_ac(struct dm_struct *dm, u8 pause_dig, u8 igi,
 
 	/* step 4. Recover the Dig*/
 	if (pause_dig)
-		odm_pause_dig(dm, PHYDM_RESUME, PHYDM_PAUSE_LEVEL_1, igi);
+		odm_pause_digx(dm, PHYDM_RESUME, PHYDM_PAUSE_LEVEL_1, igi);
 
-	func_end = odm_get_progressing_time(dm, func_start);
+	func_end = odm_get_progressing_timex(dm, func_start);
 
 	PHYDM_DBG(dm, DBG_ENV_MNTR, "%s <==\n", __func__);
 
@@ -374,7 +374,7 @@ s16 odm_inband_noise_monitor_ac(struct dm_struct *dm, u8 pause_dig, u8 igi,
 }
 #endif
 
-s16 odm_inband_noise_monitor(void *dm_void, u8 pause_dig, u8 igi,
+s16 odm_inband_noise_monitorx(void *dm_void, u8 pause_dig, u8 igi,
 			     u32 max_time)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -387,18 +387,18 @@ s16 odm_inband_noise_monitor(void *dm_void, u8 pause_dig, u8 igi,
 	 */
 	#if (ODM_IC_11AC_SERIES_SUPPORT)
 	if (dm->support_ic_type & ODM_IC_11AC_SERIES)
-		val = odm_inband_noise_monitor_ac(dm, pause_dig, igi, max_time);
+		val = odm_inband_noise_monitorx_ac(dm, pause_dig, igi, max_time);
 	#endif
 
 	#if (ODM_IC_11N_SERIES_SUPPORT)
 	if (dm->support_ic_type & ODM_IC_11N_SERIES)
-		val = odm_inband_noise_monitor_n(dm, pause_dig, igi, max_time);
+		val = odm_inband_noise_monitorx_n(dm, pause_dig, igi, max_time);
 	#endif
 
 	return val;
 }
 
-void phydm_noisy_detection(void *dm_void)
+void phydm_noisy_detectionx(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 total_fa_cnt, total_cca_cnt;

@@ -125,18 +125,18 @@ enum phydm_kfree_channeltosw {
 	PHYDM_5GHB = 5,
 };
 
-void phydm_get_thermal_trim_offset(void *dm_void);
+void phydm_get_thermal_trim_offsetx(void *dm_void);
 
-void phydm_get_power_trim_offset(void *dm_void);
+void phydm_get_power_trim_offsetx(void *dm_void);
 
-void phydm_get_pa_bias_offset(void *dm_void);
+void phydm_get_pa_bias_offsetx(void *dm_void);
 
-s8 phydm_get_thermal_offset(void *dm_void);
+s8 phydm_get_thermal_offsetx(void *dm_void);
 
-void phydm_clear_kfree_to_rf(void *dm_void, u8 e_rf_path, u8 data);
+void phydm_clear_kfree_to_rfx(void *dm_void, u8 e_rf_path, u8 data);
 
 void phydm_config_new_kfree(void *dm_void);
 
-void phydm_config_kfree(void *dm_void, u8 channel_to_sw);
+void phydm_config_kfreex(void *dm_void, u8 channel_to_sw);
 
 #endif /*__HALRF_KFREE_H__*/

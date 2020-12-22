@@ -31,7 +31,7 @@
 #include "mp_precomp.h"
 #include "phydm_precomp.h"
 
-void halrf_basic_profile(void *dm_void, u32 *_used, char *output, u32 *_out_len)
+void halrf_basic_profilex(void *dm_void, u32 *_used, char *output, u32 *_out_len)
 {
 #ifdef CONFIG_PHYDM_DEBUG_FUNCTION
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -57,7 +57,7 @@ void halrf_basic_profile(void *dm_void, u32 *_used, char *output, u32 *_out_len)
 		 "  %-35s: %s %s\n", "IQK",
 		 (dm->fw_offload_ability & PHYDM_RF_IQK_OFFLOAD) ? "FW" :
 		 HALRF_IQK_VER,
-		 (halrf_match_iqk_version(dm_void)) ? "(match)" : "(mismatch)");
+		 (halrf_match_iqk_versionx(dm_void)) ? "(match)" : "(mismatch)");
 
 	PDM_SNPF(out_len, used, output + used, out_len - used, "  %-35s: %s\n",
 		 "LCK", HALRF_LCK_VER);
@@ -75,7 +75,7 @@ void halrf_basic_profile(void *dm_void, u32 *_used, char *output, u32 *_out_len)
 #endif
 }
 
-void halrf_debug_trace(void *dm_void, char input[][16], u32 *_used,
+void halrf_debug_tracex(void *dm_void, char input[][16], u32 *_used,
 		       char *output, u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -151,7 +151,7 @@ enum halrf_CMD_ID {
 	HALRF_IQK_DEBUG,
 };
 
-struct halrf_command halrf_cmd_ary[] = {
+struct halrf_command halrf_cmd_aryx[] = {
 	{"-h", HALRF_HELP},
 	{"ability", HALRF_SUPPORTABILITY},
 	{"dbg", HALRF_DBG_COMP},
@@ -161,7 +161,7 @@ struct halrf_command halrf_cmd_ary[] = {
 	{"iqk_dbg", HALRF_IQK_DEBUG},
 };
 
-void halrf_cmd_parser(void *dm_void, char input[][16], u32 *_used, char *output,
+void halrf_cmd_parserx(void *dm_void, char input[][16], u32 *_used, char *output,
 		      u32 *_out_len, u32 input_num)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -170,14 +170,14 @@ void halrf_cmd_parser(void *dm_void, char input[][16], u32 *_used, char *output,
 	u32 rf_var[10] = {0};
 	u32 i, input_idx = 0;
 	u32 halrf_ary_size =
-			sizeof(halrf_cmd_ary) / sizeof(struct halrf_command);
+			sizeof(halrf_cmd_aryx) / sizeof(struct halrf_command);
 	u32 used = *_used;
 	u32 out_len = *_out_len;
 
 	/* Parsing Cmd ID */
 	for (i = 0; i < halrf_ary_size; i++) {
-		if (strcmp(halrf_cmd_ary[i].name, input[1]) == 0) {
-			id = halrf_cmd_ary[i].id;
+		if (strcmp(halrf_cmd_aryx[i].name, input[1]) == 0) {
+			id = halrf_cmd_aryx[i].id;
 			break;
 		}
 	}
@@ -195,18 +195,18 @@ void halrf_cmd_parser(void *dm_void, char input[][16], u32 *_used, char *output,
 
 		for (i = 0; i < halrf_ary_size - 1; i++) {
 			PDM_SNPF(out_len, used, output + used, out_len - used,
-				 "  %-5d: %s\n", i, halrf_cmd_ary[i + 1].name);
+				 "  %-5d: %s\n", i, halrf_cmd_aryx[i + 1].name);
 		}
 		break;
 	case HALRF_SUPPORTABILITY:
-		halrf_support_ability_debug(dm, &input[0], &used, output,
+		halrf_support_ability_debugx(dm, &input[0], &used, output,
 					    &out_len);
 		break;
 	case HALRF_DBG_COMP:
-		halrf_debug_trace(dm, &input[0], &used, output, &out_len);
+		halrf_debug_tracex(dm, &input[0], &used, output, &out_len);
 		break;
 	case HALRF_PROFILE:
-		halrf_basic_profile(dm, &used, output, &out_len);
+		halrf_basic_profilex(dm, &used, output, &out_len);
 		break;
 	case HALRF_IQK_INFO:
 #if (RTL8822B_SUPPORT == 1 || RTL8821C_SUPPORT == 1)
@@ -216,7 +216,7 @@ void halrf_cmd_parser(void *dm_void, char input[][16], u32 *_used, char *output,
 	case HALRF_IQK:
 		PDM_SNPF(out_len, used, output + used, out_len - used,
 			 "TRX IQK Trigger\n");
-		halrf_iqk_trigger(dm, false);
+		halrf_iqk_triggerx(dm, false);
 #if (RTL8822B_SUPPORT == 1 || RTL8821C_SUPPORT == 1)
 		halrf_iqk_info_dump(dm, &used, output, &out_len);
 #endif
@@ -248,7 +248,7 @@ void halrf_cmd_parser(void *dm_void, char input[][16], u32 *_used, char *output,
 #endif
 }
 
-void halrf_init_debug_setting(void *dm_void)
+void halrf_initx_debug_setting(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct _hal_rf_ *rf = &dm->rf_table;

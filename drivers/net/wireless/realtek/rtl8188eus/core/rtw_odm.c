@@ -16,7 +16,7 @@
 #include <rtw_odm.h>
 #include <hal_data.h>
 
-u32 rtw_phydm_ability_ops(_adapter *adapter, HAL_PHYDM_OPS ops, u32 ability)
+u32 rtw_phydm_ability_opsx(_adapter *adapter, HAL_PHYDM_OPS ops, u32 ability)
 {
 	HAL_DATA_TYPE *pHalData = GET_HAL_DATA(adapter);
 	struct dm_struct *podmpriv = &pHalData->odmpriv;
@@ -25,7 +25,7 @@ u32 rtw_phydm_ability_ops(_adapter *adapter, HAL_PHYDM_OPS ops, u32 ability)
 	switch (ops) {
 	case HAL_PHYDM_DIS_ALL_FUNC:
 		podmpriv->support_ability = DYNAMIC_FUNC_DISABLE;
-		halrf_cmn_info_set(podmpriv, HALRF_CMNINFO_ABILITY, DYNAMIC_FUNC_DISABLE);
+		halrf_cmn_info_setx(podmpriv, HALRF_CMNINFO_ABILITY, DYNAMIC_FUNC_DISABLE);
 		break;
 	case HAL_PHYDM_FUNC_SET:
 		podmpriv->support_ability |= ability;
@@ -36,12 +36,12 @@ u32 rtw_phydm_ability_ops(_adapter *adapter, HAL_PHYDM_OPS ops, u32 ability)
 	case HAL_PHYDM_ABILITY_BK:
 		/* dm flag backup*/
 		podmpriv->bk_support_ability = podmpriv->support_ability;
-		pHalData->bk_rf_ability = halrf_cmn_info_get(podmpriv, HALRF_CMNINFO_ABILITY);
+		pHalData->bk_rf_ability = halrf_cmn_info_getx(podmpriv, HALRF_CMNINFO_ABILITY);
 		break;
 	case HAL_PHYDM_ABILITY_RESTORE:
 		/* restore dm flag */
 		podmpriv->support_ability = podmpriv->bk_support_ability;
-		halrf_cmn_info_set(podmpriv, HALRF_CMNINFO_ABILITY, pHalData->bk_rf_ability);
+		halrf_cmn_info_setx(podmpriv, HALRF_CMNINFO_ABILITY, pHalData->bk_rf_ability);
 		break;
 	case HAL_PHYDM_ABILITY_SET:
 		podmpriv->support_ability = ability;
@@ -54,17 +54,17 @@ u32 rtw_phydm_ability_ops(_adapter *adapter, HAL_PHYDM_OPS ops, u32 ability)
 }
 
 /* set ODM_CMNINFO_IC_TYPE based on chip_type */
-void rtw_odm_init_ic_type(_adapter *adapter)
+void rtw_odm_init_ic_typex(_adapter *adapter)
 {
 	struct dm_struct *odm = adapter_to_phydm(adapter);
-	u32 ic_type = chip_type_to_odm_ic_type(rtw_get_chip_type(adapter));
+	u32 ic_type = chip_type_to_odm_ic_typex(rtw_get_chip_type(adapter));
 
 	rtw_warn_on(!ic_type);
 
-	odm_cmn_info_init(odm, ODM_CMNINFO_IC_TYPE, ic_type);
+	odm_cmn_info_initx(odm, ODM_CMNINFO_IC_TYPE, ic_type);
 }
 
-void rtw_odm_adaptivity_ver_msg(void *sel, _adapter *adapter)
+void rtw_odm_adaptivity_ver_msgx(void *sel, _adapter *adapter)
 {
 	RTW_PRINT_SEL(sel, "ADAPTIVITY_VERSION "ADAPTIVITY_VERSION"\n");
 }
@@ -72,7 +72,7 @@ void rtw_odm_adaptivity_ver_msg(void *sel, _adapter *adapter)
 #define RTW_ADAPTIVITY_EN_DISABLE 0
 #define RTW_ADAPTIVITY_EN_ENABLE 1
 
-void rtw_odm_adaptivity_en_msg(void *sel, _adapter *adapter)
+void rtw_odm_adaptivity_en_msgx(void *sel, _adapter *adapter)
 {
 	struct registry_priv *regsty = &adapter->registrypriv;
 
@@ -89,7 +89,7 @@ void rtw_odm_adaptivity_en_msg(void *sel, _adapter *adapter)
 #define RTW_ADAPTIVITY_MODE_NORMAL 0
 #define RTW_ADAPTIVITY_MODE_CARRIER_SENSE 1
 
-void rtw_odm_adaptivity_mode_msg(void *sel, _adapter *adapter)
+void rtw_odm_adaptivity_mode_msgx(void *sel, _adapter *adapter)
 {
 	struct registry_priv *regsty = &adapter->registrypriv;
 
@@ -103,14 +103,14 @@ void rtw_odm_adaptivity_mode_msg(void *sel, _adapter *adapter)
 		_RTW_PRINT_SEL(sel, "INVALID\n");
 }
 
-void rtw_odm_adaptivity_config_msg(void *sel, _adapter *adapter)
+void rtw_odm_adaptivity_config_msgx(void *sel, _adapter *adapter)
 {
-	rtw_odm_adaptivity_ver_msg(sel, adapter);
-	rtw_odm_adaptivity_en_msg(sel, adapter);
-	rtw_odm_adaptivity_mode_msg(sel, adapter);
+	rtw_odm_adaptivity_ver_msgx(sel, adapter);
+	rtw_odm_adaptivity_en_msgx(sel, adapter);
+	rtw_odm_adaptivity_mode_msgx(sel, adapter);
 }
 
-bool rtw_odm_adaptivity_needed(_adapter *adapter)
+bool rtw_odm_adaptivity_neededx(_adapter *adapter)
 {
 	struct registry_priv *regsty = &adapter->registrypriv;
 	bool ret = _FALSE;
@@ -121,11 +121,11 @@ bool rtw_odm_adaptivity_needed(_adapter *adapter)
 	return ret;
 }
 
-void rtw_odm_adaptivity_parm_msg(void *sel, _adapter *adapter)
+void rtw_odm_adaptivity_parm_msgx(void *sel, _adapter *adapter)
 {
 	struct dm_struct *odm = adapter_to_phydm(adapter);
 
-	rtw_odm_adaptivity_config_msg(sel, adapter);
+	rtw_odm_adaptivity_config_msgx(sel, adapter);
 
 	RTW_PRINT_SEL(sel, "%10s %16s\n"
 		, "th_l2h_ini", "th_edcca_hl_diff");
@@ -135,7 +135,7 @@ void rtw_odm_adaptivity_parm_msg(void *sel, _adapter *adapter)
 	);
 }
 
-void rtw_odm_adaptivity_parm_set(_adapter *adapter, s8 th_l2h_ini, s8 th_edcca_hl_diff)
+void rtw_odm_adaptivity_parm_setx(_adapter *adapter, s8 th_l2h_ini, s8 th_edcca_hl_diff)
 {
 	struct dm_struct *odm = adapter_to_phydm(adapter);
 
@@ -143,7 +143,7 @@ void rtw_odm_adaptivity_parm_set(_adapter *adapter, s8 th_l2h_ini, s8 th_edcca_h
 	odm->th_edcca_hl_diff = th_edcca_hl_diff;
 }
 
-void rtw_odm_get_perpkt_rssi(void *sel, _adapter *adapter)
+void rtw_odm_get_perpkt_rssix(void *sel, _adapter *adapter)
 {
 	struct dm_struct *odm = adapter_to_phydm(adapter);
 
@@ -152,7 +152,7 @@ void rtw_odm_get_perpkt_rssi(void *sel, _adapter *adapter)
 }
 
 
-void rtw_odm_acquirespinlock(_adapter *adapter,	enum rt_spinlock_type type)
+void rtw_odm_acquirespinlockx(_adapter *adapter,	enum rt_spinlock_type type)
 {
 	PHAL_DATA_TYPE	pHalData = GET_HAL_DATA(adapter);
 	_irqL irqL;
@@ -165,7 +165,7 @@ void rtw_odm_acquirespinlock(_adapter *adapter,	enum rt_spinlock_type type)
 	}
 }
 
-void rtw_odm_releasespinlock(_adapter *adapter,	enum rt_spinlock_type type)
+void rtw_odm_releasespinlockx(_adapter *adapter,	enum rt_spinlock_type type)
 {
 	PHAL_DATA_TYPE	pHalData = GET_HAL_DATA(adapter);
 	_irqL irqL;
@@ -178,7 +178,7 @@ void rtw_odm_releasespinlock(_adapter *adapter,	enum rt_spinlock_type type)
 	}
 }
 
-inline u8 rtw_odm_get_dfs_domain(struct dvobj_priv *dvobj)
+inline u8 rtw_odm_get_dfs_domainx(struct dvobj_priv *dvobj)
 {
 #ifdef CONFIG_DFS_MASTER
 	struct dm_struct *pDM_Odm = dvobj_to_phydm(dvobj);
@@ -189,10 +189,10 @@ inline u8 rtw_odm_get_dfs_domain(struct dvobj_priv *dvobj)
 #endif
 }
 
-inline u8 rtw_odm_dfs_domain_unknown(struct dvobj_priv *dvobj)
+inline u8 rtw_odm_dfs_domain_unknownx(struct dvobj_priv *dvobj)
 {
 #ifdef CONFIG_DFS_MASTER
-	return rtw_odm_get_dfs_domain(dvobj) == PHYDM_DFS_DOMAIN_UNKNOWN;
+	return rtw_odm_get_dfs_domainx(dvobj) == PHYDM_DFS_DOMAIN_UNKNOWN;
 #else
 	return 1;
 #endif
@@ -226,7 +226,7 @@ inline u8 rtw_odm_radar_detect_polling_int_ms(struct dvobj_priv *dvobj)
 }
 #endif /* CONFIG_DFS_MASTER */
 
-void rtw_odm_parse_rx_phy_status_chinfo(union recv_frame *rframe, u8 *phys)
+void rtw_odm_parse_rx_phy_status_chinfox(union recv_frame *rframe, u8 *phys)
 {
 #ifndef DBG_RX_PHYSTATUS_CHINFO
 #define DBG_RX_PHYSTATUS_CHINFO 0
@@ -427,31 +427,31 @@ void odm_iqk_get_cfir2fw_8822c(void *dm_void, u8 *buf, u32 *buf_size)
 	if (buf) {
 		u16 offset = 0;
 
-		odm_move_memory(dm, buf, iqk_info->iqk_channel, sizeof(iqk_info->iqk_channel));
+		odm_move_memoryx(dm, buf, iqk_info->iqk_channel, sizeof(iqk_info->iqk_channel));
 		offset += sizeof(iqk_info->iqk_channel);
-		odm_move_memory(dm, buf + offset, &iqk_info->iqk_cfir_real[0][0], sizeof(iqk_info->iqk_cfir_real[0][0]));
+		odm_move_memoryx(dm, buf + offset, &iqk_info->iqk_cfir_real[0][0], sizeof(iqk_info->iqk_cfir_real[0][0]));
 		offset += sizeof(iqk_info->iqk_cfir_real[0][0]);
-		odm_move_memory(dm, buf + offset, &iqk_info->iqk_cfir_real[0][1], sizeof(iqk_info->iqk_cfir_real[0][1]));
+		odm_move_memoryx(dm, buf + offset, &iqk_info->iqk_cfir_real[0][1], sizeof(iqk_info->iqk_cfir_real[0][1]));
 		offset += sizeof(iqk_info->iqk_cfir_real[0][1]);
-		odm_move_memory(dm, buf + offset, &iqk_info->iqk_cfir_real[1][0], sizeof(iqk_info->iqk_cfir_real[1][0]));
+		odm_move_memoryx(dm, buf + offset, &iqk_info->iqk_cfir_real[1][0], sizeof(iqk_info->iqk_cfir_real[1][0]));
 		offset += sizeof(iqk_info->iqk_cfir_real[1][0]);
-		odm_move_memory(dm, buf + offset, &iqk_info->iqk_cfir_real[1][1], sizeof(iqk_info->iqk_cfir_real[1][1]));
+		odm_move_memoryx(dm, buf + offset, &iqk_info->iqk_cfir_real[1][1], sizeof(iqk_info->iqk_cfir_real[1][1]));
 		offset += sizeof(iqk_info->iqk_cfir_real[1][1]);
-		odm_move_memory(dm, buf + offset, &iqk_info->iqk_cfir_imag[0][0], sizeof(iqk_info->iqk_cfir_imag[0][0]));
+		odm_move_memoryx(dm, buf + offset, &iqk_info->iqk_cfir_imag[0][0], sizeof(iqk_info->iqk_cfir_imag[0][0]));
 		offset += sizeof(iqk_info->iqk_cfir_imag[0][0]);
-		odm_move_memory(dm, buf + offset, &iqk_info->iqk_cfir_imag[0][1], sizeof(iqk_info->iqk_cfir_imag[0][1]));
+		odm_move_memoryx(dm, buf + offset, &iqk_info->iqk_cfir_imag[0][1], sizeof(iqk_info->iqk_cfir_imag[0][1]));
 		offset += sizeof(iqk_info->iqk_cfir_imag[0][1]);
-		odm_move_memory(dm, buf + offset, &iqk_info->iqk_cfir_imag[1][0], sizeof(iqk_info->iqk_cfir_imag[1][0]));
+		odm_move_memoryx(dm, buf + offset, &iqk_info->iqk_cfir_imag[1][0], sizeof(iqk_info->iqk_cfir_imag[1][0]));
 		offset += sizeof(iqk_info->iqk_cfir_imag[1][0]);
-		odm_move_memory(dm, buf + offset, &iqk_info->iqk_cfir_imag[1][1], sizeof(iqk_info->iqk_cfir_imag[1][1]));
+		odm_move_memoryx(dm, buf + offset, &iqk_info->iqk_cfir_imag[1][1], sizeof(iqk_info->iqk_cfir_imag[1][1]));
 		offset += sizeof(iqk_info->iqk_cfir_imag[1][1]);
-		odm_move_memory(dm, buf + offset, &iqk_info->lok_idac[0][0], sizeof(iqk_info->lok_idac[0][0]));
+		odm_move_memoryx(dm, buf + offset, &iqk_info->lok_idac[0][0], sizeof(iqk_info->lok_idac[0][0]));
 		offset += sizeof(iqk_info->lok_idac[0][0]);
-		odm_move_memory(dm, buf + offset, &iqk_info->lok_idac[0][1], sizeof(iqk_info->lok_idac[0][1]));
+		odm_move_memoryx(dm, buf + offset, &iqk_info->lok_idac[0][1], sizeof(iqk_info->lok_idac[0][1]));
 		offset += sizeof(iqk_info->lok_idac[0][1]);
-		odm_move_memory(dm, buf + offset, &iqk_info->lok_idac[1][0], sizeof(iqk_info->lok_idac[1][0]));
+		odm_move_memoryx(dm, buf + offset, &iqk_info->lok_idac[1][0], sizeof(iqk_info->lok_idac[1][0]));
 		offset += sizeof(iqk_info->lok_idac[1][0]);
-		odm_move_memory(dm, buf + offset, &iqk_info->lok_idac[1][1], sizeof(iqk_info->lok_idac[1][1]));
+		odm_move_memoryx(dm, buf + offset, &iqk_info->lok_idac[1][1], sizeof(iqk_info->lok_idac[1][1]));
 		offset += sizeof(iqk_info->lok_idac[1][1]);
 	}
 
@@ -471,55 +471,55 @@ debug_DACK(
 	u8 i;
 	u32 temp1, temp2, temp3;
 
-	temp1 = odm_get_bb_reg(dm, 0x1860, bMaskDWord);
-	temp2 = odm_get_bb_reg(dm, 0x4160, bMaskDWord);
-	temp3 = odm_get_bb_reg(dm, 0x9b4, bMaskDWord);
+	temp1 = odm_get_bb_regx(dm, 0x1860, bMaskDWord);
+	temp2 = odm_get_bb_regx(dm, 0x4160, bMaskDWord);
+	temp3 = odm_get_bb_regx(dm, 0x9b4, bMaskDWord);
 
-	odm_set_bb_reg(dm, 0x9b4, bMaskDWord, 0xdb66db00);
+	odm_set_bb_regx(dm, 0x9b4, bMaskDWord, 0xdb66db00);
 
 	//pathA
-	odm_set_bb_reg(dm, 0x1830, BIT(30), 0x0);
-	odm_set_bb_reg(dm, 0x1860, 0xfc000000, 0x3c);
+	odm_set_bb_regx(dm, 0x1830, BIT(30), 0x0);
+	odm_set_bb_regx(dm, 0x1860, 0xfc000000, 0x3c);
 
 	RTW_INFO("path A i\n");
 	//i
 	for (i = 0; i < 0xf; i++) {
-		odm_set_bb_reg(dm, 0x18b0, 0xf0000000, i);
-		RTW_INFO("[0][0][%d] = 0x%08x\n", i, (u16)odm_get_bb_reg(dm,0x2810,0x7fc0000));
-		//pIQK_info->msbk_d[0][0][i] = (u16)odm_get_bb_reg(dm,0x2810,0x7fc0000);
+		odm_set_bb_regx(dm, 0x18b0, 0xf0000000, i);
+		RTW_INFO("[0][0][%d] = 0x%08x\n", i, (u16)odm_get_bb_regx(dm,0x2810,0x7fc0000));
+		//pIQK_info->msbk_d[0][0][i] = (u16)odm_get_bb_regx(dm,0x2810,0x7fc0000);
 	}
 	RTW_INFO("path A q\n");
 	//q
 	for (i = 0; i < 0xf; i++) {
-		odm_set_bb_reg(dm, 0x18cc, 0xf0000000, i);
-		RTW_INFO("[0][1][%d] = 0x%08x\n", i, (u16)odm_get_bb_reg(dm,0x283c,0x7fc0000));
-		//pIQK_info->msbk_d[0][1][i] = (u16)odm_get_bb_reg(dm,0x283c,0x7fc0000);
+		odm_set_bb_regx(dm, 0x18cc, 0xf0000000, i);
+		RTW_INFO("[0][1][%d] = 0x%08x\n", i, (u16)odm_get_bb_regx(dm,0x283c,0x7fc0000));
+		//pIQK_info->msbk_d[0][1][i] = (u16)odm_get_bb_regx(dm,0x283c,0x7fc0000);
 	}
 	//pathB
-	odm_set_bb_reg(dm, 0x4130, BIT(30), 0x0);
-	odm_set_bb_reg(dm, 0x4160, 0xfc000000, 0x3c);
+	odm_set_bb_regx(dm, 0x4130, BIT(30), 0x0);
+	odm_set_bb_regx(dm, 0x4160, 0xfc000000, 0x3c);
 
 	RTW_INFO("\npath B i\n");
 	//i
 	for (i = 0; i < 0xf; i++) {
-		odm_set_bb_reg(dm, 0x41b0, 0xf0000000, i);
-		RTW_INFO("[1][0][%d] = 0x%08x\n", i, (u16)odm_get_bb_reg(dm,0x4510,0x7fc0000));
-		//pIQK_info->msbk_d[1][0][i] = (u16)odm_get_bb_reg(dm,0x2810,0x7fc0000);
+		odm_set_bb_regx(dm, 0x41b0, 0xf0000000, i);
+		RTW_INFO("[1][0][%d] = 0x%08x\n", i, (u16)odm_get_bb_regx(dm,0x4510,0x7fc0000));
+		//pIQK_info->msbk_d[1][0][i] = (u16)odm_get_bb_regx(dm,0x2810,0x7fc0000);
 	}
 	RTW_INFO("path B q\n");
 	//q
 	for (i = 0; i < 0xf; i++) {
-		odm_set_bb_reg(dm, 0x41cc, 0xf0000000, i);
-		RTW_INFO("[1][1][%d] = 0x%08x\n", i, (u16)odm_get_bb_reg(dm,0x453c,0x7fc0000));
-		//pIQK_info->msbk_d[1][1][i] = (u16)odm_get_bb_reg(dm,0x283c,0x7fc0000);
+		odm_set_bb_regx(dm, 0x41cc, 0xf0000000, i);
+		RTW_INFO("[1][1][%d] = 0x%08x\n", i, (u16)odm_get_bb_regx(dm,0x453c,0x7fc0000));
+		//pIQK_info->msbk_d[1][1][i] = (u16)odm_get_bb_regx(dm,0x283c,0x7fc0000);
 	}
 
 	//restore to normal
-	odm_set_bb_reg(dm, 0x1830, BIT(30), 0x1);
-	odm_set_bb_reg(dm, 0x4130, BIT(30), 0x1);
-	odm_set_bb_reg(dm, 0x1860, bMaskDWord, temp1);
-	odm_set_bb_reg(dm, 0x4160, bMaskDWord, temp2);
-	odm_set_bb_reg(dm, 0x9b4, bMaskDWord, temp3);
+	odm_set_bb_regx(dm, 0x1830, BIT(30), 0x1);
+	odm_set_bb_regx(dm, 0x4130, BIT(30), 0x1);
+	odm_set_bb_regx(dm, 0x1860, bMaskDWord, temp1);
+	odm_set_bb_regx(dm, 0x4160, bMaskDWord, temp2);
+	odm_set_bb_regx(dm, 0x9b4, bMaskDWord, temp3);
 
 
 }
@@ -537,26 +537,26 @@ debug_IQK(
 
 	RTW_INFO("idx = %d, path = %d\n", idx, path);
 
-	odm_set_bb_reg(dm, 0x1b00, MASKDWORD, 0x8 | path << 1);
+	odm_set_bb_regx(dm, 0x1b00, MASKDWORD, 0x8 | path << 1);
 
 	if (idx == TX_IQK) {//TXCFIR
-		odm_set_bb_reg(dm, R_0x1b20, BIT(31) | BIT(30), 0x3);
+		odm_set_bb_regx(dm, R_0x1b20, BIT(31) | BIT(30), 0x3);
 	} else {//RXCFIR
-		odm_set_bb_reg(dm, R_0x1b20, BIT(31) | BIT(30), 0x1);		
+		odm_set_bb_regx(dm, R_0x1b20, BIT(31) | BIT(30), 0x1);		
 	}
-	odm_set_bb_reg(dm, R_0x1bd4, BIT(21), 0x1);
-	odm_set_bb_reg(dm, R_0x1bd4, bit_mask_20_16, 0x10);
+	odm_set_bb_regx(dm, R_0x1bd4, BIT(21), 0x1);
+	odm_set_bb_regx(dm, R_0x1bd4, bit_mask_20_16, 0x10);
 	for (i = 0; i <= 16; i++) {
-		odm_set_bb_reg(dm, R_0x1bd8, MASKDWORD, 0xe0000001 | i << 2);
-		tmp = odm_get_bb_reg(dm, R_0x1bfc, MASKDWORD);
+		odm_set_bb_regx(dm, R_0x1bd8, MASKDWORD, 0xe0000001 | i << 2);
+		tmp = odm_get_bb_regx(dm, R_0x1bfc, MASKDWORD);
 		RTW_INFO("iqk_cfir_real[%d][%d][%d] = 0x%x\n", path, idx, i, ((tmp & 0x0fff0000) >> 16));
 		//iqk_info->iqk_cfir_real[ch][path][idx][i] =
 		//				(tmp & 0x0fff0000) >> 16;
 		RTW_INFO("iqk_cfir_imag[%d][%d][%d] = 0x%x\n", path, idx, i, (tmp & 0x0fff));
 		//iqk_info->iqk_cfir_imag[ch][path][idx][i] = tmp & 0x0fff;		
 	}
-	odm_set_bb_reg(dm, R_0x1b20, BIT(31) | BIT(30), 0x0);
-	//odm_set_bb_reg(dm, R_0x1bd8, MASKDWORD, 0x0);
+	odm_set_bb_regx(dm, R_0x1b20, BIT(31) | BIT(30), 0x0);
+	//odm_set_bb_regx(dm, R_0x1bd8, MASKDWORD, 0x0);
 }
 
 __odm_func__ void
@@ -567,12 +567,12 @@ debug_information_8822c(
 
 	u32  reg_rf18;
 
-	if (odm_get_bb_reg(dm, R_0x1e7c, BIT(30)))
+	if (odm_get_bb_regx(dm, R_0x1e7c, BIT(30)))
 		dpk_info->is_tssi_mode = true;
 	else
 		dpk_info->is_tssi_mode = false;
 
-	reg_rf18 = odm_get_rf_reg(dm, RF_PATH_A, RF_0x18, RFREG_MASK);
+	reg_rf18 = odm_get_rf_regx(dm, RF_PATH_A, RF_0x18, RFREG_MASK);
 
 	dpk_info->dpk_band = (u8)((reg_rf18 & BIT(16)) >> 16); /*0/1:G/A*/
 	dpk_info->dpk_ch = (u8)reg_rf18 & 0xff;
@@ -602,17 +602,17 @@ debug_reload_data_8822c(
 
 		RTW_INFO("[DPK] Reload path: 0x%x\n", path);
 
-		odm_set_bb_reg(dm, R_0x1b00, MASKDWORD, 0x8 | (path << 1));
+		odm_set_bb_regx(dm, R_0x1b00, MASKDWORD, 0x8 | (path << 1));
 
 		 /*txagc bnd*/
 		if (dpk_info->dpk_band == 0x0)
-			u32tmp = odm_get_bb_reg(dm, R_0x1b60, MASKDWORD);
+			u32tmp = odm_get_bb_regx(dm, R_0x1b60, MASKDWORD);
 		else
-			u32tmp = odm_get_bb_reg(dm, R_0x1b60, MASKDWORD);
+			u32tmp = odm_get_bb_regx(dm, R_0x1b60, MASKDWORD);
 
  		RTW_INFO("[DPK] txagc bnd = 0x%08x\n", u32tmp);
 
-		u32tmp = odm_get_bb_reg(dm, R_0x1b64, MASKBYTE3);
+		u32tmp = odm_get_bb_regx(dm, R_0x1b64, MASKBYTE3);
 		RTW_INFO("[DPK] dpk_txagc = 0x%08x\n", u32tmp);
 		
 		//debug_coef_write_8822c(dm, path, dpk_info->dpk_path_ok & BIT(path) >> path);
@@ -620,12 +620,12 @@ debug_reload_data_8822c(
 
 		//debug_one_shot_8822c(dm, path, DPK_ON);
 
-		odm_set_bb_reg(dm, R_0x1b00, 0x0000000f, 0xc);
+		odm_set_bb_regx(dm, R_0x1b00, 0x0000000f, 0xc);
 
 		if (path == RF_PATH_A)
-			u32tmp = odm_get_bb_reg(dm, R_0x1b04, 0x0fffffff);
+			u32tmp = odm_get_bb_regx(dm, R_0x1b04, 0x0fffffff);
 		else 
-			u32tmp = odm_get_bb_reg(dm, R_0x1b5c, 0x0fffffff);
+			u32tmp = odm_get_bb_regx(dm, R_0x1b5c, 0x0fffffff);
 
 		RTW_INFO("[DPK] dpk_gs = 0x%08x\n", u32tmp);
 		

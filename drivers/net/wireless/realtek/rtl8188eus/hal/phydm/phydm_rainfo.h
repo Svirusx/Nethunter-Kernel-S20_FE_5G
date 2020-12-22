@@ -198,7 +198,7 @@ struct ra_table {
 	u8	retrylimit_high;
 #endif
 	u8	ldpc_thres; /* @if RSSI > ldpc_th => switch from LPDC to BCC */
-	void (*record_ra_info)(void *dm_void, u8 macid,
+	void (*record_ra_infox)(void *dm_void, u8 macid,
 			       struct cmn_sta_info *sta, u64 ra_mask);
 };
 
@@ -206,51 +206,51 @@ struct ra_table {
  * 1  Function Prototype
  * 1 ============================================================
  */
-boolean phydm_is_cck_rate(void *dm_void, u8 rate);
+boolean phydm_is_cck_ratex(void *dm_void, u8 rate);
 
-boolean phydm_is_ofdm_rate(void *dm_void, u8 rate);
+boolean phydm_is_ofdm_ratex(void *dm_void, u8 rate);
 
-boolean phydm_is_ht_rate(void *dm_void, u8 rate);
+boolean phydm_is_ht_ratex(void *dm_void, u8 rate);
 
-boolean phydm_is_vht_rate(void *dm_void, u8 rate);
+boolean phydm_is_vht_ratex(void *dm_void, u8 rate);
 
-u8 phydm_rate_type_2_num_ss(void *dm_void, enum PDM_RATE_TYPE type);
+u8 phydm_rate_type_2_num_ssx(void *dm_void, enum PDM_RATE_TYPE type);
 
-u8 phydm_rate_to_num_ss(void *dm_void, u8 data_rate);
+u8 phydm_rate_to_num_ssx(void *dm_void, u8 data_rate);
 
-void phydm_h2C_debug(void *dm_void, char input[][16], u32 *_used,
+void phydm_h2C_debugx(void *dm_void, char input[][16], u32 *_used,
 		     char *output, u32 *_out_len);
 
-void phydm_ra_debug(void *dm_void, char input[][16], u32 *_used, char *output,
+void phydm_ra_debugx(void *dm_void, char input[][16], u32 *_used, char *output,
 		    u32 *_out_len);
 
-void odm_c2h_ra_para_report_handler(void *dm_void, u8 *cmd_buf, u8 cmd_len);
+void odm_c2h_ra_para_report_handlerx(void *dm_void, u8 *cmd_buf, u8 cmd_len);
 
-void phydm_ra_dynamic_retry_count(void *dm_void);
+void phydm_ra_dynamic_retry_countx(void *dm_void);
 
 
-void phydm_print_rate(void *dm_void, u8 rate, u32 dbg_component);
+void phydm_print_ratex(void *dm_void, u8 rate, u32 dbg_component);
 
-void phydm_print_rate_2_buff(void *dm_void, u8 rate, char *buf, u16 buf_size);
+void phydm_print_ratex_2_buff(void *dm_void, u8 rate, char *buf, u16 buf_size);
 
-void phydm_c2h_ra_report_handler(void *dm_void, u8 *cmd_buf, u8 cmd_len);
+void phydm_c2h_ra_report_handlerx(void *dm_void, u8 *cmd_buf, u8 cmd_len);
 
-u8 phydm_rate_order_compute(void *dm_void, u8 rate_idx);
+u8 phydm_rate_order_computex(void *dm_void, u8 rate_idx);
 
 void phydm_rrsr_set_register(void *dm_void, u32 rrsr_val);
 
-void phydm_ra_info_watchdog(void *dm_void);
+void phydm_ra_info_watchdogx(void *dm_void);
 
 void phydm_rrsr_en(void *dm_void, boolean en_rrsr);
 
-void phydm_ra_info_init(void *dm_void);
+void phydm_ra_info_initx(void *dm_void);
 
-void phydm_modify_RA_PCR_threshold(void *dm_void, u8 ra_ofst_direc,
+void phydm_modify_RA_PCR_thresholdx(void *dm_void, u8 ra_ofst_direc,
 				   u8 ra_th_ofst);
 
-u8 phydm_vht_en_mapping(void *dm_void, u32 wireless_mode);
+u8 phydm_vht_en_mappingx(void *dm_void, u32 wireless_mode);
 
-u8 phydm_rate_id_mapping(void *dm_void, u32 wireless_mode, u8 rf_type, u8 bw);
+u8 phydm_rate_id_mappingx(void *dm_void, u32 wireless_mode, u8 rf_type, u8 bw);
 #if (DM_ODM_SUPPORT_TYPE == ODM_AP)
 void phydm_update_hal_ra_mask(
 	void *dm_void,
@@ -265,29 +265,29 @@ void phydm_update_hal_ra_mask(
 #endif
 
 #if (DM_ODM_SUPPORT_TYPE == ODM_CE)
-u8 phydm_get_plcp(void *dm_void, u16 macid);
+u8 phydm_get_plcpx(void *dm_void, u16 macid);
 #endif
 
-void phydm_refresh_rate_adaptive_mask(void *dm_void);
+void phydm_refresh_rate_adaptive_maskx(void *dm_void);
 
 u8 phydm_get_rx_stream_num(void *dm_void, enum rf_type type);
 
-u8 phydm_rssi_lv_dec(void *dm_void, u32 rssi, u8 ratr_state);
+u8 phydm_rssi_lv_decx(void *dm_void, u32 rssi, u8 ratr_state);
 
-void odm_ra_post_action_on_assoc(void *dm);
+void odm_ra_post_action_on_assocx(void *dm);
 
-u8 odm_find_rts_rate(void *dm_void, u8 tx_rate, boolean is_erp_protect);
+u8 odm_find_rts_ratex(void *dm_void, u8 tx_rate, boolean is_erp_protect);
 
-void phydm_show_sta_info(void *dm_void, char input[][16], u32 *_used,
+void phydm_show_sta_infox(void *dm_void, char input[][16], u32 *_used,
 			 char *output, u32 *_out_len);
 
-u8 phydm_get_rate_from_rssi_lv(void *dm_void, u8 sta_idx);
+u8 phydm_get_rate_from_rssi_lvx(void *dm_void, u8 sta_idx);
 
-void phydm_ra_registed(void *dm_void, u8 macid, u8 rssi_from_assoc);
+void phydm_ra_registedx(void *dm_void, u8 macid, u8 rssi_from_assoc);
 
-void phydm_ra_offline(void *dm_void, u8 macid);
+void phydm_ra_offlinex(void *dm_void, u8 macid);
 
-void phydm_ra_mask_watchdog(void *dm_void);
+void phydm_ra_mask_watchdogx(void *dm_void);
 
 #if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
 void odm_refresh_basic_rate_mask(

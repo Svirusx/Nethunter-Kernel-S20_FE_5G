@@ -316,7 +316,7 @@ s32	 rtl8188fu_hal_xmitframe_enqueue(_adapter *padapter, struct xmit_frame *pxmi
 /* s32 rtl8812au_xmit_buf_handler(PADAPTER padapter); */
 void rtl8188fu_xmit_tasklet(void *priv);
 s32 rtl8188fu_xmitframe_complete(_adapter *padapter, struct xmit_priv *pxmitpriv, struct xmit_buf *pxmitbuf);
-void _dbg_dump_tx_info(_adapter	*padapter, int frame_tag, struct tx_desc *ptxdesc);
+void _dbg_dump_tx_infox(_adapter	*padapter, int frame_tag, struct tx_desc *ptxdesc);
 #endif
 
 #ifdef CONFIG_PCI_HCI

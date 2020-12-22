@@ -20,7 +20,7 @@
  *	0:	power on successfully
  *	others: power on failed
  */
-int platform_wifi_power_on(void);
-void platform_wifi_power_off(void);
+int platform_wifi_power_onx(void);
+void platform_wifi_power_offx(void);
 
 #endif /* __PLATFORM_OPS_H__ */

@@ -72,18 +72,18 @@ void phydm_lna_sat_chk_bb_init(void *dm_void)
 	PHYDM_DBG(dm, DBG_LNA_SAT_CHK, "%s ==>\n", __func__);
 
 	/*@set table switch mux r_6table_sel_anten*/
-	odm_set_bb_reg(dm, 0x18ac, BIT(8), 0);
+	odm_set_bb_regx(dm, 0x18ac, BIT(8), 0);
 
 	/*@tab decision when idle*/
-	odm_set_bb_reg(dm, 0x18ac, BIT(16), disable_bb_switch_tab);
-	odm_set_bb_reg(dm, 0x41ac, BIT(16), disable_bb_switch_tab);
-	odm_set_bb_reg(dm, 0x52ac, BIT(16), disable_bb_switch_tab);
-	odm_set_bb_reg(dm, 0x53ac, BIT(16), disable_bb_switch_tab);
+	odm_set_bb_regx(dm, 0x18ac, BIT(16), disable_bb_switch_tab);
+	odm_set_bb_regx(dm, 0x41ac, BIT(16), disable_bb_switch_tab);
+	odm_set_bb_regx(dm, 0x52ac, BIT(16), disable_bb_switch_tab);
+	odm_set_bb_regx(dm, 0x53ac, BIT(16), disable_bb_switch_tab);
 	/*@tab decision when ofdmcca*/
-	odm_set_bb_reg(dm, 0x18ac, BIT(17), disable_bb_switch_tab);
-	odm_set_bb_reg(dm, 0x41ac, BIT(17), disable_bb_switch_tab);
-	odm_set_bb_reg(dm, 0x52ac, BIT(17), disable_bb_switch_tab);
-	odm_set_bb_reg(dm, 0x53ac, BIT(17), disable_bb_switch_tab);
+	odm_set_bb_regx(dm, 0x18ac, BIT(17), disable_bb_switch_tab);
+	odm_set_bb_regx(dm, 0x41ac, BIT(17), disable_bb_switch_tab);
+	odm_set_bb_regx(dm, 0x52ac, BIT(17), disable_bb_switch_tab);
+	odm_set_bb_regx(dm, 0x53ac, BIT(17), disable_bb_switch_tab);
 }
 
 void phydm_set_ofdm_agc_tab_path(
@@ -97,43 +97,43 @@ void phydm_set_ofdm_agc_tab_path(
 	if (dm->support_ic_type & (ODM_RTL8198F | ODM_RTL8814B)) {
 		PHYDM_DBG(dm, DBG_LNA_SAT_CHK, "set AGC Tab%d\n", tab_sel);
 		PHYDM_DBG(dm, DBG_LNA_SAT_CHK, "r_6table_sel_anten = 0x%x\n",
-			  odm_get_bb_reg(dm, 0x18ac, BIT(8)));
+			  odm_get_bb_regx(dm, 0x18ac, BIT(8)));
 	}
 
 	if (dm->support_ic_type & ODM_RTL8198F) {
 		/*@table sel:0/2, mapping 2 to 1 */
 		if (tab_sel == OFDM_AGC_TAB_0) {
-			odm_set_bb_reg(dm, 0x18ac, BIT(4), 0);
-			odm_set_bb_reg(dm, 0x41ac, BIT(4), 0);
-			odm_set_bb_reg(dm, 0x52ac, BIT(4), 0);
-			odm_set_bb_reg(dm, 0x53ac, BIT(4), 0);
+			odm_set_bb_regx(dm, 0x18ac, BIT(4), 0);
+			odm_set_bb_regx(dm, 0x41ac, BIT(4), 0);
+			odm_set_bb_regx(dm, 0x52ac, BIT(4), 0);
+			odm_set_bb_regx(dm, 0x53ac, BIT(4), 0);
 		} else if (tab_sel == OFDM_AGC_TAB_2) {
-			odm_set_bb_reg(dm, 0x18ac, BIT(4), 1);
-			odm_set_bb_reg(dm, 0x41ac, BIT(4), 1);
-			odm_set_bb_reg(dm, 0x52ac, BIT(4), 1);
-			odm_set_bb_reg(dm, 0x53ac, BIT(4), 1);
+			odm_set_bb_regx(dm, 0x18ac, BIT(4), 1);
+			odm_set_bb_regx(dm, 0x41ac, BIT(4), 1);
+			odm_set_bb_regx(dm, 0x52ac, BIT(4), 1);
+			odm_set_bb_regx(dm, 0x53ac, BIT(4), 1);
 		} else {
-			odm_set_bb_reg(dm, 0x18ac, BIT(4), 0);
-			odm_set_bb_reg(dm, 0x41ac, BIT(4), 0);
-			odm_set_bb_reg(dm, 0x52ac, BIT(4), 0);
-			odm_set_bb_reg(dm, 0x53ac, BIT(4), 0);
+			odm_set_bb_regx(dm, 0x18ac, BIT(4), 0);
+			odm_set_bb_regx(dm, 0x41ac, BIT(4), 0);
+			odm_set_bb_regx(dm, 0x52ac, BIT(4), 0);
+			odm_set_bb_regx(dm, 0x53ac, BIT(4), 0);
 		}
 	} else if (dm->support_ic_type & ODM_RTL8814B) {
 		if (tab_sel == OFDM_AGC_TAB_0) {
-			odm_set_bb_reg(dm, 0x18ac, 0xf0, 0);
-			odm_set_bb_reg(dm, 0x41ac, 0xf0, 0);
-			odm_set_bb_reg(dm, 0x52ac, 0xf0, 0);
-			odm_set_bb_reg(dm, 0x53ac, 0xf0, 0);
+			odm_set_bb_regx(dm, 0x18ac, 0xf0, 0);
+			odm_set_bb_regx(dm, 0x41ac, 0xf0, 0);
+			odm_set_bb_regx(dm, 0x52ac, 0xf0, 0);
+			odm_set_bb_regx(dm, 0x53ac, 0xf0, 0);
 		} else if (tab_sel == OFDM_AGC_TAB_2) {
-			odm_set_bb_reg(dm, 0x18ac, 0xf0, 2);
-			odm_set_bb_reg(dm, 0x41ac, 0xf0, 2);
-			odm_set_bb_reg(dm, 0x52ac, 0xf0, 2);
-			odm_set_bb_reg(dm, 0x53ac, 0xf0, 2);
+			odm_set_bb_regx(dm, 0x18ac, 0xf0, 2);
+			odm_set_bb_regx(dm, 0x41ac, 0xf0, 2);
+			odm_set_bb_regx(dm, 0x52ac, 0xf0, 2);
+			odm_set_bb_regx(dm, 0x53ac, 0xf0, 2);
 		} else {
-			odm_set_bb_reg(dm, 0x18ac, 0xf0, 0);
-			odm_set_bb_reg(dm, 0x41ac, 0xf0, 0);
-			odm_set_bb_reg(dm, 0x52ac, 0xf0, 0);
-			odm_set_bb_reg(dm, 0x53ac, 0xf0, 0);
+			odm_set_bb_regx(dm, 0x18ac, 0xf0, 0);
+			odm_set_bb_regx(dm, 0x41ac, 0xf0, 0);
+			odm_set_bb_regx(dm, 0x52ac, 0xf0, 0);
+			odm_set_bb_regx(dm, 0x53ac, 0xf0, 0);
 		}
 	}
 }
@@ -146,13 +146,13 @@ u8 phydm_get_ofdm_agc_tab_path(
 	u8 tab_sel = 0;
 
 	if (dm->support_ic_type & ODM_RTL8198F) {
-		tab_sel = (u8)odm_get_bb_reg(dm, R_0x18ac, BIT(4));
+		tab_sel = (u8)odm_get_bb_regx(dm, R_0x18ac, BIT(4));
 		if (tab_sel == 0)
 			tab_sel = OFDM_AGC_TAB_0;
 		else if (tab_sel == 1)
 			tab_sel = OFDM_AGC_TAB_2;
 	} else if (dm->support_ic_type & ODM_RTL8814B) {
-		tab_sel = (u8)odm_get_bb_reg(dm, R_0x18ac, 0xf0);
+		tab_sel = (u8)odm_get_bb_regx(dm, R_0x18ac, 0xf0);
 		if (tab_sel == 0)
 			tab_sel = OFDM_AGC_TAB_0;
 		else if (tab_sel == 2)
@@ -172,11 +172,11 @@ void phydm_set_ofdm_agc_tab(
 
 	/*@table sel:0/2, 1 is used for CCK */
 	if (tab_sel == OFDM_AGC_TAB_0)
-		odm_set_bb_reg(dm, R_0xc70, 0x1e00, OFDM_AGC_TAB_0);
+		odm_set_bb_regx(dm, R_0xc70, 0x1e00, OFDM_AGC_TAB_0);
 	else if (tab_sel == OFDM_AGC_TAB_2)
-		odm_set_bb_reg(dm, R_0xc70, 0x1e00, OFDM_AGC_TAB_2);
+		odm_set_bb_regx(dm, R_0xc70, 0x1e00, OFDM_AGC_TAB_2);
 	else
-		odm_set_bb_reg(dm, R_0xc70, 0x1e00, OFDM_AGC_TAB_0);
+		odm_set_bb_regx(dm, R_0xc70, 0x1e00, OFDM_AGC_TAB_0);
 }
 
 u8 phydm_get_ofdm_agc_tab(
@@ -184,14 +184,14 @@ u8 phydm_get_ofdm_agc_tab(
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
-	return (u8)odm_get_bb_reg(dm, R_0xc70, 0x1e00);
+	return (u8)odm_get_bb_regx(dm, R_0xc70, 0x1e00);
 }
 
 void phydm_lna_sat_chk(
 	void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
-	struct phydm_dig_struct *dig_t = &dm->dm_dig_table;
+	struct phydm_digx_struct *dig_t = &dm->dm_dig_table;
 	struct phydm_lna_sat_t *lna_info = &dm->dm_lna_sat_info;
 	u8 igi_rssi_min;
 	u8 rssi_min = dm->rssi_min;
@@ -254,7 +254,7 @@ void phydm_lna_sat_chk(
 		  max_check_time,
 		  lna_sat_cnt_thd);
 
-	odm_write_dig(dm, igi_rssi_min);
+	odm_write_digx(dm, igi_rssi_min);
 
 	/*@adapt agc table 0 check saturation status*/
 	#if (RTL8198F_SUPPORT || RTL8814B_SUPPORT)
@@ -295,13 +295,13 @@ void phydm_lna_sat_chk(
 		config_phydm_write_rf_reg_8814b(dm, RF_PATH_D, 0x8B, 0x4, 1);
 	}
 #else
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x86, 0x1f, 0x10);
-	odm_set_rf_reg(dm, RF_PATH_B, RF_0x86, 0x1f, 0x10);
+	odm_set_rf_regx(dm, RF_PATH_A, RF_0x86, 0x1f, 0x10);
+	odm_set_rf_regx(dm, RF_PATH_B, RF_0x86, 0x1f, 0x10);
 	#ifdef PHYDM_IC_ABOVE_3SS
-	odm_set_rf_reg(dm, RF_PATH_C, RF_0x86, 0x1f, 0x10);
+	odm_set_rf_regx(dm, RF_PATH_C, RF_0x86, 0x1f, 0x10);
 	#endif
 	#ifdef PHYDM_IC_ABOVE_4SS
-	odm_set_rf_reg(dm, RF_PATH_D, RF_0x86, 0x1f, 0x10);
+	odm_set_rf_regx(dm, RF_PATH_D, RF_0x86, 0x1f, 0x10);
 	#endif
 #endif
 
@@ -339,13 +339,13 @@ void phydm_lna_sat_chk(
 							      0xc0000);
 	}
 #else
-		sat_status_a = odm_get_rf_reg(dm, RF_PATH_A, RF_0xae, 0xc0000);
-		sat_status_b = odm_get_rf_reg(dm, RF_PATH_B, RF_0xae, 0xc0000);
+		sat_status_a = odm_get_rf_regx(dm, RF_PATH_A, RF_0xae, 0xc0000);
+		sat_status_b = odm_get_rf_regx(dm, RF_PATH_B, RF_0xae, 0xc0000);
 		#ifdef PHYDM_IC_ABOVE_3SS
-		sat_status_c = odm_get_rf_reg(dm, RF_PATH_C, RF_0xae, 0xc0000);
+		sat_status_c = odm_get_rf_regx(dm, RF_PATH_C, RF_0xae, 0xc0000);
 		#endif
 		#ifdef PHYDM_IC_ABOVE_4SS
-		sat_status_d = odm_get_rf_reg(dm, RF_PATH_D, RF_0xae, 0xc0000);
+		sat_status_d = odm_get_rf_regx(dm, RF_PATH_D, RF_0xae, 0xc0000);
 		#endif
 #endif
 
@@ -475,9 +475,9 @@ void phydm_lna_sat_chk(
 	PHYDM_DBG(dm, DBG_LNA_SAT_CHK, "use AGC tab %d\n", agc_tab);
 
 	/*@restore previous igi*/
-	odm_write_dig(dm, igi_restore);
+	odm_write_digx(dm, igi_restore);
 	lna_info->cur_timer_check_cnt++;
-	odm_set_timer(dm, &lna_info->phydm_lna_sat_chk_timer,
+	odm_set_timerx(dm, &lna_info->phydm_lna_sat_chk_timer,
 		      lna_info->chk_period);
 }
 
@@ -500,14 +500,14 @@ void phydm_lna_sat_chk_timers(
 	struct phydm_lna_sat_t *lna_info = &dm->dm_lna_sat_info;
 
 	if (state == INIT_LNA_SAT_CHK_TIMMER) {
-		odm_initialize_timer(dm,
+		odm_initialize_timerx(dm,
 				     &lna_info->phydm_lna_sat_chk_timer,
 				     (void *)phydm_lna_sat_chk_callback, NULL,
 				     "phydm_lna_sat_chk_timer");
 	} else if (state == CANCEL_LNA_SAT_CHK_TIMMER) {
-		odm_cancel_timer(dm, &lna_info->phydm_lna_sat_chk_timer);
+		odm_cancel_timerx(dm, &lna_info->phydm_lna_sat_chk_timer);
 	} else if (state == RELEASE_LNA_SAT_CHK_TIMMER) {
-		odm_release_timer(dm, &lna_info->phydm_lna_sat_chk_timer);
+		odm_release_timerx(dm, &lna_info->phydm_lna_sat_chk_timer);
 	}
 }
 
@@ -558,7 +558,7 @@ void phydm_lna_sat_chk_watchdog_type1(
 
 	if (lna_info->cur_timer_check_cnt == lna_info->pre_timer_check_cnt) {
 		PHYDM_DBG(dm, DBG_LNA_SAT_CHK, "fail, restart timer\n");
-		odm_set_timer(dm, &lna_info->phydm_lna_sat_chk_timer,
+		odm_set_timerx(dm, &lna_info->phydm_lna_sat_chk_timer,
 			      lna_info->chk_period);
 	} else {
 		PHYDM_DBG(dm, DBG_LNA_SAT_CHK, "Timer check pass\n");
@@ -1046,7 +1046,7 @@ void phydm_lna_sat_type2_sm(
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct phydm_lna_sat_t	*pinfo = &dm->dm_lna_sat_info;
 	u8 state = pinfo->nxt_state;
-	u8 agc_tab = (u8)odm_get_bb_reg(dm, 0x958, 0x1f);
+	u8 agc_tab = (u8)odm_get_bb_regx(dm, 0x958, 0x1f);
 	char *dbg_message, *nxt_dbg_message;
 	u8 real_shift = pinfo->total_bit_shift;
 

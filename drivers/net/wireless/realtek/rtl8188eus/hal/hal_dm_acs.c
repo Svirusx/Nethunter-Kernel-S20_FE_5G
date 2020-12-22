@@ -32,19 +32,19 @@ static void _rtw_bss_nums_count(_adapter *adapter, u8 *pbss_nums)
 		RTW_ERR("%s pbss_nums is null pointer\n", __func__);
 		return;
 	}
-	_rtw_memset(pbss_nums, 0, MAX_CHANNEL_NUM);
+	_rtw_memsetx(pbss_nums, 0, MAX_CHANNEL_NUM);
 
 	_enter_critical_bh(&(pmlmepriv->scanned_queue.lock), &irqL);
 	phead = get_list_head(queue);
 	plist = get_next(phead);
 	while (1) {
-		if (rtw_end_of_queue_search(phead, plist) == _TRUE)
+		if (rtw_end_of_queue_searchx(phead, plist) == _TRUE)
 			break;
 
 		pnetwork = LIST_CONTAINOR(plist, struct wlan_network, list);
 		if (!pnetwork)
 			break;
-		chan_idx = rtw_chset_search_ch(adapter_to_chset(adapter), pnetwork->network.Configuration.DSConfig);
+		chan_idx = rtw_chset_search_chx(adapter_to_chset(adapter), pnetwork->network.Configuration.DSConfig);
 		if ((chan_idx == -1) || (chan_idx >= MAX_CHANNEL_NUM)) {
 			RTW_ERR("%s can't get chan_idx(CH:%d)\n",
 				__func__, pnetwork->network.Configuration.DSConfig);
@@ -81,20 +81,20 @@ u8 rtw_phydm_clm_ratio(_adapter *adapter)
 {
 	struct dm_struct *phydm = adapter_to_phydm(adapter);
 
-	return phydm_cmn_info_query(phydm, (enum phydm_info_query) PHYDM_INFO_CLM_RATIO);
+	return phydm_cmn_info_queryx(phydm, (enum phydm_info_query) PHYDM_INFO_CLM_RATIO);
 }
 u8 rtw_phydm_nhm_ratio(_adapter *adapter)
 {
 	struct dm_struct *phydm = adapter_to_phydm(adapter);
 
-	return phydm_cmn_info_query(phydm, (enum phydm_info_query) PHYDM_INFO_NHM_RATIO);
+	return phydm_cmn_info_queryx(phydm, (enum phydm_info_query) PHYDM_INFO_NHM_RATIO);
 }
 void rtw_acs_reset(_adapter *adapter)
 {
 	HAL_DATA_TYPE *hal_data = GET_HAL_DATA(adapter);
 	struct auto_chan_sel *pacs = &hal_data->acs;
 
-	_rtw_memset(pacs, 0, sizeof(struct auto_chan_sel));
+	_rtw_memsetx(pacs, 0, sizeof(struct auto_chan_sel));
 	#ifdef CONFIG_RTW_ACS_DBG
 	rtw_acs_adv_reset(adapter);
 	#endif /*CONFIG_RTW_ACS_DBG*/
@@ -151,7 +151,7 @@ void rtw_acs_trigger(_adapter *adapter, u16 scan_time_ms, u8 scan_chan, enum NHM
 	else
 		init_acs_nhm(nhm_para, scan_time_ms);
 
-	hal_data->acs.trig_rst = phydm_env_mntr_trigger(phydm, &nhm_para, &clm_para, &trig_rpt);
+	hal_data->acs.trig_rst = phydm_env_mntr_triggerx(phydm, &nhm_para, &clm_para, &trig_rpt);
 	if (hal_data->acs.trig_rst == (NHM_SUCCESS | CLM_SUCCESS)) {
 		hal_data->acs.trig_rpt.clm_rpt_stamp = trig_rpt.clm_rpt_stamp;
 		hal_data->acs.trig_rpt.nhm_rpt_stamp = trig_rpt.nhm_rpt_stamp;
@@ -183,7 +183,7 @@ void rtw_acs_get_rst(_adapter *adapter)
 	if (!hal_data->acs.triggered)
 		return;
 
-	chan_idx = rtw_chset_search_ch(adapter_to_chset(adapter), cur_chan);
+	chan_idx = rtw_chset_search_chx(adapter_to_chset(adapter), cur_chan);
 	if ((chan_idx == -1) || (chan_idx >= MAX_CHANNEL_NUM)) {
 		RTW_ERR("[ACS] %s can't get chan_idx(CH:%d)\n", __func__, cur_chan);
 		return;
@@ -198,13 +198,13 @@ void rtw_acs_get_rst(_adapter *adapter)
 		struct env_mntr_rpt rpt = {0};
 		u8 rst;
 
-		rst = phydm_env_mntr_result(phydm, &rpt);
+		rst = phydm_env_mntr_resultx(phydm, &rpt);
 		if ((rst == (NHM_SUCCESS | CLM_SUCCESS)) &&
 			(rpt.clm_rpt_stamp == hal_data->acs.trig_rpt.clm_rpt_stamp) &&
 			(rpt.nhm_rpt_stamp == hal_data->acs.trig_rpt.nhm_rpt_stamp)){
 			hal_data->acs.clm_ratio[chan_idx] = rpt.clm_ratio;
 			hal_data->acs.nhm_ratio[chan_idx] = rpt.nhm_ratio;
-			_rtw_memcpy(&hal_data->acs.nhm[chan_idx][0], rpt.nhm_result, NHM_RPT_NUM);
+			_rtw_memcpyx(&hal_data->acs.nhm[chan_idx][0], rpt.nhm_result, NHM_RPT_NUM);
 
 			/*RTW_INFO("[ACS] get_rst success (rst = 0x%02x, clm_stamp:%d:%d, nhm_stamp:%d:%d)\n",
 			rst,
@@ -326,7 +326,7 @@ u8 rtw_acs_get_clm_ratio_by_ch_num(_adapter *adapter, u8 chan)
 	HAL_DATA_TYPE *hal_data = GET_HAL_DATA(adapter);
 	int chan_idx = -1;
 
-	chan_idx = rtw_chset_search_ch(adapter_to_chset(adapter), chan);
+	chan_idx = rtw_chset_search_chx(adapter_to_chset(adapter), chan);
 	if ((chan_idx == -1) || (chan_idx >= MAX_CHANNEL_NUM)) {
 		RTW_ERR("[ACS] Get CLM fail, can't get chan_idx(CH:%d)\n", chan);
 		return 0;
@@ -350,7 +350,7 @@ u8 rtw_acs_get_nhm_ratio_by_ch_num(_adapter *adapter, u8 chan)
 	HAL_DATA_TYPE *hal_data = GET_HAL_DATA(adapter);
 	int chan_idx = -1;
 
-	chan_idx = rtw_chset_search_ch(adapter_to_chset(adapter), chan);
+	chan_idx = rtw_chset_search_chx(adapter_to_chset(adapter), chan);
 	if ((chan_idx == -1) || (chan_idx >= MAX_CHANNEL_NUM)) {
 		RTW_ERR("[ACS] Get NHM fail, can't get chan_idx(CH:%d)\n", chan);
 		return 0;
@@ -401,19 +401,19 @@ void rtw_acs_current_info_dump(void *sel, _adapter *adapter)
 
 	_RTW_PRINT_SEL(sel, "========== ACS (VER-%d) ==========\n", RTK_ACS_VERSION);
 
-	ch = rtw_get_oper_ch(adapter);
-	bw = rtw_get_oper_bw(adapter);
-	offset = rtw_get_oper_choffset(adapter);
+	ch = rtw_get_oper_chx(adapter);
+	bw = rtw_get_oper_bwx(adapter);
+	offset = rtw_get_oper_chxoffset(adapter);
 
 	_RTW_PRINT_SEL(sel, "Current Channel:%d\n", ch);
 	if ((bw == CHANNEL_WIDTH_80) ||(bw == CHANNEL_WIDTH_40)) {
-		cen_ch = rtw_get_center_ch(ch, bw, offset);
+		cen_ch = rtw_get_center_chx(ch, bw, offset);
 		_RTW_PRINT_SEL(sel, "Center Channel:%d\n", cen_ch);
 	}
 
-	_RTW_PRINT_SEL(sel, "Current BW %s\n", ch_width_str(bw));
+	_RTW_PRINT_SEL(sel, "Current BW %s\n", ch_width_strx(bw));
 	if (0)
-		_RTW_PRINT_SEL(sel, "Current IGI 0x%02x\n", rtw_phydm_get_cur_igi(adapter));
+		_RTW_PRINT_SEL(sel, "Current IGI 0x%02x\n", rtw_phydm_get_cur_igix(adapter));
 	_RTW_PRINT_SEL(sel, "CLM:%d, NHM:%d\n\n",
 		hal_data->acs.cur_ch_clm_ratio, hal_data->acs.cur_ch_nhm_ratio);
 }
@@ -477,12 +477,12 @@ void rtw_noise_measure(_adapter *adapter, u8 chan, u8 is_pause_dig, u8 igi_value
 		chan, (is_pause_dig) ? "Y" : "N", igi_value, max_time);
 	#endif
 
-	chan_idx = rtw_chset_search_ch(adapter_to_chset(adapter), chan);
+	chan_idx = rtw_chset_search_chx(adapter_to_chset(adapter), chan);
 	if ((chan_idx == -1) || (chan_idx >= MAX_CHANNEL_NUM)) {
 		RTW_ERR("[NM] Get noise fail, can't get chan_idx(CH:%d)\n", chan);
 		return;
 	}
-	noise = odm_inband_noise_monitor(phydm, is_pause_dig, igi_value, max_time); /*dBm*/
+	noise = odm_inband_noise_monitorx(phydm, is_pause_dig, igi_value, max_time); /*dBm*/
 
 	hal_data->nm.noise[chan_idx] = noise;
 
@@ -502,7 +502,7 @@ s16 rtw_noise_query_by_chan_num(_adapter *adapter, u8 chan)
 	s16 noise = 0;
 	int chan_idx = -1;
 
-	chan_idx = rtw_chset_search_ch(adapter_to_chset(adapter), chan);
+	chan_idx = rtw_chset_search_chx(adapter_to_chset(adapter), chan);
 	if ((chan_idx == -1) || (chan_idx >= MAX_CHANNEL_NUM)) {
 		RTW_ERR("[NM] Get noise fail, can't get chan_idx(CH:%d)\n", chan);
 		return noise;
@@ -537,16 +537,16 @@ s16 rtw_noise_measure_curchan(_adapter *padapter)
 	u8 igi_value = 0x1E;
 	u32 max_time = 100;/* ms */
 	u8 is_pause_dig = _TRUE;
-	u8 cur_chan = rtw_get_oper_ch(padapter);
+	u8 cur_chan = rtw_get_oper_chx(padapter);
 
-	if (rtw_linked_check(padapter) == _FALSE)
+	if (rtw_linked_checkx(padapter) == _FALSE)
 		return noise;
 
-	rtw_ps_deny(padapter, PS_DENY_IOCTL);
-	LeaveAllPowerSaveModeDirect(padapter);
+	rtw_ps_denyx(padapter, PS_DENY_IOCTL);
+	LeaveAllPowerSaveModexDirect(padapter);
 	rtw_noise_measure(padapter, cur_chan, is_pause_dig, igi_value, max_time);
 	noise = rtw_noise_query_by_chan_num(padapter, cur_chan);
-	rtw_ps_deny_cancel(padapter, PS_DENY_IOCTL);
+	rtw_ps_denyx_cancel(padapter, PS_DENY_IOCTL);
 
 	return noise;
 }

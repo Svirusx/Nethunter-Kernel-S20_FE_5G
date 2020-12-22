@@ -417,44 +417,44 @@ enum auto_detection_state { /*@Fast antenna training*/
  */
 
 #ifdef CONFIG_PHYDM_DEBUG_FUNCTION
-u8 phydm_get_l_sig_rate(void *dm_void, u8 rate_idx_l_sig);
+u8 phydm_get_l_sig_ratex(void *dm_void, u8 rate_idx_l_sig);
 #endif
 
-void phydm_init_debug_setting(struct dm_struct *dm);
+void phydm_init_debug_settingx(struct dm_struct *dm);
 
-void phydm_bb_dbg_port_header_sel(void *dm_void, u32 header_idx);
+void phydm_bb_dbg_port_header_selx(void *dm_void, u32 header_idx);
 
 u32 phydm_get_bb_dbg_port_idx(void *dm_void);
 
-u8 phydm_set_bb_dbg_port(void *dm_void, u8 curr_dbg_priority, u32 debug_port);
+u8 phydm_set_bb_dbg_portx(void *dm_void, u8 curr_dbg_priority, u32 debug_port);
 
-void phydm_release_bb_dbg_port(void *dm_void);
+void phydm_release_bb_dbg_portx(void *dm_void);
 
-u32 phydm_get_bb_dbg_port_val(void *dm_void);
+u32 phydm_get_bb_dbg_port_valx(void *dm_void);
 
-void phydm_reset_rx_rate_distribution(struct dm_struct *dm);
+void phydm_reset_rx_rate_distributionx(struct dm_struct *dm);
 
-void phydm_rx_rate_distribution(void *dm_void);
+void phydm_rx_rate_distributionx(void *dm_void);
 
 u16 phydm_rx_avg_phy_rate(void *dm_void);
 
-void phydm_show_phy_hitogram(void *dm_void);
+void phydm_show_phy_hitogramx(void *dm_void);
 
-void phydm_get_avg_phystatus_val(void *dm_void);
+void phydm_get_avg_phystatus_valx(void *dm_void);
 
-void phydm_get_phy_statistic(void *dm_void);
+void phydm_get_phy_statisticx(void *dm_void);
 
-void phydm_dm_summary(void *dm_void, u8 macid);
+void phydm_dm_summaryx(void *dm_void, u8 macid);
 
-void phydm_basic_dbg_message(void *dm_void);
+void phydm_basic_dbg_messagex(void *dm_void);
 
-void phydm_basic_profile(void *dm_void, u32 *_used, char *output,
+void phydm_basic_profilex(void *dm_void, u32 *_used, char *output,
 			 u32 *_out_len);
 #if (DM_ODM_SUPPORT_TYPE & (ODM_CE | ODM_AP))
-s32 phydm_cmd(struct dm_struct *dm, char *input, u32 in_len, u8 flag,
+s32 phydm_cmdx(struct dm_struct *dm, char *input, u32 in_len, u8 flag,
 	      char *output, u32 out_len);
 #endif
-void phydm_cmd_parser(struct dm_struct *dm, char input[][16], u32 input_num,
+void phydm_cmdx_parser(struct dm_struct *dm, char input[][16], u32 input_num,
 		      u8 flag, char *output, u32 out_len);
 
 #if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
@@ -470,13 +470,13 @@ void phydm_sbd_workitem_callback(
 	void *context);
 #endif
 
-void phydm_fw_trace_en_h2c(void *dm_void, boolean enable,
+void phydm_fw_trace_en_h2cx(void *dm_void, boolean enable,
 			   u32 fw_debug_component, u32 monitor_mode, u32 macid);
 
-void phydm_fw_trace_handler(void *dm_void, u8 *cmd_buf, u8 cmd_len);
+void phydm_fw_trace_handlerx(void *dm_void, u8 *cmd_buf, u8 cmd_len);
 
-void phydm_fw_trace_handler_code(void *dm_void, u8 *buffer, u8 cmd_len);
+void phydm_fw_trace_handlerx_code(void *dm_void, u8 *buffer, u8 cmd_len);
 
-void phydm_fw_trace_handler_8051(void *dm_void, u8 *cmd_buf, u8 cmd_len);
+void phydm_fw_trace_handlerx_8051(void *dm_void, u8 *cmd_buf, u8 cmd_len);
 
 #endif /* @__ODM_DBG_H__ */

@@ -23,7 +23,7 @@
 
 #include "../halphyrf_ce.h"
 
-void configure_txpower_track_8188e(struct txpwrtrack_cfg *config);
+void configure_txpower_trackx_8188e(struct txpwrtrack_cfg *config);
 
 void get_delta_swing_table_8188e(void *dm_void, u8 **temperature_up_a,
 				 u8 **temperature_down_a, u8 **temperature_up_b,
@@ -54,6 +54,6 @@ void _phy_mac_setting_calibration(struct dm_struct *dm, u32 *mac_reg,
 				  u32 *mac_backup);
 
 void _phy_path_a_stand_by(struct dm_struct *dm);
-void halrf_rf_lna_setting_8188e(struct dm_struct *dm, enum halrf_lna_set type);
+void halrf_rf_lna_settingx_8188e(struct dm_struct *dm, enum halrf_lna_set type);
 
 #endif /*#ifndef __HALRF_8188E_H__*/

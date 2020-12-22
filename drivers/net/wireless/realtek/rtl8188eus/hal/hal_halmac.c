@@ -109,7 +109,7 @@ static u8 _halmac_sdio_reg_read_8(void *p, u32 offset)
 	d = (struct dvobj_priv *)p;
 	val = SDIO_ERR_VAL8;
 	_halmac_mac_reg_page0_chk(__func__, d, offset);
-	pbuf = rtw_zmalloc(1);
+	pbuf = rtw_zmallocx(1);
 	if (!pbuf)
 		return val;
 
@@ -122,7 +122,7 @@ static u8 _halmac_sdio_reg_read_8(void *p, u32 offset)
 	val = *pbuf;
 
 exit:
-	rtw_mfree(pbuf, 1);
+	rtw_mfreex(pbuf, 1);
 
 	return val;
 }
@@ -138,7 +138,7 @@ static u16 _halmac_sdio_reg_read_16(void *p, u32 offset)
 	d = (struct dvobj_priv *)p;
 	val = SDIO_ERR_VAL16;
 	_halmac_mac_reg_page0_chk(__func__, d, offset);
-	pbuf = rtw_zmalloc(2);
+	pbuf = rtw_zmallocx(2);
 	if (!pbuf)
 		return val;
 
@@ -151,7 +151,7 @@ static u16 _halmac_sdio_reg_read_16(void *p, u32 offset)
 	val = le16_to_cpu(*(u16 *)pbuf);
 
 exit:
-	rtw_mfree(pbuf, 2);
+	rtw_mfreex(pbuf, 2);
 
 	return val;
 }
@@ -167,7 +167,7 @@ static u32 _halmac_sdio_reg_read_32(void *p, u32 offset)
 	d = (struct dvobj_priv *)p;
 	val = SDIO_ERR_VAL32;
 	_halmac_mac_reg_page0_chk(__func__, d, offset);
-	pbuf = rtw_zmalloc(4);
+	pbuf = rtw_zmallocx(4);
 	if (!pbuf)
 		return val;
 
@@ -180,7 +180,7 @@ static u32 _halmac_sdio_reg_read_32(void *p, u32 offset)
 	val = le32_to_cpu(*(u32 *)pbuf);
 
 exit:
-	rtw_mfree(pbuf, 4);
+	rtw_mfreex(pbuf, 4);
 
 	return val;
 }
@@ -200,7 +200,7 @@ static u8 _halmac_sdio_reg_read_n(void *p, u32 offset, u32 size, u8 *data)
 	sdio_read_size = RND4(size);
 	sdio_read_size = rtw_sdio_cmd53_align_size(d, sdio_read_size);
 
-	pbuf = rtw_zmalloc(sdio_read_size);
+	pbuf = rtw_zmallocx(sdio_read_size);
 	if (!pbuf)
 		return rst;
 
@@ -210,10 +210,10 @@ static u8 _halmac_sdio_reg_read_n(void *p, u32 offset, u32 size, u8 *data)
 		goto exit;
 	}
 
-	_rtw_memcpy(data, pbuf, size);
+	_rtw_memcpyx(data, pbuf, size);
 	rst = RTW_HALMAC_SUCCESS;
 exit:
-	rtw_mfree(pbuf, sdio_read_size);
+	rtw_mfreex(pbuf, sdio_read_size);
 
 	return rst;
 }
@@ -227,16 +227,16 @@ static void _halmac_sdio_reg_write_8(void *p, u32 offset, u8 val)
 
 	d = (struct dvobj_priv *)p;
 	_halmac_mac_reg_page0_chk(__func__, d, offset);
-	pbuf = rtw_zmalloc(1);
+	pbuf = rtw_zmallocx(1);
 	if (!pbuf)
 		return;
-	_rtw_memcpy(pbuf, &val, 1);
+	_rtw_memcpyx(pbuf, &val, 1);
 
 	ret = rtw_sdio_write_cmd53(d, offset, pbuf, 1);
 	if (ret == _FAIL)
 		RTW_ERR("%s: I/O FAIL!\n", __FUNCTION__);
 
-	rtw_mfree(pbuf, 1);
+	rtw_mfreex(pbuf, 1);
 }
 
 static void _halmac_sdio_reg_write_16(void *p, u32 offset, u16 val)
@@ -249,16 +249,16 @@ static void _halmac_sdio_reg_write_16(void *p, u32 offset, u16 val)
 	d = (struct dvobj_priv *)p;
 	_halmac_mac_reg_page0_chk(__func__, d, offset);
 	val = cpu_to_le16(val);
-	pbuf = rtw_zmalloc(2);
+	pbuf = rtw_zmallocx(2);
 	if (!pbuf)
 		return;
-	_rtw_memcpy(pbuf, &val, 2);
+	_rtw_memcpyx(pbuf, &val, 2);
 
 	ret = rtw_sdio_write_cmd53(d, offset, pbuf, 2);
 	if (ret == _FAIL)
 		RTW_ERR("%s: I/O FAIL!\n", __FUNCTION__);
 
-	rtw_mfree(pbuf, 2);
+	rtw_mfreex(pbuf, 2);
 }
 
 static void _halmac_sdio_reg_write_32(void *p, u32 offset, u32 val)
@@ -271,16 +271,16 @@ static void _halmac_sdio_reg_write_32(void *p, u32 offset, u32 val)
 	d = (struct dvobj_priv *)p;
 	_halmac_mac_reg_page0_chk(__func__, d, offset);
 	val = cpu_to_le32(val);
-	pbuf = rtw_zmalloc(4);
+	pbuf = rtw_zmallocx(4);
 	if (!pbuf)
 		return;
-	_rtw_memcpy(pbuf, &val, 4);
+	_rtw_memcpyx(pbuf, &val, 4);
 
 	ret = rtw_sdio_write_cmd53(d, offset, pbuf, 4);
 	if (ret == _FAIL)
 		RTW_ERR("%s: I/O FAIL!\n", __FUNCTION__);
 
-	rtw_mfree(pbuf, 4);
+	rtw_mfreex(pbuf, 4);
 }
 
 static u8 _halmac_sdio_read_cia(void *p, u32 offset)
@@ -310,7 +310,7 @@ static u8 _halmac_reg_read_8(void *p, u32 offset)
 	d = (struct dvobj_priv *)p;
 	adapter = dvobj_get_primary_adapter(d);
 
-	return rtw_read8(adapter, offset);
+	return rtw_read8x(adapter, offset);
 }
 
 static u16 _halmac_reg_read_16(void *p, u32 offset)
@@ -322,7 +322,7 @@ static u16 _halmac_reg_read_16(void *p, u32 offset)
 	d = (struct dvobj_priv *)p;
 	adapter = dvobj_get_primary_adapter(d);
 
-	return rtw_read16(adapter, offset);
+	return rtw_read16x(adapter, offset);
 }
 
 static u32 _halmac_reg_read_32(void *p, u32 offset)
@@ -334,7 +334,7 @@ static u32 _halmac_reg_read_32(void *p, u32 offset)
 	d = (struct dvobj_priv *)p;
 	adapter = dvobj_get_primary_adapter(d);
 
-	return rtw_read32(adapter, offset);
+	return rtw_read32x(adapter, offset);
 }
 
 static void _halmac_reg_write_8(void *p, u32 offset, u8 val)
@@ -347,7 +347,7 @@ static void _halmac_reg_write_8(void *p, u32 offset, u8 val)
 	d = (struct dvobj_priv *)p;
 	adapter = dvobj_get_primary_adapter(d);
 
-	err = rtw_write8(adapter, offset, val);
+	err = rtw_write8x(adapter, offset, val);
 	if (err == _FAIL)
 		RTW_ERR("%s: I/O FAIL!\n", __FUNCTION__);
 }
@@ -362,7 +362,7 @@ static void _halmac_reg_write_16(void *p, u32 offset, u16 val)
 	d = (struct dvobj_priv *)p;
 	adapter = dvobj_get_primary_adapter(d);
 
-	err = rtw_write16(adapter, offset, val);
+	err = rtw_write16x(adapter, offset, val);
 	if (err == _FAIL)
 		RTW_ERR("%s: I/O FAIL!\n", __FUNCTION__);
 }
@@ -377,7 +377,7 @@ static void _halmac_reg_write_32(void *p, u32 offset, u32 val)
 	d = (struct dvobj_priv *)p;
 	adapter = dvobj_get_primary_adapter(d);
 
-	err = rtw_write32(adapter, offset, val);
+	err = rtw_write32x(adapter, offset, val);
 	if (err == _FAIL)
 		RTW_ERR("%s: I/O FAIL!\n", __FUNCTION__);
 }
@@ -385,24 +385,24 @@ static void _halmac_reg_write_32(void *p, u32 offset, u32 val)
 
 static u8 _halmac_mfree(void *p, void *buffer, u32 size)
 {
-	rtw_mfree(buffer, size);
+	rtw_mfreex(buffer, size);
 	return RTW_HALMAC_SUCCESS;
 }
 
 static void *_halmac_malloc(void *p, u32 size)
 {
-	return rtw_zmalloc(size);
+	return rtw_zmallocx(size);
 }
 
 static u8 _halmac_memcpy(void *p, void *dest, void *src, u32 size)
 {
-	_rtw_memcpy(dest, src, size);
+	_rtw_memcpyx(dest, src, size);
 	return RTW_HALMAC_SUCCESS;
 }
 
 static u8 _halmac_memset(void *p, void *addr, u8 value, u32 size)
 {
-	_rtw_memset(addr, value, size);
+	_rtw_memsetx(addr, value, size);
 	return RTW_HALMAC_SUCCESS;
 }
 
@@ -410,22 +410,22 @@ static void _halmac_udelay(void *p, u32 us)
 {
 	/* Most hardware polling wait time < 50us) */
 	if (us <= 50)
-		rtw_udelay_os(us);
+		rtw_udelay_osx(us);
 	else if (us <= 1000)
-		rtw_usleep_os(us);
+		rtw_usleep_osx(us);
 	else
-		rtw_msleep_os(RTW_DIV_ROUND_UP(us, 1000));
+		rtw_msleep_osx(RTW_DIV_ROUND_UP(us, 1000));
 }
 
 static u8 _halmac_mutex_init(void *p, HALMAC_MUTEX *pMutex)
 {
-	_rtw_mutex_init(pMutex);
+	_rtw_mutex_initx(pMutex);
 	return RTW_HALMAC_SUCCESS;
 }
 
 static u8 _halmac_mutex_deinit(void *p, HALMAC_MUTEX *pMutex)
 {
-	_rtw_mutex_free(pMutex);
+	_rtw_mutex_freex(pMutex);
 	return RTW_HALMAC_SUCCESS;
 }
 
@@ -616,7 +616,7 @@ static int init_halmac_event_with_waittime(struct dvobj_priv *d, enum halmac_fea
 
 
 	if (!d->hmpriv.indicator[id].sctx) {
-		sctx = (struct submit_ctx *)rtw_zmalloc(sizeof(*sctx));
+		sctx = (struct submit_ctx *)rtw_zmallocx(sizeof(*sctx));
 		if (!sctx)
 			return -1;
 	} else {
@@ -625,7 +625,7 @@ static int init_halmac_event_with_waittime(struct dvobj_priv *d, enum halmac_fea
 		d->hmpriv.indicator[id].sctx = NULL;
 	}
 
-	rtw_sctx_init(sctx, time);
+	rtw_sctx_initx(sctx, time);
 	d->hmpriv.indicator[id].buffer = buf;
 	d->hmpriv.indicator[id].buf_size = size;
 	d->hmpriv.indicator[id].ret_size = 0;
@@ -651,7 +651,7 @@ static void free_halmac_event(struct dvobj_priv *d, enum halmac_feature_id id)
 
 	sctx = d->hmpriv.indicator[id].sctx;
 	d->hmpriv.indicator[id].sctx = NULL;
-	rtw_mfree((u8 *)sctx, sizeof(*sctx));
+	rtw_mfreex((u8 *)sctx, sizeof(*sctx));
 }
 
 static int wait_halmac_event(struct dvobj_priv *d, enum halmac_feature_id id)
@@ -666,7 +666,7 @@ static int wait_halmac_event(struct dvobj_priv *d, enum halmac_feature_id id)
 	if (!sctx)
 		return -1;
 
-	ret = rtw_sctx_wait(sctx, RTW_HALMAC_FEATURE_NAME[id]);
+	ret = rtw_sctx_waitx(sctx, RTW_HALMAC_FEATURE_NAME[id]);
 	free_halmac_event(d, id);
 	if (_SUCCESS == ret)
 		return 0;
@@ -717,7 +717,7 @@ static u8 _halmac_event_indication(void *p, enum halmac_feature_id feature_id, e
 
 	if (HALMAC_CMD_PROCESS_ERROR == process_status) {
 		RTW_ERR("%s: Something wrong id(%d, %s)!!\n", __FUNCTION__, feature_id, RTW_HALMAC_FEATURE_NAME[feature_id]);
-		rtw_sctx_done_err(&sctx, RTW_SCTX_DONE_UNKNOWN);
+		rtw_sctx_donex_err(&sctx, RTW_SCTX_DONE_UNKNOWN);
 		goto exit;
 	}
 
@@ -729,9 +729,9 @@ static u8 _halmac_event_indication(void *p, enum halmac_feature_id feature_id, e
 		cpsz = size;
 	}
 	if (cpsz && indicator->buffer)
-		_rtw_memcpy(indicator->buffer, buf, cpsz);
+		_rtw_memcpyx(indicator->buffer, buf, cpsz);
 
-	rtw_sctx_done(&sctx);
+	rtw_sctx_donex(&sctx);
 
 exit:
 	return RTW_HALMAC_SUCCESS;
@@ -839,9 +839,9 @@ static void _read_register(struct dvobj_priv *d, u32 addr, u32 cnt, u8 *buf)
 	i = addr & 0x3;
 	/* Handle address not start from 4 bytes alignment case */
 	if (i) {
-		val32 = cpu_to_le32(rtw_read32(a, addr & ~0x3));
+		val32 = cpu_to_le32(rtw_read32x(a, addr & ~0x3));
 		n = 4 - i;
-		_rtw_memcpy(buf, ((u8 *)&val32) + i, n);
+		_rtw_memcpyx(buf, ((u8 *)&val32) + i, n);
 		i = n;
 		cnt -= n;
 	}
@@ -857,17 +857,17 @@ static void _read_register(struct dvobj_priv *d, u32 addr, u32 cnt, u8 *buf)
 
 		switch (n) {
 		case 1:
-			buf[i] = rtw_read8(a, addr+i);
+			buf[i] = rtw_read8x(a, addr+i);
 			i++;
 			break;
 		case 2:
-			val16 = cpu_to_le16(rtw_read16(a, addr+i));
-			_rtw_memcpy(&buf[i], &val16, 2);
+			val16 = cpu_to_le16(rtw_read16x(a, addr+i));
+			_rtw_memcpyx(&buf[i], &val16, 2);
 			i += 2;
 			break;
 		case 4:
-			val32 = cpu_to_le32(rtw_read32(a, addr+i));
-			_rtw_memcpy(&buf[i], &val32, 4);
+			val32 = cpu_to_le32(rtw_read32x(a, addr+i));
+			_rtw_memcpyx(&buf[i], &val32, 4);
 			i += 4;
 			break;
 		}
@@ -879,7 +879,7 @@ static void _read_register(struct dvobj_priv *d, u32 addr, u32 cnt, u8 *buf)
 
 	a = dvobj_get_primary_adapter(d);
 	for (i = 0; i < cnt; i++)
-		buf[i] = rtw_read8(a, addr + i);
+		buf[i] = rtw_read8x(a, addr + i);
 #endif
 }
 
@@ -1064,7 +1064,7 @@ static int init_write_rsvd_page_size(struct dvobj_priv *d)
 	mac = dvobj_to_halmac(d);
 	api = HALMAC_GET_API(mac);
 
-	_rtw_memset(&ofld_info, 0, sizeof(ofld_info));
+	_rtw_memsetx(&ofld_info, 0, sizeof(ofld_info));
 	ofld_info.halmac_malloc_max_sz = 0xFFFFFFFF;
 	ofld_info.rsvd_pg_drv_buf_max_sz = size;
 	status = api->halmac_ofld_func_cfg(mac, &ofld_info);
@@ -1086,7 +1086,7 @@ static int init_priv(struct halmacpriv *priv)
 		RTW_WARN("%s: HALMAC private data is not CLEAR!\n", __FUNCTION__);
 	count = HALMAC_FEATURE_ALL + 1;
 	size = sizeof(*indicator) * count;
-	indicator = (struct halmac_indicator *)rtw_zmalloc(size);
+	indicator = (struct halmac_indicator *)rtw_zmallocx(size);
 	if (!indicator)
 		return -1;
 	priv->indicator = indicator;
@@ -1118,12 +1118,12 @@ static void deinit_priv(struct halmacpriv *priv)
 					__FUNCTION__, RTW_HALMAC_FEATURE_NAME[i], i);
 				sctx = indicator[i].sctx;
 				indicator[i].sctx = NULL;
-				rtw_mfree((u8 *)sctx, sizeof(*sctx));
+				rtw_mfreex((u8 *)sctx, sizeof(*sctx));
 			}
 		}
 #endif /* !CONFIG_RTW_DEBUG */
 		size = sizeof(*indicator) * count;
-		rtw_mfree((u8 *)indicator, size);
+		rtw_mfreex((u8 *)indicator, size);
 	}
 }
 
@@ -1218,7 +1218,7 @@ int rtw_halmac_init_adapter(struct dvobj_priv *d, struct halmac_platform_api *pf
 	init_write_rsvd_page_size(d);
 
 #ifdef CONFIG_SDIO_HCI
-	_rtw_memset(&info, 0, sizeof(info));
+	_rtw_memsetx(&info, 0, sizeof(info));
 	info.spec_ver = _sdio_ver_drv2halmac(d);
 	/* Convert clock speed unit to MHz from Hz */
 	info.clock_speed = RTW_DIV_ROUND_UP(rtw_sdio_get_clock(d), 1000000);
@@ -1794,13 +1794,13 @@ int rtw_halmac_get_mac_address(struct dvobj_priv *d, enum _hw_port hwport, u8 *a
 	halmac = dvobj_to_halmac(d);
 	api = HALMAC_GET_API(halmac);
 	port = _hw_port_drv2halmac(hwport);
-	_rtw_memset(&hwa, 0, sizeof(hwa));
+	_rtw_memsetx(&hwa, 0, sizeof(hwa));
 
 	status = api->halmac_get_mac_addr(halmac, port, &hwa);
 	if (status != HALMAC_RET_SUCCESS)
 		goto out;
 
-	_rtw_memcpy(addr, hwa.addr, 6);
+	_rtw_memcpyx(addr, hwa.addr, 6);
 
 	err = 0;
 out:
@@ -1856,27 +1856,27 @@ out:
 
 	switch (port) {
 	case HALMAC_PORTID0:
-		val = rtw_read32(a, REG_CR);
+		val = rtw_read32x(a, REG_CR);
 		network = BIT_GET_NETYPE0(val);
 		break;
 
 	case HALMAC_PORTID1:
-		val = rtw_read32(a, REG_CR);
+		val = rtw_read32x(a, REG_CR);
 		network = BIT_GET_NETYPE1(val);
 		break;
 
 	case HALMAC_PORTID2:
-		val = rtw_read32(a, REG_CR_EXT);
+		val = rtw_read32x(a, REG_CR_EXT);
 		network = BIT_GET_NETYPE2(val);
 		break;
 
 	case HALMAC_PORTID3:
-		val = rtw_read32(a, REG_CR_EXT);
+		val = rtw_read32x(a, REG_CR_EXT);
 		network = BIT_GET_NETYPE3(val);
 		break;
 
 	case HALMAC_PORTID4:
-		val = rtw_read32(a, REG_CR_EXT);
+		val = rtw_read32x(a, REG_CR_EXT);
 		network = BIT_GET_NETYPE4(val);
 		break;
 
@@ -1916,7 +1916,7 @@ int rtw_halmac_get_bcn_ctrl(struct dvobj_priv *d, enum _hw_port hwport,
 	halmac = dvobj_to_halmac(d);
 	api = HALMAC_GET_API(halmac);
 	port = _hw_port_drv2halmac(hwport);
-	_rtw_memset(&ctrl, 0, sizeof(ctrl));
+	_rtw_memsetx(&ctrl, 0, sizeof(ctrl));
 
 	status = api->halmac_rw_bcn_ctrl(halmac, port, 0, &ctrl);
 	if (status != HALMAC_RET_SUCCESS)
@@ -2019,8 +2019,8 @@ int rtw_halmac_set_mac_address(struct dvobj_priv *d, enum _hw_port hwport, u8 *a
 	api = HALMAC_GET_API(halmac);
 
 	port = _hw_port_drv2halmac(hwport);
-	_rtw_memset(&hwa, 0, sizeof(hwa));
-	_rtw_memcpy(hwa.addr, addr, 6);
+	_rtw_memsetx(&hwa, 0, sizeof(hwa));
+	_rtw_memcpyx(hwa.addr, addr, 6);
 
 	status = api->halmac_cfg_mac_addr(halmac, port, &hwa);
 	if (status != HALMAC_RET_SUCCESS)
@@ -2055,8 +2055,8 @@ int rtw_halmac_set_bssid(struct dvobj_priv *d, enum _hw_port hwport, u8 *addr)
 	api = HALMAC_GET_API(halmac);
 	port = _hw_port_drv2halmac(hwport);
 
-	_rtw_memset(&hwa, 0, sizeof(hwa));
-	_rtw_memcpy(hwa.addr, addr, 6);
+	_rtw_memsetx(&hwa, 0, sizeof(hwa));
+	_rtw_memcpyx(hwa.addr, addr, 6);
 	status = api->halmac_cfg_bssid(halmac, port, &hwa);
 	if (status != HALMAC_RET_SUCCESS)
 		goto out;
@@ -2089,8 +2089,8 @@ int rtw_halmac_set_tx_address(struct dvobj_priv *d, enum _hw_port hwport, u8 *ad
 	halmac = dvobj_to_halmac(d);
 	api = HALMAC_GET_API(halmac);
 	port = _hw_port_drv2halmac(hwport);
-	_rtw_memset(&hwa, 0, sizeof(hwa));
-	_rtw_memcpy(hwa.addr, addr, 6);
+	_rtw_memsetx(&hwa, 0, sizeof(hwa));
+	_rtw_memcpyx(hwa.addr, addr, 6);
 
 	status = api->halmac_cfg_transmitter_addr(halmac, port, &hwa);
 	if (status != HALMAC_RET_SUCCESS)
@@ -2224,7 +2224,7 @@ int rtw_halmac_set_bcn_ctrl(struct dvobj_priv *d, enum _hw_port hwport,
 	halmac = dvobj_to_halmac(d);
 	api = HALMAC_GET_API(halmac);
 	port = _hw_port_drv2halmac(hwport);
-	_rtw_memset(&ctrl, 0, sizeof(ctrl));
+	_rtw_memsetx(&ctrl, 0, sizeof(ctrl));
 	_beacon_ctrl_drv2halmac(bcn_ctrl, &ctrl);
 
 	status = api->halmac_rw_bcn_ctrl(halmac, port, 1, &ctrl);
@@ -2274,37 +2274,37 @@ int rtw_halmac_set_aid(struct dvobj_priv *d, enum _hw_port hwport, u16 aid)
 	switch (port) {
 	case 0:
 		addr = REG_BCN_PSR_RPT;
-		val = rtw_read16(a, addr);
+		val = rtw_read16x(a, addr);
 		val = BIT_SET_PS_AID_0(val, aid);
-		rtw_write16(a, addr, val);
+		rtw_write16x(a, addr, val);
 		break;
 
 	case 1:
 		addr = REG_BCN_PSR_RPT1;
-		val = rtw_read16(a, addr);
+		val = rtw_read16x(a, addr);
 		val = BIT_SET_PS_AID_1(val, aid);
-		rtw_write16(a, addr, val);
+		rtw_write16x(a, addr, val);
 		break;
 
 	case 2:
 		addr = REG_BCN_PSR_RPT2;
-		val = rtw_read16(a, addr);
+		val = rtw_read16x(a, addr);
 		val = BIT_SET_PS_AID_2(val, aid);
-		rtw_write16(a, addr, val);
+		rtw_write16x(a, addr, val);
 		break;
 
 	case 3:
 		addr = REG_BCN_PSR_RPT3;
-		val = rtw_read16(a, addr);
+		val = rtw_read16x(a, addr);
 		val = BIT_SET_PS_AID_3(val, aid);
-		rtw_write16(a, addr, val);
+		rtw_write16x(a, addr, val);
 		break;
 
 	case 4:
 		addr = REG_BCN_PSR_RPT4;
-		val = rtw_read16(a, addr);
+		val = rtw_read16x(a, addr);
 		val = BIT_SET_PS_AID_4(val, aid);
-		rtw_write16(a, addr, val);
+		rtw_write16x(a, addr, val);
 		break;
 
 	default:
@@ -2425,7 +2425,7 @@ static void _dump_mac_reg(struct dvobj_priv *d, u32 start, u32 end)
 	for (i = start; i < end; i += 4) {
 		if (j % 4 == 1)
 			RTW_PRINT("0x%04x", i);
-		_RTW_PRINT(" 0x%08x ", rtw_read32(adapter, i));
+		_RTW_PRINT(" 0x%08x ", rtw_read32x(adapter, i));
 		if ((j++) % 4 == 0)
 			_RTW_PRINT("\n");
 	}
@@ -2436,8 +2436,8 @@ void dump_dbg_val(struct _ADAPTER *a, u32 reg)
 	u32 v32;
 
 
-	rtw_write8(a, 0x3A, reg);
-	v32 = rtw_read32(a, 0xC0);
+	rtw_write8x(a, 0x3A, reg);
+	v32 = rtw_read32x(a, 0xC0);
 	RTW_PRINT("0x3A = %02x, 0xC0 = 0x%08x\n",reg, v32);
 }
 
@@ -2501,8 +2501,8 @@ static void _dump_mac_reg_for_power_switch(struct dvobj_priv *d,
 #ifdef CONFIG_PCI_HCI
 	_dump_pcie_cfg_space(d);
 
-	v8 = rtw_read8(a, 0xF6) | 0x01;
-	rtw_write8(a, 0xF6, v8);
+	v8 = rtw_read8x(a, 0xF6) | 0x01;
+	rtw_write8x(a, 0xF6, v8);
 	RTW_PRINT("0xF6 = %02x\n", v8);
 
 	dump_dbg_val(a, 0x63);
@@ -2586,13 +2586,13 @@ int rtw_halmac_poweron(struct dvobj_priv *d)
 
 #if defined(CONFIG_PCI_HCI) && defined(CONFIG_RTL8822B)
 	addr = 0x3F3;
-	v8 = rtw_read8(a, addr);
+	v8 = rtw_read8x(a, addr);
 	RTW_PRINT("%s: 0x%X = 0x%02x\n", __FUNCTION__, addr, v8);
 	/* are we in pcie debug mode? */
 	if (!(v8 & BIT(2))) {
 		RTW_PRINT("%s: Enable pcie debug mode\n", __FUNCTION__);
 		v8 |= BIT(2);
-		v8 = rtw_write8(a, addr, v8);
+		v8 = rtw_write8x(a, addr, v8);
 	}
 #endif
 
@@ -2601,22 +2601,22 @@ int rtw_halmac_poweron(struct dvobj_priv *d)
 
 #if defined(CONFIG_PCI_HCI) && defined(CONFIG_RTL8822B)
 		addr = 0x3F3;
-		v8 = rtw_read8(a, addr);
+		v8 = rtw_read8x(a, addr);
 		RTW_PRINT("%s: 0x%X = 0x%02x\n", __FUNCTION__, addr, v8);
 		
 		/* are we in pcie debug mode? */
 		if (!(v8 & BIT(2))) {
 			RTW_PRINT("%s: Enable pcie debug mode\n", __FUNCTION__);
 			v8 |= BIT(2);
-			v8 = rtw_write8(a, addr, v8);
+			v8 = rtw_write8x(a, addr, v8);
 		} else if (v8 & BIT(0)) {
 			/* DMA stuck */
 			addr = 0x1350;
-			v8 = rtw_read8(a, addr);
+			v8 = rtw_read8x(a, addr);
 			RTW_PRINT("%s: 0x%X = 0x%02x\n", __FUNCTION__, addr, v8);
 			RTW_PRINT("%s: recover DMA stuck\n", __FUNCTION__);
 			v8 |= BIT(6);
-			v8 = rtw_write8(a, addr, v8);
+			v8 = rtw_write8x(a, addr, v8);
 			RTW_PRINT("%s: 0x%X = 0x%02x\n", __FUNCTION__, addr, v8);
 		}
 #endif
@@ -2947,9 +2947,9 @@ static int _send_general_info(struct dvobj_priv *d)
 		return -1;
 	api = HALMAC_GET_API(halmac);
 
-	_rtw_memset(&info, 0, sizeof(info));
+	_rtw_memsetx(&info, 0, sizeof(info));
 	info.rfe_type = (u8)hal->rfe_type;
-	rtw_hal_get_rf_path(d, &rf, &txpath, &rxpath);
+	rtw_hal_get_rf_pathx(d, &rf, &txpath, &rxpath);
 	info.rf_type = _rf_type_drv2halmac(rf);
 	info.tx_ant_status = (u8)txpath;
 	info.rx_ant_status = (u8)rxpath;
@@ -2992,7 +2992,7 @@ static int _cfg_drv_rsvd_pg_num(struct dvobj_priv *d)
 	halmac = dvobj_to_halmac(d);
 	api = HALMAC_GET_API(halmac);
 
-	drv_rsvd_num = rtw_hal_get_rsvd_page_num(a);
+	drv_rsvd_num = rtw_hal_get_rsvd_pagex_num(a);
 	rsvd_page_number = _rsvd_page_num_drv2halmac(drv_rsvd_num);
 	status = api->halmac_cfg_drv_rsvd_pg_num(halmac, rsvd_page_number);
 	if (status != HALMAC_RET_SUCCESS)
@@ -3018,18 +3018,18 @@ static void _debug_dlfw_fail(struct dvobj_priv *d)
 
 	/* read 0x80[15:0], 0x10F8[31:0] once */
 	addr = 0x80;
-	v32 = rtw_read16(a, addr);
+	v32 = rtw_read16x(a, addr);
 	RTW_PRINT("%s: 0x%X = 0x%04x\n", __FUNCTION__, addr, v32);
 
 	addr = 0x10F8;
-	v32 = rtw_read32(a, addr);
+	v32 = rtw_read32x(a, addr);
 	RTW_PRINT("%s: 0x%X = 0x%08x\n", __FUNCTION__, addr, v32);
 
 	/* read 0x10FC[31:0], 5 times */
 	addr = 0x10FC;
 	n = 5;
 	for (i = 0; i < n; i++) {
-		v32 = rtw_read32(a, addr);
+		v32 = rtw_read32x(a, addr);
 		RTW_PRINT("%s: 0x%X = 0x%08x (%u/%u)\n",
 			  __FUNCTION__, addr, v32, i, n);
 	}
@@ -3040,20 +3040,20 @@ static void _debug_dlfw_fail(struct dvobj_priv *d)
 	 */
 	addr = 0x3A;
 	v32 = 0x28;
-	rtw_write8(a, addr, (u8)v32);
-	v32 = rtw_read8(a, addr);
+	rtw_write8x(a, addr, (u8)v32);
+	v32 = rtw_read8x(a, addr);
 	RTW_PRINT("%s: 0x%X = 0x%02x\n", __FUNCTION__, addr, v32);
 
 	addr = 0xF6;
 	v32 = 0x1;
-	rtw_write8(a, addr, (u8)v32);
-	v32 = rtw_read8(a, addr);
+	rtw_write8x(a, addr, (u8)v32);
+	v32 = rtw_read8x(a, addr);
 	RTW_PRINT("%s: 0x%X = 0x%02x\n", __FUNCTION__, addr, v32);
 
 	addr = 0xC0;
 	n = 5;
 	for (i = 0; i < n; i++) {
-		v32 = rtw_read32(a, addr);
+		v32 = rtw_read32x(a, addr);
 		RTW_PRINT("%s: 0x%X = 0x%08x (%u/%u)\n",
 			  __FUNCTION__, addr, v32, i, n);
 	}
@@ -3062,7 +3062,7 @@ static void _debug_dlfw_fail(struct dvobj_priv *d)
 	addr = 0;
 	n = 0x100;
 	for (i = 0; i < n; i+=4)
-		*(u32*)&data[i] = cpu_to_le32(rtw_read32(a, addr+i));
+		*(u32*)&data[i] = cpu_to_le32(rtw_read32x(a, addr+i));
 	for (i = 0; i < n; i++) {
 		if (i % 16 == 0)
 			RTW_PRINT("0x%04x\t", addr+i);
@@ -3076,7 +3076,7 @@ static void _debug_dlfw_fail(struct dvobj_priv *d)
 	addr = 0x1000;
 	n = 0x100;
 	for (i = 0; i < n; i+=4)
-		*(u32*)&data[i] = cpu_to_le32(rtw_read32(a, addr+i));
+		*(u32*)&data[i] = cpu_to_le32(rtw_read32x(a, addr+i));
 	for (i = 0; i < n; i++) {
 		if (i % 16 == 0)
 			RTW_PRINT("0x%04x\t", addr+i);
@@ -3088,9 +3088,9 @@ static void _debug_dlfw_fail(struct dvobj_priv *d)
 	}
 
 	/* read 0x80 after 10 secs */
-	rtw_msleep_os(10000);
+	rtw_msleep_osx(10000);
 	addr = 0x80;
-	v32 = rtw_read16(a, addr);
+	v32 = rtw_read16x(a, addr);
 	RTW_PRINT("%s: 0x%X = 0x%04x (after 10 secs)\n",
 		  __FUNCTION__, addr, v32);
 }
@@ -3150,7 +3150,7 @@ static int _cpu_sleep(struct dvobj_priv *d, u32 timeout)
 	mac = dvobj_to_halmac(d);
 	api = HALMAC_GET_API(mac);
 
-	start_t = rtw_get_current_time();
+	start_t = rtw_get_current_timex();
 
 	status = _enter_cpu_sleep_mode(d);
 	if (status != HALMAC_RET_SUCCESS) {
@@ -3165,7 +3165,7 @@ static int _cpu_sleep(struct dvobj_priv *d, u32 timeout)
 		mode = HALMAC_WLCPU_UNDEFINE;
 		status = api->halmac_get_cpu_mode(mac, &mode);
 
-		period = rtw_get_passing_time_ms(start_t);
+		period = rtw_get_passing_time_msx(start_t);
 
 		if (status != HALMAC_RET_SUCCESS) {
 			err = -2;
@@ -3178,7 +3178,7 @@ static int _cpu_sleep(struct dvobj_priv *d, u32 timeout)
 			break;
 		}
 
-		rtw_msleep_os(1);
+		rtw_msleep_osx(1);
 	} while (1);
 
 exit:
@@ -3401,9 +3401,9 @@ static int _drv_enable_trx(struct dvobj_priv *d)
 	adapter = dvobj_get_primary_adapter(d);
 	if (adapter->bup == _FALSE) {
 #ifdef CONFIG_NEW_NETDEV_HDL
-		status = rtw_mi_start_drv_threads(adapter);
+		status = rtw_mi_start_drv_threadsx(adapter);
 #else
-		status = rtw_start_drv_threads(adapter);
+		status = rtw_start_drv_threadsx(adapter);
 #endif
 		if (status == _FAIL) {
 			RTW_ERR("%s: Start threads Failed!\n", __FUNCTION__);
@@ -3411,7 +3411,7 @@ static int _drv_enable_trx(struct dvobj_priv *d)
 		}
 	}
 
-	rtw_intf_start(adapter);
+	rtw_intf_startx(adapter);
 
 	return 0;
 }
@@ -3419,7 +3419,7 @@ static int _drv_enable_trx(struct dvobj_priv *d)
 /*
  * Notices:
  *	Make sure
- *	1. rtw_hal_get_hwreg(HW_VAR_RF_TYPE)
+ *	1. rtw_hal_get_hwregx(HW_VAR_RF_TYPE)
  *	2. HAL_DATA_TYPE.rfe_type
  *	already ready for use before calling this function.
  */
@@ -3447,7 +3447,7 @@ static int _halmac_init_hal(struct dvobj_priv *d, u8 *fw, u32 fwsize)
 	/* halmac_pre_Init_system_cfg */
 	/* halmac_mac_power_switch(on) */
 	/* halmac_Init_system_cfg */
-	ok = rtw_hal_power_on(adapter);
+	ok = rtw_hal_power_onx(adapter);
 	if (_FAIL == ok)
 		goto out;
 
@@ -3479,7 +3479,7 @@ static int _halmac_init_hal(struct dvobj_priv *d, u8 *fw, u32 fwsize)
 	}
 
 	/* Init Phy parameter-MAC */
-	ok = rtw_hal_init_mac_register(adapter);
+	ok = rtw_hal_initx_mac_register(adapter);
 	if (_FALSE == ok)
 		goto out;
 
@@ -3492,7 +3492,7 @@ static int _halmac_init_hal(struct dvobj_priv *d, u8 *fw, u32 fwsize)
 
 	/* halmac_set_hw_value(HALMAC_HW_EN_BB_RF) */
 	/* Init BB, RF */
-	ok = rtw_hal_init_phy(adapter);
+	ok = rtw_hal_initx_phy(adapter);
 	if (_FALSE == ok)
 		goto out;
 
@@ -3518,7 +3518,7 @@ int rtw_halmac_init_hal(struct dvobj_priv *d)
 /*
  * Notices:
  *	Make sure
- *	1. rtw_hal_get_hwreg(HW_VAR_RF_TYPE)
+ *	1. rtw_hal_get_hwregx(HW_VAR_RF_TYPE)
  *	2. HAL_DATA_TYPE.rfe_type
  *	already ready for use before calling this function.
  */
@@ -3530,7 +3530,7 @@ int rtw_halmac_init_hal_fw(struct dvobj_priv *d, u8 *fw, u32 fwsize)
 /*
  * Notices:
  *	Make sure
- *	1. rtw_hal_get_hwreg(HW_VAR_RF_TYPE)
+ *	1. rtw_hal_get_hwregx(HW_VAR_RF_TYPE)
  *	2. HAL_DATA_TYPE.rfe_type
  *	already ready for use before calling this function.
  */
@@ -3547,11 +3547,11 @@ int rtw_halmac_init_hal_fw_file(struct dvobj_priv *d, u8 *fwpath)
 		return -1;
 	}
 
-	fw = rtw_zmalloc(fwmaxsize);
+	fw = rtw_zmallocx(fwmaxsize);
 	if (!fw)
 		return -1;
 
-	size = rtw_retrieve_from_file(fwpath, fw, fwmaxsize);
+	size = rtw_retrieve_from_filex(fwpath, fw, fwmaxsize);
 	if (!size) {
 		err = -1;
 		goto exit;
@@ -3560,7 +3560,7 @@ int rtw_halmac_init_hal_fw_file(struct dvobj_priv *d, u8 *fwpath)
 	err = _halmac_init_hal(d, fw, size);
 
 exit:
-	rtw_mfree(fw, fwmaxsize);
+	rtw_mfreex(fw, fwmaxsize);
 	/*fw = NULL;*/
 
 	return err;
@@ -3585,7 +3585,7 @@ int rtw_halmac_deinit_hal(struct dvobj_priv *d)
 	if (status != HALMAC_RET_SUCCESS)
 		goto out;
 
-	rtw_hal_power_off(adapter);
+	rtw_hal_power_offx(adapter);
 
 	err = 0;
 out:
@@ -3655,7 +3655,7 @@ int rtw_halmac_txfifo_wait_empty(struct dvobj_priv *d, u32 timeout)
 
 
 	a = dvobj_get_primary_adapter(d);
-	start_time = rtw_get_current_time();
+	start_time = rtw_get_current_timex();
 
 	do {
 		cnt++;
@@ -3664,7 +3664,7 @@ int rtw_halmac_txfifo_wait_empty(struct dvobj_priv *d, u32 timeout)
 			break;
 
 		if (timeout) {
-			pass_time = rtw_get_passing_time_ms(start_time);
+			pass_time = rtw_get_passing_time_msx(start_time);
 			if (pass_time > timeout)
 				break;
 		}
@@ -3673,7 +3673,7 @@ int rtw_halmac_txfifo_wait_empty(struct dvobj_priv *d, u32 timeout)
 			break;
 		}
 
-		rtw_msleep_os(2);
+		rtw_msleep_osx(2);
 	} while (1);
 
 	if (empty == _FALSE) {
@@ -3685,7 +3685,7 @@ int rtw_halmac_txfifo_wait_empty(struct dvobj_priv *d, u32 timeout)
 
 		if (!RTW_CANNOT_IO(a)) {
 			for (i = 0; i < ARRAY_SIZE(dbg_reg); i++) {
-				val = rtw_read32(a, dbg_reg[i]);
+				val = rtw_read32x(a, dbg_reg[i]);
 				RTW_ERR("REG_%X:0x%08x\n", dbg_reg[i], val);
 			}
 		}
@@ -3786,17 +3786,17 @@ int rtw_halmac_dlfw_mem_from_file(struct dvobj_priv *d, u8 *fwpath, enum fw_mem 
 		return -1;
 	}
 
-	fw = rtw_zmalloc(fwmaxsize);
+	fw = rtw_zmallocx(fwmaxsize);
 	if (!fw)
 		return -1;
 
-	size = rtw_retrieve_from_file(fwpath, fw, fwmaxsize);
+	size = rtw_retrieve_from_filex(fwpath, fw, fwmaxsize);
 	if (size)
 		err = rtw_halmac_dlfw_mem(d, fw, size, mem);
 	else
 		err = -1;
 
-	rtw_mfree(fw, fwmaxsize);
+	rtw_mfreex(fw, fwmaxsize);
 	/*fw = NULL;*/
 
 	return err;
@@ -3826,7 +3826,7 @@ int rtw_halmac_dlfw(struct dvobj_priv *d, u8 *fw, u32 fwsize)
 
 	/* Download firmware before hal init */
 	/* Power on, download firmware and init mac */
-	ok = rtw_hal_power_on(adapter);
+	ok = rtw_hal_power_onx(adapter);
 	if (_FAIL == ok)
 		goto out;
 
@@ -3863,17 +3863,17 @@ int rtw_halmac_dlfw_from_file(struct dvobj_priv *d, u8 *fwpath)
 		return -1;
 	}
 
-	fw = rtw_zmalloc(fwmaxsize);
+	fw = rtw_zmallocx(fwmaxsize);
 	if (!fw)
 		return -1;
 
-	size = rtw_retrieve_from_file(fwpath, fw, fwmaxsize);
+	size = rtw_retrieve_from_filex(fwpath, fw, fwmaxsize);
 	if (size)
 		err = rtw_halmac_dlfw(d, fw, size);
 	else
 		err = -1;
 
-	rtw_mfree(fw, fwmaxsize);
+	rtw_mfreex(fw, fwmaxsize);
 	/*fw = NULL;*/
 
 	return err;
@@ -3920,15 +3920,15 @@ static u8 _is_fw_read_cmd_down(PADAPTER adapter, u8 msgbox_num)
 	u8 valid;
 
 	do {
-		valid = rtw_read8(adapter, REG_HMETFR) & BIT(msgbox_num);
+		valid = rtw_read8x(adapter, REG_HMETFR) & BIT(msgbox_num);
 		if (0 == valid)
 			read_down = _TRUE;
 		else
-			rtw_msleep_os(1);
+			rtw_msleep_osx(1);
 	} while ((!read_down) && (retry_cnts--));
 
 	if (_FALSE == read_down)
-		RTW_WARN("%s, reg_1cc(%x), msg_box(%d)...\n", __func__, rtw_read8(adapter, REG_HMETFR), msgbox_num);
+		RTW_WARN("%s, reg_1cc(%x), msg_box(%d)...\n", __func__, rtw_read8x(adapter, REG_HMETFR), msgbox_num);
 
 	return read_down;
 }
@@ -3984,15 +3984,15 @@ int rtw_halmac_send_h2c(struct dvobj_priv *d, u8 *h2c)
 
 	/* Write Ext command (byte 4~7) */
 	msgbox_ex_addr = REG_HMEBOX_E0 + (h2c_box_num * EX_MESSAGE_BOX_SIZE);
-	_rtw_memcpy((u8 *)(&h2c_cmd_ex), h2c + 4, EX_MESSAGE_BOX_SIZE);
+	_rtw_memcpyx((u8 *)(&h2c_cmd_ex), h2c + 4, EX_MESSAGE_BOX_SIZE);
 	h2c_cmd_ex = le32_to_cpu(h2c_cmd_ex);
-	rtw_write32(adapter, msgbox_ex_addr, h2c_cmd_ex);
+	rtw_write32x(adapter, msgbox_ex_addr, h2c_cmd_ex);
 
 	/* Write command (byte 0~3) */
 	msgbox_addr = REG_HMEBOX0 + (h2c_box_num * MESSAGE_BOX_SIZE);
-	_rtw_memcpy((u8 *)(&h2c_cmd), h2c, 4);
+	_rtw_memcpyx((u8 *)(&h2c_cmd), h2c, 4);
 	h2c_cmd = le32_to_cpu(h2c_cmd);
-	rtw_write32(adapter, msgbox_addr, h2c_cmd);
+	rtw_write32x(adapter, msgbox_addr, h2c_cmd);
 
 	/* update last msg box number */
 	hal->LastHMEBoxNum = (h2c_box_num + 1) % MAX_H2C_BOX_NUMS;
@@ -4133,7 +4133,7 @@ int rtw_halmac_read_physical_efuse(struct dvobj_priv *d, u32 offset, u32 cnt, u8
 		if (err)
 			return -1;
 
-		efuse = rtw_zmalloc(size);
+		efuse = rtw_zmallocx(size);
 		if (!efuse)
 			return -1;
 
@@ -4141,9 +4141,9 @@ int rtw_halmac_read_physical_efuse(struct dvobj_priv *d, u32 offset, u32 cnt, u8
 		if (err)
 			err = -1;
 		else
-			_rtw_memcpy(data, efuse + offset, cnt);
+			_rtw_memcpyx(data, efuse + offset, cnt);
 
-		rtw_mfree(efuse, size);
+		rtw_mfreex(efuse, size);
 	}
 
 	return err;
@@ -4393,7 +4393,7 @@ int rtw_halmac_dump_fifo(struct dvobj_priv *d, u8 fifo_sel, u32 addr, u32 size, 
 		fifo_size = api->halmac_get_fifo_size(mac, halmac_fifo_sel);
 
 		if (fifo_size)
-			pfifo_map = rtw_zvmalloc(fifo_size);
+			pfifo_map = rtw_zvmallocx(fifo_size);
 		if (pfifo_map == NULL)
 			return -1;
 		mem_created = _TRUE;
@@ -4419,7 +4419,7 @@ int rtw_halmac_dump_fifo(struct dvobj_priv *d, u8 fifo_sel, u32 addr, u32 size, 
 
 _exit:
 	if ((mem_created == _TRUE) && pfifo_map)
-		rtw_vmfree(pfifo_map, fifo_size);
+		rtw_vmfreex(pfifo_map, fifo_size);
 
 	return ret;
 }
@@ -4460,7 +4460,7 @@ int rtw_halmac_rx_agg_switch(struct dvobj_priv *d, u8 enable)
 	hal = GET_HAL_DATA(adapter);
 	halmac = dvobj_to_halmac(d);
 	api = HALMAC_GET_API(halmac);
-	_rtw_memset((void *)&rxaggcfg, 0, sizeof(rxaggcfg));
+	_rtw_memsetx((void *)&rxaggcfg, 0, sizeof(rxaggcfg));
 	rxaggcfg.mode = HALMAC_RX_AGG_MODE_NONE;
 	/*
 	 * Always enable size limit to avoid rx size exceed
@@ -4636,7 +4636,7 @@ int rtw_halmac_iqk(struct dvobj_priv *d, u8 clear, u8 segment)
 		if (!retry)
 			break;
 		retry--;
-		rtw_msleep_os(delay);
+		rtw_msleep_osx(delay);
 	} while (1);
 	if (status != HALMAC_RET_SUCCESS) {
 		free_halmac_event(d, id);
@@ -4663,7 +4663,7 @@ static int _phy_parameter_drv2halmac(struct rtw_phy_parameter *para, struct halm
 	if (!para || !info)
 		return -1;
 
-	_rtw_memset(info, 0, sizeof(*info));
+	_rtw_memsetx(info, 0, sizeof(*info));
 
 	switch (para->cmd) {
 	case 0:
@@ -5017,9 +5017,9 @@ static int _halmac_scanoffload(struct dvobj_priv *d, u32 enable, u8 nlo,
 		 nlo?"PNO/NLO":"Normal");
 
 	if (enable) {
-		_rtw_memset(probereq, 0, sizeof(probereq));
+		_rtw_memsetx(probereq, 0, sizeof(probereq));
 
-		_rtw_memset(&pnossid, 0, sizeof(pnossid));
+		_rtw_memsetx(&pnossid, 0, sizeof(pnossid));
 		if (ssid) {
 			if (ssid_len > sizeof(pnossid.SSID)) {
 				RTW_ERR("%s: SSID length(%d) is too long(>%d)!!\n",
@@ -5028,7 +5028,7 @@ static int _halmac_scanoffload(struct dvobj_priv *d, u32 enable, u8 nlo,
 			}
 
 			pnossid.SSID_len = ssid_len;
-			_rtw_memcpy(pnossid.SSID, ssid, ssid_len);
+			_rtw_memcpyx(pnossid.SSID, ssid, ssid_len);
 		}
 
 		rtw_hal_construct_ProbeReq(adapter, probereq, &len, &pnossid);
@@ -5059,7 +5059,7 @@ static int _halmac_scanoffload(struct dvobj_priv *d, u32 enable, u8 nlo,
 		api->halmac_clear_ch_info(mac);
 
 		for (i = 0; i < rfctl->max_chan_nums && ch_set[i].ChannelNum != 0; i++) {
-			_rtw_memset(&ch_info, 0, sizeof(ch_info));
+			_rtw_memsetx(&ch_info, 0, sizeof(ch_info));
 			ch_info.extra_info = 0;
 			ch_info.channel = ch_set[i].ChannelNum;
 			ch_info.bw = HALMAC_BW_20;
@@ -5075,7 +5075,7 @@ static int _halmac_scanoffload(struct dvobj_priv *d, u32 enable, u8 nlo,
 		}
 
 		/* set channel switch option */
-		_rtw_memset(&cs_option, 0, sizeof(cs_option));
+		_rtw_memsetx(&cs_option, 0, sizeof(cs_option));
 		cs_option.dest_bw = HALMAC_BW_20;
 		cs_option.periodic_option = HALMAC_CS_PERIODIC_2_PHASE;
 		cs_option.dest_pri_ch_idx = HALMAC_CH_IDX_UNDEFINE;
@@ -5119,7 +5119,7 @@ static int _halmac_scanoffload(struct dvobj_priv *d, u32 enable, u8 nlo,
 	} else {
 		api->halmac_clear_ch_info(mac);
 
-		_rtw_memset(&cs_option, 0, sizeof(cs_option));
+		_rtw_memsetx(&cs_option, 0, sizeof(cs_option));
 		cs_option.switch_en = 0;
 
 		if (!nlo) {
@@ -5194,8 +5194,8 @@ int rtw_halmac_query_tx_page_num(struct dvobj_priv *d)
 	hmpriv = &d->hmpriv;
 	halmac = dvobj_to_halmac(d);
 	api = HALMAC_GET_API(halmac);
-	_rtw_memset((void *)&rqpn, 0, sizeof(rqpn));
-	_rtw_memset((void *)&fifosize, 0, sizeof(fifosize));
+	_rtw_memsetx((void *)&rqpn, 0, sizeof(rqpn));
+	_rtw_memsetx((void *)&fifosize, 0, sizeof(fifosize));
 
 	status = api->halmac_get_hw_value(halmac, HALMAC_HW_RQPN_MAPPING, &rqpn);
 	if (status != HALMAC_RET_SUCCESS)
@@ -5449,12 +5449,12 @@ int rtw_halmac_bf_add_mu_bfer(struct dvobj_priv *d, u16 paid, u16 csi_para,
 	mac = dvobj_to_halmac(d);
 	api = HALMAC_GET_API(mac);
 
-	_rtw_memset(&param, 0, sizeof(param));
+	_rtw_memsetx(&param, 0, sizeof(param));
 	param.paid = paid;
 	param.csi_para = csi_para;
 	param.my_aid = my_aid;
 	param.csi_length_sel = sel;
-	_rtw_memcpy(param.bfer_address.addr, addr, 6);
+	_rtw_memcpyx(param.bfer_address.addr, addr, 6);
 
 	status = api->halmac_mu_bfer_entry_init(mac, &param);
 	if (status != HALMAC_RET_SUCCESS)
@@ -5573,20 +5573,20 @@ int rtw_halmac_bf_cfg_mu_mimo(struct dvobj_priv *d, enum halmac_snd_role role,
 	mac = dvobj_to_halmac(d);
 	api = HALMAC_GET_API(mac);
 
-	_rtw_memset(&param, 0, sizeof(param));
+	_rtw_memsetx(&param, 0, sizeof(param));
 
 	param.role = role;
 	param.grouping_bitmap = grouping_bitmap;
 	param.mu_tx_en = mu_tx_en;
 
 	if (sounding_sts)
-		_rtw_memcpy(param.sounding_sts, sounding_sts, 6);
+		_rtw_memcpyx(param.sounding_sts, sounding_sts, 6);
 
 	if (given_gid_tab)
-		_rtw_memcpy(param.given_gid_tab, given_gid_tab, 8);
+		_rtw_memcpyx(param.given_gid_tab, given_gid_tab, 8);
 
 	if (given_user_pos)
-		_rtw_memcpy(param.given_user_pos, given_user_pos, 16);
+		_rtw_memcpyx(param.given_user_pos, given_user_pos, 16);
 
 	status = api->halmac_cfg_mumimo(mac, &param);
 	if (status != HALMAC_RET_SUCCESS)

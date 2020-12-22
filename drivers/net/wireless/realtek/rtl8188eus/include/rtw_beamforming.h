@@ -246,7 +246,7 @@ void rtw_bf_init(PADAPTER);
 void rtw_bf_cmd_hdl(PADAPTER, u8 type, u8 *pbuf);
 u8 rtw_bf_cmd(PADAPTER, s32 type, u8 *pbuf, s32 size, u8 enqueue);
 void rtw_bf_update_attrib(PADAPTER, struct pkt_attrib *, struct sta_info *);
-void rtw_bf_c2h_handler(PADAPTER, u8 id, u8 *buf, u8 buf_len);
+void rtw_bf_c2h_handlerx(PADAPTER, u8 id, u8 *buf, u8 buf_len);
 void rtw_bf_update_traffic(PADAPTER);
 
 /* Compatible with old function name, only for using outside rtw_beamforming.c */

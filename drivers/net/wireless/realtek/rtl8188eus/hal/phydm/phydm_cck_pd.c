@@ -32,7 +32,7 @@
 
 #ifdef PHYDM_SUPPORT_CCKPD
 #ifdef PHYDM_COMPILE_CCKPD_TYPE1
-void phydm_write_cck_pd_type1(void *dm_void, u8 cca_th)
+void phydm_write_cck_pd_type1x(void *dm_void, u8 cca_th)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct phydm_cckpd_struct *cckpd_t = &dm->dm_cckpd_table;
@@ -40,11 +40,11 @@ void phydm_write_cck_pd_type1(void *dm_void, u8 cca_th)
 	PHYDM_DBG(dm, DBG_CCKPD, "[%s] cck_cca_th=((0x%x))\n",
 		  __func__, cca_th);
 
-	odm_write_1byte(dm, R_0xa0a, cca_th);
+	odm_write_1bytex(dm, R_0xa0a, cca_th);
 	cckpd_t->cur_cck_cca_thres = cca_th;
 }
 
-void phydm_set_cckpd_lv_type1(void *dm_void, enum cckpd_lv lv)
+void phydm_set_cckpd_lv_type1x(void *dm_void, enum cckpd_lv lv)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct phydm_cckpd_struct *cckpd_t = &dm->dm_cckpd_table;
@@ -72,13 +72,13 @@ void phydm_set_cckpd_lv_type1(void *dm_void, enum cckpd_lv lv)
 	else if (lv == CCK_PD_LV_0)
 		pd_th = 0x40;
 
-	phydm_write_cck_pd_type1(dm, pd_th);
+	phydm_write_cck_pd_type1x(dm, pd_th);
 }
 
-void phydm_cckpd_type1(void *dm_void)
+void phydm_cckpd_type1x(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
-	struct phydm_dig_struct *dig_t = &dm->dm_dig_table;
+	struct phydm_digx_struct *dig_t = &dm->dm_dig_table;
 	struct phydm_cckpd_struct *cckpd_t = &dm->dm_cckpd_table;
 	enum cckpd_lv lv = CCK_PD_LV_INIT;
 	boolean is_update = true;
@@ -128,7 +128,7 @@ void phydm_cckpd_type1(void *dm_void)
 	    cckpd_t->cck_fa_ma > 200 && dm->rssi_min <= 20) {
 		lv = CCK_PD_LV_1;
 		cckpd_t->cck_pd_lv = lv;
-		phydm_write_cck_pd_type1(dm, 0xc3); /*@for ASUS OTA test*/
+		phydm_write_cck_pd_type1x(dm, 0xc3); /*@for ASUS OTA test*/
 		is_update = false;
 		PHYDM_DBG(dm, DBG_CCKPD, "CCKPD Abnormal case2\n");
 	}
@@ -136,7 +136,7 @@ void phydm_cckpd_type1(void *dm_void)
 		#ifdef MCR_WIRELESS_EXTEND
 		lv = CCK_PD_LV_2;
 		cckpd_t->cck_pd_lv = lv;
-		phydm_write_cck_pd_type1(dm, 0x43);
+		phydm_write_cck_pd_type1x(dm, 0x43);
 		is_update = false;
 		PHYDM_DBG(dm, DBG_CCKPD, "CCKPD Abnormal case3\n");
 		#endif
@@ -144,7 +144,7 @@ void phydm_cckpd_type1(void *dm_void)
 	/*=================================================================*/
 
 	if (is_update)
-		phydm_set_cckpd_lv_type1(dm, lv);
+		phydm_set_cckpd_lv_type1x(dm, lv);
 
 	PHYDM_DBG(dm, DBG_CCKPD, "is_linked=%d, lv=%d, pd_th=0x%x\n\n",
 		  dm->is_linked, cckpd_t->cck_pd_lv,
@@ -161,8 +161,8 @@ void phydm_write_cck_pd_type2(void *dm_void, u8 cca_th, u8 cca_th_aaa)
 	PHYDM_DBG(dm, DBG_CCKPD, "[%s] pd_th=0x%x, cs_ratio=0x%x\n",
 		  __func__, cca_th, cca_th_aaa);
 
-	odm_set_bb_reg(dm, R_0xa08, 0x3f0000, cca_th);
-	odm_set_bb_reg(dm, R_0xaa8, 0x1f0000, cca_th_aaa);
+	odm_set_bb_regx(dm, R_0xa08, 0x3f0000, cca_th);
+	odm_set_bb_regx(dm, R_0xaa8, 0x1f0000, cca_th_aaa);
 	cckpd_t->cur_cck_cca_thres = cca_th;
 	cckpd_t->cck_cca_th_aaa = cca_th_aaa;
 }
@@ -178,8 +178,8 @@ void phydm_set_cckpd_lv_type2(void *dm_void, enum cckpd_lv lv)
 	PHYDM_DBG(dm, DBG_CCKPD, "lv: (%d) -> (%d)\n", cckpd_t->cck_pd_lv, lv);
 
 	/*@r_mrx & r_cca_mrc*/
-	cck_n_rx = (odm_get_bb_reg(dm, R_0xa2c, BIT(18)) &&
-		    odm_get_bb_reg(dm, R_0xa2c, BIT(22))) ? 2 : 1;
+	cck_n_rx = (odm_get_bb_regx(dm, R_0xa2c, BIT(18)) &&
+		    odm_get_bb_regx(dm, R_0xa2c, BIT(22))) ? 2 : 1;
 
 	if (cckpd_t->cck_pd_lv == lv && cckpd_t->cck_n_rx == cck_n_rx) {
 		PHYDM_DBG(dm, DBG_CCKPD, "stay in lv=%d\n", lv);
@@ -224,7 +224,7 @@ void phydm_set_cckpd_lv_type2(void *dm_void, enum cckpd_lv lv)
 void phydm_cckpd_type2(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
-	struct phydm_dig_struct *dig_t = &dm->dm_dig_table;
+	struct phydm_digx_struct *dig_t = &dm->dm_dig_table;
 	struct phydm_cckpd_struct *cckpd_t = &dm->dm_cckpd_table;
 	enum cckpd_lv lv = CCK_PD_LV_INIT;
 	u8 igi = dig_t->cur_ig_value;
@@ -301,29 +301,29 @@ void phydm_write_cck_pd_type3(void *dm_void, u8 pd_th, u8 cs_ratio,
 	{
 		cckpd_t->cur_cck_pd_20m_1r = pd_th;
 		cckpd_t->cur_cck_cs_ratio_20m_1r = cs_ratio;
-		odm_set_bb_reg(dm, R_0xac8, 0xff, pd_th);
-		odm_set_bb_reg(dm, R_0xad0, 0x1f, cs_ratio);
+		odm_set_bb_regx(dm, R_0xac8, 0xff, pd_th);
+		odm_set_bb_regx(dm, R_0xad0, 0x1f, cs_ratio);
 	} break;
 	case CCK_BW20_2R: /*RFBW20_2R*/
 	{
 		cckpd_t->cur_cck_pd_20m_2r = pd_th;
 		cckpd_t->cur_cck_cs_ratio_20m_2r = cs_ratio;
-		odm_set_bb_reg(dm, R_0xac8, 0xff00, pd_th);
-		odm_set_bb_reg(dm, R_0xad0, 0x3e0, cs_ratio);
+		odm_set_bb_regx(dm, R_0xac8, 0xff00, pd_th);
+		odm_set_bb_regx(dm, R_0xad0, 0x3e0, cs_ratio);
 	} break;
 	case CCK_BW40_1R: /*RFBW40_1R*/
 	{
 		cckpd_t->cur_cck_pd_40m_1r = pd_th;
 		cckpd_t->cur_cck_cs_ratio_40m_1r = cs_ratio;
-		odm_set_bb_reg(dm, R_0xacc, 0xff, pd_th);
-		odm_set_bb_reg(dm, R_0xad0, 0x1f00000, cs_ratio);
+		odm_set_bb_regx(dm, R_0xacc, 0xff, pd_th);
+		odm_set_bb_regx(dm, R_0xad0, 0x1f00000, cs_ratio);
 	} break;
 	case CCK_BW40_2R: /*RFBW40_2R*/
 	{
 		cckpd_t->cur_cck_pd_40m_2r = pd_th;
 		cckpd_t->cur_cck_cs_ratio_40m_2r = cs_ratio;
-		odm_set_bb_reg(dm, R_0xacc, 0xff00, pd_th);
-		odm_set_bb_reg(dm, R_0xad0, 0x3e000000, cs_ratio);
+		odm_set_bb_regx(dm, R_0xacc, 0xff00, pd_th);
+		odm_set_bb_regx(dm, R_0xad0, 0x3e000000, cs_ratio);
 	} break;
 
 	default:
@@ -346,10 +346,10 @@ void phydm_set_cckpd_lv_type3(void *dm_void, enum cckpd_lv lv)
 	PHYDM_DBG(dm, DBG_CCKPD, "lv: (%d) -> (%d)\n", cckpd_t->cck_pd_lv, lv);
 
 	/*[Check Nrx]*/
-	cck_n_rx = (odm_get_bb_reg(dm, R_0xa2c, BIT(17))) ? 2 : 1;
+	cck_n_rx = (odm_get_bb_regx(dm, R_0xa2c, BIT(17))) ? 2 : 1;
 
 	/*[Check BW]*/
-	if (odm_get_bb_reg(dm, R_0x800, BIT(0)))
+	if (odm_get_bb_regx(dm, R_0x800, BIT(0)))
 		cck_bw = CHANNEL_WIDTH_40;
 	else
 		cck_bw = CHANNEL_WIDTH_20;
@@ -485,19 +485,19 @@ void phydm_cckpd_type3(void *dm_void)
 		  cckpd_t->cck_pd_lv, cs_ratio, pd_th);
 }
 
-void phydm_cck_pd_init_type3(void *dm_void)
+void phydm_cck_pd_initx_type3(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct phydm_cckpd_struct *cckpd_t = &dm->dm_cckpd_table;
 	u32 reg_tmp = 0;
 
 	/*Get Default value*/
-	cckpd_t->cck_pd_20m_1r = (u8)odm_get_bb_reg(dm, R_0xac8, 0xff);
-	cckpd_t->cck_pd_20m_2r = (u8)odm_get_bb_reg(dm, R_0xac8, 0xff00);
-	cckpd_t->cck_pd_40m_1r = (u8)odm_get_bb_reg(dm, R_0xacc, 0xff);
-	cckpd_t->cck_pd_40m_2r = (u8)odm_get_bb_reg(dm, R_0xacc, 0xff00);
+	cckpd_t->cck_pd_20m_1r = (u8)odm_get_bb_regx(dm, R_0xac8, 0xff);
+	cckpd_t->cck_pd_20m_2r = (u8)odm_get_bb_regx(dm, R_0xac8, 0xff00);
+	cckpd_t->cck_pd_40m_1r = (u8)odm_get_bb_regx(dm, R_0xacc, 0xff);
+	cckpd_t->cck_pd_40m_2r = (u8)odm_get_bb_regx(dm, R_0xacc, 0xff00);
 
-	reg_tmp = odm_get_bb_reg(dm, R_0xad0, MASKDWORD);
+	reg_tmp = odm_get_bb_regx(dm, R_0xad0, MASKDWORD);
 	cckpd_t->cck_cs_ratio_20m_1r = (u8)(reg_tmp & 0x1f);
 	cckpd_t->cck_cs_ratio_20m_2r = (u8)((reg_tmp & 0x3e0) >> 5);
 	cckpd_t->cck_cs_ratio_40m_1r = (u8)((reg_tmp & 0x1f00000) >> 20);
@@ -520,65 +520,65 @@ void phydm_write_cck_pd_type4(void *dm_void, enum cckpd_lv lv,
 	case CCK_BW20_1R: /*RFBW20_1R*/
 	{
 		val = cckpd_t->cck_pd_table_jgr3[0][0][0][lv];
-		odm_set_bb_reg(dm, R_0x1ac8, 0xff, val);
+		odm_set_bb_regx(dm, R_0x1ac8, 0xff, val);
 		val = cckpd_t->cck_pd_table_jgr3[0][0][1][lv];
-		odm_set_bb_reg(dm, R_0x1ad0, 0x1f, val);
+		odm_set_bb_regx(dm, R_0x1ad0, 0x1f, val);
 	} break;
 	case CCK_BW40_1R: /*RFBW40_1R*/
 	{
 		val = cckpd_t->cck_pd_table_jgr3[1][0][0][lv];
-		odm_set_bb_reg(dm, R_0x1acc, 0xff, val);
+		odm_set_bb_regx(dm, R_0x1acc, 0xff, val);
 		val = cckpd_t->cck_pd_table_jgr3[1][0][1][lv];
-		odm_set_bb_reg(dm, R_0x1ad0, 0x01F00000, val);
+		odm_set_bb_regx(dm, R_0x1ad0, 0x01F00000, val);
 	} break;
 	#if (defined(PHYDM_COMPILE_ABOVE_2SS))
 	case CCK_BW20_2R: /*RFBW20_2R*/
 	{
 		val = cckpd_t->cck_pd_table_jgr3[0][1][0][lv];
-		odm_set_bb_reg(dm, R_0x1ac8, 0xff00, val);
+		odm_set_bb_regx(dm, R_0x1ac8, 0xff00, val);
 		val = cckpd_t->cck_pd_table_jgr3[0][1][1][lv];
-		odm_set_bb_reg(dm, R_0x1ad0, 0x3e0, val);
+		odm_set_bb_regx(dm, R_0x1ad0, 0x3e0, val);
 	} break;
 	case CCK_BW40_2R: /*RFBW40_2R*/
 	{
 		val = cckpd_t->cck_pd_table_jgr3[1][1][0][lv];
-		odm_set_bb_reg(dm, R_0x1acc, 0xff00, val);
+		odm_set_bb_regx(dm, R_0x1acc, 0xff00, val);
 		val = cckpd_t->cck_pd_table_jgr3[1][1][1][lv];
-		odm_set_bb_reg(dm, R_0x1ad0, 0x3E000000, val);
+		odm_set_bb_regx(dm, R_0x1ad0, 0x3E000000, val);
 	} break;
 	#endif
 	#if (defined(PHYDM_COMPILE_ABOVE_3SS))
 	case CCK_BW20_3R: /*RFBW20_3R*/
 	{
 		val = cckpd_t->cck_pd_table_jgr3[0][2][0][lv];
-		odm_set_bb_reg(dm, R_0x1ac8, 0xff0000, val);
+		odm_set_bb_regx(dm, R_0x1ac8, 0xff0000, val);
 		val = cckpd_t->cck_pd_table_jgr3[0][2][1][lv];
-		odm_set_bb_reg(dm, R_0x1ad0, 0x7c00, val);
+		odm_set_bb_regx(dm, R_0x1ad0, 0x7c00, val);
 	} break;
 	case CCK_BW40_3R: /*RFBW40_3R*/
 	{
 		val = cckpd_t->cck_pd_table_jgr3[1][2][0][lv];
-		odm_set_bb_reg(dm, R_0x1acc, 0xff0000, val);
+		odm_set_bb_regx(dm, R_0x1acc, 0xff0000, val);
 		val = cckpd_t->cck_pd_table_jgr3[1][2][1][lv] & 0x3;
-		odm_set_bb_reg(dm, R_0x1ad0, 0xC0000000, val);
+		odm_set_bb_regx(dm, R_0x1ad0, 0xC0000000, val);
 		val = (cckpd_t->cck_pd_table_jgr3[1][2][1][lv] & 0x1c) >> 2;
-		odm_set_bb_reg(dm, R_0x1ad4, 0x7, val);
+		odm_set_bb_regx(dm, R_0x1ad4, 0x7, val);
 	} break;
 	#endif
 	#if (defined(PHYDM_COMPILE_ABOVE_4SS))
 	case CCK_BW20_4R: /*RFBW20_4R*/
 	{
 		val = cckpd_t->cck_pd_table_jgr3[0][3][0][lv];
-		odm_set_bb_reg(dm, R_0x1ac8, 0xff000000, val);
+		odm_set_bb_regx(dm, R_0x1ac8, 0xff000000, val);
 		val = cckpd_t->cck_pd_table_jgr3[0][3][1][lv];
-		odm_set_bb_reg(dm, R_0x1ad0, 0xF8000, val);
+		odm_set_bb_regx(dm, R_0x1ad0, 0xF8000, val);
 	} break;
 	case CCK_BW40_4R: /*RFBW40_4R*/
 	{
 		val = cckpd_t->cck_pd_table_jgr3[1][3][0][lv];
-		odm_set_bb_reg(dm, R_0x1acc, 0xff000000, val);
+		odm_set_bb_regx(dm, R_0x1acc, 0xff000000, val);
 		val = cckpd_t->cck_pd_table_jgr3[1][3][1][lv];
-		odm_set_bb_reg(dm, R_0x1ad4, 0xf8, val);
+		odm_set_bb_regx(dm, R_0x1ad4, 0xf8, val);
 	} break;
 	#endif
 	default:
@@ -601,10 +601,10 @@ void phydm_set_cck_pd_lv_type4(void *dm_void, enum cckpd_lv lv)
 	PHYDM_DBG(dm, DBG_CCKPD, "lv: (%d) -> (%d)\n", cckpd_t->cck_pd_lv, lv);
 
 	/*[Check Nrx]*/
-	cck_n_rx = (u8)odm_get_bb_reg(dm, R_0x1a2c, 0x60000) + 1;
+	cck_n_rx = (u8)odm_get_bb_regx(dm, R_0x1a2c, 0x60000) + 1;
 
 	/*[Check BW]*/
-	val = odm_get_bb_reg(dm, R_0x9b0, 0xc);
+	val = odm_get_bb_regx(dm, R_0x9b0, 0xc);
 	if (val == 0)
 		cck_bw = CHANNEL_WIDTH_20;
 	else if (val == 1)
@@ -679,13 +679,13 @@ void phydm_read_cckpd_para_type4(void *dm_void)
 	u32 reg2 = 0;
 	u32 reg3 = 0;
 
-	bw = (u8)odm_get_bb_reg(dm, R_0x9b0, 0xc);
-	n_rx = (u8)odm_get_bb_reg(dm, R_0x1a2c, 0x60000) + 1;
+	bw = (u8)odm_get_bb_regx(dm, R_0x9b0, 0xc);
+	n_rx = (u8)odm_get_bb_regx(dm, R_0x1a2c, 0x60000) + 1;
 
-	reg0 = odm_get_bb_reg(dm, R_0x1ac8, MASKDWORD);
-	reg1 = odm_get_bb_reg(dm, R_0x1acc, MASKDWORD);
-	reg2 = odm_get_bb_reg(dm, R_0x1ad0, MASKDWORD);
-	reg3 = odm_get_bb_reg(dm, R_0x1ad4, MASKDWORD);
+	reg0 = odm_get_bb_regx(dm, R_0x1ac8, MASKDWORD);
+	reg1 = odm_get_bb_regx(dm, R_0x1acc, MASKDWORD);
+	reg2 = odm_get_bb_regx(dm, R_0x1ad0, MASKDWORD);
+	reg3 = odm_get_bb_regx(dm, R_0x1ad4, MASKDWORD);
 	curr_cck_pd_t[0][0][0] = (u8)(reg0 & 0x000000ff);
 	curr_cck_pd_t[1][0][0] = (u8)(reg1 & 0x000000ff);
 	curr_cck_pd_t[0][0][1] = (u8)(reg2 & 0x0000001f);
@@ -783,7 +783,7 @@ void phydm_cckpd_type4(void *dm_void)
 	phydm_read_cckpd_para_type4(dm);
 }
 
-void phydm_cck_pd_init_type4(void *dm_void)
+void phydm_cck_pd_initx_type4(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct phydm_cckpd_struct *cckpd_t = &dm->dm_cckpd_table;
@@ -823,10 +823,10 @@ void phydm_cck_pd_init_type4(void *dm_void)
 	 */
 	#endif
 	/*[Check Nrx]*/
-	cck_n_rx = (u8)odm_get_bb_reg(dm, R_0x1a2c, 0x60000) + 1;
+	cck_n_rx = (u8)odm_get_bb_regx(dm, R_0x1a2c, 0x60000) + 1;
 
 	/*[Check BW]*/
-	val = (u8)odm_get_bb_reg(dm, R_0x9b0, 0xc);
+	val = (u8)odm_get_bb_regx(dm, R_0x9b0, 0xc);
 	if (val == 0)
 		cck_bw = CHANNEL_WIDTH_20;
 	else if (val == 1)
@@ -836,10 +836,10 @@ void phydm_cck_pd_init_type4(void *dm_void)
 
 	cckpd_t->cck_bw = cck_bw;
 	cckpd_t->cck_n_rx = cck_n_rx;
-	reg0 = odm_get_bb_reg(dm, R_0x1ac8, MASKDWORD);
-	reg1 = odm_get_bb_reg(dm, R_0x1acc, MASKDWORD);
-	reg2 = odm_get_bb_reg(dm, R_0x1ad0, MASKDWORD);
-	reg3 = odm_get_bb_reg(dm, R_0x1ad4, MASKDWORD);
+	reg0 = odm_get_bb_regx(dm, R_0x1ac8, MASKDWORD);
+	reg1 = odm_get_bb_regx(dm, R_0x1acc, MASKDWORD);
+	reg2 = odm_get_bb_regx(dm, R_0x1ad0, MASKDWORD);
+	reg3 = odm_get_bb_regx(dm, R_0x1ad4, MASKDWORD);
 
 	for (i = 0 ; i < CCK_PD_LV_MAX ; i++) {
 		pd_step = i * 2;
@@ -907,7 +907,7 @@ void phydm_cck_pd_init_type4(void *dm_void)
 }
 #endif /*#ifdef PHYDM_COMPILE_CCKPD_TYPE4*/
 
-void phydm_set_cckpd_val(void *dm_void, u32 *val_buf, u8 val_len)
+void phydm_set_cckpd_valx(void *dm_void, u32 *val_buf, u8 val_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct phydm_cckpd_struct *cckpd_t = &dm->dm_cckpd_table;
@@ -928,7 +928,7 @@ void phydm_set_cckpd_val(void *dm_void, u32 *val_buf, u8 val_len)
 	switch (cckpd_t->cckpd_hw_type) {
 	#ifdef PHYDM_COMPILE_CCKPD_TYPE1
 	case 1:
-		phydm_set_cckpd_lv_type1(dm, lv);
+		phydm_set_cckpd_lv_type1x(dm, lv);
 		break;
 	#endif
 	#ifdef PHYDM_COMPILE_CCKPD_TYPE2
@@ -953,7 +953,7 @@ void phydm_set_cckpd_val(void *dm_void, u32 *val_buf, u8 val_len)
 }
 
 boolean
-phydm_stop_cck_pd_th(void *dm_void)
+phydm_stop_cck_pd_thx(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
@@ -975,7 +975,7 @@ phydm_stop_cck_pd_th(void *dm_void)
 	return false;
 }
 
-void phydm_cck_pd_th(void *dm_void)
+void phydm_cck_pd_thx(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct phydm_fa_struct *fa_t = &dm->false_alm_cnt;
@@ -987,7 +987,7 @@ void phydm_cck_pd_th(void *dm_void)
 
 	PHYDM_DBG(dm, DBG_CCKPD, "[%s] ======>\n", __func__);
 
-	if (phydm_stop_cck_pd_th(dm))
+	if (phydm_stop_cck_pd_thx(dm))
 		return;
 
 	#ifdef PHYDM_TDMA_DIG_SUPPORT
@@ -1010,7 +1010,7 @@ void phydm_cck_pd_th(void *dm_void)
 	switch (cckpd_t->cckpd_hw_type) {
 	#ifdef PHYDM_COMPILE_CCKPD_TYPE1
 	case 1:
-		phydm_cckpd_type1(dm);
+		phydm_cckpd_type1x(dm);
 		break;
 	#endif
 	#ifdef PHYDM_COMPILE_CCKPD_TYPE2
@@ -1034,7 +1034,7 @@ void phydm_cck_pd_th(void *dm_void)
 	}
 }
 
-void phydm_cck_pd_init(void *dm_void)
+void phydm_cck_pd_initx(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct phydm_cckpd_struct *cckpd_t = &dm->dm_cckpd_table;
@@ -1058,23 +1058,23 @@ void phydm_cck_pd_init(void *dm_void)
 	switch (cckpd_t->cckpd_hw_type) {
 	#ifdef PHYDM_COMPILE_CCKPD_TYPE1
 	case 1:
-		phydm_set_cckpd_lv_type1(dm, CCK_PD_LV_0);
+		phydm_set_cckpd_lv_type1x(dm, CCK_PD_LV_0);
 		break;
 	#endif
 	#ifdef PHYDM_COMPILE_CCKPD_TYPE2
 	case 2:
-		cckpd_t->aaa_default = odm_read_1byte(dm, 0xaaa) & 0x1f;
+		cckpd_t->aaa_default = odm_read_1bytex(dm, 0xaaa) & 0x1f;
 		phydm_set_cckpd_lv_type2(dm, CCK_PD_LV_0);
 		break;
 	#endif
 	#ifdef PHYDM_COMPILE_CCKPD_TYPE3
 	case 3:
-		phydm_cck_pd_init_type3(dm);
+		phydm_cck_pd_initx_type3(dm);
 		break;
 	#endif
 	#ifdef PHYDM_COMPILE_CCKPD_TYPE4
 	case 4:
-		phydm_cck_pd_init_type4(dm);
+		phydm_cck_pd_initx_type4(dm);
 		break;
 	#endif
 	default:

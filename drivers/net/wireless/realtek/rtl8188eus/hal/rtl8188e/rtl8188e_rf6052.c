@@ -119,7 +119,7 @@ void rtl8188e_RF_ChangeTxPath(PADAPTER	Adapter,
 
 
 /*-----------------------------------------------------------------------------
- * Function:    PHY_RF6052SetBandwidth()
+ * Function:    PHY_RF6052SetBandwidthx()
  *
  * Overview:    This function is called by SetBWModeCallback8190Pci() only
  *
@@ -133,7 +133,7 @@ void rtl8188e_RF_ChangeTxPath(PADAPTER	Adapter,
  * Note:		For RF type 0222D
  *---------------------------------------------------------------------------*/
 void
-rtl8188e_PHY_RF6052SetBandwidth(
+rtl8188e_PHY_RF6052SetBandwidthx(
 		PADAPTER				Adapter,
 		enum channel_width		Bandwidth)	/* 20M or 40M */
 {
@@ -193,39 +193,39 @@ phy_RF6052_Config_ParaFile(
 
 		/*----Set RF_ENV enable----*/
 		phy_set_bb_reg(Adapter, pPhyReg->rfintfe, bRFSI_RFENV << 16, 0x1);
-		rtw_udelay_os(1);/* PlatformStallExecution(1); */
+		rtw_udelay_osx(1);/* PlatformStallExecution(1); */
 
 		/*----Set RF_ENV output high----*/
 		phy_set_bb_reg(Adapter, pPhyReg->rfintfo, bRFSI_RFENV, 0x1);
-		rtw_udelay_os(1);/* PlatformStallExecution(1); */
+		rtw_udelay_osx(1);/* PlatformStallExecution(1); */
 
 		/* Set bit number of Address and Data for RF register */
 		phy_set_bb_reg(Adapter, pPhyReg->rfHSSIPara2, b3WireAddressLength, 0x0);	/* Set 1 to 4 bits for 8255 */
-		rtw_udelay_os(1);/* PlatformStallExecution(1); */
+		rtw_udelay_osx(1);/* PlatformStallExecution(1); */
 
 		phy_set_bb_reg(Adapter, pPhyReg->rfHSSIPara2, b3WireDataLength, 0x0);	/* Set 0 to 12  bits for 8255 */
-		rtw_udelay_os(1);/* PlatformStallExecution(1); */
+		rtw_udelay_osx(1);/* PlatformStallExecution(1); */
 
 		/*----Initialize RF fom connfiguration file----*/
 		switch (eRFPath) {
 		case RF_PATH_A:
 #ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
-			if (PHY_ConfigRFWithParaFile(Adapter, PHY_FILE_RADIO_A, eRFPath) == _FAIL)
+			if (PHY_ConfigRFWithParaFilex(Adapter, PHY_FILE_RADIO_A, eRFPath) == _FAIL)
 #endif
 			{
 #ifdef CONFIG_EMBEDDED_FWIMG
-				if (odm_config_rf_with_header_file(&pHalData->odmpriv, CONFIG_RF_RADIO, eRFPath) == HAL_STATUS_FAILURE)
+				if (odm_config_rf_with_header_filex(&pHalData->odmpriv, CONFIG_RF_RADIO, eRFPath) == HAL_STATUS_FAILURE)
 					rtStatus = _FAIL;
 #endif
 			}
 			break;
 		case RF_PATH_B:
 #ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
-			if (PHY_ConfigRFWithParaFile(Adapter, PHY_FILE_RADIO_B, eRFPath) == _FAIL)
+			if (PHY_ConfigRFWithParaFilex(Adapter, PHY_FILE_RADIO_B, eRFPath) == _FAIL)
 #endif
 			{
 #ifdef CONFIG_EMBEDDED_FWIMG
-				if (odm_config_rf_with_header_file(&pHalData->odmpriv, CONFIG_RF_RADIO, eRFPath) == HAL_STATUS_FAILURE)
+				if (odm_config_rf_with_header_filex(&pHalData->odmpriv, CONFIG_RF_RADIO, eRFPath) == HAL_STATUS_FAILURE)
 					rtStatus = _FAIL;
 #endif
 			}
@@ -266,11 +266,11 @@ phy_RF6052_Config_ParaFile(
 	/* 3 ----------------------------------------------------------------- */
 
 #ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
-	if (PHY_ConfigRFWithTxPwrTrackParaFile(Adapter, PHY_FILE_TXPWR_TRACK) == _FAIL)
+	if (PHY_ConfigRFWithTxPwrTrackParaFilex(Adapter, PHY_FILE_TXPWR_TRACK) == _FAIL)
 #endif
 	{
 #ifdef CONFIG_EMBEDDED_FWIMG
-		odm_config_rf_with_tx_pwr_track_header_file(&pHalData->odmpriv);
+		odm_config_rf_with_tx_pwr_track_header_filex(&pHalData->odmpriv);
 #endif
 	}
 

@@ -16,7 +16,7 @@
 #define __RTL8192E_RF_H__
 
 void
-PHY_RF6052SetBandwidth8192E(
+PHY_RF6052SetBandwidthx8192E(
 		PADAPTER				Adapter,
 		enum channel_width		Bandwidth);
 

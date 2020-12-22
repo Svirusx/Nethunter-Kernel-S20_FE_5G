@@ -182,10 +182,10 @@ void
 phydm_dfs_segment_flag_reset(void *dm_void);
 
 boolean
-phydm_is_dfs_band(void *dm_void);
+phydm_is_dfs_bandx(void *dm_void);
 
 boolean
-phydm_dfs_master_enabled(void *dm_void);
+phydm_dfs_master_enabledx(void *dm_void);
 
 #if (DM_ODM_SUPPORT_TYPE & ODM_WIN)
 #ifdef PHYDM_IC_JGR3_SERIES_SUPPORT

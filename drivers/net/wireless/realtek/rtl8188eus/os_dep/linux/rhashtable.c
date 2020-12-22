@@ -516,7 +516,7 @@ int rhashtable_walk_init(struct rhashtable *ht, struct rhashtable_iter *iter)
 	spin_lock(&ht->lock);
 	iter->walker->tbl =
 		rcu_dereference_protected(ht->tbl, lockdep_is_held(&ht->lock));
-	list_add(&iter->walker->list, &iter->walker->tbl->walkers);
+	list_addx(&iter->walker->list, &iter->walker->tbl->walkers);
 	spin_unlock(&ht->lock);
 
 	return 0;
@@ -647,7 +647,7 @@ void rhashtable_walk_stop(struct rhashtable_iter *iter)
 
 	spin_lock(&ht->lock);
 	if (tbl->rehash < tbl->size)
-		list_add(&iter->walker->list, &tbl->walkers);
+		list_addx(&iter->walker->list, &tbl->walkers);
 	else
 		iter->walker->tbl = NULL;
 	spin_unlock(&ht->lock);

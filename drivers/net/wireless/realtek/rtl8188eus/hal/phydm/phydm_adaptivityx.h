@@ -71,7 +71,7 @@ enum phydm_mac_edcca_type {
 	PHYDM_DONT_IGNORE_EDCCA		= 1
 };
 
-enum phydm_adaptivity_mode {
+enum phydm_adaptivityx_mode {
 	PHYDM_ADAPT_MSG			= 0,
 	PHYDM_ADAPT_DEBUG		= 1,
 	PHYDM_ADAPT_RESUME		= 2,
@@ -79,7 +79,7 @@ enum phydm_adaptivity_mode {
 	PHYDM_EDCCA_TH_RESUME		= 4
 };
 
-struct phydm_adaptivity_struct {
+struct phydm_adaptivityx_struct {
 	s8			th_l2h_ini_backup;
 	s8			th_edcca_hl_diff_backup;
 	s8			igi_base;
@@ -103,22 +103,22 @@ struct phydm_adaptivity_struct {
 };
 
 #ifdef PHYDM_SUPPORT_ADAPTIVITY
-void phydm_adaptivity_debug(void *dm_void, char input[][16], u32 *_used,
+void phydm_adaptivityx_debug(void *dm_void, char input[][16], u32 *_used,
 			    char *output, u32 *_out_len);
 
-void phydm_set_edcca_val(void *dm_void, u32 *val_buf, u8 val_len);
+void phydm_set_edcca_valx(void *dm_void, u32 *val_buf, u8 val_len);
 #endif
 
-void phydm_set_edcca_threshold_api(void *dm_void, u8 IGI);
+void phydm_set_edcca_thresholdx_api(void *dm_void, u8 IGI);
 
-void phydm_adaptivity_info_init(void *dm_void, enum phydm_adapinfo cmn_info,
+void phydm_adaptivityx_info_init(void *dm_void, enum phydm_adapinfo cmn_info,
 				u32 value);
 
-void phydm_adaptivity_info_update(void *dm_void, enum phydm_adapinfo cmn_info,
+void phydm_adaptivityx_info_update(void *dm_void, enum phydm_adapinfo cmn_info,
 				  u32 value);
 
-void phydm_adaptivity_init(void *dm_void);
+void phydm_adaptivityx_init(void *dm_void);
 
-void phydm_adaptivity(void *dm_void);
+void phydm_adaptivityx(void *dm_void);
 
 #endif

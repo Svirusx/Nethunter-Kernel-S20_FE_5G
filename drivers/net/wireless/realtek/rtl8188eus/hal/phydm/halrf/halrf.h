@@ -540,28 +540,28 @@ void halrf_iqk_info_dump(void *dm_void, u32 *_used, char *output,
 void halrf_iqk_hwtx_check(void *dm_void, boolean is_check);
 #endif
 
-u8 halrf_match_iqk_version(void *dm_void);
+u8 halrf_match_iqk_versionx(void *dm_void);
 
-void halrf_support_ability_debug(void *dm_void, char input[][16], u32 *_used,
+void halrf_support_ability_debugx(void *dm_void, char input[][16], u32 *_used,
 				 char *output, u32 *_out_len);
 
-void halrf_cmn_info_init(void *dm_void, enum halrf_cmninfo_init cmn_info,
+void halrf_cmn_info_initx(void *dm_void, enum halrf_cmninfo_init cmn_info,
 			 u32 value);
 
-void halrf_cmn_info_hook(void *dm_void, enum halrf_cmninfo_hook cmn_info,
+void halrf_cmn_info_hookx(void *dm_void, enum halrf_cmninfo_hook cmn_info,
 			 void *value);
 
-void halrf_cmn_info_set(void *dm_void, u32 cmn_info, u64 value);
+void halrf_cmn_info_setx(void *dm_void, u32 cmn_info, u64 value);
 
-u64 halrf_cmn_info_get(void *dm_void, u32 cmn_info);
+u64 halrf_cmn_info_getx(void *dm_void, u32 cmn_info);
 
-void halrf_watchdog(void *dm_void);
+void halrf_watchdogx(void *dm_void);
 
-void halrf_supportability_init(void *dm_void);
+void halrf_supportability_initx(void *dm_void);
 
-void halrf_init(void *dm_void);
+void halrf_initx(void *dm_void);
 
-void halrf_iqk_trigger(void *dm_void, boolean is_recovery);
+void halrf_iqk_triggerx(void *dm_void, boolean is_recovery);
 
 void halrf_rf_k_connect_trigger(void *dm_void, boolean is_recovery,
 				enum halrf_k_segment_time seg_time);
@@ -569,7 +569,7 @@ void halrf_rf_k_connect_trigger(void *dm_void, boolean is_recovery,
 void halrf_segment_iqk_trigger(void *dm_void, boolean clear,
 			       boolean segment_iqk);
 
-void halrf_lck_trigger(void *dm_void);
+void halrf_lck_triggerx(void *dm_void);
 
 void halrf_iqk_debug(void *dm_void, u32 *const dm_value, u32 *_used,
 		     char *output, u32 *_out_len);
@@ -578,53 +578,53 @@ void phydm_get_iqk_cfir(void *dm_void, u8 idx, u8 path, boolean debug);
 
 void halrf_iqk_xym_read(void *dm_void, u8 path, u8 xym_type);
 
-void halrf_rf_lna_setting(void *dm_void, enum halrf_lna_set type);
+void halrf_rf_lna_settingx(void *dm_void, enum halrf_lna_set type);
 
 void halrf_do_imr_test(void *dm_void, u8 data);
 
 u32 halrf_psd_log2base(u32 val);
 
-void halrf_dpk_trigger(void *dm_void);
+void halrf_dpk_triggerx(void *dm_void);
 
-u8 halrf_dpk_result_check(void *dm_void);
+u8 halrf_dpk_result_checkx(void *dm_void);
 
-void halrf_dpk_sram_read(void *dm_void);
+void halrf_dpk_sram_readx(void *dm_void);
 
-void halrf_dpk_enable_disable(void *dm_void);
+void halrf_dpk_enable_disablex(void *dm_void);
 
-void halrf_dpk_track(void *dm_void);
+void halrf_dpk_trackx(void *dm_void);
 
-void halrf_dpk_reload(void *dm_void);
+void halrf_dpk_reloadx(void *dm_void);
 
 void halrf_dpk_info_rsvd_page(void *dm_void, u8 *buf, u32 *buf_size);
 
 /*Global function*/
 
-void halrf_reload_bp(void *dm_void, u32 *bp_reg, u32 *bp, u32 num);
+void halrf_reload_bpx(void *dm_void, u32 *bp_reg, u32 *bp, u32 num);
 
-void halrf_reload_bprf(void *dm_void, u32 *bp_reg, u32 bp[][4], u32 num,
+void halrf_reload_bpxrf(void *dm_void, u32 *bp_reg, u32 bp[][4], u32 num,
 		       u8 ss);
 
-void halrf_bp(void *dm_void, u32 *bp_reg, u32 *bp, u32 num);
+void halrf_bpx(void *dm_void, u32 *bp_reg, u32 *bp, u32 num);
 
-void halrf_bprf(void *dm_void, u32 *bp_reg, u32 bp[][4], u32 num, u8 ss);
+void halrf_bpxrf(void *dm_void, u32 *bp_reg, u32 bp[][4], u32 num, u8 ss);
 
-void halrf_mode(void *dm_void, u32 *i_value, u32 *q_value);
+void halrf_modex(void *dm_void, u32 *i_value, u32 *q_value);
 
-boolean halrf_compare(void *dm_void, u32 value);
+boolean halrf_comparex(void *dm_void, u32 value);
 
-u32 halrf_delta(void *dm_void, u32 v1, u32 v2);
+u32 halrf_deltax(void *dm_void, u32 v1, u32 v2);
 
-void halrf_minmax_compare(void *dm_void, u32 value, u32 *min, u32 *max);
+void halrf_minmax_comparex(void *dm_void, u32 value, u32 *min, u32 *max);
 
-void halrf_b_sort(void *dm_void, u32 *iv, u32 *qv);
+void halrf_b_sortx(void *dm_void, u32 *iv, u32 *qv);
 
-void halrf_bubble(void *dm_void, u32 *v1, u32 *v2);
+void halrf_bubblex(void *dm_void, u32 *v1, u32 *v2);
 
-void halrf_swap(void *dm_void, u32 *v1, u32 *v2);
+void halrf_swapx(void *dm_void, u32 *v1, u32 *v2);
 
 enum hal_status
-halrf_config_rfk_with_header_file(void *dm_void, u32 config_type);
+halrf_config_rfk_with_header_filex(void *dm_void, u32 config_type);
 
 #if (RTL8822B_SUPPORT == 1 || RTL8821C_SUPPORT == 1 ||\
 	RTL8195B_SUPPORT == 1 || RTL8198F_SUPPORT == 1 ||\
@@ -635,17 +635,17 @@ void halrf_iqk_dbg(void *dm_void);
 
 void halrf_tssi_get_efuse(void *dm_void);
 
-void halrf_do_tssi(void *dm_void);
+void halrf_do_tssix(void *dm_void);
 
 void halrf_do_thermal(void *dm_void);
 
-u32 halrf_set_tssi_value(void *dm_void, u32 tssi_value);
+u32 halrf_set_tssi_valuex(void *dm_void, u32 tssi_value);
 
 void halrf_tssi_set_de_for_tx_verify(void *dm_void, u32 tssi_de, u8 path);
 
 void halrf_set_tssi_power(void *dm_void, s8 power);
 
-u32 halrf_query_tssi_value(void *dm_void);
+u32 halrf_query_tssi_valuex(void *dm_void);
 
 void halrf_tssi_cck(void *dm_void);
 

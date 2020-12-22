@@ -30,16 +30,16 @@ void interrupt_handler_8188eu(_adapter *padapter, u16 pkt_len, u8 *pbuf)
 	}
 
 	/* HISR */
-	_rtw_memcpy(&(pHalData->IntArray[0]), &(pbuf[USB_INTR_CONTENT_HISR_OFFSET]), 4);
-	_rtw_memcpy(&(pHalData->IntArray[1]), &(pbuf[USB_INTR_CONTENT_HISRE_OFFSET]), 4);
+	_rtw_memcpyx(&(pHalData->IntArray[0]), &(pbuf[USB_INTR_CONTENT_HISR_OFFSET]), 4);
+	_rtw_memcpyx(&(pHalData->IntArray[1]), &(pbuf[USB_INTR_CONTENT_HISRE_OFFSET]), 4);
 
 #if 0 /* DBG */
 	{
 		u32 hisr = 0 , hisr_ex = 0;
-		_rtw_memcpy(&hisr, &(pHalData->IntArray[0]), 4);
+		_rtw_memcpyx(&hisr, &(pHalData->IntArray[0]), 4);
 		hisr = le32_to_cpu(hisr);
 
-		_rtw_memcpy(&hisr_ex, &(pHalData->IntArray[1]), 4);
+		_rtw_memcpyx(&hisr_ex, &(pHalData->IntArray[1]), 4);
 		hisr_ex = le32_to_cpu(hisr_ex);
 
 		if ((hisr != 0) || (hisr_ex != 0))
@@ -50,8 +50,8 @@ void interrupt_handler_8188eu(_adapter *padapter, u16 pkt_len, u8 *pbuf)
 
 #ifdef CONFIG_LPS_LCLK
 	if (pHalData->IntArray[0]  & IMR_CPWM_88E) {
-		_rtw_memcpy(&pwr_rpt.state, &(pbuf[USB_INTR_CONTENT_CPWM1_OFFSET]), 1);
-		/* _rtw_memcpy(&pwr_rpt.state2, &(pbuf[USB_INTR_CONTENT_CPWM2_OFFSET]), 1); */
+		_rtw_memcpyx(&pwr_rpt.state, &(pbuf[USB_INTR_CONTENT_CPWM1_OFFSET]), 1);
+		/* _rtw_memcpyx(&pwr_rpt.state2, &(pbuf[USB_INTR_CONTENT_CPWM2_OFFSET]), 1); */
 
 		/* 88e's cpwm value only change BIT0, so driver need to add PS_STATE_S2 for LPS flow.		 */
 		pwr_rpt.state |= PS_STATE_S2;
@@ -77,7 +77,7 @@ void interrupt_handler_8188eu(_adapter *padapter, u16 pkt_len, u8 *pbuf)
 				RTW_INFO("%s: HISR_TXBCNERR\n", __func__);
 #endif
 
-			rtw_mi_set_tx_beacon_cmd(padapter);
+			rtw_mi_set_tx_beacon_cmdxx(padapter);
 		}
 #endif /* CONFIG_INTERRUPT_BASED_TXBCN */
 
@@ -105,7 +105,7 @@ void interrupt_handler_8188eu(_adapter *padapter, u16 pkt_len, u8 *pbuf)
 #endif
 
 
-int recvbuf2recvframe(PADAPTER padapter, void *ptr)
+int recvbuf2recvframex(PADAPTER padapter, void *ptr)
 {
 	u8	*pbuf;
 	u16	pkt_cnt;
@@ -140,13 +140,13 @@ int recvbuf2recvframe(PADAPTER padapter, void *ptr)
 
 		prxstat = (struct recv_stat *)pbuf;
 
-		precvframe = rtw_alloc_recvframe(pfree_recv_queue);
+		precvframe = rtw_alloc_recvframex(pfree_recv_queue);
 		if (precvframe == NULL) {
-			RTW_INFO("%s()-%d: rtw_alloc_recvframe() failed! RX Drop!\n", __FUNCTION__, __LINE__);
-			goto _exit_recvbuf2recvframe;
+			RTW_INFO("%s()-%d: rtw_alloc_recvframex() failed! RX Drop!\n", __FUNCTION__, __LINE__);
+			goto _exit_recvbuf2recvframex;
 		}
 
-		_rtw_init_listhead(&precvframe->u.hdr.list);
+		_rtw_init_listheadx(&precvframe->u.hdr.list);
 		precvframe->u.hdr.precvbuf = NULL;	/* can't access the precvbuf for new arch. */
 		precvframe->u.hdr.len = 0;
 
@@ -156,8 +156,8 @@ int recvbuf2recvframe(PADAPTER padapter, void *ptr)
 
 		if ((padapter->registrypriv.mp_mode == 0) && ((pattrib->crc_err) || (pattrib->icv_err))) {
 			RTW_INFO("%s: RX Warning! crc_err=%d icv_err=%d, skip!\n", __FUNCTION__, pattrib->crc_err, pattrib->icv_err);
-			rtw_free_recvframe(precvframe, pfree_recv_queue);
-			goto _exit_recvbuf2recvframe;
+			rtw_free_recvframex(precvframe, pfree_recv_queue);
+			goto _exit_recvbuf2recvframex;
 		}
 
 
@@ -165,28 +165,28 @@ int recvbuf2recvframe(PADAPTER padapter, void *ptr)
 
 		if ((pattrib->pkt_len <= 0) || (pkt_offset > transfer_len)) {
 			RTW_INFO("%s()-%d: RX Warning!,pkt_len<=0 or pkt_offset> transfoer_len\n", __FUNCTION__, __LINE__);
-			rtw_free_recvframe(precvframe, pfree_recv_queue);
-			goto _exit_recvbuf2recvframe;
+			rtw_free_recvframex(precvframe, pfree_recv_queue);
+			goto _exit_recvbuf2recvframex;
 		}
 
 #ifdef CONFIG_RX_PACKET_APPEND_FCS
-		if (check_fwstate(&padapter->mlmepriv, WIFI_MONITOR_STATE) == _FALSE)
-			if ((pattrib->pkt_rpt_type == NORMAL_RX) && rtw_hal_rcr_check(padapter, RCR_APPFCS))
+		if (check_fwstatex(&padapter->mlmepriv, WIFI_MONITOR_STATE) == _FALSE)
+			if ((pattrib->pkt_rpt_type == NORMAL_RX) && rtw_hal_rcr_checkx(padapter, RCR_APPFCS))
 				pattrib->pkt_len -= IEEE80211_FCS_LEN;
 #endif
 
-		if (rtw_os_alloc_recvframe(padapter, precvframe,
+		if (rtw_os_alloc_recvframex(padapter, precvframe,
 			(pbuf + pattrib->shift_sz + pattrib->drvinfo_sz + RXDESC_SIZE), pskb) == _FAIL) {
-			rtw_free_recvframe(precvframe, pfree_recv_queue);
+			rtw_free_recvframex(precvframe, pfree_recv_queue);
 
-			goto _exit_recvbuf2recvframe;
+			goto _exit_recvbuf2recvframex;
 		}
 
 		recvframe_put(precvframe, pattrib->pkt_len);
 		/* recvframe_pull(precvframe, drvinfo_sz + RXDESC_SIZE);	 */
 
 		if (pattrib->pkt_rpt_type == NORMAL_RX) /* Normal rx packet */
-			pre_recv_entry(precvframe, pattrib->physt ? (pbuf + RXDESC_OFFSET) : NULL);
+			pre_recv_entryx(precvframe, pattrib->physt ? (pbuf + RXDESC_OFFSET) : NULL);
 		else { /* pkt_rpt_type == TX_REPORT1-CCX, TX_REPORT2-TX RTP,HIS_REPORT-USB HISR RTP */
 
 			/* enqueue recvframe to txrtp queue */
@@ -210,7 +210,7 @@ int recvbuf2recvframe(PADAPTER padapter, void *ptr)
 				interrupt_handler_8188eu(padapter, pattrib->pkt_len, precvframe->u.hdr.rx_data);
 #endif
 			}
-			rtw_free_recvframe(precvframe, pfree_recv_queue);
+			rtw_free_recvframex(precvframe, pfree_recv_queue);
 
 		}
 
@@ -238,7 +238,7 @@ int recvbuf2recvframe(PADAPTER padapter, void *ptr)
 
 	} while ((transfer_len > 0) && (pkt_cnt > 0));
 
-_exit_recvbuf2recvframe:
+_exit_recvbuf2recvframex:
 
 	return _SUCCESS;
 }
@@ -257,7 +257,7 @@ void rtl8188eu_xmit_tasklet(void *priv)
 			break;
 		}
 
-		if (rtw_xmit_ac_blocked(padapter) == _TRUE)
+		if (rtw_xmitx_ac_blocked(padapter) == _TRUE)
 			break;
 
 		ret = rtl8188eu_xmitframe_complete(padapter, pxmitpriv, NULL);
