@@ -25,7 +25,7 @@
 
 #include "halrf/halphyrf_win.h"
 
-void configure_txpower_track_8188e(
+void configure_txpower_trackx_8188e(
 	struct txpwrtrack_cfg	*config
 );
 
@@ -128,7 +128,7 @@ void phy_set_rf_path_switch_8188e(
 );
 
 void
-halrf_rf_lna_setting_8188e(
+halrf_rf_lna_settingx_8188e(
 	struct dm_struct	*dm,
 	enum halrf_lna_set type
 );

@@ -156,11 +156,11 @@ enum rtw_mesh_deferred_task_flags {
 #define RTW_MESH_PEER_CONF_DISABLED 0 /* special time value means no confirmation ongoing */
 #if CONFIG_RTW_MESH_PEER_BLACKLIST
 #define IS_PEER_CONF_DISABLED(plink) ((plink)->peer_conf_end_time == RTW_MESH_PEER_CONF_DISABLED)
-#define IS_PEER_CONF_TIMEOUT(plink)(!IS_PEER_CONF_DISABLED(plink) && rtw_time_after(rtw_get_current_time(), (plink)->peer_conf_end_time))
+#define IS_PEER_CONF_TIMEOUT(plink)(!IS_PEER_CONF_DISABLED(plink) && rtw_time_afterx(rtw_get_current_timex(), (plink)->peer_conf_end_time))
 #define SET_PEER_CONF_DISABLED(plink) (plink)->peer_conf_end_time = RTW_MESH_PEER_CONF_DISABLED
 #define SET_PEER_CONF_END_TIME(plink, timeout_ms) \
 	do { \
-		(plink)->peer_conf_end_time = rtw_get_current_time() + rtw_ms_to_systime(timeout_ms); \
+		(plink)->peer_conf_end_time = rtw_get_current_timex() + rtw_ms_to_systimex(timeout_ms); \
 		if ((plink)->peer_conf_end_time == RTW_MESH_PEER_CONF_DISABLED) \
 			(plink)->peer_conf_end_time++; \
 	} while (0)
@@ -174,11 +174,11 @@ enum rtw_mesh_deferred_task_flags {
 #define RTW_MESH_CTO_MGATE_CONF_DISABLED 0 /* special time value means no confirmation ongoing */
 #if CONFIG_RTW_MESH_CTO_MGATE_BLACKLIST
 #define IS_CTO_MGATE_CONF_DISABLED(plink) ((plink)->cto_mgate_conf_end_time == RTW_MESH_CTO_MGATE_CONF_DISABLED)
-#define IS_CTO_MGATE_CONF_TIMEOUT(plink)(!IS_CTO_MGATE_CONF_DISABLED(plink) && rtw_time_after(rtw_get_current_time(), (plink)->cto_mgate_conf_end_time))
+#define IS_CTO_MGATE_CONF_TIMEOUT(plink)(!IS_CTO_MGATE_CONF_DISABLED(plink) && rtw_time_afterx(rtw_get_current_timex(), (plink)->cto_mgate_conf_end_time))
 #define SET_CTO_MGATE_CONF_DISABLED(plink) (plink)->cto_mgate_conf_end_time = RTW_MESH_CTO_MGATE_CONF_DISABLED
 #define SET_CTO_MGATE_CONF_END_TIME(plink, timeout_ms) \
 	do { \
-		(plink)->cto_mgate_conf_end_time = rtw_get_current_time() + rtw_ms_to_systime(timeout_ms); \
+		(plink)->cto_mgate_conf_end_time = rtw_get_current_timex() + rtw_ms_to_systimex(timeout_ms); \
 		if ((plink)->cto_mgate_conf_end_time == RTW_MESH_CTO_MGATE_CONF_DISABLED) \
 			(plink)->cto_mgate_conf_end_time++; \
 	} while (0)
@@ -404,8 +404,8 @@ struct rtw_mesh_info {
 extern const char *_action_self_protected_str[];
 #define action_self_protected_str(action) ((action < RTW_ACT_SELF_PROTECTED_NUM) ? _action_self_protected_str[action] : _action_self_protected_str[0])
 
-u8 *rtw_set_ie_mesh_id(u8 *buf, u32 *buf_len, const char *mesh_id, u8 id_len);
-u8 *rtw_set_ie_mesh_config(u8 *buf, u32 *buf_len
+u8 *rtw_set_iex_mesh_id(u8 *buf, u32 *buf_len, const char *mesh_id, u8 id_len);
+u8 *rtw_set_iex_mesh_config(u8 *buf, u32 *buf_len
 	, u8 path_sel_proto, u8 path_sel_metric, u8 congest_ctl_mode, u8 sync_method, u8 auth_proto
 	, u8 num_of_peerings, bool cto_mgate, bool cto_as
 	, bool accept_peerings, bool mcca_sup, bool mcca_en, bool forwarding
@@ -433,7 +433,7 @@ void dump_mesh_offch_cand_settings(void *sel, _adapter *adapter);
 #endif
 
 #if CONFIG_RTW_MESH_PEER_BLACKLIST
-int rtw_mesh_peer_blacklist_add(_adapter *adapter, const u8 *addr);
+int rtw_mesh_peer_blacklist_addx(_adapter *adapter, const u8 *addr);
 int rtw_mesh_peer_blacklist_del(_adapter *adapter, const u8 *addr);
 int rtw_mesh_peer_blacklist_search(_adapter *adapter, const u8 *addr);
 void rtw_mesh_peer_blacklist_flush(_adapter *adapter);
@@ -443,7 +443,7 @@ void dump_mesh_peer_blacklist_settings(void *sel, _adapter *adapter);
 #if CONFIG_RTW_MESH_CTO_MGATE_BLACKLIST
 u8 rtw_mesh_cto_mgate_required(_adapter *adapter);
 u8 rtw_mesh_cto_mgate_network_filter(_adapter *adapter, struct wlan_network *scanned);
-int rtw_mesh_cto_mgate_blacklist_add(_adapter *adapter, const u8 *addr);
+int rtw_mesh_cto_mgate_blacklist_addx(_adapter *adapter, const u8 *addr);
 int rtw_mesh_cto_mgate_blacklist_del(_adapter *adapter, const u8 *addr);
 int rtw_mesh_cto_mgate_blacklist_search(_adapter *adapter, const u8 *addr);
 void rtw_mesh_cto_mgate_blacklist_flush(_adapter *adapter);

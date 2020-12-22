@@ -48,8 +48,8 @@
  * 1 ============================================================
  */
 
-void phydm_rssi_monitor_check(void *dm_void);
+void phydm_rssi_monitor_checkx(void *dm_void);
 
-void phydm_rssi_monitor_init(void *dm_void);
+void phydm_rssi_monitor_initx(void *dm_void);
 
 #endif

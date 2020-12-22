@@ -115,46 +115,46 @@ enum {
 
 
 #define WPA_SELECTOR_LEN 4
-extern u8 RTW_WPA_OUI_TYPE[] ;
-extern u16 RTW_WPA_VERSION ;
-extern u8 WPA_AUTH_KEY_MGMT_NONE[];
-extern u8 WPA_AUTH_KEY_MGMT_UNSPEC_802_1X[];
-extern u8 WPA_AUTH_KEY_MGMT_PSK_OVER_802_1X[];
-extern u8 WPA_CIPHER_SUITE_NONE[];
-extern u8 WPA_CIPHER_SUITE_WEP40[];
-extern u8 WPA_CIPHER_SUITE_TKIP[];
-extern u8 WPA_CIPHER_SUITE_WRAP[];
-extern u8 WPA_CIPHER_SUITE_CCMP[];
-extern u8 WPA_CIPHER_SUITE_WEP104[];
+extern u8 RTW_WPA_OUIx_TYPE[] ;
+extern u16 RTW_WPA_VERSIONx ;
+extern u8 WPA_AUTH_KEY_MGMT_NONEx[];
+extern u8 WPA_AUTH_KEY_MGMT_UNSPEC_802_1Xx[];
+extern u8 WPA_AUTH_KEY_MGMT_PSK_OVER_802_1Xx[];
+extern u8 WPA_CIPHER_SUITE_NONEx[];
+extern u8 WPA_CIPHER_SUITE_WEP40x[];
+extern u8 WPA_CIPHER_SUITE_TKIPx[];
+extern u8 WPA_CIPHER_SUITE_WRAPx[];
+extern u8 WPA_CIPHER_SUITE_CCMPx[];
+extern u8 WPA_CIPHER_SUITE_WEP104x[];
 
 
 #define RSN_HEADER_LEN 4
 #define RSN_SELECTOR_LEN 4
 
-extern u16 RSN_VERSION_BSD;
-extern u8 RSN_CIPHER_SUITE_NONE[];
-extern u8 RSN_CIPHER_SUITE_WEP40[];
-extern u8 RSN_CIPHER_SUITE_TKIP[];
-extern u8 RSN_CIPHER_SUITE_WRAP[];
-extern u8 RSN_CIPHER_SUITE_CCMP[];
-extern u8 RSN_CIPHER_SUITE_WEP104[];
+extern u16 RSN_VERSION_BSDx;
+extern u8 RSN_CIPHER_SUITE_NONEx[];
+extern u8 RSN_CIPHER_SUITE_WEP40x[];
+extern u8 RSN_CIPHER_SUITE_TKIPx[];
+extern u8 RSN_CIPHER_SUITE_WRAPx[];
+extern u8 RSN_CIPHER_SUITE_CCMPx[];
+extern u8 RSN_CIPHER_SUITE_WEP104x[];
 
 /* AKM suite type */
-extern u8 WLAN_AKM_8021X[];
-extern u8 WLAN_AKM_PSK[];
-extern u8 WLAN_AKM_FT_8021X[];
-extern u8 WLAN_AKM_FT_PSK[];
-extern u8 WLAN_AKM_8021X_SHA256[];
-extern u8 WLAN_AKM_PSK_SHA256[];
-extern u8 WLAN_AKM_TDLS[];
-extern u8 WLAN_AKM_SAE[];
-extern u8 WLAN_AKM_FT_OVER_SAE[];
-extern u8 WLAN_AKM_8021X_SUITE_B[];
-extern u8 WLAN_AKM_8021X_SUITE_B_192[];
-extern u8 WLAN_AKM_FILS_SHA256[];
-extern u8 WLAN_AKM_FILS_SHA384[];
-extern u8 WLAN_AKM_FT_FILS_SHA256[];
-extern u8 WLAN_AKM_FT_FILS_SHA384[];
+extern u8 WLAN_AKM_8021Xx[];
+extern u8 WLAN_AKM_PSKx[];
+extern u8 WLAN_AKM_FT_8021Xx[];
+extern u8 WLAN_AKM_FT_PSKx[];
+extern u8 WLAN_AKM_8021Xx_SHA256[];
+extern u8 WLAN_AKM_PSKx_SHA256[];
+extern u8 WLAN_AKM_TDLSx[];
+extern u8 WLAN_AKM_SAEx[];
+extern u8 WLAN_AKM_FT_OVER_SAEx[];
+extern u8 WLAN_AKM_8021Xx_SUITE_B[];
+extern u8 WLAN_AKM_8021Xx_SUITE_B_192[];
+extern u8 WLAN_AKM_FILS_SHA256x[];
+extern u8 WLAN_AKM_FILS_SHA384x[];
+extern u8 WLAN_AKM_FT_FILS_SHA256x[];
+extern u8 WLAN_AKM_FT_FILS_SHA384x[];
 
 #define WLAN_AKM_TYPE_8021X BIT(0)
 #define WLAN_AKM_TYPE_PSK BIT(1)
@@ -1033,7 +1033,7 @@ typedef enum _RATE_SECTION {
 	RATE_SECTION_NUM,
 } RATE_SECTION;
 
-const char *rate_section_str(u8 section);
+const char *rate_section_strx(u8 section);
 
 #define IS_CCK_RATE_SECTION(section) ((section) == CCK)
 #define IS_OFDM_RATE_SECTION(section) ((section) == OFDM)
@@ -1045,16 +1045,16 @@ const char *rate_section_str(u8 section);
 #define IS_3T_RATE_SECTION(section) ((section) == HT_3SS || (section) == VHT_3SS)
 #define IS_4T_RATE_SECTION(section) ((section) == HT_4SS || (section) == VHT_4SS)
 
-extern u8 mgn_rates_cck[];
-extern u8 mgn_rates_ofdm[];
-extern u8 mgn_rates_mcs0_7[];
-extern u8 mgn_rates_mcs8_15[];
-extern u8 mgn_rates_mcs16_23[];
-extern u8 mgn_rates_mcs24_31[];
-extern u8 mgn_rates_vht1ss[];
-extern u8 mgn_rates_vht2ss[];
-extern u8 mgn_rates_vht3ss[];
-extern u8 mgn_rates_vht4ss[];
+extern u8 mgn_rates_cckx[];
+extern u8 mgn_rates_ofdmx[];
+extern u8 mgn_rates_mcs0_7x[];
+extern u8 mgn_rates_mcs8_15x[];
+extern u8 mgn_rates_mcs16_23x[];
+extern u8 mgn_rates_mcs24_31x[];
+extern u8 mgn_rates_vht1ssx[];
+extern u8 mgn_rates_vht2ssx[];
+extern u8 mgn_rates_vht3ssx[];
+extern u8 mgn_rates_vht4ssx[];
 
 struct rate_section_ent {
 	u8 tx_num; /* value of RF_TX_NUM */
@@ -1062,10 +1062,10 @@ struct rate_section_ent {
 	u8 *rates;
 };
 
-extern struct rate_section_ent rates_by_sections[];
+extern struct rate_section_ent rates_by_sectionsx[];
 
-#define rate_section_to_tx_num(section) (rates_by_sections[(section)].tx_num)
-#define rate_section_rate_num(section) (rates_by_sections[(section)].rate_num)
+#define rate_section_to_tx_num(section) (rates_by_sectionsx[(section)].tx_num)
+#define rate_section_rate_num(section) (rates_by_sectionsx[(section)].rate_num)
 
 /* NOTE: This data is for statistical purposes; not all hardware provides this
  *       information for frames received.  Not setting these will not cause
@@ -1460,7 +1460,7 @@ extern __inline int is_broadcast_mac_addr(const u8 *addr)
 		(addr[3] == 0xff) && (addr[4] == 0xff) && (addr[5] == 0xff));
 }
 
-extern __inline int is_zero_mac_addr(const u8 *addr)
+extern __inline int is_zero_mac_addrx(const u8 *addr)
 {
 	return ((addr[0] == 0x00) && (addr[1] == 0x00) && (addr[2] == 0x00) &&   \
 		(addr[3] == 0x00) && (addr[4] == 0x00) && (addr[5] == 0x00));
@@ -1485,8 +1485,8 @@ typedef struct tx_pending_t {
 #define IEEE_MODE_MASK    (IEEE_A | IEEE_B | IEEE_G)
 
 /* Baron move to ieee80211.c */
-int ieee80211_is_empty_essid(const char *essid, int essid_len);
-int ieee80211_get_hdrlen(u16 fc);
+int ieee80211_is_empty_essidx(const char *essid, int essid_len);
+int ieee80211_get_hdrlenx(u16 fc);
 
 #if 0
 	/* Action frame categories (IEEE 802.11-2007, 7.3.1.11, Table 7-24) */
@@ -1886,31 +1886,31 @@ struct rtw_ieee802_11_elems {
 
 typedef enum { ParseOK = 0, ParseUnknown = 1, ParseFailed = -1 } ParseRes;
 
-ParseRes rtw_ieee802_11_parse_elems(u8 *start, uint len,
+ParseRes rtw_ieee802_11_parse_elemsx(u8 *start, uint len,
 				struct rtw_ieee802_11_elems *elems,
 				int show_errors);
 
-u8 *rtw_set_fixed_ie(unsigned char *pbuf, unsigned int len, unsigned char *source, unsigned int *frlen);
-u8 *rtw_set_ie(u8 *pbuf, sint index, uint len, const u8 *source, uint *frlen);
+u8 *rtw_set_fixed_iex(unsigned char *pbuf, unsigned int len, unsigned char *source, unsigned int *frlen);
+u8 *rtw_set_iex(u8 *pbuf, sint index, uint len, const u8 *source, uint *frlen);
 
 enum secondary_ch_offset {
 	SCN = 0, /* no secondary channel */
 	SCA = 1, /* secondary channel above */
 	SCB = 3,  /* secondary channel below */
 };
-u8 secondary_ch_offset_to_hal_ch_offset(u8 ch_offset);
-u8 hal_ch_offset_to_secondary_ch_offset(u8 ch_offset);
-u8 *rtw_set_ie_ch_switch(u8 *buf, u32 *buf_len, u8 ch_switch_mode, u8 new_ch, u8 ch_switch_cnt);
-u8 *rtw_set_ie_secondary_ch_offset(u8 *buf, u32 *buf_len, u8 secondary_ch_offset);
-u8 *rtw_set_ie_mesh_ch_switch_parm(u8 *buf, u32 *buf_len, u8 ttl, u8 flags, u16 reason, u16 precedence);
+u8 secondary_ch_offset_to_hal_ch_offsetx(u8 ch_offset);
+u8 hal_ch_offset_to_secondary_ch_offsetx(u8 ch_offset);
+u8 *rtw_set_iex_ch_switch(u8 *buf, u32 *buf_len, u8 ch_switch_mode, u8 new_ch, u8 ch_switch_cnt);
+u8 *rtw_set_iex_secondary_ch_offset(u8 *buf, u32 *buf_len, u8 secondary_ch_offset);
+u8 *rtw_set_iex_mesh_ch_switch_parm(u8 *buf, u32 *buf_len, u8 ttl, u8 flags, u16 reason, u16 precedence);
 
-u8 *rtw_get_ie(const u8 *pbuf, sint index, sint *len, sint limit);
+u8 *rtw_get_iex(const u8 *pbuf, sint index, sint *len, sint limit);
 u8 rtw_update_rate_bymode(WLAN_BSSID_EX *pbss_network, u32 mode);
 
-u8 *rtw_get_ie_ex(const u8 *in_ie, uint in_len, u8 eid, const u8 *oui, u8 oui_len, u8 *ie, uint *ielen);
-int rtw_ies_remove_ie(u8 *ies, uint *ies_len, uint offset, u8 eid, u8 *oui, u8 oui_len);
+u8 *rtw_get_iex_ex(const u8 *in_ie, uint in_len, u8 eid, const u8 *oui, u8 oui_len, u8 *ie, uint *ielen);
+int rtw_ies_remove_iex(u8 *ies, uint *ies_len, uint offset, u8 eid, u8 *oui, u8 oui_len);
 
-void rtw_set_supported_rate(u8 *SupportedRates, uint mode) ;
+void rtw_set_supported_ratex(u8 *SupportedRates, uint mode) ;
 
 #define GET_RSN_CAP_MFP_OPTION(cap)	LE_BITS_TO_2BYTE(((u8 *)(cap)), 6, 2)
 
@@ -1932,23 +1932,23 @@ struct rsne_info {
 
 	u8 err;
 };
-int rtw_rsne_info_parse(const u8 *ie, uint ie_len, struct rsne_info *info);
+int rtw_rsne_info_parsex(const u8 *ie, uint ie_len, struct rsne_info *info);
 
-unsigned char *rtw_get_wpa_ie(unsigned char *pie, int *wpa_ie_len, int limit);
-unsigned char *rtw_get_wpa2_ie(unsigned char *pie, int *rsn_ie_len, int limit);
-int rtw_get_wpa_cipher_suite(u8 *s);
-int rtw_get_wpa2_cipher_suite(u8 *s);
-int rtw_get_wapi_ie(u8 *in_ie, uint in_len, u8 *wapi_ie, u16 *wapi_len);
-int rtw_parse_wpa_ie(u8 *wpa_ie, int wpa_ie_len, int *group_cipher, int *pairwise_cipher, u32 *akm);
-int rtw_parse_wpa2_ie(u8 *wpa_ie, int wpa_ie_len, int *group_cipher, int *pairwise_cipher, u32 *akm, u8 *mfp_opt);
+unsigned char *rtw_get_wpa_iex(unsigned char *pie, int *wpa_ie_len, int limit);
+unsigned char *rtw_get_wpa2_iex(unsigned char *pie, int *rsn_ie_len, int limit);
+int rtw_get_wpa_cipher_suitex(u8 *s);
+int rtw_get_wpa2_cipher_suitex(u8 *s);
+int rtw_get_wapi_iex(u8 *in_ie, uint in_len, u8 *wapi_ie, u16 *wapi_len);
+int rtw_parse_wpa_iex(u8 *wpa_ie, int wpa_ie_len, int *group_cipher, int *pairwise_cipher, u32 *akm);
+int rtw_parse_wpa2_iex(u8 *wpa_ie, int wpa_ie_len, int *group_cipher, int *pairwise_cipher, u32 *akm, u8 *mfp_opt);
 
-int rtw_get_sec_ie(u8 *in_ie, uint in_len, u8 *rsn_ie, u16 *rsn_len, u8 *wpa_ie, u16 *wpa_len);
+int rtw_get_sec_iex(u8 *in_ie, uint in_len, u8 *rsn_ie, u16 *rsn_len, u8 *wpa_ie, u16 *wpa_len);
 
-u8 rtw_is_wps_ie(u8 *ie_ptr, uint *wps_ielen);
-u8 *rtw_get_wps_ie_from_scan_queue(u8 *in_ie, uint in_len, u8 *wps_ie, uint *wps_ielen, enum bss_type frame_type);
-u8 *rtw_get_wps_ie(const u8 *in_ie, uint in_len, u8 *wps_ie, uint *wps_ielen);
-u8 *rtw_get_wps_attr(u8 *wps_ie, uint wps_ielen, u16 target_attr_id , u8 *buf_attr, u32 *len_attr);
-u8 *rtw_get_wps_attr_content(u8 *wps_ie, uint wps_ielen, u16 target_attr_id , u8 *buf_content, uint *len_content);
+u8 rtw_is_wps_iex(u8 *ie_ptr, uint *wps_ielen);
+u8 *rtw_get_wps_iex_from_scan_queue(u8 *in_ie, uint in_len, u8 *wps_ie, uint *wps_ielen, enum bss_type frame_type);
+u8 *rtw_get_wps_iex(const u8 *in_ie, uint in_len, u8 *wps_ie, uint *wps_ielen);
+u8 *rtw_get_wps_attrx(u8 *wps_ie, uint wps_ielen, u16 target_attr_id , u8 *buf_attr, u32 *len_attr);
+u8 *rtw_get_wps_attrx_content(u8 *wps_ie, uint wps_ielen, u16 target_attr_id , u8 *buf_content, uint *len_content);
 
 /**
  * for_each_ie - iterate over continuous IEs
@@ -1959,80 +1959,80 @@ u8 *rtw_get_wps_attr_content(u8 *wps_ie, uint wps_ielen, u16 target_attr_id , u8
 #define for_each_ie(ie, buf, buf_len) \
 	for (ie = (void *)buf; (((u8 *)ie) - ((u8 *)buf) + 1) < buf_len; ie = (void *)(((u8 *)ie) + *(((u8 *)ie)+1) + 2))
 
-void dump_ies(void *sel, const u8 *buf, u32 buf_len);
+void dump_iesx(void *sel, const u8 *buf, u32 buf_len);
 
 #ifdef CONFIG_80211N_HT
 #define HT_SC_OFFSET_MAX 4
-extern const char *const _ht_sc_offset_str[];
-#define ht_sc_offset_str(sc) (((sc) >= HT_SC_OFFSET_MAX) ? _ht_sc_offset_str[2] : _ht_sc_offset_str[(sc)])
+extern const char *const _ht_sc_offset_strx[];
+#define ht_sc_offset_strx(sc) (((sc) >= HT_SC_OFFSET_MAX) ? _ht_sc_offset_strx[2] : _ht_sc_offset_strx[(sc)])
 
-void dump_ht_cap_ie_content(void *sel, const u8 *buf, u32 buf_len);
+void dump_ht_cap_iex_content(void *sel, const u8 *buf, u32 buf_len);
 #endif
 
-void dump_wps_ie(void *sel, const u8 *ie, u32 ie_len);
+void dump_wps_iex(void *sel, const u8 *ie, u32 ie_len);
 
-void rtw_ies_get_chbw(u8 *ies, int ies_len, u8 *ch, u8 *bw, u8 *offset, u8 ht, u8 vht);
+void rtw_ies_get_chbwx(u8 *ies, int ies_len, u8 *ch, u8 *bw, u8 *offset, u8 ht, u8 vht);
 
-void rtw_bss_get_chbw(WLAN_BSSID_EX *bss, u8 *ch, u8 *bw, u8 *offset, u8 ht, u8 vht);
+void rtw_bss_get_chbwx(WLAN_BSSID_EX *bss, u8 *ch, u8 *bw, u8 *offset, u8 ht, u8 vht);
 
-bool rtw_is_chbw_grouped(u8 ch_a, u8 bw_a, u8 offset_a
+bool rtw_is_chbw_groupedx(u8 ch_a, u8 bw_a, u8 offset_a
 	, u8 ch_b, u8 bw_b, u8 offset_b);
-void rtw_sync_chbw(u8 *req_ch, u8 *req_bw, u8 *req_offset
+void rtw_sync_chbwx(u8 *req_ch, u8 *req_bw, u8 *req_offset
 	, u8 *g_ch, u8 *g_bw, u8 *g_offset);
 
-u32 rtw_get_p2p_merged_ies_len(u8 *in_ie, u32 in_len);
-int rtw_p2p_merge_ies(u8 *in_ie, u32 in_len, u8 *merge_ie);
-void dump_p2p_ie(void *sel, const u8 *ie, u32 ie_len);
-u8 *rtw_get_p2p_ie(const u8 *in_ie, int in_len, u8 *p2p_ie, uint *p2p_ielen);
-u8 *rtw_get_p2p_attr(u8 *p2p_ie, uint p2p_ielen, u8 target_attr_id, u8 *buf_attr, u32 *len_attr);
-u8 *rtw_get_p2p_attr_content(u8 *p2p_ie, uint p2p_ielen, u8 target_attr_id, u8 *buf_content, uint *len_content);
-u32 rtw_set_p2p_attr_content(u8 *pbuf, u8 attr_id, u16 attr_len, u8 *pdata_attr);
-uint rtw_del_p2p_ie(u8 *ies, uint ies_len_ori, const char *msg);
-uint rtw_del_p2p_attr(u8 *ie, uint ielen_ori, u8 attr_id);
-u8 *rtw_bss_ex_get_p2p_ie(WLAN_BSSID_EX *bss_ex, u8 *p2p_ie, uint *p2p_ielen);
-void rtw_bss_ex_del_p2p_ie(WLAN_BSSID_EX *bss_ex);
-void rtw_bss_ex_del_p2p_attr(WLAN_BSSID_EX *bss_ex, u8 attr_id);
+u32 rtw_get_p2p_merged_ies_lenx(u8 *in_ie, u32 in_len);
+int rtw_p2p_merge_iesx(u8 *in_ie, u32 in_len, u8 *merge_ie);
+void dump_p2p_iex(void *sel, const u8 *ie, u32 ie_len);
+u8 *rtw_get_p2p_iex(const u8 *in_ie, int in_len, u8 *p2p_ie, uint *p2p_ielen);
+u8 *rtw_get_p2p_attrx(u8 *p2p_ie, uint p2p_ielen, u8 target_attr_id, u8 *buf_attr, u32 *len_attr);
+u8 *rtw_get_p2p_attrx_content(u8 *p2p_ie, uint p2p_ielen, u8 target_attr_id, u8 *buf_content, uint *len_content);
+u32 rtw_set_p2p_attr_contentx(u8 *pbuf, u8 attr_id, u16 attr_len, u8 *pdata_attr);
+uint rtw_del_p2p_iex(u8 *ies, uint ies_len_ori, const char *msg);
+uint rtw_del_p2p_attrx(u8 *ie, uint ielen_ori, u8 attr_id);
+u8 *rtw_bss_ex_get_p2p_iex(WLAN_BSSID_EX *bss_ex, u8 *p2p_ie, uint *p2p_ielen);
+void rtw_bss_ex_del_p2p_iex(WLAN_BSSID_EX *bss_ex);
+void rtw_bss_ex_del_p2p_attrx(WLAN_BSSID_EX *bss_ex, u8 attr_id);
 
-void dump_wfd_ie(void *sel, const u8 *ie, u32 ie_len);
-u8 *rtw_get_wfd_ie(const u8 *in_ie, int in_len, u8 *wfd_ie, uint *wfd_ielen);
-u8 *rtw_get_wfd_attr(u8 *wfd_ie, uint wfd_ielen, u8 target_attr_id, u8 *buf_attr, u32 *len_attr);
-u8 *rtw_get_wfd_attr_content(u8 *wfd_ie, uint wfd_ielen, u8 target_attr_id, u8 *buf_content, uint *len_content);
-uint rtw_del_wfd_ie(u8 *ies, uint ies_len_ori, const char *msg);
-uint rtw_del_wfd_attr(u8 *ie, uint ielen_ori, u8 attr_id);
-u8 *rtw_bss_ex_get_wfd_ie(WLAN_BSSID_EX *bss_ex, u8 *wfd_ie, uint *wfd_ielen);
-void rtw_bss_ex_del_wfd_ie(WLAN_BSSID_EX *bss_ex);
-void rtw_bss_ex_del_wfd_attr(WLAN_BSSID_EX *bss_ex, u8 attr_id);
+void dump_wfd_iex(void *sel, const u8 *ie, u32 ie_len);
+u8 *rtw_get_wfd_iex(const u8 *in_ie, int in_len, u8 *wfd_ie, uint *wfd_ielen);
+u8 *rtw_get_wfd_attrx(u8 *wfd_ie, uint wfd_ielen, u8 target_attr_id, u8 *buf_attr, u32 *len_attr);
+u8 *rtw_get_wfd_attrx_content(u8 *wfd_ie, uint wfd_ielen, u8 target_attr_id, u8 *buf_content, uint *len_content);
+uint rtw_del_wfd_iex(u8 *ies, uint ies_len_ori, const char *msg);
+uint rtw_del_wfd_attrx(u8 *ie, uint ielen_ori, u8 attr_id);
+u8 *rtw_bss_ex_get_wfd_iex(WLAN_BSSID_EX *bss_ex, u8 *wfd_ie, uint *wfd_ielen);
+void rtw_bss_ex_del_wfd_iex(WLAN_BSSID_EX *bss_ex);
+void rtw_bss_ex_del_wfd_attrx(WLAN_BSSID_EX *bss_ex, u8 attr_id);
 
-uint	rtw_get_rateset_len(u8	*rateset);
+uint	rtw_get_rateset_lenx(u8	*rateset);
 
 struct registry_priv;
-int rtw_generate_ie(struct registry_priv *pregistrypriv);
+int rtw_generate_iex(struct registry_priv *pregistrypriv);
 
-int rtw_get_bit_value_from_ieee_value(u8 val);
+int rtw_get_bit_value_from_ieee_valuex(u8 val);
 
-uint	rtw_is_cckrates_included(u8 *rate);
+uint	rtw_is_cckrates_includedxx(u8 *rate);
 
-uint	rtw_is_cckratesonly_included(u8 *rate);
-uint rtw_get_cckrate_size(u8 *rate,u32 rate_length);
-int rtw_check_network_type(unsigned char *rate, int ratelen, int channel);
+uint	rtw_is_cckratesonly_includedxx(u8 *rate);
+uint rtw_get_cckrate_sizex(u8 *rate,u32 rate_length);
+int rtw_check_network_typex(unsigned char *rate, int ratelen, int channel);
 
 void rtw_get_bcn_info(struct wlan_network *pnetwork);
 
-u8 rtw_check_invalid_mac_address(u8 *mac_addr, u8 check_local_bit);
-void rtw_macaddr_cfg(u8 *out, const u8 *hw_mac_addr);
+u8 rtw_check_invalid_mac_addressx(u8 *mac_addr, u8 check_local_bit);
+void rtw_macaddr_cfgx(u8 *out, const u8 *hw_mac_addr);
 
-u16 rtw_mcs_rate(u8 rf_type, u8 bw_40MHz, u8 short_GI, unsigned char *MCS_rate);
-u8	rtw_ht_mcsset_to_nss(u8 *supp_mcs_set);
-u32	rtw_ht_mcs_set_to_bitmap(u8 *mcs_set, u8 nss);
+u16 rtw_mcs_ratex(u8 rf_type, u8 bw_40MHz, u8 short_GI, unsigned char *MCS_rate);
+u8	rtw_ht_mcsset_to_nssx(u8 *supp_mcs_set);
+u32	rtw_ht_mcs_set_to_bitmapx(u8 *mcs_set, u8 nss);
 
-int rtw_action_frame_parse(const u8 *frame, u32 frame_len, u8 *category, u8 *action);
-const char *action_public_str(u8 action);
+int rtw_action_frame_parsex(const u8 *frame, u32 frame_len, u8 *category, u8 *action);
+const char *action_public_strx(u8 action);
 
-u8 key_2char2num(u8 hch, u8 lch);
-u8 str_2char2num(u8 hch, u8 lch);
-void macstr2num(u8 *dst, u8 *src);
-u8 convert_ip_addr(u8 hch, u8 mch, u8 lch);
-int wifirate2_ratetbl_inx(unsigned char rate);
+u8 key_2char2numx(u8 hch, u8 lch);
+u8 str_2char2numx(u8 hch, u8 lch);
+void macstr2numx(u8 *dst, u8 *src);
+u8 convert_ip_addrx(u8 hch, u8 mch, u8 lch);
+int wifirate2_ratetbl_inxx(unsigned char rate);
 
 
 #endif /* IEEE80211_H */

@@ -153,6 +153,6 @@ void rtl8812_set_BcnEarly_C2H_Rpt_cmd(PADAPTER padapter, u8 enable);
 #define SET_8812_H2CCMD_BT_FW_PATCH_ADDR2(__pH2CCmd, __Value)					SET_BITS_TO_LE_1BYTE((u8 *)(__pH2CCmd)+4, 0, 8, __Value)
 #define SET_8812_H2CCMD_BT_FW_PATCH_ADDR3(__pH2CCmd, __Value)					SET_BITS_TO_LE_1BYTE((u8 *)(__pH2CCmd)+5, 0, 8, __Value)
 
-s32 c2h_handler_8812a(_adapter *adapter, u8 id, u8 seq, u8 plen, u8 *payload);
+s32 c2h_handlerx_8812a(_adapter *adapter, u8 id, u8 seq, u8 plen, u8 *payload);
 
 #endif/* __RTL8812A_CMD_H__ */

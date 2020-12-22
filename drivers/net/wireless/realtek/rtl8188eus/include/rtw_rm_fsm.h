@@ -375,7 +375,7 @@ int rm_recv_radio_mens_rep(_adapter *padapter,
 int rm_radio_mens_nb_rep(_adapter *padapter,
 	union recv_frame *precv_frame, struct sta_info *psta);
 int issue_null_reply(struct rm_obj *prm);
-int issue_beacon_rep(struct rm_obj *prm);
+int issue_beaconx_rep(struct rm_obj *prm);
 int issue_nb_req(struct rm_obj *prm);
 int issue_radio_meas_req(struct rm_obj *prm);
 int issue_radio_meas_rep(struct rm_obj *prm);

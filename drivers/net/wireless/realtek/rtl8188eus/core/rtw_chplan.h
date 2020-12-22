@@ -127,13 +127,13 @@ enum rtw_chplan_id {
 	RTW_CHPLAN_UNSPECIFIED = 0xFF,
 };
 
-u8 rtw_chplan_get_default_regd(u8 id);
-bool rtw_chplan_is_empty(u8 id);
-#define rtw_is_channel_plan_valid(chplan) (((chplan) < RTW_CHPLAN_MAX || (chplan) == RTW_CHPLAN_REALTEK_DEFINE) && !rtw_chplan_is_empty(chplan))
+u8 rtw_chplan_get_default_regdx(u8 id);
+bool rtw_chplan_is_emptyx(u8 id);
+#define rtw_is_channel_plan_valid(chplan) (((chplan) < RTW_CHPLAN_MAX || (chplan) == RTW_CHPLAN_REALTEK_DEFINE) && !rtw_chplan_is_emptyx(chplan))
 #define rtw_is_legacy_channel_plan(chplan) ((chplan) < 0x20)
 
 struct _RT_CHANNEL_INFO;
-u8 init_channel_set(_adapter *padapter, u8 ChannelPlan, struct _RT_CHANNEL_INFO *channel_set);
+u8 init_channel_setx(_adapter *padapter, u8 ChannelPlan, struct _RT_CHANNEL_INFO *channel_set);
 
 #define IS_ALPHA2_NO_SPECIFIED(_alpha2) ((*((u16 *)(_alpha2))) == 0xFFFF)
 
@@ -172,12 +172,12 @@ struct country_chplan {
 #define COUNTRY_CHPLAN_DEF_MODULE_FALGS(_ent) 0
 #endif
 
-const struct country_chplan *rtw_get_chplan_from_country(const char *country_code);
+const struct country_chplan *rtw_get_chplan_from_countryx(const char *country_code);
 
-void dump_country_chplan(void *sel, const struct country_chplan *ent);
-void dump_country_chplan_map(void *sel);
-void dump_chplan_id_list(void *sel);
-void dump_chplan_test(void *sel);
-void dump_chplan_ver(void *sel);
+void dump_country_chplanx(void *sel, const struct country_chplan *ent);
+void dump_country_chplanx_map(void *sel);
+void dump_chplan_id_listx(void *sel);
+void dump_chplan_testx(void *sel);
+void dump_chplan_verx(void *sel);
 
 #endif /* __RTW_CHPLAN_H__ */

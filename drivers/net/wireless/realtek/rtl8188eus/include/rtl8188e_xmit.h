@@ -291,5 +291,5 @@ void rtl8188e_cal_txdesc_chksum(struct tx_desc	*ptxdesc);
 	#define handle_txrpt_ccx_88e(adapter, buf) do {} while (0)
 #endif /* CONFIG_XMIT_ACK */
 
-void _dbg_dump_tx_info(_adapter	*padapter, int frame_tag, struct tx_desc *ptxdesc);
+void _dbg_dump_tx_infox(_adapter	*padapter, int frame_tag, struct tx_desc *ptxdesc);
 #endif /* __RTL8188E_XMIT_H__ */

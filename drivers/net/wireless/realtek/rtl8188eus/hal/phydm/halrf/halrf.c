@@ -41,7 +41,7 @@ void _iqk_check_if_reload(void *dm_void)
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct dm_iqk_info *iqk_info = &dm->IQK_info;
 
-	iqk_info->is_reload = (boolean)odm_get_bb_reg(dm, R_0x1bf0, BIT(16));
+	iqk_info->is_reload = (boolean)odm_get_bb_regx(dm, R_0x1bf0, BIT(16));
 }
 
 void _iqk_page_switch(void *dm_void)
@@ -49,9 +49,9 @@ void _iqk_page_switch(void *dm_void)
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
 	if (dm->support_ic_type == ODM_RTL8821C)
-		odm_write_4byte(dm, 0x1b00, 0xf8000008);
+		odm_write_4bytex(dm, 0x1b00, 0xf8000008);
 	else
-		odm_write_4byte(dm, 0x1b00, 0xf800000a);
+		odm_write_4bytex(dm, 0x1b00, 0xf800000a);
 }
 
 u32 halrf_psd_log2base(u32 val)
@@ -109,21 +109,21 @@ void phydm_get_iqk_cfir(void *dm_void, u8 idx, u8 path, boolean debug)
 	else
 		ch = 0;
 
-	odm_set_bb_reg(dm, R_0x1b00, MASKDWORD, 0xf8000008 | path << 1);
+	odm_set_bb_regx(dm, R_0x1b00, MASKDWORD, 0xf8000008 | path << 1);
 	if (idx == 0)
-		odm_set_bb_reg(dm, R_0x1b0c, BIT(13) | BIT(12), 0x3);
+		odm_set_bb_regx(dm, R_0x1b0c, BIT(13) | BIT(12), 0x3);
 	else
-		odm_set_bb_reg(dm, R_0x1b0c, BIT(13) | BIT(12), 0x1);
-	odm_set_bb_reg(dm, R_0x1bd4, bit_mask_20_16, 0x10);
+		odm_set_bb_regx(dm, R_0x1b0c, BIT(13) | BIT(12), 0x1);
+	odm_set_bb_regx(dm, R_0x1bd4, bit_mask_20_16, 0x10);
 	for (i = 0; i < 8; i++) {
-		odm_set_bb_reg(dm, R_0x1bd8, MASKDWORD, 0xe0000001 + (i * 4));
-		tmp = odm_get_bb_reg(dm, R_0x1bfc, MASKDWORD);
+		odm_set_bb_regx(dm, R_0x1bd8, MASKDWORD, 0xe0000001 + (i * 4));
+		tmp = odm_get_bb_regx(dm, R_0x1bfc, MASKDWORD);
 		iqk_info->iqk_cfir_real[ch][path][idx][i] =
 						(u16)((tmp & 0x0fff0000) >> 16);
 		iqk_info->iqk_cfir_imag[ch][path][idx][i] = (u16)(tmp & 0xfff);
 	}
-	odm_set_bb_reg(dm, R_0x1bd8, MASKDWORD, 0x0);
-	odm_set_bb_reg(dm, R_0x1b0c, BIT(13) | BIT(12), 0x0);
+	odm_set_bb_regx(dm, R_0x1bd8, MASKDWORD, 0x0);
+	odm_set_bb_regx(dm, R_0x1b0c, BIT(13) | BIT(12), 0x0);
 }
 
 void halrf_iqk_xym_enable(struct dm_struct *dm, u8 xym_enable)
@@ -161,63 +161,63 @@ void halrf_iqk_xym_read(void *dm_void, u8 path, u8 xym_type)
 		num = 10;
 	}
 
-	odm_write_4byte(dm, 0x1b00, 0xf8000008);
-	tmp1 = odm_read_4byte(dm, 0x1b1c);
-	odm_write_4byte(dm, 0x1b1c, 0xa2193c32);
+	odm_write_4bytex(dm, 0x1b00, 0xf8000008);
+	tmp1 = odm_read_4bytex(dm, 0x1b1c);
+	odm_write_4bytex(dm, 0x1b1c, 0xa2193c32);
 
-	odm_write_4byte(dm, 0x1b00, 0xf800000a);
-	tmp2 = odm_read_4byte(dm, 0x1b1c);
-	odm_write_4byte(dm, 0x1b1c, 0xa2193c32);
+	odm_write_4bytex(dm, 0x1b00, 0xf800000a);
+	tmp2 = odm_read_4bytex(dm, 0x1b1c);
+	odm_write_4bytex(dm, 0x1b1c, 0xa2193c32);
 
 	for (path = 0; path < 2; path++) {
-		odm_write_4byte(dm, 0x1b00, 0xf8000008 | path << 1);
+		odm_write_4bytex(dm, 0x1b00, 0xf8000008 | path << 1);
 		switch (xym_type) {
 		case 0:
 			for (i = 0; i < num; i++) {
-				odm_write_4byte(dm, 0x1b14, 0xe6 + start + i);
-				odm_write_4byte(dm, 0x1b14, 0x0);
+				odm_write_4bytex(dm, 0x1b14, 0xe6 + start + i);
+				odm_write_4bytex(dm, 0x1b14, 0x0);
 				iqk_info->rx_xym[path][i] =
-						odm_read_4byte(dm, 0x1b38);
+						odm_read_4bytex(dm, 0x1b38);
 			}
 			break;
 		case 1:
 			for (i = 0; i < num; i++) {
-				odm_write_4byte(dm, 0x1b14, 0xe6 + start + i);
-				odm_write_4byte(dm, 0x1b14, 0x0);
+				odm_write_4bytex(dm, 0x1b14, 0xe6 + start + i);
+				odm_write_4bytex(dm, 0x1b14, 0x0);
 				iqk_info->tx_xym[path][i] =
-						odm_read_4byte(dm, 0x1b38);
+						odm_read_4bytex(dm, 0x1b38);
 			}
 			break;
 		case 2:
 			for (i = 0; i < 6; i++) {
-				odm_write_4byte(dm, 0x1b14, 0xe0 + i);
-				odm_write_4byte(dm, 0x1b14, 0x0);
+				odm_write_4bytex(dm, 0x1b14, 0xe0 + i);
+				odm_write_4bytex(dm, 0x1b14, 0x0);
 				iqk_info->gs1_xym[path][i] =
-						odm_read_4byte(dm, 0x1b38);
+						odm_read_4bytex(dm, 0x1b38);
 			}
 			break;
 		case 3:
 			for (i = 0; i < 6; i++) {
-				odm_write_4byte(dm, 0x1b14, 0xe0 + i);
-				odm_write_4byte(dm, 0x1b14, 0x0);
+				odm_write_4bytex(dm, 0x1b14, 0xe0 + i);
+				odm_write_4bytex(dm, 0x1b14, 0x0);
 				iqk_info->gs2_xym[path][i] =
-						odm_read_4byte(dm, 0x1b38);
+						odm_read_4bytex(dm, 0x1b38);
 			}
 			break;
 		case 4:
 			for (i = 0; i < 6; i++) {
-				odm_write_4byte(dm, 0x1b14, 0xe0 + i);
-				odm_write_4byte(dm, 0x1b14, 0x0);
+				odm_write_4bytex(dm, 0x1b14, 0xe0 + i);
+				odm_write_4bytex(dm, 0x1b14, 0x0);
 				iqk_info->rxk1_xym[path][i] =
-						odm_read_4byte(dm, 0x1b38);
+						odm_read_4bytex(dm, 0x1b38);
 			}
 			break;
 		}
-		odm_write_4byte(dm, 0x1b38, 0x20000000);
-		odm_write_4byte(dm, 0x1b00, 0xf8000008);
-		odm_write_4byte(dm, 0x1b1c, tmp1);
-		odm_write_4byte(dm, 0x1b00, 0xf800000a);
-		odm_write_4byte(dm, 0x1b1c, tmp2);
+		odm_write_4bytex(dm, 0x1b38, 0x20000000);
+		odm_write_4bytex(dm, 0x1b00, 0xf8000008);
+		odm_write_4bytex(dm, 0x1b1c, tmp1);
+		odm_write_4bytex(dm, 0x1b00, 0xf800000a);
+		odm_write_4bytex(dm, 0x1b1c, tmp2);
 		_iqk_page_switch(dm);
 	}
 }
@@ -293,17 +293,17 @@ void halrf_iqk_xym_dump(void *dm_void)
 	u32 tmp1, tmp2;
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
-	odm_write_4byte(dm, 0x1b00, 0xf8000008);
-	tmp1 = odm_read_4byte(dm, 0x1b1c);
-	odm_write_4byte(dm, 0x1b00, 0xf800000a);
-	tmp2 = odm_read_4byte(dm, 0x1b1c);
+	odm_write_4bytex(dm, 0x1b00, 0xf8000008);
+	tmp1 = odm_read_4bytex(dm, 0x1b1c);
+	odm_write_4bytex(dm, 0x1b00, 0xf800000a);
+	tmp2 = odm_read_4bytex(dm, 0x1b1c);
 #if 0
 	/*halrf_iqk_xym_read(dm, xym_type);*/
 #endif
-	odm_write_4byte(dm, 0x1b00, 0xf8000008);
-	odm_write_4byte(dm, 0x1b1c, tmp1);
-	odm_write_4byte(dm, 0x1b00, 0xf800000a);
-	odm_write_4byte(dm, 0x1b1c, tmp2);
+	odm_write_4bytex(dm, 0x1b00, 0xf8000008);
+	odm_write_4bytex(dm, 0x1b1c, tmp1);
+	odm_write_4bytex(dm, 0x1b00, 0xf800000a);
+	odm_write_4bytex(dm, 0x1b1c, tmp2);
 	_iqk_page_switch(dm);
 }
 
@@ -328,7 +328,7 @@ void halrf_iqk_info_dump(void *dm_void, u32 *_used, char *output, u32 *_out_len)
 		 (dm->fw_offload_ability & PHYDM_RF_IQK_OFFLOAD) ? "FW-IQK" :
 		 "Driver-IQK");
 
-	reload_iqk = (u8)odm_get_bb_reg(dm, R_0x1bf0, BIT(16));
+	reload_iqk = (u8)odm_get_bb_regx(dm, R_0x1bf0, BIT(16));
 	PDM_SNPF(out_len, used, output + used, out_len - used, "%-20s: %s\n",
 		 "reload", (reload_iqk) ? "True" : "False");
 
@@ -367,7 +367,7 @@ void halrf_iqk_info_dump(void *dm_void, u32 *_used, char *output, u32 *_out_len)
 		 "%-20s: %llu %s\n", "progressing_time",
 		 dm->rf_calibrate_info.iqk_total_progressing_time, "(ms)");
 
-	tmp = odm_read_4byte(dm, 0x1bf0);
+	tmp = odm_read_4bytex(dm, 0x1bf0);
 	for (rf_path = RF_PATH_A; rf_path <= RF_PATH_B; rf_path++)
 		for (j = 0; j < 2; j++)
 			iqk_result[0][rf_path][j] = (boolean)
@@ -463,7 +463,7 @@ void halrf_iqk_dbg(void *dm_void)
 	RF_DBG(dm, DBG_RF_IQK, "%-20s: %llu %s\n", "progressing_time",
 	       dm->rf_calibrate_info.iqk_progressing_time, "(ms)");
 
-	tmp = odm_read_4byte(dm, 0x1bf0);
+	tmp = odm_read_4bytex(dm, 0x1bf0);
 	for (rf_path = RF_PATH_A; rf_path <= RF_PATH_B; rf_path++)
 		for (j = 0; j < 2; j++)
 			iqk_result[0][rf_path][j] = (boolean)
@@ -471,7 +471,7 @@ void halrf_iqk_dbg(void *dm_void)
 
 	RF_DBG(dm, DBG_RF_IQK, "%-20s: 0x%08x\n", "Reg0x1bf0", tmp);
 	RF_DBG(dm, DBG_RF_IQK, "%-20s: 0x%08x\n", "Reg0x1be8",
-	       odm_read_4byte(dm, 0x1be8));
+	       odm_read_4bytex(dm, 0x1be8));
 	RF_DBG(dm, DBG_RF_IQK, "%-20s: %s\n", "PATH_A-Tx result",
 	       (iqk_result[0][RF_PATH_A][0]) ? "Fail" : "Pass");
 	RF_DBG(dm, DBG_RF_IQK, "%-20s: %s\n", "PATH_A-Rx result",
@@ -543,34 +543,34 @@ void halrf_iqk_dbg_cfir_backup_update(struct dm_struct *dm)
 	}
 	for (path = 0; path < 2; path++) {
 		for (idx = 0; idx < 2; idx++) {
-			odm_set_bb_reg(dm, R_0x1b00, MASKDWORD,
+			odm_set_bb_regx(dm, R_0x1b00, MASKDWORD,
 				       0xf8000008 | path << 1);
-			odm_set_bb_reg(dm, R_0x1b2c, MASKDWORD, 0x7);
-			odm_set_bb_reg(dm, R_0x1b38, MASKDWORD, 0x20000000);
-			odm_set_bb_reg(dm, R_0x1b3c, MASKDWORD, 0x20000000);
-			odm_set_bb_reg(dm, R_0x1bcc, MASKDWORD, 0x00000000);
+			odm_set_bb_regx(dm, R_0x1b2c, MASKDWORD, 0x7);
+			odm_set_bb_regx(dm, R_0x1b38, MASKDWORD, 0x20000000);
+			odm_set_bb_regx(dm, R_0x1b3c, MASKDWORD, 0x20000000);
+			odm_set_bb_regx(dm, R_0x1bcc, MASKDWORD, 0x00000000);
 			if (idx == 0)
-				odm_set_bb_reg(dm, R_0x1b0c, bmask13_12, 0x3);
+				odm_set_bb_regx(dm, R_0x1b0c, bmask13_12, 0x3);
 			else
-				odm_set_bb_reg(dm, R_0x1b0c, bmask13_12, 0x1);
-			odm_set_bb_reg(dm, R_0x1bd4, bmask20_16, 0x10);
+				odm_set_bb_regx(dm, R_0x1b0c, bmask13_12, 0x1);
+			odm_set_bb_regx(dm, R_0x1bd4, bmask20_16, 0x10);
 			for (i = 0; i < 8; i++) {
 				data = ((0xc0000000 >> idx) + 0x3) + (i * 4) +
 					(iqk->iqk_cfir_real[2][path][idx][i]
 					<< 9);
-				odm_write_4byte(dm, 0x1bd8, data);
+				odm_write_4bytex(dm, 0x1bd8, data);
 				data = ((0xc0000000 >> idx) + 0x1) + (i * 4) +
 					(iqk->iqk_cfir_imag[2][path][idx][i]
 					<< 9);
-				odm_write_4byte(dm, 0x1bd8, data);
+				odm_write_4bytex(dm, 0x1bd8, data);
 #if 0
-				/*odm_write_4byte(dm, 0x1bd8, iqk->iqk_cfir_real[2][path][idx][i]);*/
-				/*odm_write_4byte(dm, 0x1bd8, iqk->iqk_cfir_imag[2][path][idx][i]);*/
+				/*odm_write_4bytex(dm, 0x1bd8, iqk->iqk_cfir_real[2][path][idx][i]);*/
+				/*odm_write_4bytex(dm, 0x1bd8, iqk->iqk_cfir_imag[2][path][idx][i]);*/
 #endif
 			}
 		}
-		odm_set_bb_reg(dm, R_0x1bd8, MASKDWORD, 0x0);
-		odm_set_bb_reg(dm, R_0x1b0c, bmask13_12, 0x0);
+		odm_set_bb_regx(dm, R_0x1bd8, MASKDWORD, 0x0);
+		odm_set_bb_regx(dm, R_0x1b0c, bmask13_12, 0x0);
 	}
 	RF_DBG(dm, DBG_RF_IQK, "[IQK]%-20s\n", "update new CFIR");
 }
@@ -589,34 +589,34 @@ void halrf_iqk_dbg_cfir_reload(struct dm_struct *dm)
 	}
 	for (path = 0; path < 2; path++) {
 		for (idx = 0; idx < 2; idx++) {
-			odm_set_bb_reg(dm, R_0x1b00, MASKDWORD,
+			odm_set_bb_regx(dm, R_0x1b00, MASKDWORD,
 				       0xf8000008 | path << 1);
-			odm_set_bb_reg(dm, R_0x1b2c, MASKDWORD, 0x7);
-			odm_set_bb_reg(dm, R_0x1b38, MASKDWORD, 0x20000000);
-			odm_set_bb_reg(dm, R_0x1b3c, MASKDWORD, 0x20000000);
-			odm_set_bb_reg(dm, R_0x1bcc, MASKDWORD, 0x00000000);
+			odm_set_bb_regx(dm, R_0x1b2c, MASKDWORD, 0x7);
+			odm_set_bb_regx(dm, R_0x1b38, MASKDWORD, 0x20000000);
+			odm_set_bb_regx(dm, R_0x1b3c, MASKDWORD, 0x20000000);
+			odm_set_bb_regx(dm, R_0x1bcc, MASKDWORD, 0x00000000);
 			if (idx == 0)
-				odm_set_bb_reg(dm, R_0x1b0c, bmask13_12, 0x3);
+				odm_set_bb_regx(dm, R_0x1b0c, bmask13_12, 0x3);
 			else
-				odm_set_bb_reg(dm, R_0x1b0c, bmask13_12, 0x1);
-			odm_set_bb_reg(dm, R_0x1bd4, bmask20_16, 0x10);
+				odm_set_bb_regx(dm, R_0x1b0c, bmask13_12, 0x1);
+			odm_set_bb_regx(dm, R_0x1bd4, bmask20_16, 0x10);
 			for (i = 0; i < 8; i++) {
 #if 0
-				/*odm_write_4byte(dm, 0x1bd8, iqk->iqk_cfir_real[0][path][idx][i]);*/
-				/*odm_write_4byte(dm, 0x1bd8, iqk->iqk_cfir_imag[0][path][idx][i]);*/
+				/*odm_write_4bytex(dm, 0x1bd8, iqk->iqk_cfir_real[0][path][idx][i]);*/
+				/*odm_write_4bytex(dm, 0x1bd8, iqk->iqk_cfir_imag[0][path][idx][i]);*/
 #endif
 				data = ((0xc0000000 >> idx) + 0x3) + (i * 4) +
 					(iqk->iqk_cfir_real[0][path][idx][i]
 					<< 9);
-				odm_write_4byte(dm, 0x1bd8, data);
+				odm_write_4bytex(dm, 0x1bd8, data);
 				data = ((0xc0000000 >> idx) + 0x1) + (i * 4) +
 					(iqk->iqk_cfir_imag[0][path][idx][i]
 					<< 9);
-				odm_write_4byte(dm, 0x1bd8, data);
+				odm_write_4bytex(dm, 0x1bd8, data);
 			}
 		}
-		odm_set_bb_reg(dm, R_0x1bd8, MASKDWORD, 0x0);
-		odm_set_bb_reg(dm, R_0x1b0c, bmask13_12, 0x0);
+		odm_set_bb_regx(dm, R_0x1bd8, MASKDWORD, 0x0);
+		odm_set_bb_regx(dm, R_0x1b0c, bmask13_12, 0x0);
 	}
 	RF_DBG(dm, DBG_RF_IQK, "[IQK]%-20s\n", "write CFIR with default value");
 }
@@ -731,12 +731,12 @@ void halrf_iqk_hwtx_check(void *dm_void, boolean is_check)
 	u32 tmp_b04;
 
 	if (is_check) {
-		iqk_info->is_hwtx = (boolean)odm_get_bb_reg(dm, R_0xb00, BIT(8));
+		iqk_info->is_hwtx = (boolean)odm_get_bb_regx(dm, R_0xb00, BIT(8));
 	} else {
 		if (iqk_info->is_hwtx) {
-			tmp_b04 = odm_read_4byte(dm, 0xb04);
-			odm_set_bb_reg(dm, R_0xb04, BIT(3) | BIT(2), 0x0);
-			odm_write_4byte(dm, 0xb04, tmp_b04);
+			tmp_b04 = odm_read_4bytex(dm, 0xb04);
+			odm_set_bb_regx(dm, R_0xb04, BIT(3) | BIT(2), 0x0);
+			odm_write_4bytex(dm, 0xb04, tmp_b04);
 		}
 	}
 #endif
@@ -745,28 +745,28 @@ void halrf_iqk_hwtx_check(void *dm_void, boolean is_check)
 
 #endif
 
-u8 halrf_match_iqk_version(void *dm_void)
+u8 halrf_match_iqk_versionx(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
 	u32 iqk_version = 0;
 	char temp[10] = {0};
 
-	odm_move_memory(dm, temp, HALRF_IQK_VER, sizeof(temp));
+	odm_move_memoryx(dm, temp, HALRF_IQK_VER, sizeof(temp));
 	PHYDM_SSCANF(temp + 2, DCMD_HEX, &iqk_version);
 
 	if (dm->support_ic_type == ODM_RTL8822B) {
-		if (iqk_version >= 0x24 && (odm_get_hw_img_version(dm) >= 72))
+		if (iqk_version >= 0x24 && (odm_get_hw_img_versionx(dm) >= 72))
 			return 1;
 		else if ((iqk_version <= 0x23) &&
-			 (odm_get_hw_img_version(dm) <= 71))
+			 (odm_get_hw_img_versionx(dm) <= 71))
 			return 1;
 		else
 			return 0;
 	}
 
 	if (dm->support_ic_type == ODM_RTL8821C) {
-		if (iqk_version >= 0x18 && (odm_get_hw_img_version(dm) >= 37))
+		if (iqk_version >= 0x18 && (odm_get_hw_img_versionx(dm) >= 37))
 			return 1;
 		else
 			return 0;
@@ -775,61 +775,61 @@ u8 halrf_match_iqk_version(void *dm_void)
 	return 1;
 }
 
-void halrf_rf_lna_setting(void *dm_void, enum halrf_lna_set type)
+void halrf_rf_lna_settingx(void *dm_void, enum halrf_lna_set type)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
 	switch (dm->support_ic_type) {
 #if (RTL8188E_SUPPORT == 1)
 	case ODM_RTL8188E:
-		halrf_rf_lna_setting_8188e(dm, type);
+		halrf_rf_lna_settingx_8188e(dm, type);
 		break;
 #endif
 #if (RTL8192E_SUPPORT == 1)
 	case ODM_RTL8192E:
-		halrf_rf_lna_setting_8192e(dm, type);
+		halrf_rf_lna_settingx_8192e(dm, type);
 		break;
 #endif
 #if (RTL8192F_SUPPORT == 1)
 	case ODM_RTL8192F:
-		halrf_rf_lna_setting_8192f(dm, type);
+		halrf_rf_lna_settingx_8192f(dm, type);
 		break;
 #endif
 
 #if (RTL8723B_SUPPORT == 1)
 	case ODM_RTL8723B:
-		halrf_rf_lna_setting_8723b(dm, type);
+		halrf_rf_lna_settingx_8723b(dm, type);
 		break;
 #endif
 #if (RTL8812A_SUPPORT == 1)
 	case ODM_RTL8812:
-		halrf_rf_lna_setting_8812a(dm, type);
+		halrf_rf_lna_settingx_8812a(dm, type);
 		break;
 #endif
 #if ((RTL8821A_SUPPORT == 1) || (RTL8881A_SUPPORT == 1))
 	case ODM_RTL8881A:
 	case ODM_RTL8821:
-		halrf_rf_lna_setting_8821a(dm, type);
+		halrf_rf_lna_settingx_8821a(dm, type);
 		break;
 #endif
 #if (RTL8822B_SUPPORT == 1)
 	case ODM_RTL8822B:
-		halrf_rf_lna_setting_8822b(dm_void, type);
+		halrf_rf_lna_settingx_8822b(dm_void, type);
 		break;
 #endif
 #if (RTL8822C_SUPPORT == 1)
 	case ODM_RTL8822C:
-		halrf_rf_lna_setting_8822c(dm_void, type);
+		halrf_rf_lna_settingx_8822c(dm_void, type);
 		break;
 #endif
 #if (RTL8812F_SUPPORT == 1)
 	case ODM_RTL8812F:
-		halrf_rf_lna_setting_8812f(dm_void, type);
+		halrf_rf_lna_settingx_8812f(dm_void, type);
 		break;
 #endif
 #if (RTL8821C_SUPPORT == 1)
 	case ODM_RTL8821C:
-		halrf_rf_lna_setting_8821c(dm_void, type);
+		halrf_rf_lna_settingx_8821c(dm_void, type);
 		break;
 #endif
 #if (RTL8814B_SUPPORT == 1)
@@ -841,7 +841,7 @@ void halrf_rf_lna_setting(void *dm_void, enum halrf_lna_set type)
 	}
 }
 
-void halrf_support_ability_debug(void *dm_void, char input[][16], u32 *_used,
+void halrf_support_ability_debugx(void *dm_void, char input[][16], u32 *_used,
 				 char *output, u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -894,7 +894,7 @@ void halrf_support_ability_debug(void *dm_void, char input[][16], u32 *_used,
 	*_out_len = out_len;
 }
 
-void halrf_cmn_info_init(void *dm_void, enum halrf_cmninfo_init cmn_info,
+void halrf_cmn_info_initx(void *dm_void, enum halrf_cmninfo_init cmn_info,
 			 u32 value)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -912,7 +912,7 @@ void halrf_cmn_info_init(void *dm_void, enum halrf_cmninfo_init cmn_info,
 	}
 }
 
-void halrf_cmn_info_hook(void *dm_void, enum halrf_cmninfo_hook cmn_info,
+void halrf_cmn_info_hookx(void *dm_void, enum halrf_cmninfo_hook cmn_info,
 			 void *value)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -940,7 +940,7 @@ void halrf_cmn_info_hook(void *dm_void, enum halrf_cmninfo_hook cmn_info,
 	}
 }
 
-void halrf_cmn_info_set(void *dm_void, u32 cmn_info, u64 value)
+void halrf_cmn_info_setx(void *dm_void, u32 cmn_info, u64 value)
 {
 	/* This init variable may be changed in run time. */
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -987,7 +987,7 @@ void halrf_cmn_info_set(void *dm_void, u32 cmn_info, u64 value)
 	}
 }
 
-u64 halrf_cmn_info_get(void *dm_void, u32 cmn_info)
+u64 halrf_cmn_info_getx(void *dm_void, u32 cmn_info)
 {
 	/* This init variable may be changed in run time. */
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -1019,7 +1019,7 @@ u64 halrf_cmn_info_get(void *dm_void, u32 cmn_info)
 	return return_value;
 }
 
-void halrf_supportability_init_mp(void *dm_void)
+void halrf_supportability_initx_mp(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct _hal_rf_ *rf = &dm->rf_table;
@@ -1147,7 +1147,7 @@ void halrf_supportability_init_mp(void *dm_void)
 	       dm->support_ic_type, rf->rf_supportability);
 }
 
-void halrf_supportability_init(void *dm_void)
+void halrf_supportability_initx(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct _hal_rf_ *rf = &dm->rf_table;
@@ -1273,7 +1273,7 @@ void halrf_supportability_init(void *dm_void)
 	       dm->support_ic_type, rf->rf_supportability);
 }
 
-void halrf_watchdog(void *dm_void)
+void halrf_watchdogx(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct _hal_rf_ *rf = &dm->rf_table;
@@ -1284,8 +1284,8 @@ void halrf_watchdog(void *dm_void)
 	if (rf->is_dpk_in_progress || dm->rf_calibrate_info.is_iqk_in_progress)
 		return;
 
-	phydm_rf_watchdog(dm);
-	halrf_dpk_track(dm);
+	phydm_rf_watchdogx(dm);
+	halrf_dpk_trackx(dm);
 }
 
 #if 0
@@ -1343,18 +1343,18 @@ void halrf_rf_k_connect_trigger(void *dm_void, boolean is_recovery,
 	halrf_segment_iqk_trigger(dm, true, seg_time);
 
 	/*[TSSI Trk]*/
-	/*halrf_do_tssi(dm);*/
-	/*halrf_do_tssi(dm);*/
+	/*halrf_do_tssix(dm);*/
+	/*halrf_do_tssix(dm);*/
 	/*halrf_tssi_set_de(dm);*/
 
 	/*[DPK]*/
 	if(dpk_info->is_dpk_by_channel == true)
-		halrf_dpk_trigger(dm);
+		halrf_dpk_triggerx(dm);
 	else
-		halrf_dpk_reload(dm);
+		halrf_dpk_reloadx(dm);
 }
 
-void halrf_dack_trigger(void *dm_void)
+void halrf_dack_triggerx(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct _hal_rf_ *rf = &dm->rf_table;
@@ -1364,7 +1364,7 @@ void halrf_dack_trigger(void *dm_void)
 	if (!(rf->rf_supportability & HAL_RF_DACK))
 		return;
 
-	start_time = odm_get_current_time(dm);
+	start_time = odm_get_current_timex(dm);
 
 	switch (dm->support_ic_type) {
 #if (RTL8822C_SUPPORT == 1)
@@ -1385,7 +1385,7 @@ void halrf_dack_trigger(void *dm_void)
 	default:
 		break;
 	}
-	rf->dpk_progressing_time = odm_get_progressing_time(dm, start_time);
+	rf->dpk_progressing_time = odm_get_progressing_timex(dm, start_time);
 	RF_DBG(dm, DBG_RF_DACK, "[DACK]DACK progressing_time = %lld ms\n",
 	       rf->dpk_progressing_time);
 }
@@ -1399,7 +1399,7 @@ void halrf_segment_iqk_trigger(void *dm_void, boolean clear,
 	u64 start_time;
 
 #if (DM_ODM_SUPPORT_TYPE & (ODM_WIN))
-	if (odm_check_power_status(dm) == false)
+	if (odm_check_power_statusx(dm) == false)
 		return;
 #endif
 
@@ -1425,10 +1425,10 @@ void halrf_segment_iqk_trigger(void *dm_void, boolean clear,
 		return;
 
 	if (!dm->rf_calibrate_info.is_iqk_in_progress) {
-		odm_acquire_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_acquire_spin_lockx(dm, RT_IQK_SPINLOCK);
 		dm->rf_calibrate_info.is_iqk_in_progress = true;
-		odm_release_spin_lock(dm, RT_IQK_SPINLOCK);
-		start_time = odm_get_current_time(dm);
+		odm_release_spin_lockx(dm, RT_IQK_SPINLOCK);
+		start_time = odm_get_current_timex(dm);
 		dm->IQK_info.segment_iqk = segment_iqk;
 
 		switch (dm->support_ic_type) {
@@ -1548,13 +1548,13 @@ void halrf_segment_iqk_trigger(void *dm_void, boolean clear,
 			break;
 		}
 		dm->rf_calibrate_info.iqk_progressing_time =
-				odm_get_progressing_time(dm, start_time);
+				odm_get_progressing_timex(dm, start_time);
 		RF_DBG(dm, DBG_RF_IQK, "[IQK]IQK progressing_time = %lld ms\n",
 		       dm->rf_calibrate_info.iqk_progressing_time);
 
-		odm_acquire_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_acquire_spin_lockx(dm, RT_IQK_SPINLOCK);
 		dm->rf_calibrate_info.is_iqk_in_progress = false;
-		odm_release_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_release_spin_lockx(dm, RT_IQK_SPINLOCK);
 	} else {
 		RF_DBG(dm, DBG_RF_IQK,
 		       "== Return the IQK CMD, because RFKs in Progress ==\n");
@@ -1562,7 +1562,7 @@ void halrf_segment_iqk_trigger(void *dm_void, boolean clear,
 }
 
 
-void halrf_iqk_trigger(void *dm_void, boolean is_recovery)
+void halrf_iqk_triggerx(void *dm_void, boolean is_recovery)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct dm_iqk_info *iqk_info = &dm->IQK_info;
@@ -1571,7 +1571,7 @@ void halrf_iqk_trigger(void *dm_void, boolean is_recovery)
 	u64 start_time;
 
 #if (DM_ODM_SUPPORT_TYPE & (ODM_WIN))
-	if (odm_check_power_status(dm) == false)
+	if (odm_check_power_statusx(dm) == false)
 		return;
 #endif
 
@@ -1596,10 +1596,10 @@ void halrf_iqk_trigger(void *dm_void, boolean is_recovery)
 		return;
 
 	if (!dm->rf_calibrate_info.is_iqk_in_progress) {
-		odm_acquire_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_acquire_spin_lockx(dm, RT_IQK_SPINLOCK);
 		dm->rf_calibrate_info.is_iqk_in_progress = true;
-		odm_release_spin_lock(dm, RT_IQK_SPINLOCK);
-		start_time = odm_get_current_time(dm);
+		odm_release_spin_lockx(dm, RT_IQK_SPINLOCK);
+		start_time = odm_get_current_timex(dm);
 		switch (dm->support_ic_type) {
 #if (RTL8188E_SUPPORT == 1)
 		case ODM_RTL8188E:
@@ -1705,19 +1705,19 @@ void halrf_iqk_trigger(void *dm_void, boolean is_recovery)
 		default:
 			break;
 		}
-	rf->iqk_progressing_time = odm_get_progressing_time(dm, start_time);
+	rf->iqk_progressing_time = odm_get_progressing_timex(dm, start_time);
 	RF_DBG(dm, DBG_RF_LCK, "[IQK]Trigger IQK progressing_time = %lld ms\n",
 	       rf->iqk_progressing_time);
-		odm_acquire_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_acquire_spin_lockx(dm, RT_IQK_SPINLOCK);
 		dm->rf_calibrate_info.is_iqk_in_progress = false;
-		odm_release_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_release_spin_lockx(dm, RT_IQK_SPINLOCK);
 	} else {
 		RF_DBG(dm, DBG_RF_IQK,
 		       "== Return the IQK CMD, because RFKs in Progress ==\n");
 	}
 }
 
-void halrf_lck_trigger(void *dm_void)
+void halrf_lck_triggerx(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct dm_iqk_info *iqk_info = &dm->IQK_info;
@@ -1725,7 +1725,7 @@ void halrf_lck_trigger(void *dm_void)
 	u64 start_time;
 
 #if (DM_ODM_SUPPORT_TYPE & (ODM_WIN))
-	if (odm_check_power_status(dm) == false)
+	if (odm_check_power_statusx(dm) == false)
 		return;
 #endif
 
@@ -1753,10 +1753,10 @@ void halrf_lck_trigger(void *dm_void)
 	}
 
 	if (!dm->rf_calibrate_info.is_lck_in_progress) {
-		odm_acquire_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_acquire_spin_lockx(dm, RT_IQK_SPINLOCK);
 		dm->rf_calibrate_info.is_lck_in_progress = true;
-		odm_release_spin_lock(dm, RT_IQK_SPINLOCK);
-		start_time = odm_get_current_time(dm);
+		odm_release_spin_lockx(dm, RT_IQK_SPINLOCK);
+		start_time = odm_get_current_timex(dm);
 		switch (dm->support_ic_type) {
 #if (RTL8188E_SUPPORT == 1)
 		case ODM_RTL8188E:
@@ -1851,22 +1851,22 @@ void halrf_lck_trigger(void *dm_void)
 			break;
 		}
 		dm->rf_calibrate_info.lck_progressing_time =
-				odm_get_progressing_time(dm, start_time);
+				odm_get_progressing_timex(dm, start_time);
 		RF_DBG(dm, DBG_RF_IQK, "[IQK]LCK progressing_time = %lld ms\n",
 		       dm->rf_calibrate_info.lck_progressing_time);
 #if (RTL8822B_SUPPORT == 1 || RTL8821C_SUPPORT == 1)
 		halrf_lck_dbg(dm);
 #endif
-		odm_acquire_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_acquire_spin_lockx(dm, RT_IQK_SPINLOCK);
 		dm->rf_calibrate_info.is_lck_in_progress = false;
-		odm_release_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_release_spin_lockx(dm, RT_IQK_SPINLOCK);
 	} else {
 		RF_DBG(dm, DBG_RF_IQK,
 		       "= Return the LCK CMD, because RFK is in Progress =\n");
 	}
 }
 
-void halrf_aac_check(struct dm_struct *dm)
+void halrf_aac_checkx(struct dm_struct *dm)
 {
 	switch (dm->support_ic_type) {
 #if (RTL8821C_SUPPORT == 1)
@@ -1911,27 +1911,27 @@ void halrf_x2k_check(struct dm_struct *dm)
 	}
 }
 
-void halrf_init(void *dm_void)
+void halrf_initx(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct _hal_rf_ *rf = &dm->rf_table;
 
 	RF_DBG(dm, DBG_RF_INIT, "HALRF_Init\n");
 	rf->aac_checked = false;
-	halrf_init_debug_setting(dm);
+	halrf_initx_debug_setting(dm);
 
 	if (rf->manual_rf_supportability &&
 	    *rf->manual_rf_supportability != 0xffffffff) {
 		rf->rf_supportability = *rf->manual_rf_supportability;
 	} else if (*dm->mp_mode) {
-		halrf_supportability_init_mp(dm);
+		halrf_supportability_initx_mp(dm);
 	} else {
-		halrf_supportability_init(dm);
+		halrf_supportability_initx(dm);
 	}
 #if 1
 	/*Init all RF funciton*/
-	halrf_aac_check(dm);
-	halrf_dack_trigger(dm);
+	halrf_aac_checkx(dm);
+	halrf_dack_triggerx(dm);
 	halrf_x2k_check(dm);
 #endif
 
@@ -1942,7 +1942,7 @@ void halrf_init(void *dm_void)
 	halrf_tssi_get_efuse(dm);
 }
 
-void halrf_dpk_trigger(void *dm_void)
+void halrf_dpk_triggerx(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct _hal_rf_ *rf = &dm->rf_table;
@@ -1952,7 +1952,7 @@ void halrf_dpk_trigger(void *dm_void)
 	u64 start_time;
 
 #if (DM_ODM_SUPPORT_TYPE & (ODM_WIN))
-	if (odm_check_power_status(dm) == false)
+	if (odm_check_power_statusx(dm) == false)
 		return;
 #endif
 
@@ -1977,10 +1977,10 @@ void halrf_dpk_trigger(void *dm_void)
 		return;
 
 	if (!rf->is_dpk_in_progress) {
-		odm_acquire_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_acquire_spin_lockx(dm, RT_IQK_SPINLOCK);
 		rf->is_dpk_in_progress = true;
-		odm_release_spin_lock(dm, RT_IQK_SPINLOCK);
-		start_time = odm_get_current_time(dm);
+		odm_release_spin_lockx(dm, RT_IQK_SPINLOCK);
+		start_time = odm_get_current_timex(dm);
 
 		switch (dm->support_ic_type) {
 #if (RTL8822C_SUPPORT == 1)
@@ -2030,13 +2030,13 @@ void halrf_dpk_trigger(void *dm_void)
 		default:
 			break;
 	}
-	rf->dpk_progressing_time = odm_get_progressing_time(dm, start_time);
+	rf->dpk_progressing_time = odm_get_progressing_timex(dm, start_time);
 	RF_DBG(dm, DBG_RF_DPK, "[DPK]DPK progressing_time = %lld ms\n",
 	       rf->dpk_progressing_time);
 
-		odm_acquire_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_acquire_spin_lockx(dm, RT_IQK_SPINLOCK);
 		rf->is_dpk_in_progress = false;
-		odm_release_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_release_spin_lockx(dm, RT_IQK_SPINLOCK);
 	} else {
 		RF_DBG(dm, DBG_RF_DPK,
 		       "== Return the DPK CMD, because RFKs in Progress ==\n");
@@ -2165,7 +2165,7 @@ boolean halrf_get_dpkenable(void *dm_void)
 
 }
 
-u8 halrf_dpk_result_check(void *dm_void)
+u8 halrf_dpk_result_checkx(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct dm_dpk_info *dpk_info = &dm->dpk_info;
@@ -2245,7 +2245,7 @@ u8 halrf_dpk_result_check(void *dm_void)
 	return result;
 }
 
-void halrf_dpk_sram_read(void *dm_void)
+void halrf_dpk_sram_readx(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
@@ -2303,7 +2303,7 @@ void halrf_dpk_sram_read(void *dm_void)
 	}
 }
 
-void halrf_dpk_enable_disable(void *dm_void)
+void halrf_dpk_enable_disablex(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct _hal_rf_ *rf = &dm->rf_table;
@@ -2312,9 +2312,9 @@ void halrf_dpk_enable_disable(void *dm_void)
 		return;
 
 	if (!rf->is_dpk_in_progress) {
-		odm_acquire_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_acquire_spin_lockx(dm, RT_IQK_SPINLOCK);
 		rf->is_dpk_in_progress = true;
-		odm_release_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_release_spin_lockx(dm, RT_IQK_SPINLOCK);
 
 	switch (dm->support_ic_type) {
 #if (RTL8822C_SUPPORT == 1)
@@ -2365,16 +2365,16 @@ void halrf_dpk_enable_disable(void *dm_void)
 		break;
 	}
 
-		odm_acquire_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_acquire_spin_lockx(dm, RT_IQK_SPINLOCK);
 		rf->is_dpk_in_progress = false;
-		odm_release_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_release_spin_lockx(dm, RT_IQK_SPINLOCK);
 	} else {
 		RF_DBG(dm, DBG_RF_DPK,
 		       "== Return the DPK CMD, because RFKs in Progress ==\n");
 	}
 }
 
-void halrf_dpk_track(void *dm_void)
+void halrf_dpk_trackx(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct dm_dpk_info *dpk_info = &dm->dpk_info;
@@ -2447,7 +2447,7 @@ void halrf_set_dpk_track(void *dm_void, u8 enable)
 		rf->rf_supportability = rf->rf_supportability & ~HAL_RF_DPK_TRACK;
 }
 
-void halrf_dpk_reload(void *dm_void)
+void halrf_dpk_reloadx(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct dm_dpk_info *dpk_info = &dm->dpk_info;
@@ -2518,7 +2518,7 @@ void halrf_dpk_info_rsvd_page(void *dm_void, u8 *buf, u32 *buf_size)
 }
 
 enum hal_status
-halrf_config_rfk_with_header_file(void *dm_void, u32 config_type)
+halrf_config_rfk_with_header_filex(void *dm_void, u32 config_type)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	enum hal_status result = HAL_STATUS_SUCCESS;
@@ -2563,14 +2563,14 @@ halrf_config_rfk_with_header_file(void *dm_void, u32 config_type)
 	return result;
 }
 
-void halrf_txgapk_trigger(void *dm_void)
+void halrf_txgapk_triggerx(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct _hal_rf_ *rf = &dm->rf_table;
 
 	u64 start_time;
 
-	start_time = odm_get_current_time(dm);
+	start_time = odm_get_current_timex(dm);
 
 	switch (dm->support_ic_type) {
 #if (DM_ODM_SUPPORT_TYPE & (ODM_IOT))
@@ -2585,7 +2585,7 @@ void halrf_txgapk_trigger(void *dm_void)
 		break;
 	}
 	rf->dpk_progressing_time =
-		odm_get_progressing_time(dm_void, start_time);
+		odm_get_progressing_timex(dm_void, start_time);
 	RF_DBG(dm, DBG_RF_TXGAPK, "[TGGC]TXGAPK progressing_time = %lld ms\n",
 	       rf->dpk_progressing_time);
 }
@@ -2610,12 +2610,12 @@ void halrf_tssi_get_efuse(void *dm_void)
 
 }
 
-void halrf_do_tssi(void *dm_void)
+void halrf_do_tssix(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
 #if (RTL8822C_SUPPORT == 1)
-	/*halrf_do_tssi_8822c(dm);*/
+	/*halrf_do_tssix_8822c(dm);*/
 	halrf_do_thermal_8822c(dm);
 
 #endif
@@ -2632,12 +2632,12 @@ void halrf_do_thermal(void *dm_void)
 
 
 
-u32 halrf_set_tssi_value(void *dm_void, u32 tssi_value)
+u32 halrf_set_tssi_valuex(void *dm_void, u32 tssi_value)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
 #if (RTL8822C_SUPPORT == 1)
-	return halrf_set_tssi_value_8822c(dm, tssi_value);
+	return halrf_set_tssi_valuex_8822c(dm, tssi_value);
 #endif
 	return 0;
 }
@@ -2655,12 +2655,12 @@ void halrf_tssi_set_de_for_tx_verify(void *dm_void, u32 tssi_de, u8 path)
 {
 	return;
 }
-u32 halrf_query_tssi_value(void *dm_void)
+u32 halrf_query_tssi_valuex(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
 #if (RTL8822C_SUPPORT == 1)
-	/*return halrf_query_tssi_value_8822c(dm);*/
+	/*return halrf_query_tssi_valuex_8822c(dm);*/
 #endif
 	return 0;
 }
@@ -2723,16 +2723,16 @@ u32 halrf_tssi_get_de(void *dm_void, u8 path)
 }
 
 /*Golbal function*/
-void halrf_reload_bp(void *dm_void, u32 *bp_reg, u32 *bp, u32 num)
+void halrf_reload_bpx(void *dm_void, u32 *bp_reg, u32 *bp, u32 num)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 i;
 
 	for (i = 0; i < num; i++)
-		odm_write_4byte(dm, bp_reg[i], bp[i]);
+		odm_write_4bytex(dm, bp_reg[i], bp[i]);
 }
 
-void halrf_reload_bprf(void *dm_void, u32 *bp_reg, u32 bp[][4], u32 num,
+void halrf_reload_bpxrf(void *dm_void, u32 *bp_reg, u32 bp[][4], u32 num,
 		       u8 ss)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -2740,21 +2740,21 @@ void halrf_reload_bprf(void *dm_void, u32 *bp_reg, u32 bp[][4], u32 num,
 
 	for (i = 0; i < num; i++) {
 		for (path = 0; path < ss; path++)
-			odm_set_rf_reg(dm, (enum rf_path)path, bp_reg[i],
+			odm_set_rf_regx(dm, (enum rf_path)path, bp_reg[i],
 				       MASK20BITS, bp[i][path]);
 	}
 }
 
-void halrf_bp(void *dm_void, u32 *bp_reg, u32 *bp, u32 num)
+void halrf_bpx(void *dm_void, u32 *bp_reg, u32 *bp, u32 num)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 i;
 
 	for (i = 0; i < num; i++)
-		bp[i] = odm_read_4byte(dm, bp_reg[i]);
+		bp[i] = odm_read_4bytex(dm, bp_reg[i]);
 }
 
-void halrf_bprf(void *dm_void, u32 *bp_reg, u32 bp[][4], u32 num, u8 ss)
+void halrf_bpxrf(void *dm_void, u32 *bp_reg, u32 bp[][4], u32 num, u8 ss)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 i, path;
@@ -2762,13 +2762,13 @@ void halrf_bprf(void *dm_void, u32 *bp_reg, u32 bp[][4], u32 num, u8 ss)
 	for (i = 0; i < num; i++) {
 		for (path = 0; path < ss; path++) {
 			bp[i][path] =
-				odm_get_rf_reg(dm, (enum rf_path)path,
+				odm_get_rf_regx(dm, (enum rf_path)path,
 					       bp_reg[i], MASK20BITS);
 		}
 	}
 }
 
-void halrf_swap(void *dm_void, u32 *v1, u32 *v2)
+void halrf_swapx(void *dm_void, u32 *v1, u32 *v2)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 temp;
@@ -2778,23 +2778,23 @@ void halrf_swap(void *dm_void, u32 *v1, u32 *v2)
 	*v2 = temp;
 }
 
-void halrf_bubble(void *dm_void, u32 *v1, u32 *v2)
+void halrf_bubblex(void *dm_void, u32 *v1, u32 *v2)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 temp;
 
 	if (*v1 >= 0x200 && *v2 >= 0x200) {
 		if (*v1 > *v2)
-			halrf_swap(dm, v1, v2);
+			halrf_swapx(dm, v1, v2);
 	} else if (*v1 < 0x200 && *v2 < 0x200) {
 		if (*v1 > *v2)
-			halrf_swap(dm, v1, v2);
+			halrf_swapx(dm, v1, v2);
 	} else if (*v1 < 0x200 && *v2 >= 0x200) {
-		halrf_swap(dm, v1, v2);
+		halrf_swapx(dm, v1, v2);
 	}
 }
 
-void halrf_b_sort(void *dm_void, u32 *iv, u32 *qv)
+void halrf_b_sortx(void *dm_void, u32 *iv, u32 *qv)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 temp;
@@ -2803,13 +2803,13 @@ void halrf_b_sort(void *dm_void, u32 *iv, u32 *qv)
 	RF_DBG(dm, DBG_RF_DACK, "[DACK]bubble!!!!!!!!!!!!");
 	for (i = 0; i < SN - 1; i++) {
 		for (j = 0; j < (SN - 1 - i) ; j++) {
-			halrf_bubble(dm, &iv[j], &iv[j + 1]);
-			halrf_bubble(dm, &qv[j], &qv[j + 1]);
+			halrf_bubblex(dm, &iv[j], &iv[j + 1]);
+			halrf_bubblex(dm, &qv[j], &qv[j + 1]);
 		}
 	}
 }
 
-void halrf_minmax_compare(void *dm_void, u32 value, u32 *min,
+void halrf_minmax_comparex(void *dm_void, u32 value, u32 *min,
 			  u32 *max)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -2840,7 +2840,7 @@ void halrf_minmax_compare(void *dm_void, u32 value, u32 *min,
 	}
 }
 
-u32 halrf_delta(void *dm_void, u32 v1, u32 v2)
+u32 halrf_deltax(void *dm_void, u32 v1, u32 v2)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
@@ -2861,7 +2861,7 @@ u32 halrf_delta(void *dm_void, u32 v1, u32 v2)
 		return v2 - v1;
 }
 
-boolean halrf_compare(void *dm_void, u32 value)
+boolean halrf_comparex(void *dm_void, u32 value)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
@@ -2877,7 +2877,7 @@ boolean halrf_compare(void *dm_void, u32 value)
 	return fail;
 }
 
-void halrf_mode(void *dm_void, u32 *i_value, u32 *q_value)
+void halrf_modex(void *dm_void, u32 *i_value, u32 *q_value)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 iv[SN], qv[SN], im[SN], qm[SN], temp, temp1, temp2;
@@ -2887,7 +2887,7 @@ void halrf_mode(void *dm_void, u32 *i_value, u32 *q_value)
 	u8 i, j, ii = 0, qi = 0;
 	boolean fail = false;
 
-	ODM_delay_ms(10);
+	ODM_delay_msx(10);
 	for (i = 0; i < SN; i++) {
 		im[i] = 0;
 		qm[i] = 0;
@@ -2896,14 +2896,14 @@ void halrf_mode(void *dm_void, u32 *i_value, u32 *q_value)
 	c = 0;
 	while (i < SN && c < 1000) {
 		c++;
-		temp = odm_get_bb_reg(dm, 0x2dbc, 0x3fffff);
+		temp = odm_get_bb_regx(dm, 0x2dbc, 0x3fffff);
 		iv[i] = (temp & 0x3ff000) >> 12;
 		qv[i] = temp & 0x3ff;
 
 		fail = false;
-		if (halrf_compare(dm, iv[i]))
+		if (halrf_comparex(dm, iv[i]))
 			fail = true;
-		if (halrf_compare(dm, qv[i]))
+		if (halrf_comparex(dm, qv[i]))
 			fail = true;
 		if (!fail)
 			i++;
@@ -2916,8 +2916,8 @@ void halrf_mode(void *dm_void, u32 *i_value, u32 *q_value)
 		q_min = qv[0];
 		q_max = qv[0];
 		for (i = 0; i < SN; i++) {
-			halrf_minmax_compare(dm, iv[i], &i_min, &i_max);
-			halrf_minmax_compare(dm, qv[i], &q_min, &q_max);
+			halrf_minmax_comparex(dm, iv[i], &i_min, &i_max);
+			halrf_minmax_comparex(dm, qv[i], &q_min, &q_max);
 		}
 		RF_DBG(dm, DBG_RF_DACK, "[DACK]i_min=0x%x, i_max=0x%x",
 		       i_min, i_max);
@@ -2938,12 +2938,12 @@ void halrf_mode(void *dm_void, u32 *i_value, u32 *q_value)
 			q_delta = q_max + (0x400 - q_min);
 		RF_DBG(dm, DBG_RF_DACK, "[DACK]i_delta=0x%x, q_delta=0x%x",
 		       i_delta, q_delta);
-		halrf_b_sort(dm, iv, qv);
+		halrf_b_sortx(dm, iv, qv);
 		if (i_delta > 5 || q_delta > 5) {
-			temp = odm_get_bb_reg(dm, 0x2dbc, 0x3fffff);
+			temp = odm_get_bb_regx(dm, 0x2dbc, 0x3fffff);
 			iv[0] = (temp & 0x3ff000) >> 12;
 			qv[0] = temp & 0x3ff;
-			temp = odm_get_bb_reg(dm, 0x2dbc, 0x3fffff);
+			temp = odm_get_bb_regx(dm, 0x2dbc, 0x3fffff);
 			iv[SN - 1] = (temp & 0x3ff000) >> 12;
 			qv[SN - 1] = temp & 0x3ff;
 		} else {

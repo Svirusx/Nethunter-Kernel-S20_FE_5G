@@ -71,7 +71,7 @@ u8 odm_ra_get_decision_rate_8188e(struct dm_struct *dm, u8 mac_id);
 
 u8 odm_ra_get_hw_pwr_status_8188e(struct dm_struct *dm, u8 mac_id);
 
-u8 phydm_get_rate_id_88e(void *dm_void, u8 macid);
+u8 phydm_get_rate_idx_88e(void *dm_void, u8 macid);
 
 void phydm_ra_update_8188e(struct dm_struct *dm, u8 mac_id, u8 rate_id,
 			   u32 rate_mask, u8 sgi_enable);

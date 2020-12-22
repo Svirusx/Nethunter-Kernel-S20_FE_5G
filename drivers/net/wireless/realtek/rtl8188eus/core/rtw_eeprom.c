@@ -21,8 +21,8 @@
 void up_clk(_adapter	*padapter,	 u16 *x)
 {
 	*x = *x | _EESK;
-	rtw_write8(padapter, EE_9346CR, (u8)*x);
-	rtw_udelay_os(CLOCK_RATE);
+	rtw_write8x(padapter, EE_9346CR, (u8)*x);
+	rtw_udelay_osx(CLOCK_RATE);
 
 
 }
@@ -30,8 +30,8 @@ void up_clk(_adapter	*padapter,	 u16 *x)
 void down_clk(_adapter	*padapter, u16 *x)
 {
 	*x = *x & ~_EESK;
-	rtw_write8(padapter, EE_9346CR, (u8)*x);
-	rtw_udelay_os(CLOCK_RATE);
+	rtw_write8x(padapter, EE_9346CR, (u8)*x);
+	rtw_udelay_osx(CLOCK_RATE);
 }
 
 void shift_out_bits(_adapter *padapter, u16 data, u16 count)
@@ -42,7 +42,7 @@ void shift_out_bits(_adapter *padapter, u16 data, u16 count)
 		goto out;
 	}
 	mask = 0x01 << (count - 1);
-	x = rtw_read8(padapter, EE_9346CR);
+	x = rtw_read8x(padapter, EE_9346CR);
 
 	x &= ~(_EEDO | _EEDI);
 
@@ -53,8 +53,8 @@ void shift_out_bits(_adapter *padapter, u16 data, u16 count)
 		if (rtw_is_surprise_removed(padapter)) {
 			goto out;
 		}
-		rtw_write8(padapter, EE_9346CR, (u8)x);
-		rtw_udelay_os(CLOCK_RATE);
+		rtw_write8x(padapter, EE_9346CR, (u8)x);
+		rtw_udelay_osx(CLOCK_RATE);
 		up_clk(padapter, &x);
 		down_clk(padapter, &x);
 		mask = mask >> 1;
@@ -63,7 +63,7 @@ void shift_out_bits(_adapter *padapter, u16 data, u16 count)
 		goto out;
 	}
 	x &= ~_EEDI;
-	rtw_write8(padapter, EE_9346CR, (u8)x);
+	rtw_write8x(padapter, EE_9346CR, (u8)x);
 out:
 	return;
 }
@@ -74,7 +74,7 @@ u16 shift_in_bits(_adapter *padapter)
 	if (rtw_is_surprise_removed(padapter)) {
 		goto out;
 	}
-	x = rtw_read8(padapter, EE_9346CR);
+	x = rtw_read8x(padapter, EE_9346CR);
 
 	x &= ~(_EEDO | _EEDI);
 	d = 0;
@@ -85,7 +85,7 @@ u16 shift_in_bits(_adapter *padapter)
 		if (rtw_is_surprise_removed(padapter)) {
 			goto out;
 		}
-		x = rtw_read8(padapter, EE_9346CR);
+		x = rtw_read8x(padapter, EE_9346CR);
 
 		x &= ~(_EEDI);
 		if (x & _EEDO)
@@ -101,15 +101,15 @@ out:
 void standby(_adapter	*padapter)
 {
 	u8   x;
-	x = rtw_read8(padapter, EE_9346CR);
+	x = rtw_read8x(padapter, EE_9346CR);
 
 	x &= ~(_EECS | _EESK);
-	rtw_write8(padapter, EE_9346CR, x);
+	rtw_write8x(padapter, EE_9346CR, x);
 
-	rtw_udelay_os(CLOCK_RATE);
+	rtw_udelay_osx(CLOCK_RATE);
 	x |= _EECS;
-	rtw_write8(padapter, EE_9346CR, x);
-	rtw_udelay_os(CLOCK_RATE);
+	rtw_write8x(padapter, EE_9346CR, x);
+	rtw_udelay_osx(CLOCK_RATE);
 }
 
 u16 wait_eeprom_cmd_done(_adapter *padapter)
@@ -118,12 +118,12 @@ u16 wait_eeprom_cmd_done(_adapter *padapter)
 	u16	i, res = _FALSE;
 	standby(padapter);
 	for (i = 0; i < 200; i++) {
-		x = rtw_read8(padapter, EE_9346CR);
+		x = rtw_read8x(padapter, EE_9346CR);
 		if (x & _EEDO) {
 			res = _TRUE;
 			goto exit;
 		}
-		rtw_udelay_os(CLOCK_RATE);
+		rtw_udelay_osx(CLOCK_RATE);
 	}
 exit:
 	return res;
@@ -135,12 +135,12 @@ void eeprom_clean(_adapter *padapter)
 	if (rtw_is_surprise_removed(padapter)) {
 		goto out;
 	}
-	x = rtw_read8(padapter, EE_9346CR);
+	x = rtw_read8x(padapter, EE_9346CR);
 	if (rtw_is_surprise_removed(padapter)) {
 		goto out;
 	}
 	x &= ~(_EECS | _EEDI);
-	rtw_write8(padapter, EE_9346CR, (u8)x);
+	rtw_write8x(padapter, EE_9346CR, (u8)x);
 	if (rtw_is_surprise_removed(padapter)) {
 		goto out;
 	}
@@ -156,11 +156,11 @@ out:
 void eeprom_write16(_adapter *padapter, u16 reg, u16 data)
 {
 	u8 x;
-	x = rtw_read8(padapter, EE_9346CR);
+	x = rtw_read8x(padapter, EE_9346CR);
 
 	x &= ~(_EEDI | _EEDO | _EESK | _EEM0);
 	x |= _EEM1 | _EECS;
-	rtw_write8(padapter, EE_9346CR, x);
+	rtw_write8x(padapter, EE_9346CR, x);
 
 	shift_out_bits(padapter, EEPROM_EWEN_OPCODE, 5);
 
@@ -220,7 +220,7 @@ u16 eeprom_read16(_adapter *padapter, u16 reg)  /* ReadEEprom */
 		goto out;
 	}
 	/* select EEPROM, reset bits, set _EECS */
-	x = rtw_read8(padapter, EE_9346CR);
+	x = rtw_read8x(padapter, EE_9346CR);
 
 	if (rtw_is_surprise_removed(padapter)) {
 		goto out;
@@ -228,7 +228,7 @@ u16 eeprom_read16(_adapter *padapter, u16 reg)  /* ReadEEprom */
 
 	x &= ~(_EEDI | _EEDO | _EESK | _EEM0);
 	x |= _EEM1 | _EECS;
-	rtw_write8(padapter, EE_9346CR, (unsigned char)x);
+	rtw_write8x(padapter, EE_9346CR, (unsigned char)x);
 
 	/* write the read opcode and register number in that order */
 	/* The opcode is 3bits in length, reg is 6 bits long */
@@ -259,7 +259,7 @@ void eeprom_read_sz(_adapter *padapter, u16 reg, u8 *data, u32 sz)
 		goto out;
 	}
 	/* select EEPROM, reset bits, set _EECS */
-	x = rtw_read8(padapter, EE_9346CR);
+	x = rtw_read8x(padapter, EE_9346CR);
 
 	if (rtw_is_surprise_removed(padapter)) {
 		goto out;
@@ -267,7 +267,7 @@ void eeprom_read_sz(_adapter *padapter, u16 reg, u8 *data, u32 sz)
 
 	x &= ~(_EEDI | _EEDO | _EESK | _EEM0);
 	x |= _EEM1 | _EECS;
-	rtw_write8(padapter, EE_9346CR, (unsigned char)x);
+	rtw_write8x(padapter, EE_9346CR, (unsigned char)x);
 
 	/* write the read opcode and register number in that order */
 	/* The opcode is 3bits in length, reg is 6 bits long */

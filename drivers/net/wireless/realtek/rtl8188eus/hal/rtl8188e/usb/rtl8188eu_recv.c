@@ -19,10 +19,10 @@
 
 int	rtl8188eu_init_recv_priv(_adapter *padapter)
 {
-	return usb_init_recv_priv(padapter, INTERRUPT_MSG_FORMAT_LEN);
+	return usb_init_recv_privx(padapter, INTERRUPT_MSG_FORMAT_LEN);
 }
 
 void rtl8188eu_free_recv_priv(_adapter *padapter)
 {
-	usb_free_recv_priv(padapter, INTERRUPT_MSG_FORMAT_LEN);
+	usb_free_recv_privx(padapter, INTERRUPT_MSG_FORMAT_LEN);
 }

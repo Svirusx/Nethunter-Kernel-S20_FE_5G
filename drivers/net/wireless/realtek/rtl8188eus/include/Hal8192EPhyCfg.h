@@ -82,10 +82,10 @@ int	PHY_RFConfig8192E(PADAPTER	Adapter);
 /*
  * BB TX Power R/W
  *   */
-void	PHY_SetTxPowerLevel8192E(PADAPTER	Adapter, u8	channel);
+void	PHY_SetTxPowerxLevel8192E(PADAPTER	Adapter, u8	channel);
 
 void
-PHY_SetTxPowerIndex_8192E(
+PHY_SetTxPowerxIndexx_8192E(
 		PADAPTER			Adapter,
 		u32					PowerIndex,
 		enum rf_path			RFPath,

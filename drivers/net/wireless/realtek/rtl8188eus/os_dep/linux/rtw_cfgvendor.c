@@ -287,7 +287,7 @@ int *rtw_dev_get_feature_set_matrix(struct net_device *dev, int *num)
 
 	*num = 0;
 	mem_needed = sizeof(int) * MAX_FEATURE_SET_CONCURRRENT_GROUPS;
-	ret = (int *)rtw_malloc(mem_needed);
+	ret = (int *)rtw_mallocx(mem_needed);
 
 	if (!ret) {
 		RTW_ERR(FUNC_NDEV_FMT" failed to allocate %d bytes\n"
@@ -386,7 +386,7 @@ static int rtw_cfgvendor_get_feature_set_matrix(struct wiphy *wiphy,
 		RTW_ERR(FUNC_NDEV_FMT" Vendor Command reply failed ret:%d\n"
 			, FUNC_NDEV_ARG(wdev_to_ndev(wdev)), err);
 exit:
-	rtw_mfree((u8 *)reply, sizeof(int) * num);
+	rtw_mfreex((u8 *)reply, sizeof(int) * num);
 	return err;
 }
 
@@ -446,7 +446,7 @@ static int rtw_cfgvendor_gscan_get_capabilities(struct wiphy *wiphy,
 		struct wireless_dev *wdev, const void  *data, int len)
 {
 	int err = 0;
-	struct bcm_cfg80211 *cfg = wiphy_priv(wiphy);
+	struct bcm_cfg80211 *cfg = wiphy_privx(wiphy);
 	dhd_pno_gscan_capabilities_t *reply = NULL;
 	uint32 reply_len = 0;
 
@@ -473,7 +473,7 @@ static int rtw_cfgvendor_gscan_get_channel_list(struct wiphy *wiphy,
 		struct wireless_dev *wdev, const void  *data, int len)
 {
 	int err = 0, type, band;
-	struct bcm_cfg80211 *cfg = wiphy_priv(wiphy);
+	struct bcm_cfg80211 *cfg = wiphy_privx(wiphy);
 	uint16 *reply = NULL;
 	uint32 reply_len = 0, num_channels, mem_needed;
 	struct sk_buff *skb;
@@ -520,7 +520,7 @@ static int rtw_cfgvendor_gscan_get_batch_results(struct wiphy *wiphy,
 		struct wireless_dev *wdev, const void  *data, int len)
 {
 	int err = 0;
-	struct bcm_cfg80211 *cfg = wiphy_priv(wiphy);
+	struct bcm_cfg80211 *cfg = wiphy_privx(wiphy);
 	gscan_results_cache_t *results, *iter;
 	uint32 reply_len, complete = 0, num_results_iter;
 	int32 mem_needed;
@@ -604,7 +604,7 @@ static int rtw_cfgvendor_initiate_gscan(struct wiphy *wiphy,
 		       struct wireless_dev *wdev, const void  *data, int len)
 {
 	int err = 0;
-	struct bcm_cfg80211 *cfg = wiphy_priv(wiphy);
+	struct bcm_cfg80211 *cfg = wiphy_privx(wiphy);
 	int type, tmp = len;
 	int run = 0xFF;
 	int flush = 0;
@@ -634,7 +634,7 @@ static int rtw_cfgvendor_enable_full_scan_result(struct wiphy *wiphy,
 		struct wireless_dev *wdev, const void  *data, int len)
 {
 	int err = 0;
-	struct bcm_cfg80211 *cfg = wiphy_priv(wiphy);
+	struct bcm_cfg80211 *cfg = wiphy_privx(wiphy);
 	int type;
 	bool real_time = FALSE;
 
@@ -658,7 +658,7 @@ static int rtw_cfgvendor_set_scan_cfg(struct wiphy *wiphy,
 		     struct wireless_dev *wdev, const void  *data, int len)
 {
 	int err = 0;
-	struct bcm_cfg80211 *cfg = wiphy_priv(wiphy);
+	struct bcm_cfg80211 *cfg = wiphy_privx(wiphy);
 	gscan_scan_params_t *scan_param;
 	int j = 0;
 	int type, tmp, tmp1, tmp2, k = 0;
@@ -750,7 +750,7 @@ static int rtw_cfgvendor_hotlist_cfg(struct wiphy *wiphy,
 		    struct wireless_dev *wdev, const void  *data, int len)
 {
 	int err = 0;
-	struct bcm_cfg80211 *cfg = wiphy_priv(wiphy);
+	struct bcm_cfg80211 *cfg = wiphy_privx(wiphy);
 	gscan_hotlist_scan_params_t *hotlist_params;
 	int tmp, tmp1, tmp2, type, j = 0, dummy;
 	const struct nlattr *outer, *inner, *iter;
@@ -816,7 +816,7 @@ static int rtw_cfgvendor_set_batch_scan_cfg(struct wiphy *wiphy,
 		struct wireless_dev *wdev, const void  *data, int len)
 {
 	int err = 0, tmp, type;
-	struct bcm_cfg80211 *cfg = wiphy_priv(wiphy);
+	struct bcm_cfg80211 *cfg = wiphy_privx(wiphy);
 	gscan_batch_params_t batch_param;
 	const struct nlattr *iter;
 
@@ -853,7 +853,7 @@ static int rtw_cfgvendor_significant_change_cfg(struct wiphy *wiphy,
 		struct wireless_dev *wdev, const void  *data, int len)
 {
 	int err = 0;
-	struct bcm_cfg80211 *cfg = wiphy_priv(wiphy);
+	struct bcm_cfg80211 *cfg = wiphy_privx(wiphy);
 	gscan_swc_params_t *significant_params;
 	int tmp, tmp1, tmp2, type, j = 0;
 	const struct nlattr *outer, *inner, *iter;
@@ -996,7 +996,7 @@ static int rtw_cfgvendor_rtt_set_config(struct wiphy *wiphy, struct wireless_dev
 	const struct nlattr *iter, *iter1, *iter2;
 	int8 eabuf[ETHER_ADDR_STR_LEN];
 	int8 chanbuf[CHANSPEC_STR_LEN];
-	struct bcm_cfg80211 *cfg = wiphy_priv(wiphy);
+	struct bcm_cfg80211 *cfg = wiphy_privx(wiphy);
 
 	WL_DBG(("In\n"));
 	err = dhd_dev_rtt_register_noti_callback(wdev->netdev, wdev, wl_cfgvendor_rtt_evt);
@@ -1080,7 +1080,7 @@ static int rtw_cfgvendor_rtt_cancel_config(struct wiphy *wiphy, struct wireless_
 	int err = 0, rem, type, target_cnt = 0;
 	const struct nlattr *iter;
 	struct ether_addr *mac_list = NULL, *mac_addr = NULL;
-	struct bcm_cfg80211 *cfg = wiphy_priv(wiphy);
+	struct bcm_cfg80211 *cfg = wiphy_privx(wiphy);
 
 	nla_for_each_attr(iter, data, len, rem) {
 		type = nla_type(iter);
@@ -1118,7 +1118,7 @@ static int rtw_cfgvendor_rtt_get_capability(struct wiphy *wiphy, struct wireless
 		const void *data, int len)
 {
 	int err = 0;
-	struct bcm_cfg80211 *cfg = wiphy_priv(wiphy);
+	struct bcm_cfg80211 *cfg = wiphy_privx(wiphy);
 	rtt_capabilities_t capability;
 
 	err = dhd_dev_rtt_capability(bcmcfg_to_prmry_ndev(cfg), &capability);
@@ -1162,18 +1162,18 @@ static void LinkLayerStats(_adapter *padapter)
 
 	if ( padapter->netif_up == _TRUE ) {
 
-		pwrpriv->on_time = rtw_get_passing_time_ms(pwrpriv->radio_on_start_time);
+		pwrpriv->on_time = rtw_get_passing_time_msx(pwrpriv->radio_on_start_time);
 
-		if (rtw_mi_check_fwstate(padapter, _FW_LINKED)) {
+		if (rtw_mi_check_fwstatexx(padapter, _FW_LINKED)) {
 			if ( pwrpriv->bpower_saving == _TRUE ) {
-				pwrpriv->pwr_saving_time += rtw_get_passing_time_ms(pwrpriv->pwr_saving_start_time);
-				pwrpriv->pwr_saving_start_time = rtw_get_current_time();
+				pwrpriv->pwr_saving_time += rtw_get_passing_time_msx(pwrpriv->pwr_saving_start_time);
+				pwrpriv->pwr_saving_start_time = rtw_get_current_timex();
 			}
 		} else {		
 #ifdef CONFIG_IPS
 			if ( pwrpriv->bpower_saving == _TRUE ) {
-				pwrpriv->pwr_saving_time += rtw_get_passing_time_ms(pwrpriv->pwr_saving_start_time);
-				pwrpriv->pwr_saving_start_time = rtw_get_current_time();
+				pwrpriv->pwr_saving_time += rtw_get_passing_time_msx(pwrpriv->pwr_saving_start_time);
+				pwrpriv->pwr_saving_start_time = rtw_get_current_timex();
 			}
 #else
 			pwrpriv->pwr_saving_time = pwrpriv->on_time;
@@ -1201,11 +1201,11 @@ static void LinkLayerStats(_adapter *padapter)
 			/* rx_time = (trx_total_time * rx_total_bytes) / trx_total_bytes; */
 
 			tmp = (tx_bytes * trx_total_time);
-			tmp = rtw_division64(tmp, trx_total_bytes);
+			tmp = rtw_division64x(tmp, trx_total_bytes);
 			pwrpriv->tx_time = tmp;
 
 			tmp = (rx_bytes * trx_total_time);
-			tmp = rtw_division64(tmp, trx_total_bytes);
+			tmp = rtw_division64x(tmp, trx_total_bytes);
 			pwrpriv->rx_time = tmp;		
 
 		}
@@ -1239,7 +1239,7 @@ static int rtw_cfgvendor_lstats_get_info(struct wiphy *wiphy,
 	wifi_iface_stat *iface;
 	char *output;
 
-	output = rtw_malloc(sizeof(wifi_radio_stat_internal) + sizeof(wifi_iface_stat));
+	output = rtw_mallocx(sizeof(wifi_radio_stat_internal) + sizeof(wifi_iface_stat));
 	if (output == NULL) {
 		RTW_DBG("Allocate lstats info buffer fail!\n");
 	}
@@ -1277,7 +1277,7 @@ static int rtw_cfgvendor_lstats_get_info(struct wiphy *wiphy,
 	if (unlikely(err))
 		RTW_ERR(FUNC_NDEV_FMT"Vendor Command reply failed ret:%d \n"
 			, FUNC_NDEV_ARG(wdev_to_ndev(wdev)), err);
-	rtw_mfree(output, sizeof(wifi_iface_stat) + sizeof(wifi_radio_stat_internal));
+	rtw_mfreex(output, sizeof(wifi_iface_stat) + sizeof(wifi_radio_stat_internal));
 	return err;
 }
 static int rtw_cfgvendor_lstats_set_info(struct wiphy *wiphy,	
@@ -1340,7 +1340,7 @@ void rtw_cfgvendor_rssi_monitor_evt(_adapter *padapter) {
         rssi_monitor_evt data ;
         s8 rssi = precvpriv->rssi;
 
-        if (pwdev_priv->rssi_monitor_enable == 0 || check_fwstate(pmlmepriv, _FW_LINKED) != _TRUE)
+        if (pwdev_priv->rssi_monitor_enable == 0 || check_fwstatex(pmlmepriv, _FW_LINKED) != _TRUE)
                 return;
 
         if (rssi < pwdev_priv->rssi_monitor_max || rssi > pwdev_priv->rssi_monitor_min)
@@ -1354,11 +1354,11 @@ void rtw_cfgvendor_rssi_monitor_evt(_adapter *padapter) {
 		goto exit;
 	}
 
-        _rtw_memset(&data, 0, sizeof(data));
+        _rtw_memsetx(&data, 0, sizeof(data));
 
         data.version = RSSI_MONITOR_EVT_VERSION;
         data.cur_rssi = rssi;
-        _rtw_memcpy(data.BSSID, pcur_network->network.MacAddress, sizeof(mac_addr));
+        _rtw_memcpyx(data.BSSID, pcur_network->network.MacAddress, sizeof(mac_addr));
 
         nla_append(skb, sizeof(data), &data);
 
@@ -1476,7 +1476,7 @@ static int rtw_cfgvendor_logger_get_ring_status(struct wiphy *wiphy,
 	wifi_ring_buffer_status ring_status;
 
 
-	_rtw_memcpy(ring_status.name, ring_buf_name, strlen(ring_buf_name)+1);
+	_rtw_memcpyx(ring_status.name, ring_buf_name, strlen(ring_buf_name)+1);
 	ring_status.ring_id = 1;
 	/* Alloc the SKB for vendor_event */
 	skb = cfg80211_vendor_cmd_alloc_reply_skb(wiphy,
@@ -1565,12 +1565,12 @@ static int rtw_cfgvendor_logger_get_rx_pkt_fates(struct wiphy *wiphy,
 #endif
 
 
-static u8 null_addr[ETH_ALEN] = {0};
+static u8 null_addrx[ETH_ALEN] = {0};
 static void rtw_hal_random_gen_mac_addr(u8 *mac_addr)
 {
 	do {
 		get_random_bytes(&mac_addr[3], ETH_ALEN-3);
-		if (memcmp(mac_addr, null_addr, ETH_ALEN) != 0)
+		if (memcmp(mac_addr, null_addrx, ETH_ALEN) != 0)
 			break;
 	} while(1);
 }
@@ -1593,14 +1593,14 @@ void rtw_hal_pno_random_gen_mac_addr(PADAPTER adapter)
 
 void rtw_hal_set_hw_mac_addr(PADAPTER adapter, u8 *mac_addr)
 {
-	rtw_ps_deny(adapter, PS_DENY_IOCTL);
-	LeaveAllPowerSaveModeDirect(adapter);
+	rtw_ps_denyx(adapter, PS_DENY_IOCTL);
+	LeaveAllPowerSaveModexDirect(adapter);
 
-	rtw_hal_set_hwreg(adapter, HW_VAR_MAC_ADDR, mac_addr);
+	rtw_hal_set_hwregx(adapter, HW_VAR_MAC_ADDR, mac_addr);
 #ifdef CONFIG_RTW_DEBUG
-	rtw_hal_dump_macaddr(RTW_DBGDUMP, adapter);
+	rtw_hal_dump_macaddrx(RTW_DBGDUMP, adapter);
 #endif
-	rtw_ps_deny_cancel(adapter, PS_DENY_IOCTL);
+	rtw_ps_denyx_cancel(adapter, PS_DENY_IOCTL);
 }
 
 static int rtw_cfgvendor_set_rand_mac_oui(struct wiphy *wiphy,
@@ -1700,7 +1700,7 @@ static int rtw_cfgvendor_set_country(struct wiphy *wiphy,
 		type = nla_type(iter);
 		switch (type) {
 			case ANDR_WIFI_ATTRIBUTE_COUNTRY:
-				_rtw_memcpy(country_code, nla_data(iter),
+				_rtw_memcpyx(country_code, nla_data(iter),
 					MIN(nla_len(iter), CNTRY_BUF_SZ));
 				break;
 			default:
@@ -1711,7 +1711,7 @@ static int rtw_cfgvendor_set_country(struct wiphy *wiphy,
 
 	RTW_INFO("%s country_code:\"%c%c\" \n", __func__, country_code[0], country_code[1]);
 
-	rtw_set_country(padapter, country_code);
+	rtw_set_countryx(padapter, country_code);
 
 	return err;
 }

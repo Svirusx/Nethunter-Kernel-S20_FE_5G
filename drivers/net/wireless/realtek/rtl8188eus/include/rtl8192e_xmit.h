@@ -429,7 +429,7 @@ struct txrpt_ccx_92e {
 	void UpdateEarlyModeInfo8192E(struct xmit_priv *pxmitpriv, struct xmit_buf *pxmitbuf);
 #endif
 s32	rtl8192e_init_xmit_priv(_adapter *padapter);
-void _dbg_dump_tx_info(_adapter	*padapter, int frame_tag, u8 *ptxdesc);
+void _dbg_dump_tx_infox(_adapter	*padapter, int frame_tag, u8 *ptxdesc);
 
 void rtl8192e_fill_fake_txdesc(PADAPTER	padapter, u8 *pDesc, u32 BufferLen,
 			       u8 IsPsPoll, u8	IsBTQosNull, u8 bDataFrame);

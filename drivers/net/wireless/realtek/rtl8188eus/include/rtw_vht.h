@@ -110,8 +110,8 @@ extern const char *const _vht_sup_ch_width_set_str[];
 void dump_vht_cap_ie(void *sel, const u8 *ie, u32 ie_len);
 
 #define VHT_OP_CH_WIDTH_MAX 4
-extern const char *const _vht_op_ch_width_str[];
-#define vht_op_ch_width_str(ch_width) (((ch_width) >= VHT_OP_CH_WIDTH_MAX) ? _vht_op_ch_width_str[VHT_OP_CH_WIDTH_MAX] : _vht_op_ch_width_str[(ch_width)])
+extern const char *const _vht_op_ch_width_strx[];
+#define vht_op_ch_width_strx(ch_width) (((ch_width) >= VHT_OP_CH_WIDTH_MAX) ? _vht_op_ch_width_strx[VHT_OP_CH_WIDTH_MAX] : _vht_op_ch_width_strx[(ch_width)])
 
 void dump_vht_op_ie(void *sel, const u8 *ie, u32 ie_len);
 
@@ -160,14 +160,14 @@ u32	rtw_build_vht_op_mode_notify_ie(_adapter *padapter, u8 *pbuf, u8 bw);
 u32	rtw_build_vht_cap_ie(_adapter *padapter, u8 *pbuf);
 void	update_sta_vht_info_apmode(_adapter *padapter, void *psta);
 void	update_hw_vht_param(_adapter *padapter);
-void	VHT_caps_handler(_adapter *padapter, PNDIS_802_11_VARIABLE_IEs pIE);
+void	VHT_caps_handlerx(_adapter *padapter, PNDIS_802_11_VARIABLE_IEs pIE);
 #ifdef ROKU_PRIVATE
-void	VHT_caps_handler_infra_ap(_adapter *padapter, PNDIS_802_11_VARIABLE_IEs pIE);
+void	VHT_caps_handlerx_infra_ap(_adapter *padapter, PNDIS_802_11_VARIABLE_IEs pIE);
 #endif /* ROKU_PRIVATE */
 void	VHT_operation_handler(_adapter *padapter, PNDIS_802_11_VARIABLE_IEs pIE);
 void	rtw_process_vht_op_mode_notify(_adapter *padapter, u8 *pframe, void *sta);
 u32	rtw_restructure_vht_ie(_adapter *padapter, u8 *in_ie, u8 *out_ie, uint in_len, uint *pout_len);
-void	VHTOnAssocRsp(_adapter *padapter);
+void	VHTOnAssocRspxx(_adapter *padapter);
 u8	rtw_vht_mcsmap_to_nss(u8 *pvht_mcs_map);
 void rtw_vht_nss_to_mcsmap(u8 nss, u8 *target_mcs_map, u8 *cur_mcs_map);
 void rtw_vht_ies_attach(_adapter *padapter, WLAN_BSSID_EX *pcur_network);

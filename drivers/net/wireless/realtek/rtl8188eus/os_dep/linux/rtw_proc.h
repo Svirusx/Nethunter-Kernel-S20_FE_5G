@@ -39,21 +39,21 @@ struct rtw_proc_hdl {
 
 #ifdef CONFIG_PROC_DEBUG
 
-struct proc_dir_entry *get_rtw_drv_proc(void);
-int rtw_drv_proc_init(void);
-void rtw_drv_proc_deinit(void);
-struct proc_dir_entry *rtw_adapter_proc_init(struct net_device *dev);
-void rtw_adapter_proc_deinit(struct net_device *dev);
-void rtw_adapter_proc_replace(struct net_device *dev);
+struct proc_dir_entry *get_rtw_drv_procx(void);
+int rtw_drv_proc_initx(void);
+void rtw_drv_proc_deinitx(void);
+struct proc_dir_entry *rtw_adapter_proc_initx(struct net_device *dev);
+void rtw_adapter_proc_deinitx(struct net_device *dev);
+void rtw_adapter_proc_replacex(struct net_device *dev);
 
 #else /* !CONFIG_PROC_DEBUG */
 
-#define get_rtw_drv_proc() NULL
-#define rtw_drv_proc_init() 0
-#define rtw_drv_proc_deinit() do {} while (0)
-#define rtw_adapter_proc_init(dev) NULL
-#define rtw_adapter_proc_deinit(dev) do {} while (0)
-#define rtw_adapter_proc_replace(dev) do {} while (0)
+#define get_rtw_drv_procx() NULL
+#define rtw_drv_proc_initx() 0
+#define rtw_drv_proc_deinitx() do {} while (0)
+#define rtw_adapter_proc_initx(dev) NULL
+#define rtw_adapter_proc_deinitx(dev) do {} while (0)
+#define rtw_adapter_proc_replacex(dev) do {} while (0)
 
 #endif /* !CONFIG_PROC_DEBUG */
 

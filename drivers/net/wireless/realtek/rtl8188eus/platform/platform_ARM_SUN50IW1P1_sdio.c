@@ -27,11 +27,11 @@
 extern void sunxi_mmc_rescan_card(unsigned ids);
 extern void sunxi_wlan_set_power(int on);
 extern int sunxi_wlan_get_bus_index(void);
-extern int sunxi_wlan_get_oob_irq(void);
-extern int sunxi_wlan_get_oob_irq_flags(void);
+extern int sunxi_wlan_get_oob_irqx(void);
+extern int sunxi_wlan_get_oob_irqx_flags(void);
 #endif
 #ifdef CONFIG_GPIO_WAKEUP
-extern unsigned int oob_irq;
+extern unsigned int oob_irqx;
 #endif
 #endif /* CONFIG_MMC */
 
@@ -40,7 +40,7 @@ extern unsigned int oob_irq;
  *	0:	power on successfully
  *	others: power on failed
  */
-int platform_wifi_power_on(void)
+int platform_wifi_power_onx(void)
 {
 	int ret = 0;
 
@@ -60,7 +60,7 @@ int platform_wifi_power_on(void)
 
 #ifdef CONFIG_GPIO_WAKEUP
 #if defined(CONFIG_PLATFORM_ARM_SUN50IW1P1)
-		oob_irq = sunxi_wlan_get_oob_irq();
+		oob_irqx = sunxi_wlan_get_oob_irqx();
 #endif
 #endif /* CONFIG_GPIO_WAKEUP */
 	}
@@ -69,7 +69,7 @@ int platform_wifi_power_on(void)
 	return ret;
 }
 
-void platform_wifi_power_off(void)
+void platform_wifi_power_offx(void)
 {
 #ifdef CONFIG_MMC
 #if defined(CONFIG_PLATFORM_ARM_SUN50IW1P1)

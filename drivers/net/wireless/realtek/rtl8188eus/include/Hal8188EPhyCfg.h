@@ -81,7 +81,7 @@ int	PHY_BBConfig8188E(PADAPTER	Adapter);
 int	PHY_RFConfig8188E(PADAPTER	Adapter);
 
 /* RF config */
-int	rtl8188e_PHY_ConfigRFWithParaFile( PADAPTER Adapter, u8 *pFileName, enum rf_path eRFPath);
+int	rtl8188e_PHY_ConfigRFWithParaFilex( PADAPTER Adapter, u8 *pFileName, enum rf_path eRFPath);
 
 /*
  * RF Power setting
@@ -92,11 +92,11 @@ int	rtl8188e_PHY_ConfigRFWithParaFile( PADAPTER Adapter, u8 *pFileName, enum rf_
 /*
  * BB TX Power R/W
  *   */
-void	PHY_SetTxPowerLevel8188E(PADAPTER		Adapter,
+void	PHY_SetTxPowerxLevel8188E(PADAPTER		Adapter,
 					u8			channel);
 
 void
-PHY_SetTxPowerIndex_8188E(
+PHY_SetTxPowerxIndexx_8188E(
 		PADAPTER			Adapter,
 		u32					PowerIndex,
 		enum rf_path			RFPath,
@@ -171,7 +171,7 @@ PHY_EnableHostClkReq(
 );
 
 BOOLEAN
-SetAntennaConfig92C(
+SetAntennaxConfig92C(
 		PADAPTER	Adapter,
 		u8		DefaultAnt
 );

@@ -55,7 +55,7 @@ phdm_2ndtype_wt_ram_pwr(void *dm_void, u8	macid, boolean pwr_offset0_en,
 	reg_io_0x1e84 |= (pwr_offset1_en<<23) + ((pwr_offset1&0x7f)<<16);
 	reg_io_0x1e84 |= (macid&0x3f)<<24;
 	reg_io_0x1e84 |= BIT(30);
-	odm_set_bb_reg(dm, 0x1e84, 0xffffffff, reg_io_0x1e84);
+	odm_set_bb_regx(dm, 0x1e84, 0xffffffff, reg_io_0x1e84);
 };
 
 u8 phydm_pwr_lv_mapping_2ndtype(u8 tx_pwr_lv)
@@ -86,7 +86,7 @@ void phydm_pwr_lv_ctrl(void *dm_void, u8 macid, u8 tx_pwr_lv)
 	else
 		pwr_offset = PHYDM_BBRAM_OFFSET_ZERO;
 	phdm_2ndtype_wt_ram_pwr(dm, macid, false, true, 0, pwr_offset);
-	odm_set_mac_reg(dm, ODM_REG_RESP_TX_11AC, BIT(19) | BIT(18), 1);
+	odm_set_mac_regx(dm, ODM_REG_RESP_TX_11AC, BIT(19) | BIT(18), 1);
 }
 #endif
 
@@ -120,8 +120,8 @@ phydm_2ndtype_dtp_init(void *dm_void)
 	/*@ 2's com, for offset 3dB and 7dB, which 1 step will be 1dB*/
 	pwr_offset_minus3 = 0x0;
 	pwr_offset_minus7 = 0x0;
-	odm_set_bb_reg(dm, 0x1e70, 0x00ff0000, pwr_offset_minus3);
-	odm_set_bb_reg(dm, 0x1e70, 0xff000000, pwr_offset_minus7);
+	odm_set_bb_regx(dm, 0x1e70, 0x00ff0000, pwr_offset_minus3);
+	odm_set_bb_regx(dm, 0x1e70, 0xff000000, pwr_offset_minus7);
 	for (i = 0; i <= 63; i++)
 		phdm_2ndtype_wt_ram_pwr(dm, i, false, false, 0, 0);
 	#endif
@@ -223,7 +223,7 @@ u8 phydm_dtp_get_txagc(void *dm_void, enum rf_path path, u8 hw_rate)
 	u8 ret = 0xff;
 
 #if (RTL8192E_SUPPORT == 1)
-	ret = config_phydm_read_txagc_n(dm, path, hw_rate);
+	ret = config_phydm_read_txagc_nx(dm, path, hw_rate);
 #endif
 	return ret;
 }
@@ -355,7 +355,7 @@ void phydm_dynamic_response_power(void *dm_void)
 		  dm->dynamic_tx_high_power_lvl);
 	dm->last_dtp_lvl = dm->dynamic_tx_high_power_lvl;
 	rpwr = phydm_pwr_lv_mapping(dm->dynamic_tx_high_power_lvl);
-	odm_set_mac_reg(dm, ODM_REG_RESP_TX_11AC, BIT(20) | BIT(19) | BIT(18), rpwr);
+	odm_set_mac_regx(dm, ODM_REG_RESP_TX_11AC, BIT(20) | BIT(19) | BIT(18), rpwr);
 	PHYDM_DBG(dm, DBG_DYN_TXPWR, "RespPwr Set TxPwr: Lv (%d)\n",
 		  dm->dynamic_tx_high_power_lvl);
 }
@@ -539,10 +539,10 @@ void phydm_dynamic_tx_power_win(void *dm_void)
 		if (mgnt_info->RegRspPwr == 1) {
 			if (dm->rssi_min > 60) {
 				/*Resp TXAGC offset = -3dB*/
-				odm_set_mac_reg(dm, 0x6d8, 0x1C0000, 1);
+				odm_set_mac_regx(dm, 0x6d8, 0x1C0000, 1);
 			} else if (dm->rssi_min < 55) {
 				/*Resp TXAGC offset = 0dB*/
-				odm_set_mac_reg(dm, 0x6d8, 0x1C0000, 0);
+				odm_set_mac_regx(dm, 0x6d8, 0x1C0000, 0);
 			}
 		}
 	}

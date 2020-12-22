@@ -73,7 +73,7 @@ typedef struct _ADAPTER _adapter, ADAPTER, *PADAPTER;
 #include <rtw_cmd.h>
 #include <cmd_osdep.h>
 #include <rtw_security.h>
-#include <rtw_xmit.h>
+#include <rtw_xmitx.h>
 #include <xmit_osdep.h>
 #include <rtw_recv.h>
 #include <rtw_rm.h>
@@ -95,9 +95,9 @@ typedef struct _ADAPTER _adapter, ADAPTER, *PADAPTER;
 #include <rtw_mlme.h>
 #include <mlme_osdep.h>
 #include <rtw_io.h>
-#include <rtw_ioctl.h>
-#include <rtw_ioctl_set.h>
-#include <rtw_ioctl_query.h>
+#include <rtw_ioctlx.h>
+#include <rtw_ioctlx_set.h>
+#include <rtw_ioctlx_query.h>
 #include <osdep_intf.h>
 #include <rtw_eeprom.h>
 #include <sta_info.h>
@@ -330,8 +330,8 @@ struct registry_priv {
 	u8 enable80211d;
 #endif
 
-	u8 ifname[16];
-	u8 if2name[16];
+	u8 ifnamex[16];
+	u8 if2namex[16];
 
 	u8 notch_filter;
 
@@ -590,7 +590,7 @@ struct rx_logs {
 	u32 core_rx_post_decrypt_unknown;
 	u32 core_rx_post_decrypt_err;
 	u32 core_rx_post_defrag_err;
-	u32 core_rx_post_portctrl_err;
+	u32 core_rx_post_portctrlx_err;
 	u32 core_rx_post_indicate;
 	u32 core_rx_post_indicate_in_oder;
 	u32 core_rx_post_indicate_reoder;
@@ -949,8 +949,8 @@ struct rf_ctl_t {
 #define RTW_CAC_STOPPED 0
 #ifdef CONFIG_DFS_MASTER
 #define IS_CAC_STOPPED(rfctl) ((rfctl)->cac_end_time == RTW_CAC_STOPPED)
-#define IS_CH_WAITING(rfctl) (!IS_CAC_STOPPED(rfctl) && rtw_time_after((rfctl)->cac_end_time, rtw_get_current_time()))
-#define IS_UNDER_CAC(rfctl) (IS_CH_WAITING(rfctl) && rtw_time_after(rtw_get_current_time(), (rfctl)->cac_start_time))
+#define IS_CH_WAITING(rfctl) (!IS_CAC_STOPPED(rfctl) && rtw_time_afterx((rfctl)->cac_end_time, rtw_get_current_timex()))
+#define IS_UNDER_CAC(rfctl) (IS_CH_WAITING(rfctl) && rtw_time_afterx(rtw_get_current_timex(), (rfctl)->cac_start_time))
 #define IS_RADAR_DETECTED(rfctl) ((rfctl)->radar_detected)
 #else
 #define IS_CAC_STOPPED(rfctl) 1
@@ -1298,22 +1298,22 @@ struct dvobj_priv {
 
 static inline void dev_set_surprise_removed(struct dvobj_priv *dvobj)
 {
-	ATOMIC_SET(&dvobj->bSurpriseRemoved, _TRUE);
+	ATOMIC_SETx(&dvobj->bSurpriseRemoved, _TRUE);
 }
 static inline void dev_clr_surprise_removed(struct dvobj_priv *dvobj)
 {
-	ATOMIC_SET(&dvobj->bSurpriseRemoved, _FALSE);
+	ATOMIC_SETx(&dvobj->bSurpriseRemoved, _FALSE);
 }
 static inline void dev_set_drv_stopped(struct dvobj_priv *dvobj)
 {
-	ATOMIC_SET(&dvobj->bDriverStopped, _TRUE);
+	ATOMIC_SETx(&dvobj->bDriverStopped, _TRUE);
 }
 static inline void dev_clr_drv_stopped(struct dvobj_priv *dvobj)
 {
-	ATOMIC_SET(&dvobj->bDriverStopped, _FALSE);
+	ATOMIC_SETx(&dvobj->bDriverStopped, _FALSE);
 }
-#define dev_is_surprise_removed(dvobj)	(ATOMIC_READ(&dvobj->bSurpriseRemoved) == _TRUE)
-#define dev_is_drv_stopped(dvobj)		(ATOMIC_READ(&dvobj->bDriverStopped) == _TRUE)
+#define dev_is_surprise_removed(dvobj)	(ATOMIC_READx(&dvobj->bSurpriseRemoved) == _TRUE)
+#define dev_is_drv_stopped(dvobj)		(ATOMIC_READx(&dvobj->bDriverStopped) == _TRUE)
 
 #ifdef PLATFORM_LINUX
 static inline struct device *dvobj_to_dev(struct dvobj_priv *dvobj)
@@ -1337,9 +1337,9 @@ static inline struct device *dvobj_to_dev(struct dvobj_priv *dvobj)
 }
 #endif
 
-_adapter *dvobj_get_port0_adapter(struct dvobj_priv *dvobj);
-_adapter *dvobj_get_unregisterd_adapter(struct dvobj_priv *dvobj);
-_adapter *dvobj_get_adapter_by_addr(struct dvobj_priv *dvobj, u8 *addr);
+_adapter *dvobj_get_port0_adapterx(struct dvobj_priv *dvobj);
+_adapter *dvobj_get_unregisterd_adapterx(struct dvobj_priv *dvobj);
+_adapter *dvobj_get_adapter_by_addrx(struct dvobj_priv *dvobj, u8 *addr);
 #define dvobj_get_primary_adapter(dvobj)	((dvobj)->padapters[IFACE_ID0])
 
 enum _hw_port {
@@ -1513,12 +1513,12 @@ struct _ADAPTER {
 
 #ifdef PLATFORM_LINUX
 	_nic_hdl pnetdev;
-	char old_ifname[IFNAMSIZ];
+	char old_ifnamex[IFNAMSIZ];
 
 	/* used by rtw_rereg_nd_name related function */
 	struct rereg_nd_name_data {
 		_nic_hdl old_pnetdev;
-		char old_ifname[IFNAMSIZ];
+		char old_ifnamex[IFNAMSIZ];
 		u8 old_ips_mode;
 		u8 old_bRegUseLed;
 	} rereg_nd_name_priv;
@@ -1719,27 +1719,27 @@ static inline void rtw_clr_drv_stopped(_adapter *padapter)
 #define DF_RX_BIT		BIT1			/*read_port_cancel*/
 #define DF_IO_BIT		BIT2
 
-/* #define RTW_DISABLE_FUNC(padapter, func) (ATOMIC_ADD(&adapter_to_dvobj(padapter)->disable_func, (func))) */
-/* #define RTW_ENABLE_FUNC(padapter, func) (ATOMIC_SUB(&adapter_to_dvobj(padapter)->disable_func, (func))) */
+/* #define RTW_DISABLE_FUNC(padapter, func) (ATOMIC_ADDx(&adapter_to_dvobj(padapter)->disable_func, (func))) */
+/* #define RTW_ENABLE_FUNC(padapter, func) (ATOMIC_SUBx(&adapter_to_dvobj(padapter)->disable_func, (func))) */
 __inline static void RTW_DISABLE_FUNC(_adapter *padapter, int func_bit)
 {
-	int	df = ATOMIC_READ(&adapter_to_dvobj(padapter)->disable_func);
+	int	df = ATOMIC_READx(&adapter_to_dvobj(padapter)->disable_func);
 	df |= func_bit;
-	ATOMIC_SET(&adapter_to_dvobj(padapter)->disable_func, df);
+	ATOMIC_SETx(&adapter_to_dvobj(padapter)->disable_func, df);
 }
 
 __inline static void RTW_ENABLE_FUNC(_adapter *padapter, int func_bit)
 {
-	int	df = ATOMIC_READ(&adapter_to_dvobj(padapter)->disable_func);
+	int	df = ATOMIC_READx(&adapter_to_dvobj(padapter)->disable_func);
 	df &= ~(func_bit);
-	ATOMIC_SET(&adapter_to_dvobj(padapter)->disable_func, df);
+	ATOMIC_SETx(&adapter_to_dvobj(padapter)->disable_func, df);
 }
 
 #define RTW_CANNOT_RUN(padapter) \
 	(rtw_is_surprise_removed(padapter) || \
 	 rtw_is_drv_stopped(padapter))
 
-#define RTW_IS_FUNC_DISABLED(padapter, func_bit) (ATOMIC_READ(&adapter_to_dvobj(padapter)->disable_func) & (func_bit))
+#define RTW_IS_FUNC_DISABLED(padapter, func_bit) (ATOMIC_READx(&adapter_to_dvobj(padapter)->disable_func) & (func_bit))
 
 #define RTW_CANNOT_IO(padapter) \
 	(rtw_is_surprise_removed(padapter) || \
@@ -1762,10 +1762,10 @@ int rtw_dev_pno_set(struct net_device *net, pno_ssid_t *ssid, int num,
 #endif /* CONFIG_PNO_SET_DEBUG */
 #endif /* CONFIG_PNO_SUPPORT */
 
-int rtw_suspend_free_assoc_resource(_adapter *padapter);
+int rtw_suspend_free_assoc_resourcex(_adapter *padapter);
 #ifdef CONFIG_WOWLAN
 	int rtw_suspend_wow(_adapter *padapter);
-	int rtw_resume_process_wow(_adapter *padapter);
+	int rtw_resume_processx_wow(_adapter *padapter);
 #endif
 
 /* HCI Related header file */

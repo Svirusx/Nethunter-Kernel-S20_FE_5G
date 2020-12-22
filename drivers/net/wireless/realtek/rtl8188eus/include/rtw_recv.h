@@ -72,8 +72,8 @@
 
 #define MAX_SUBFRAME_COUNT	64
 /* Bridge-Tunnel header (for EtherTypes ETH_P_AARP and ETH_P_IPX) */
-extern u8 rtw_bridge_tunnel_header[];
-extern u8 rtw_rfc1042_header[];
+extern u8 rtw_bridge_tunnel_headerx[];
+extern u8 rtw_rfc1042_headerx[];
 
 /* for Rx reordering buffer control */
 struct recv_reorder_ctrl {
@@ -296,7 +296,7 @@ struct rtw_rx_ring {
 
 
 /*
-accesser of recv_priv: rtw_recv_entry(dispatch / passive level); recv_thread(passive) ; returnpkt(dispatch)
+accesser of recv_priv: rtw_recv_entryx(dispatch / passive level); recv_thread(passive) ; returnpkt(dispatch)
 ; halt(passive) ;
 
 using enter_critical section to protect
@@ -581,7 +581,7 @@ union recv_frame {
 
 };
 
-bool rtw_rframe_del_wfd_ie(union recv_frame *rframe, u8 ies_offset);
+bool rtw_rframe_del_wfd_iex(union recv_frame *rframe, u8 ies_offset);
 
 typedef enum _RX_PACKET_TYPE {
 	NORMAL_RX,/* Normal rx packet */
@@ -591,29 +591,29 @@ typedef enum _RX_PACKET_TYPE {
 	C2H_PACKET
 } RX_PACKET_TYPE, *PRX_PACKET_TYPE;
 
-extern union recv_frame *_rtw_alloc_recvframe(_queue *pfree_recv_queue);   /* get a free recv_frame from pfree_recv_queue */
-extern union recv_frame *rtw_alloc_recvframe(_queue *pfree_recv_queue);   /* get a free recv_frame from pfree_recv_queue */
-extern void rtw_init_recvframe(union recv_frame *precvframe , struct recv_priv *precvpriv);
-extern int	 rtw_free_recvframe(union recv_frame *precvframe, _queue *pfree_recv_queue);
+extern union recv_frame *_rtw_alloc_recvframex(_queue *pfree_recv_queue);   /* get a free recv_frame from pfree_recv_queue */
+extern union recv_frame *rtw_alloc_recvframex(_queue *pfree_recv_queue);   /* get a free recv_frame from pfree_recv_queue */
+extern void rtw_init_recvframex(union recv_frame *precvframe , struct recv_priv *precvpriv);
+extern int	 rtw_free_recvframex(union recv_frame *precvframe, _queue *pfree_recv_queue);
 
-#define rtw_dequeue_recvframe(queue) rtw_alloc_recvframe(queue)
-extern int _rtw_enqueue_recvframe(union recv_frame *precvframe, _queue *queue);
-extern int rtw_enqueue_recvframe(union recv_frame *precvframe, _queue *queue);
+#define rtw_dequeue_recvframe(queue) rtw_alloc_recvframex(queue)
+extern int _rtw_enqueue_recvframex(union recv_frame *precvframe, _queue *queue);
+extern int rtw_enqueue_recvframex(union recv_frame *precvframe, _queue *queue);
 
-extern void rtw_free_recvframe_queue(_queue *pframequeue,  _queue *pfree_recv_queue);
-u32 rtw_free_uc_swdec_pending_queue(_adapter *adapter);
+extern void rtw_free_recvframex_queue(_queue *pframequeue,  _queue *pfree_recv_queue);
+u32 rtw_free_uc_swdec_pending_queuex(_adapter *adapter);
 
-sint rtw_enqueue_recvbuf_to_head(struct recv_buf *precvbuf, _queue *queue);
-sint rtw_enqueue_recvbuf(struct recv_buf *precvbuf, _queue *queue);
-struct recv_buf *rtw_dequeue_recvbuf(_queue *queue);
+sint rtw_enqueue_recvbufx_to_head(struct recv_buf *precvbuf, _queue *queue);
+sint rtw_enqueue_recvbufx(struct recv_buf *precvbuf, _queue *queue);
+struct recv_buf *rtw_dequeue_recvbufx(_queue *queue);
 
 #if defined(CONFIG_80211N_HT) && defined(CONFIG_RECV_REORDERING_CTRL)
-void rtw_reordering_ctrl_timeout_handler(void *pcontext);
+void rtw_reordering_ctrl_timeout_handlerx(void *pcontext);
 #endif
 
-void rx_query_phy_status(union recv_frame *rframe, u8 *phy_stat);
-int rtw_inc_and_chk_continual_no_rx_packet(struct sta_info *sta, int tid_index);
-void rtw_reset_continual_no_rx_packet(struct sta_info *sta, int tid_index);
+void rx_query_phy_statusx(union recv_frame *rframe, u8 *phy_stat);
+int rtw_inc_and_chk_continual_no_rx_packetx(struct sta_info *sta, int tid_index);
+void rtw_reset_continual_no_rx_packetx(struct sta_info *sta, int tid_index);
 
 #ifdef CONFIG_RECV_THREAD_MODE
 thread_return rtw_recv_thread(thread_context context);
@@ -808,12 +808,12 @@ __inline static s32 translate_percentage_to_dbm(u32 SignalStrengthIndex)
 
 struct sta_info;
 
-extern void _rtw_init_sta_recv_priv(struct sta_recv_priv *psta_recvpriv);
+extern void _rtw_init_sta_recv_privx(struct sta_recv_priv *psta_recvpriv);
 
-extern void  mgt_dispatcher(_adapter *padapter, union recv_frame *precv_frame);
+extern void  mgt_dispatcherx(_adapter *padapter, union recv_frame *precv_frame);
 
-u8 adapter_allow_bmc_data_rx(_adapter *adapter);
-s32 pre_recv_entry(union recv_frame *precvframe, u8 *pphy_status);
-void count_rx_stats(_adapter *padapter, union recv_frame *prframe, struct sta_info *sta);
+u8 adapter_allow_bmc_data_rxx(_adapter *adapter);
+s32 pre_recv_entryx(union recv_frame *precvframe, u8 *pphy_status);
+void count_rx_statsx(_adapter *padapter, union recv_frame *prframe, struct sta_info *sta);
 
 #endif

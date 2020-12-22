@@ -480,7 +480,7 @@ u8 WapiCheckPnInSwDecrypt(
 	else
 		pDaddr = header->addr1;
 
-	if ((_rtw_memcmp(pRaddr, padapter->pnetdev->dev_addr, ETH_ALEN) == 0)
+	if ((_rtw_memcmpx(pRaddr, padapter->pnetdev->dev_addr, ETH_ALEN) == 0)
 	    &&	!(pDaddr)
 	    && (GetFrameType(&fc) == WIFI_QOS_DATA_TYPE))
 		/* && ieee->pHTInfo->bCurrentHTSupport && */
@@ -771,7 +771,7 @@ u8 SecSWSMS4Decryption(
 			} else
 				memcpy(precv_hdr->WapiTempPN, pRecvPN, 16);
 
-			if (check_fwstate(&padapter->mlmepriv, WIFI_STATION_STATE)) {
+			if (check_fwstatex(&padapter->mlmepriv, WIFI_STATION_STATE)) {
 				if ((pRecvPN[0] & 0x1) == 0) {
 					WAPI_TRACE(WAPI_ERR, "%s: Rx USK PN is not odd when Infra STA mode, Dropped !!!\n", __FUNCTION__);
 					return false;

@@ -207,7 +207,7 @@ void rtw_wapi_return_one_sta_info(_adapter *padapter, u8 *MacAddr);
 
 void rtw_wapi_return_all_sta_info(_adapter *padapter);
 
-void rtw_wapi_clear_cam_entry(_adapter *padapter, u8 *pMacAddr);
+void rtw_wapi_clear_cam_entryx(_adapter *padapter, u8 *pMacAddr);
 
 void rtw_wapi_clear_all_cam_entry(_adapter *padapter);
 

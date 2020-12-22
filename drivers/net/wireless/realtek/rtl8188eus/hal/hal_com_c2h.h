@@ -86,9 +86,9 @@ typedef enum _EXTEND_C2H_EVT {
 
 /* C2H_IQK_FINISH, 0x11 */
 #define IQK_OFFLOAD_LEN 1
-void c2h_iqk_offload(_adapter *adapter, u8 *data, u8 len);
-int	c2h_iqk_offload_wait(_adapter *adapter, u32 timeout_ms);
-#define rtl8812_iqk_wait c2h_iqk_offload_wait /* TODO: remove this after phydm call c2h_iqk_offload_wait instead */
+void c2h_iqk_offloadx(_adapter *adapter, u8 *data, u8 len);
+int	c2h_iqk_offloadx_wait(_adapter *adapter, u32 timeout_ms);
+#define rtl8812_iqk_wait c2h_iqk_offloadx_wait /* TODO: remove this after phydm call c2h_iqk_offloadx_wait instead */
 
 #ifdef CONFIG_RTW_MAC_HIDDEN_RPT
 /* C2H_MAC_HIDDEN_RPT, 0x19 */
@@ -105,7 +105,7 @@ int hal_read_mac_hidden_rpt(_adapter *adapter);
 
 /* C2H_DEFEATURE_DBG, 0x22 */
 #define DEFEATURE_DBG_LEN 1
-int c2h_defeature_dbg_hdl(_adapter *adapter, u8 *data, u8 len);
+int c2h_defeature_dbg_hdlx(_adapter *adapter, u8 *data, u8 len);
 
 #ifdef CONFIG_RTW_CUSTOMER_STR
 /* C2H_CUSTOMER_STR_RPT, 0x24 */
