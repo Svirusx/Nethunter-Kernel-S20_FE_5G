@@ -111,13 +111,13 @@ PHY_RFConfig8814A(
 /* 1 5. Tx  Power setting API */
 
 void
-PHY_SetTxPowerLevel8814(
+PHY_SetTxPowerxLevel8814(
 		PADAPTER		Adapter,
 		u8			Channel
 );
 
 u8
-phy_get_tx_power_index_8814a(
+phy_get_tx_power_indexx_8814a(
 		PADAPTER		Adapter,
 		enum rf_path		RFPath,
 		u8				Rate,
@@ -136,7 +136,7 @@ PHY_GetTxPowerIndex8814A(
 );
 
 void
-PHY_SetTxPowerIndex_8814A(
+PHY_SetTxPowerxIndexx_8814A(
 		PADAPTER		Adapter,
 		u32				PowerIndex,
 		enum rf_path		RFPath,
@@ -205,7 +205,7 @@ RtCheckForHangWorkItemCallback8814A(
 #endif
 
 BOOLEAN
-SetAntennaConfig8814A(
+SetAntennaxConfig8814A(
 		PADAPTER	Adapter,
 		u8		DefaultAnt
 );

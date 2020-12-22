@@ -502,7 +502,7 @@ static void __nat25_db_network_insert(_adapter *priv,
 		db = db->next_hash;
 	}
 
-	db = (struct nat25_network_db_entry *) rtw_malloc(sizeof(*db));
+	db = (struct nat25_network_db_entry *) rtw_mallocx(sizeof(*db));
 	if (db == NULL) {
 		_exit_critical_bh(&priv->br_ext_lock, &irqL);
 		return;
@@ -606,7 +606,7 @@ static void __nat25_db_print(_adapter *priv)
  *	NAT2.5 interface
  */
 
-void nat25_db_cleanup(_adapter *priv)
+void nat25_db_cleanupx(_adapter *priv)
 {
 	int i;
 	_irqL irqL;
@@ -625,7 +625,7 @@ void nat25_db_cleanup(_adapter *priv)
 				priv->scdb_entry = NULL;
 			}
 			__network_hash_unlink(f);
-			rtw_mfree((u8 *) f, sizeof(struct nat25_network_db_entry));
+			rtw_mfreex((u8 *) f, sizeof(struct nat25_network_db_entry));
 
 			f = g;
 		}
@@ -635,7 +635,7 @@ void nat25_db_cleanup(_adapter *priv)
 }
 
 
-void nat25_db_expire(_adapter *priv)
+void nat25_db_expirex(_adapter *priv)
 {
 	int i;
 	_irqL irqL;
@@ -710,7 +710,7 @@ void nat25_db_expire(_adapter *priv)
 							priv->scdb_entry = NULL;
 						}
 						__network_hash_unlink(f);
-						rtw_mfree((u8 *) f, sizeof(struct nat25_network_db_entry));
+						rtw_mfreex((u8 *) f, sizeof(struct nat25_network_db_entry));
 					}
 				}
 
@@ -751,7 +751,7 @@ static int checkIPMcAndReplace(_adapter *priv, struct sk_buff *skb, unsigned int
 }
 #endif
 
-int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
+int nat25_db_handlex(_adapter *priv, struct sk_buff *skb, int method)
 {
 	unsigned short protocol;
 	unsigned char networkAddr[MAX_NETWORK_ADDR_LEN];
@@ -814,9 +814,9 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 						/* forward unknow IP packet to upper TCP/IP */
 						RTW_INFO("NAT25: Replace DA with BR's MAC\n");
 						if ((*(u32 *)priv->br_mac) == 0 && (*(u16 *)(priv->br_mac + 4)) == 0) {
-							void netdev_br_init(struct net_device *netdev);
-							printk("Re-init netdev_br_init() due to br_mac==0!\n");
-							netdev_br_init(priv->pnetdev);
+							void netdev_br_initx(struct net_device *netdev);
+							printk("Re-init netdev_br_initx() due to br_mac==0!\n");
+							netdev_br_initx(priv->pnetdev);
 						}
 						memcpy(skb->data, priv->br_mac, ETH_ALEN);
 					}
@@ -1381,7 +1381,7 @@ int nat25_db_handle(_adapter *priv, struct sk_buff *skb, int method)
 }
 
 
-int nat25_handle_frame(_adapter *priv, struct sk_buff *skb)
+int nat25_handle_framex(_adapter *priv, struct sk_buff *skb)
 {
 #ifdef BR_EXT_DEBUG
 	if ((!priv->ethBrExtInfo.nat25_disable) && (!(skb->data[0] & 1))) {
@@ -1430,7 +1430,7 @@ int nat25_handle_frame(_adapter *priv, struct sk_buff *skb)
 			} else {
 				_exit_critical_bh(&priv->br_ext_lock, &irqL);
 
-				retval = nat25_db_handle(priv, skb, NAT25_LOOKUP);
+				retval = nat25_db_handlex(priv, skb, NAT25_LOOKUP);
 			}
 		} else {
 			if (((*((unsigned short *)(skb->data + ETH_ALEN * 2)) == __constant_htons(ETH_P_IP)) &&
@@ -1438,7 +1438,7 @@ int nat25_handle_frame(_adapter *priv, struct sk_buff *skb)
 			    ((*((unsigned short *)(skb->data + ETH_ALEN * 2)) == __constant_htons(ETH_P_ARP)) &&
 			     !memcmp(priv->br_ip, skb->data + ETH_HLEN + 24, 4))) {
 				/* for traffic to upper TCP/IP */
-				retval = nat25_db_handle(priv, skb, NAT25_LOOKUP);
+				retval = nat25_db_handlex(priv, skb, NAT25_LOOKUP);
 			}
 		}
 
@@ -1512,7 +1512,7 @@ struct dhcpMessage {
 	u_int8_t options[308]; /* 312 - cookie */
 };
 
-void dhcp_flag_bcast(_adapter *priv, struct sk_buff *skb)
+void dhcp_flag_bcastx(_adapter *priv, struct sk_buff *skb)
 {
 	if (skb == NULL)
 		return;
@@ -1553,7 +1553,7 @@ void dhcp_flag_bcast(_adapter *priv, struct sk_buff *skb)
 }
 
 
-void *scdb_findEntry(_adapter *priv, unsigned char *macAddr,
+void *scdb_findEntryx(_adapter *priv, unsigned char *macAddr,
 		     unsigned char *ipAddr)
 {
 	unsigned char networkAddr[MAX_NETWORK_ADDR_LEN];

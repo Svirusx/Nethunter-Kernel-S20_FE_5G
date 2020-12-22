@@ -5,9 +5,9 @@ _PHYDM_FILES := hal/phydm/phydm_debug.o	\
 								hal/phydm/phydm_phystatus.o\
 								hal/phydm/phydm_hwconfig.o\
 								hal/phydm/phydm.o\
-								hal/phydm/phydm_dig.o\
+								hal/phydm/phydm_digx.o\
 								hal/phydm/phydm_rainfo.o\
-								hal/phydm/phydm_adaptivity.o\
+								hal/phydm/phydm_adaptivityx.o\
 								hal/phydm/phydm_cfotracking.o\
 								hal/phydm/phydm_noisemonitor.o\
 								hal/phydm/phydm_beamforming.o\

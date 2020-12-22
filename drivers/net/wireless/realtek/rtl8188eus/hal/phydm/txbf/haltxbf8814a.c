@@ -34,17 +34,17 @@ phydm_beamforming_set_iqgen_8814A(void *dm_void)
 	u32 rf_mode[4];
 
 	for (i = RF_PATH_A; i < MAX_RF_PATH; i++)
-		odm_set_rf_reg(dm, i, RF_WE_LUT, 0x80000, 0x1); /*RF mode table write enable*/
+		odm_set_rf_regx(dm, i, RF_WE_LUT, 0x80000, 0x1); /*RF mode table write enable*/
 
 	while (1) {
 		counter++;
 		for (i = RF_PATH_A; i < MAX_RF_PATH; i++)
-			odm_set_rf_reg(dm, i, RF_RCK_OS, 0xfffff, 0x18000); /*Select Rx mode*/
+			odm_set_rf_regx(dm, i, RF_RCK_OS, 0xfffff, 0x18000); /*Select Rx mode*/
 
-		ODM_delay_us(2);
+		ODM_delay_usx(2);
 
 		for (i = RF_PATH_A; i < MAX_RF_PATH; i++)
-			rf_mode[i] = odm_get_rf_reg(dm, i, RF_RCK_OS, 0xfffff);
+			rf_mode[i] = odm_get_rf_regx(dm, i, RF_RCK_OS, 0xfffff);
 
 		if (rf_mode[0] == 0x18000 && rf_mode[1] == 0x18000 && rf_mode[2] == 0x18000 && rf_mode[3] == 0x18000)
 			break;
@@ -55,13 +55,13 @@ phydm_beamforming_set_iqgen_8814A(void *dm_void)
 	}
 
 	for (i = RF_PATH_A; i < MAX_RF_PATH; i++) {
-		odm_set_rf_reg(dm, i, RF_TXPA_G1, 0xfffff, 0xBE77F); /*Set Table data*/
-		odm_set_rf_reg(dm, i, RF_TXPA_G2, 0xfffff, 0x226BF); /*@Enable TXIQGEN in Rx mode*/
+		odm_set_rf_regx(dm, i, RF_TXPA_G1, 0xfffff, 0xBE77F); /*Set Table data*/
+		odm_set_rf_regx(dm, i, RF_TXPA_G2, 0xfffff, 0x226BF); /*@Enable TXIQGEN in Rx mode*/
 	}
-	odm_set_rf_reg(dm, RF_PATH_A, RF_TXPA_G2, 0xfffff, 0xE26BF); /*@Enable TXIQGEN in Rx mode*/
+	odm_set_rf_regx(dm, RF_PATH_A, RF_TXPA_G2, 0xfffff, 0xE26BF); /*@Enable TXIQGEN in Rx mode*/
 
 	for (i = RF_PATH_A; i < MAX_RF_PATH; i++)
-		odm_set_rf_reg(dm, i, RF_WE_LUT, 0x80000, 0x0); /*RF mode table write disable*/
+		odm_set_rf_regx(dm, i, RF_WE_LUT, 0x80000, 0x0); /*RF mode table write disable*/
 
 	return true;
 }
@@ -70,8 +70,8 @@ void hal_txbf_8814a_set_ndpa_rate(void *dm_void, u8 BW, u8 rate)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
-	odm_write_1byte(dm, REG_NDPA_OPT_CTRL_8814A, BW);
-	odm_write_1byte(dm, REG_NDPA_RATE_8814A, (u8)rate);
+	odm_write_1bytex(dm, REG_NDPA_OPT_CTRL_8814A, BW);
+	odm_write_1bytex(dm, REG_NDPA_RATE_8814A, (u8)rate);
 }
 #if 0
 #define PHYDM_MEMORY_MAP_BUF_READ 0x8000
@@ -88,7 +88,7 @@ phydm_data_rate_8814a(
 	u8	i = 0;
 	u16	x_read_data_addr = 0;
 
-	odm_write_2byte(dm, REG_PKTBUF_DBG_CTRL_8814A, PHYDM_CTRL_INFO_PAGE);
+	odm_write_2bytex(dm, REG_PKTBUF_DBG_CTRL_8814A, PHYDM_CTRL_INFO_PAGE);
 	x_read_data_addr = PHYDM_MEMORY_MAP_BUF_READ + mac_id * 32; /*@Ctrl Info: 32Bytes for each macid(n)*/
 
 	if (x_read_data_addr < PHYDM_MEMORY_MAP_BUF_READ || x_read_data_addr > 0x8FFF) {
@@ -100,7 +100,7 @@ phydm_data_rate_8814a(
 
 	/* Read data */
 	for (i = 0; i < data_len; i++)
-		*(data + i) = odm_read_2byte(dm, x_read_data_addr + i);
+		*(data + i) = odm_read_2bytex(dm, x_read_data_addr + i);
 }
 #endif
 
@@ -157,14 +157,14 @@ void hal_txbf_8814a_reset_tx_path(void *dm_void, u8 idx)
 			tx_ss = 0x6;
 
 		if (tx_ss == 0xf) {
-			odm_set_bb_reg(dm, REG_BB_TX_PATH_SEL_1_8814A, MASKBYTE3 | MASKBYTE2HIGHNIBBLE, 0x93f);
-			odm_set_bb_reg(dm, REG_BB_TX_PATH_SEL_1_8814A, MASKDWORD, 0x93f93f0);
+			odm_set_bb_regx(dm, REG_BB_TX_PATH_SEL_1_8814A, MASKBYTE3 | MASKBYTE2HIGHNIBBLE, 0x93f);
+			odm_set_bb_regx(dm, REG_BB_TX_PATH_SEL_1_8814A, MASKDWORD, 0x93f93f0);
 		} else if (tx_ss == 0xe) {
-			odm_set_bb_reg(dm, REG_BB_TX_PATH_SEL_1_8814A, MASKBYTE3 | MASKBYTE2HIGHNIBBLE, 0x93e);
-			odm_set_bb_reg(dm, REG_BB_TX_PATH_SEL_2_8814A, MASKDWORD, 0x93e93e0);
+			odm_set_bb_regx(dm, REG_BB_TX_PATH_SEL_1_8814A, MASKBYTE3 | MASKBYTE2HIGHNIBBLE, 0x93e);
+			odm_set_bb_regx(dm, REG_BB_TX_PATH_SEL_2_8814A, MASKDWORD, 0x93e93e0);
 		} else if (tx_ss == 0x6) {
-			odm_set_bb_reg(dm, REG_BB_TX_PATH_SEL_1_8814A, MASKBYTE3 | MASKBYTE2HIGHNIBBLE, 0x936);
-			odm_set_bb_reg(dm, REG_BB_TX_PATH_SEL_2_8814A, MASKLWORD, 0x9360);
+			odm_set_bb_regx(dm, REG_BB_TX_PATH_SEL_1_8814A, MASKBYTE3 | MASKBYTE2HIGHNIBBLE, 0x936);
+			odm_set_bb_regx(dm, REG_BB_TX_PATH_SEL_2_8814A, MASKLWORD, 0x9360);
 		}
 
 		if (idx == 0) {
@@ -173,15 +173,15 @@ void hal_txbf_8814a_reset_tx_path(void *dm_void, u8 idx)
 				break;
 
 			case 1: /*Nsts = 2	BC*/
-				odm_set_bb_reg(dm, REG_BB_TXBF_ANT_SET_BF0_8814A, MASKBYTE3LOWNIBBLE | MASKL3BYTES, 0x9366); /*tx2path, BC*/
+				odm_set_bb_regx(dm, REG_BB_TXBF_ANT_SET_BF0_8814A, MASKBYTE3LOWNIBBLE | MASKL3BYTES, 0x9366); /*tx2path, BC*/
 				break;
 
 			case 2: /*Nsts = 3	BCD*/
-				odm_set_bb_reg(dm, REG_BB_TXBF_ANT_SET_BF0_8814A, MASKBYTE3LOWNIBBLE | MASKL3BYTES, 0x93e93ee); /*tx3path, BCD*/
+				odm_set_bb_regx(dm, REG_BB_TXBF_ANT_SET_BF0_8814A, MASKBYTE3LOWNIBBLE | MASKL3BYTES, 0x93e93ee); /*tx3path, BCD*/
 				break;
 
 			default: /*nr>3, same as Case 3*/
-				odm_set_bb_reg(dm, REG_BB_TXBF_ANT_SET_BF0_8814A, MASKBYTE3LOWNIBBLE | MASKL3BYTES, 0x93f93ff); /*tx4path, ABCD*/
+				odm_set_bb_regx(dm, REG_BB_TXBF_ANT_SET_BF0_8814A, MASKBYTE3LOWNIBBLE | MASKL3BYTES, 0x93f93ff); /*tx4path, ABCD*/
 				break;
 			}
 		} else {
@@ -190,15 +190,15 @@ void hal_txbf_8814a_reset_tx_path(void *dm_void, u8 idx)
 				break;
 
 			case 1: /*Nsts = 2	BC*/
-				odm_set_bb_reg(dm, REG_BB_TXBF_ANT_SET_BF1_8814A, MASKBYTE3LOWNIBBLE | MASKL3BYTES, 0x9366); /*tx2path, BC*/
+				odm_set_bb_regx(dm, REG_BB_TXBF_ANT_SET_BF1_8814A, MASKBYTE3LOWNIBBLE | MASKL3BYTES, 0x9366); /*tx2path, BC*/
 				break;
 
 			case 2: /*Nsts = 3	BCD*/
-				odm_set_bb_reg(dm, REG_BB_TXBF_ANT_SET_BF1_8814A, MASKBYTE3LOWNIBBLE | MASKL3BYTES, 0x93e93ee); /*tx3path, BCD*/
+				odm_set_bb_regx(dm, REG_BB_TXBF_ANT_SET_BF1_8814A, MASKBYTE3LOWNIBBLE | MASKL3BYTES, 0x93e93ee); /*tx3path, BCD*/
 				break;
 
 			default: /*nr>3, same as Case 3*/
-				odm_set_bb_reg(dm, REG_BB_TXBF_ANT_SET_BF1_8814A, MASKBYTE3LOWNIBBLE | MASKL3BYTES, 0x93f93ff); /*tx4path, ABCD*/
+				odm_set_bb_regx(dm, REG_BB_TXBF_ANT_SET_BF1_8814A, MASKBYTE3LOWNIBBLE | MASKL3BYTES, 0x93f93ff); /*tx4path, ABCD*/
 				break;
 			}
 		}
@@ -296,19 +296,19 @@ void hal_txbf_8814a_rf_mode(void *dm_void,
 			tx_ss = 0x6;
 
 		if (tx_ss == 0xf) {
-			odm_set_bb_reg(dm, REG_BB_TX_PATH_SEL_1_8814A, MASKBYTE3 | MASKBYTE2HIGHNIBBLE, 0x93f);
-			odm_set_bb_reg(dm, REG_BB_TX_PATH_SEL_1_8814A, MASKDWORD, 0x93f93f0);
+			odm_set_bb_regx(dm, REG_BB_TX_PATH_SEL_1_8814A, MASKBYTE3 | MASKBYTE2HIGHNIBBLE, 0x93f);
+			odm_set_bb_regx(dm, REG_BB_TX_PATH_SEL_1_8814A, MASKDWORD, 0x93f93f0);
 		} else if (tx_ss == 0xe) {
-			odm_set_bb_reg(dm, REG_BB_TX_PATH_SEL_1_8814A, MASKBYTE3 | MASKBYTE2HIGHNIBBLE, 0x93e);
-			odm_set_bb_reg(dm, REG_BB_TX_PATH_SEL_2_8814A, MASKDWORD, 0x93e93e0);
+			odm_set_bb_regx(dm, REG_BB_TX_PATH_SEL_1_8814A, MASKBYTE3 | MASKBYTE2HIGHNIBBLE, 0x93e);
+			odm_set_bb_regx(dm, REG_BB_TX_PATH_SEL_2_8814A, MASKDWORD, 0x93e93e0);
 		} else if (tx_ss == 0x6) {
-			odm_set_bb_reg(dm, REG_BB_TX_PATH_SEL_1_8814A, MASKBYTE3 | MASKBYTE2HIGHNIBBLE, 0x936);
-			odm_set_bb_reg(dm, REG_BB_TX_PATH_SEL_2_8814A, MASKLWORD, 0x9360);
+			odm_set_bb_regx(dm, REG_BB_TX_PATH_SEL_1_8814A, MASKBYTE3 | MASKBYTE2HIGHNIBBLE, 0x936);
+			odm_set_bb_regx(dm, REG_BB_TX_PATH_SEL_2_8814A, MASKLWORD, 0x9360);
 		}
 
 		/*@for 8814 19ac(idx 1), 19b4(idx 0), different Tx ant setting*/
-		odm_set_bb_reg(dm, REG_BB_TXBF_ANT_SET_BF1_8814A, BIT(28) | BIT29, 0x2); /*@enable BB TxBF ant mapping register*/
-		odm_set_bb_reg(dm, REG_BB_TXBF_ANT_SET_BF1_8814A, BIT30, 0x1); /*@if Nsts > Nc don't apply V matrix*/
+		odm_set_bb_regx(dm, REG_BB_TXBF_ANT_SET_BF1_8814A, BIT(28) | BIT29, 0x2); /*@enable BB TxBF ant mapping register*/
+		odm_set_bb_regx(dm, REG_BB_TXBF_ANT_SET_BF1_8814A, BIT30, 0x1); /*@if Nsts > Nc don't apply V matrix*/
 
 		if (idx == 0) {
 			switch (nr_index) {
@@ -316,15 +316,15 @@ void hal_txbf_8814a_rf_mode(void *dm_void,
 				break;
 
 			case 1: /*Nsts = 2	BC*/
-				odm_set_bb_reg(dm, REG_BB_TXBF_ANT_SET_BF0_8814A, MASKBYTE3LOWNIBBLE | MASKL3BYTES, 0x9366); /*tx2path, BC*/
+				odm_set_bb_regx(dm, REG_BB_TXBF_ANT_SET_BF0_8814A, MASKBYTE3LOWNIBBLE | MASKL3BYTES, 0x9366); /*tx2path, BC*/
 				break;
 
 			case 2: /*Nsts = 3	BCD*/
-				odm_set_bb_reg(dm, REG_BB_TXBF_ANT_SET_BF0_8814A, MASKBYTE3LOWNIBBLE | MASKL3BYTES, 0x93e93ee); /*tx3path, BCD*/
+				odm_set_bb_regx(dm, REG_BB_TXBF_ANT_SET_BF0_8814A, MASKBYTE3LOWNIBBLE | MASKL3BYTES, 0x93e93ee); /*tx3path, BCD*/
 				break;
 
 			default: /*nr>3, same as Case 3*/
-				odm_set_bb_reg(dm, REG_BB_TXBF_ANT_SET_BF0_8814A, MASKBYTE3LOWNIBBLE | MASKL3BYTES, 0x93f93ff); /*tx4path, ABCD*/
+				odm_set_bb_regx(dm, REG_BB_TXBF_ANT_SET_BF0_8814A, MASKBYTE3LOWNIBBLE | MASKL3BYTES, 0x93f93ff); /*tx4path, ABCD*/
 
 				break;
 			}
@@ -334,23 +334,23 @@ void hal_txbf_8814a_rf_mode(void *dm_void,
 				break;
 
 			case 1: /*Nsts = 2	BC*/
-				odm_set_bb_reg(dm, REG_BB_TXBF_ANT_SET_BF1_8814A, MASKBYTE3LOWNIBBLE | MASKL3BYTES, 0x9366); /*tx2path, BC*/
+				odm_set_bb_regx(dm, REG_BB_TXBF_ANT_SET_BF1_8814A, MASKBYTE3LOWNIBBLE | MASKL3BYTES, 0x9366); /*tx2path, BC*/
 				break;
 
 			case 2: /*Nsts = 3	BCD*/
-				odm_set_bb_reg(dm, REG_BB_TXBF_ANT_SET_BF1_8814A, MASKBYTE3LOWNIBBLE | MASKL3BYTES, 0x93e93ee); /*tx3path, BCD*/
+				odm_set_bb_regx(dm, REG_BB_TXBF_ANT_SET_BF1_8814A, MASKBYTE3LOWNIBBLE | MASKL3BYTES, 0x93e93ee); /*tx3path, BCD*/
 				break;
 
 			default: /*nr>3, same as Case 3*/
-				odm_set_bb_reg(dm, REG_BB_TXBF_ANT_SET_BF1_8814A, MASKBYTE3LOWNIBBLE | MASKL3BYTES, 0x93f93ff); /*tx4path, ABCD*/
+				odm_set_bb_regx(dm, REG_BB_TXBF_ANT_SET_BF1_8814A, MASKBYTE3LOWNIBBLE | MASKL3BYTES, 0x93f93ff); /*tx4path, ABCD*/
 				break;
 			}
 		}
 	}
 
 	if (beamforming_info->beamformee_su_cnt == 0 && beamforming_info->beamformer_su_cnt == 0) {
-		odm_set_bb_reg(dm, REG_BB_TX_PATH_SEL_1_8814A, MASKBYTE3 | MASKBYTE2HIGHNIBBLE, 0x932); /*set tx_path selection for 8814a BFer bug refine*/
-		odm_set_bb_reg(dm, REG_BB_TX_PATH_SEL_2_8814A, MASKDWORD, 0x93e9360);
+		odm_set_bb_regx(dm, REG_BB_TX_PATH_SEL_1_8814A, MASKBYTE3 | MASKBYTE2HIGHNIBBLE, 0x932); /*set tx_path selection for 8814a BFer bug refine*/
+		odm_set_bb_regx(dm, REG_BB_TX_PATH_SEL_2_8814A, MASKDWORD, 0x93e9360);
 	}
 }
 #if 0
@@ -364,7 +364,7 @@ hal_txbf_8814a_download_ndpa(
 	u8			u1b_tmp = 0, tmp_reg422 = 0;
 	u8			bcn_valid_reg = 0, count = 0, dl_bcn_count = 0;
 	u16			head_page = 0x7FE;
-	boolean			is_send_beacon = false;
+	boolean			is_send_beaconx = false;
 	u16			tx_page_bndy = LAST_ENTRY_OF_TX_PKT_BUFFER_8814A; /*@default reseved 1 page for the IC type which is undefined.*/
 	struct _RT_BEAMFORMING_INFO	*beam_info = &dm->beamforming_info;
 	struct _RT_BEAMFORMEE_ENTRY	*p_beam_entry = beam_info->beamformee_entry + idx;
@@ -375,31 +375,31 @@ hal_txbf_8814a_download_ndpa(
 #endif
 	PHYDM_DBG(dm, DBG_TXBF, "[%s] Start!\n", __func__);
 
-	phydm_get_hal_def_var_handler_interface(dm, HAL_DEF_TX_PAGE_BOUNDARY, (u16 *)&tx_page_bndy);
+	phydm_get_hal_def_var_handler_interfacex(dm, HAL_DEF_TX_PAGE_BOUNDARY, (u16 *)&tx_page_bndy);
 
 	/*Set REG_CR bit 8. DMA beacon by SW.*/
-	u1b_tmp = odm_read_1byte(dm, REG_CR_8814A + 1);
-	odm_write_1byte(dm,  REG_CR_8814A + 1, (u1b_tmp | BIT(0)));
+	u1b_tmp = odm_read_1bytex(dm, REG_CR_8814A + 1);
+	odm_write_1bytex(dm,  REG_CR_8814A + 1, (u1b_tmp | BIT(0)));
 
 
 	/*Set FWHW_TXQ_CTRL 0x422[6]=0 to tell Hw the packet is not a real beacon frame.*/
-	tmp_reg422 = odm_read_1byte(dm, REG_FWHW_TXQ_CTRL_8814A + 2);
-	odm_write_1byte(dm, REG_FWHW_TXQ_CTRL_8814A + 2,  tmp_reg422 & (~BIT(6)));
+	tmp_reg422 = odm_read_1bytex(dm, REG_FWHW_TXQ_CTRL_8814A + 2);
+	odm_write_1bytex(dm, REG_FWHW_TXQ_CTRL_8814A + 2,  tmp_reg422 & (~BIT(6)));
 
 	if (tmp_reg422 & BIT(6)) {
 		PHYDM_DBG(dm, DBG_TXBF,
 			  "%s: There is an adapter is sending beacon.\n",
 			  __func__);
-		is_send_beacon = true;
+		is_send_beaconx = true;
 	}
 
 	/*@0x204[11:0]	Beacon Head for TXDMA*/
-	odm_write_2byte(dm, REG_FIFOPAGE_CTRL_2_8814A, head_page);
+	odm_write_2bytex(dm, REG_FIFOPAGE_CTRL_2_8814A, head_page);
 
 	do {
 		/*@Clear beacon valid check bit.*/
-		bcn_valid_reg = odm_read_1byte(dm, REG_FIFOPAGE_CTRL_2_8814A + 1);
-		odm_write_1byte(dm, REG_FIFOPAGE_CTRL_2_8814A + 1, (bcn_valid_reg | BIT(7)));
+		bcn_valid_reg = odm_read_1bytex(dm, REG_FIFOPAGE_CTRL_2_8814A + 1);
+		odm_write_1bytex(dm, REG_FIFOPAGE_CTRL_2_8814A + 1, (bcn_valid_reg | BIT(7)));
 
 		/*@download NDPA rsvd page.*/
 		if (p_beam_entry->beamform_entry_cap & BEAMFORMER_CAP_VHT_SU)
@@ -408,12 +408,12 @@ hal_txbf_8814a_download_ndpa(
 			beamforming_send_ht_ndpa_packet(dm, p_beam_entry->mac_addr, p_beam_entry->sound_bw, BEACON_QUEUE);
 
 		/*@check rsvd page download OK.*/
-		bcn_valid_reg = odm_read_1byte(dm, REG_FIFOPAGE_CTRL_2_8814A + 1);
+		bcn_valid_reg = odm_read_1bytex(dm, REG_FIFOPAGE_CTRL_2_8814A + 1);
 		count = 0;
 		while (!(bcn_valid_reg & BIT(7)) && count < 20) {
 			count++;
-			ODM_delay_ms(10);
-			bcn_valid_reg = odm_read_1byte(dm, REG_FIFOPAGE_CTRL_2_8814A + 2);
+			ODM_delay_msx(10);
+			bcn_valid_reg = odm_read_1bytex(dm, REG_FIFOPAGE_CTRL_2_8814A + 2);
 		}
 		dl_bcn_count++;
 	} while (!(bcn_valid_reg & BIT(7)) && dl_bcn_count < 5);
@@ -423,20 +423,20 @@ hal_txbf_8814a_download_ndpa(
 			  __func__);
 
 	/*@0x204[11:0]	Beacon Head for TXDMA*/
-	odm_write_2byte(dm, REG_FIFOPAGE_CTRL_2_8814A, tx_page_bndy);
+	odm_write_2bytex(dm, REG_FIFOPAGE_CTRL_2_8814A, tx_page_bndy);
 
 	/*To make sure that if there exists an adapter which would like to send beacon.*/
 	/*@If exists, the origianl value of 0x422[6] will be 1, we should check this to*/
 	/*prevent from setting 0x422[6] to 0 after download reserved page, or it will cause */
 	/*the beacon cannot be sent by HW.*/
 	/*@2010.06.23. Added by tynli.*/
-	if (is_send_beacon)
-		odm_write_1byte(dm, REG_FWHW_TXQ_CTRL_8814A + 2, tmp_reg422);
+	if (is_send_beaconx)
+		odm_write_1bytex(dm, REG_FWHW_TXQ_CTRL_8814A + 2, tmp_reg422);
 
 	/*@Do not enable HW DMA BCN or it will cause Pcie interface hang by timing issue. 2011.11.24. by tynli.*/
 	/*@Clear CR[8] or beacon packet will not be send to TxBuf anymore.*/
-	u1b_tmp = odm_read_1byte(dm, REG_CR_8814A + 1);
-	odm_write_1byte(dm, REG_CR_8814A + 1, (u1b_tmp & (~BIT(0))));
+	u1b_tmp = odm_read_1bytex(dm, REG_CR_8814A + 1);
+	odm_write_1bytex(dm, REG_CR_8814A + 1, (u1b_tmp & (~BIT(0))));
 
 	p_beam_entry->beamform_entry_state = BEAMFORMING_ENTRY_STATE_PROGRESSED;
 
@@ -472,7 +472,7 @@ hal_txbf_8814a_fw_txbf_cmd(
 	u1_tx_bf_parm[0] = PageNum0;
 	u1_tx_bf_parm[1] = PageNum1;
 	u1_tx_bf_parm[2] = period;
-	odm_fill_h2c_cmd(dm, PHYDM_H2C_TXBF, 3, u1_tx_bf_parm);
+	odm_fill_h2c_cmdx(dm, PHYDM_H2C_TXBF, 3, u1_tx_bf_parm);
 
 	PHYDM_DBG(dm, DBG_TXBF,
 		  "[%s] PageNum0 = %d, PageNum1 = %d period = %d\n", __func__,
@@ -493,20 +493,20 @@ void hal_txbf_8814a_enter(void *dm_void, u8 bfer_bfee_idx)
 
 	PHYDM_DBG(dm, DBG_TXBF, "[%s] bfer_idx=%d, bfee_idx=%d\n", __func__,
 		  bfer_idx, bfee_idx);
-	odm_set_mac_reg(dm, REG_SND_PTCL_CTRL_8814A, MASKBYTE1 | MASKBYTE2, 0x0202);
+	odm_set_mac_regx(dm, REG_SND_PTCL_CTRL_8814A, MASKBYTE1 | MASKBYTE2, 0x0202);
 
 	if (beamforming_info->beamformer_su_cnt > 0 && bfer_idx < BEAMFORMER_ENTRY_NUM) {
 		beamformer_entry = beamforming_info->beamformer_entry[bfer_idx];
 		/*Sounding protocol control*/
-		odm_write_1byte(dm, REG_SND_PTCL_CTRL_8814A, 0xDB);
+		odm_write_1bytex(dm, REG_SND_PTCL_CTRL_8814A, 0xDB);
 
 		/*@MAC address/Partial AID of Beamformer*/
 		if (bfer_idx == 0) {
 			for (i = 0; i < 6; i++)
-				odm_write_1byte(dm, (REG_ASSOCIATED_BFMER0_INFO_8814A + i), beamformer_entry.mac_addr[i]);
+				odm_write_1bytex(dm, (REG_ASSOCIATED_BFMER0_INFO_8814A + i), beamformer_entry.mac_addr[i]);
 		} else {
 			for (i = 0; i < 6; i++)
-				odm_write_1byte(dm, (REG_ASSOCIATED_BFMER1_INFO_8814A + i), beamformer_entry.mac_addr[i]);
+				odm_write_1bytex(dm, (REG_ASSOCIATED_BFMER1_INFO_8814A + i), beamformer_entry.mac_addr[i]);
 		}
 
 		/*@CSI report parameters of Beamformer*/
@@ -526,11 +526,11 @@ void hal_txbf_8814a_enter(void *dm_void, u8 bfer_bfee_idx)
 		csi_param = (u16)((coefficientsize << 10) | (codebookinfo << 8) | (grouping << 6) | (nr_index << 3) | (nc_index));
 
 		if (bfer_idx == 0)
-			odm_write_2byte(dm, REG_CSI_RPT_PARAM_BW20_8814A, csi_param);
+			odm_write_2bytex(dm, REG_CSI_RPT_PARAM_BW20_8814A, csi_param);
 		else
-			odm_write_2byte(dm, REG_CSI_RPT_PARAM_BW20_8814A + 2, csi_param);
+			odm_write_2bytex(dm, REG_CSI_RPT_PARAM_BW20_8814A + 2, csi_param);
 		/*ndp_rx_standby_timer, 8814 need > 0x56, suggest from Dvaid*/
-		odm_write_1byte(dm, REG_SND_PTCL_CTRL_8814A + 3, 0x40);
+		odm_write_1bytex(dm, REG_SND_PTCL_CTRL_8814A + 3, 0x40);
 	}
 
 	if (beamforming_info->beamformee_su_cnt > 0 && bfee_idx < BEAMFORMEE_ENTRY_NUM) {
@@ -545,20 +545,20 @@ void hal_txbf_8814a_enter(void *dm_void, u8 bfer_bfee_idx)
 
 		/*P_AID of Beamformee & enable NDPA transmission & enable NDPA interrupt*/
 		if (bfee_idx == 0) {
-			odm_write_2byte(dm, REG_TXBF_CTRL_8814A, sta_id);
-			odm_write_1byte(dm, REG_TXBF_CTRL_8814A + 3, odm_read_1byte(dm, REG_TXBF_CTRL_8814A + 3) | BIT(4) | BIT(6) | BIT(7));
+			odm_write_2bytex(dm, REG_TXBF_CTRL_8814A, sta_id);
+			odm_write_1bytex(dm, REG_TXBF_CTRL_8814A + 3, odm_read_1bytex(dm, REG_TXBF_CTRL_8814A + 3) | BIT(4) | BIT(6) | BIT(7));
 		} else
-			odm_write_2byte(dm, REG_TXBF_CTRL_8814A + 2, sta_id | BIT(14) | BIT(15) | BIT(12));
+			odm_write_2bytex(dm, REG_TXBF_CTRL_8814A + 2, sta_id | BIT(14) | BIT(15) | BIT(12));
 
 		/*@CSI report parameters of Beamformee*/
 		if (bfee_idx == 0) {
 			/*@Get BIT24 & BIT25*/
-			u8 tmp = odm_read_1byte(dm, REG_ASSOCIATED_BFMEE_SEL_8814A + 3) & 0x3;
+			u8 tmp = odm_read_1bytex(dm, REG_ASSOCIATED_BFMEE_SEL_8814A + 3) & 0x3;
 
-			odm_write_1byte(dm, REG_ASSOCIATED_BFMEE_SEL_8814A + 3, tmp | 0x60);
-			odm_write_2byte(dm, REG_ASSOCIATED_BFMEE_SEL_8814A, sta_id | BIT(9));
+			odm_write_1bytex(dm, REG_ASSOCIATED_BFMEE_SEL_8814A + 3, tmp | 0x60);
+			odm_write_2bytex(dm, REG_ASSOCIATED_BFMEE_SEL_8814A, sta_id | BIT(9));
 		} else
-			odm_write_2byte(dm, REG_ASSOCIATED_BFMEE_SEL_8814A + 2, sta_id | 0xE200); /*Set BIT25*/
+			odm_write_2bytex(dm, REG_ASSOCIATED_BFMEE_SEL_8814A + 2, sta_id | 0xE200); /*Set BIT25*/
 
 		phydm_beamforming_notify(dm);
 	}
@@ -582,28 +582,28 @@ void hal_txbf_8814a_leave(void *dm_void, u8 idx)
 	/*@Clear Associated Bfmee Sel*/
 
 	if (beamformer_entry.beamform_entry_cap == BEAMFORMING_CAP_NONE) {
-		odm_write_1byte(dm, REG_SND_PTCL_CTRL_8814A, 0xD8);
+		odm_write_1bytex(dm, REG_SND_PTCL_CTRL_8814A, 0xD8);
 		if (idx == 0) {
-			odm_write_4byte(dm, REG_ASSOCIATED_BFMER0_INFO_8814A, 0);
-			odm_write_2byte(dm, REG_ASSOCIATED_BFMER0_INFO_8814A + 4, 0);
-			odm_write_2byte(dm, REG_CSI_RPT_PARAM_BW20_8814A, 0);
+			odm_write_4bytex(dm, REG_ASSOCIATED_BFMER0_INFO_8814A, 0);
+			odm_write_2bytex(dm, REG_ASSOCIATED_BFMER0_INFO_8814A + 4, 0);
+			odm_write_2bytex(dm, REG_CSI_RPT_PARAM_BW20_8814A, 0);
 		} else {
-			odm_write_4byte(dm, REG_ASSOCIATED_BFMER1_INFO_8814A, 0);
-			odm_write_2byte(dm, REG_ASSOCIATED_BFMER1_INFO_8814A + 4, 0);
-			odm_write_2byte(dm, REG_CSI_RPT_PARAM_BW20_8814A + 2, 0);
+			odm_write_4bytex(dm, REG_ASSOCIATED_BFMER1_INFO_8814A, 0);
+			odm_write_2bytex(dm, REG_ASSOCIATED_BFMER1_INFO_8814A + 4, 0);
+			odm_write_2bytex(dm, REG_CSI_RPT_PARAM_BW20_8814A + 2, 0);
 		}
 	}
 
 	if (beamformee_entry.beamform_entry_cap == BEAMFORMING_CAP_NONE) {
 		hal_txbf_8814a_rf_mode(dm, beamforming_info, idx);
 		if (idx == 0) {
-			odm_write_2byte(dm, REG_TXBF_CTRL_8814A, 0x0);
-			odm_write_1byte(dm, REG_TXBF_CTRL_8814A + 3, odm_read_1byte(dm, REG_TXBF_CTRL_8814A + 3) | BIT(4) | BIT(6) | BIT(7));
-			odm_write_2byte(dm, REG_ASSOCIATED_BFMEE_SEL_8814A, 0);
+			odm_write_2bytex(dm, REG_TXBF_CTRL_8814A, 0x0);
+			odm_write_1bytex(dm, REG_TXBF_CTRL_8814A + 3, odm_read_1bytex(dm, REG_TXBF_CTRL_8814A + 3) | BIT(4) | BIT(6) | BIT(7));
+			odm_write_2bytex(dm, REG_ASSOCIATED_BFMEE_SEL_8814A, 0);
 		} else {
-			odm_write_2byte(dm, REG_TXBF_CTRL_8814A + 2, 0x0 | BIT(14) | BIT(15) | BIT(12));
+			odm_write_2bytex(dm, REG_TXBF_CTRL_8814A + 2, 0x0 | BIT(14) | BIT(15) | BIT(12));
 
-			odm_write_2byte(dm, REG_ASSOCIATED_BFMEE_SEL_8814A + 2, odm_read_2byte(dm, REG_ASSOCIATED_BFMEE_SEL_8814A + 2) & 0x60);
+			odm_write_2bytex(dm, REG_ASSOCIATED_BFMEE_SEL_8814A + 2, odm_read_2bytex(dm, REG_ASSOCIATED_BFMEE_SEL_8814A + 2) & 0x60);
 		}
 	}
 }
@@ -648,10 +648,10 @@ void hal_txbf_8814a_status(void *dm_void, u8 idx)
 		beam_ctrl_val &= ~(BIT(9) | BIT(10) | BIT(11));
 	}
 
-	odm_write_2byte(dm, beam_ctrl_reg, beam_ctrl_val);
+	odm_write_2bytex(dm, beam_ctrl_reg, beam_ctrl_val);
 	/*@disable NDP packet use beamforming */
-	tmp_val = odm_read_2byte(dm, REG_TXBF_CTRL_8814A);
-	odm_write_2byte(dm, REG_TXBF_CTRL_8814A, tmp_val | BIT(15));
+	tmp_val = odm_read_2bytex(dm, REG_TXBF_CTRL_8814A);
+	odm_write_2bytex(dm, REG_TXBF_CTRL_8814A, tmp_val | BIT(15));
 }
 
 void hal_txbf_8814a_fw_txbf(void *dm_void, u8 idx)

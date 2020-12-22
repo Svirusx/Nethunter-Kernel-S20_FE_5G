@@ -37,9 +37,9 @@
 #define tx_bf_nr(a, b) ((a > b) ? (b) : (a))
 #endif
 
-u8 beamforming_get_htndp_tx_rate(void *dm_void, u8 bfer_str_num);
+u8 beamforming_get_htndp_tx_ratex(void *dm_void, u8 bfer_str_num);
 
-u8 beamforming_get_vht_ndp_tx_rate(void *dm_void, u8 bfer_str_num);
+u8 beamforming_get_vht_ndp_tx_ratex(void *dm_void, u8 bfer_str_num);
 
 #endif
 

@@ -56,7 +56,7 @@ typedef struct _BB_REGISTER_DEFINITION {
 
 /* ---------------------------------------------------------------------- */
 u8
-PHY_GetTxPowerByRateBase(
+PHY_GetTxPowerByRatexBase(
 		PADAPTER		Adapter,
 		u8				Band,
 		u8				RfPath,
@@ -64,7 +64,7 @@ PHY_GetTxPowerByRateBase(
 );
 
 void
-PHY_GetRateValuesOfTxPowerByRate(
+PHY_GetRateValuesOfTxPowerByRatex(
 		PADAPTER pAdapter,
 		u32 RegAddr,
 		u32 BitMask,
@@ -75,12 +75,12 @@ PHY_GetRateValuesOfTxPowerByRate(
 );
 
 u8
-PHY_GetRateIndexOfTxPowerByRate(
+PHY_GetRateIndexOfTxPowerByRatex(
 		u8	Rate
 );
 
 void
-phy_set_tx_power_index_by_rate_section(
+phy_set_tx_power_index_by_rate_sectionx(
 		PADAPTER		pAdapter,
 		enum rf_path		RFPath,
 		u8				Channel,
@@ -88,7 +88,7 @@ phy_set_tx_power_index_by_rate_section(
 );
 
 s8
-_PHY_GetTxPowerByRate(
+_PHY_GetTxPowerByRatex(
 		PADAPTER	pAdapter,
 		u8			Band,
 		enum rf_path	RFPath,
@@ -96,7 +96,7 @@ _PHY_GetTxPowerByRate(
 );
 
 s8
-PHY_GetTxPowerByRate(
+PHY_GetTxPowerByRatex(
 		PADAPTER	pAdapter,
 		u8			Band,
 		enum rf_path	RFPath,
@@ -104,7 +104,7 @@ PHY_GetTxPowerByRate(
 );
 
 void
-PHY_SetTxPowerByRate(
+PHY_SetTxPowerxByRatex(
 		PADAPTER	pAdapter,
 		u8			Band,
 		enum rf_path	RFPath,
@@ -113,14 +113,14 @@ PHY_SetTxPowerByRate(
 );
 
 void
-phy_set_tx_power_level_by_path(
+phy_set_tx_power_level_by_pathx(
 		PADAPTER	Adapter,
 		u8			channel,
 		u8			path
 );
 
 void
-PHY_SetTxPowerIndexByRateArray(
+PHY_SetTxPowerxIndexxByRateArray(
 		PADAPTER		pAdapter,
 		enum rf_path		RFPath,
 		enum channel_width BandWidth,
@@ -130,12 +130,12 @@ PHY_SetTxPowerIndexByRateArray(
 );
 
 void
-PHY_InitTxPowerByRate(
+PHY_InitTxPowerByRatex(
 		PADAPTER	pAdapter
 );
 
 void
-phy_store_tx_power_by_rate(
+phy_store_tx_power_by_ratex(
 		PADAPTER	pAdapter,
 		u32			Band,
 		u32			RfPath,
@@ -146,7 +146,7 @@ phy_store_tx_power_by_rate(
 );
 
 void
-PHY_TxPowerByRateConfiguration(
+PHY_TxPowerByRateConfigurationx(
 	  PADAPTER			pAdapter
 );
 
@@ -161,31 +161,31 @@ u8 phy_get_pg_txpwr_idx(
 );
 
 #if CONFIG_TXPWR_LIMIT
-s8 phy_get_txpwr_lmt_abs(_adapter *adapter
+s8 phy_get_txpwr_lmtx_abs(_adapter *adapter
 	, const char *regd_name
 	, BAND_TYPE band, enum channel_width bw
 	, u8 tlrs, u8 ntx_idx, u8 cch, u8 lock
 );
 
-s8 phy_get_txpwr_lmt(_adapter *adapter
+s8 phy_get_txpwr_lmtx(_adapter *adapter
 	, const char *regd_name
 	, BAND_TYPE band, enum channel_width bw
 	, u8 rfpath, u8 rs, u8 ntx_idx, u8 cch, u8 lock
 );
 
-s8 PHY_GetTxPowerLimit(_adapter *adapter
+s8 PHY_GetTxPowerLimitx(_adapter *adapter
 	, const char *regd_name
 	, BAND_TYPE band, enum channel_width bw
 	, u8 rfpath, u8 rate, u8 ntx_idx, u8 cch
 );
 #else
-#define phy_get_txpwr_lmt_abs(adapter, regd_name, band, bw, tlrs, ntx_idx, cch, lock) (GET_HAL_SPEC(adapter)->txgi_max)
-#define phy_get_txpwr_lmt(adapter, regd_name, band, bw, rfpath, rs, ntx_idx, cch, lock) (GET_HAL_SPEC(adapter)->txgi_max)
-#define PHY_GetTxPowerLimit(adapter, regd_name, band, bw, rfpath, rate, ntx_idx, cch) (GET_HAL_SPEC(adapter)->txgi_max)
+#define phy_get_txpwr_lmtx_abs(adapter, regd_name, band, bw, tlrs, ntx_idx, cch, lock) (GET_HAL_SPEC(adapter)->txgi_max)
+#define phy_get_txpwr_lmtx(adapter, regd_name, band, bw, rfpath, rs, ntx_idx, cch, lock) (GET_HAL_SPEC(adapter)->txgi_max)
+#define PHY_GetTxPowerLimitx(adapter, regd_name, band, bw, rfpath, rate, ntx_idx, cch) (GET_HAL_SPEC(adapter)->txgi_max)
 #endif /* CONFIG_TXPWR_LIMIT */
 
 s8
-PHY_GetTxPowerTrackingOffset(
+PHY_GetTxPowerTrackingOffsetx(
 	PADAPTER	pAdapter,
 	enum rf_path	RFPath,
 	u8			Rate
@@ -215,7 +215,7 @@ struct txpwr_idx_comp {
 	} while (0)
 
 u8
-phy_get_tx_power_index(
+phy_get_tx_power_indexx(
 		PADAPTER			pAdapter,
 		enum rf_path			RFPath,
 		u8					Rate,
@@ -224,48 +224,48 @@ phy_get_tx_power_index(
 );
 
 void
-PHY_SetTxPowerIndex(
+PHY_SetTxPowerxIndexx(
 		PADAPTER		pAdapter,
 		u32				PowerIndex,
 		enum rf_path		RFPath,
 		u8				Rate
 );
 
-void dump_tx_power_idx_title(void *sel, _adapter *adapter);
-void dump_tx_power_idx_by_path_rs(void *sel, _adapter *adapter, u8 rfpath, u8 rs);
-void dump_tx_power_idx(void *sel, _adapter *adapter);
+void dump_tx_power_idxx_title(void *sel, _adapter *adapter);
+void dump_tx_power_idxx_by_path_rs(void *sel, _adapter *adapter, u8 rfpath, u8 rs);
+void dump_tx_power_idxx(void *sel, _adapter *adapter);
 
-bool phy_is_tx_power_limit_needed(_adapter *adapter);
-bool phy_is_tx_power_by_rate_needed(_adapter *adapter);
-int phy_load_tx_power_by_rate(_adapter *adapter, u8 chk_file);
+bool phy_is_tx_power_limit_neededx(_adapter *adapter);
+bool phy_is_tx_power_by_rate_neededx(_adapter *adapter);
+int phy_load_tx_power_by_ratex(_adapter *adapter, u8 chk_file);
 #if CONFIG_TXPWR_LIMIT
-int phy_load_tx_power_limit(_adapter *adapter, u8 chk_file);
+int phy_load_tx_power_limitx(_adapter *adapter, u8 chk_file);
 #endif
-void phy_load_tx_power_ext_info(_adapter *adapter, u8 chk_file);
-void phy_reload_tx_power_ext_info(_adapter *adapter);
-void phy_reload_default_tx_power_ext_info(_adapter *adapter);
+void phy_load_tx_power_ext_infox(_adapter *adapter, u8 chk_file);
+void phy_reload_tx_power_ext_infox(_adapter *adapter);
+void phy_reload_default_tx_power_ext_infox(_adapter *adapter);
 
-const struct map_t *hal_pg_txpwr_def_info(_adapter *adapter);
+const struct map_t *hal_pg_txpwr_def_infoxx(_adapter *adapter);
 
 #ifdef CONFIG_EFUSE_CONFIG_FILE
-int check_phy_efuse_tx_power_info_valid(_adapter *adapter);
+int check_phy_efuse_tx_power_info_validx(_adapter *adapter);
 #endif
 
-void dump_hal_txpwr_info_2g(void *sel, _adapter *adapter, u8 rfpath_num, u8 max_tx_cnt);
-void dump_hal_txpwr_info_5g(void *sel, _adapter *adapter, u8 rfpath_num, u8 max_tx_cnt);
+void dump_hal_txpwr_info_2gx(void *sel, _adapter *adapter, u8 rfpath_num, u8 max_tx_cnt);
+void dump_hal_txpwr_info_5gx(void *sel, _adapter *adapter, u8 rfpath_num, u8 max_tx_cnt);
 
-void hal_load_txpwr_info(
+void hal_load_txpwr_infox(
 	_adapter *adapter,
 	TxPowerInfo24G *pwr_info_2g,
 	TxPowerInfo5G *pwr_info_5g,
 	u8 *pg_data
 );
 
-void dump_tx_power_ext_info(void *sel, _adapter *adapter);
-void dump_target_tx_power(void *sel, _adapter *adapter);
-void dump_tx_power_by_rate(void *sel, _adapter *adapter);
+void dump_tx_power_ext_infox(void *sel, _adapter *adapter);
+void dump_target_tx_powerx(void *sel, _adapter *adapter);
+void dump_tx_power_by_ratex(void *sel, _adapter *adapter);
 
-int rtw_get_phy_file_path(_adapter *adapter, const char *file_name);
+int rtw_get_phy_file_pathx(_adapter *adapter, const char *file_name);
 
 #ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
 #define MAC_FILE_FW_NIC			"FW_NIC.bin"
@@ -296,17 +296,17 @@ int rtw_get_phy_file_path(_adapter *adapter, const char *file_name);
 #define LOAD_RF_TXPWR_TRACK_PARA_FILE	BIT5
 #define LOAD_RF_TXPWR_LMT_PARA_FILE		BIT6
 
-int phy_ConfigMACWithParaFile(PADAPTER	Adapter, char	*pFileName);
-int phy_ConfigBBWithParaFile(PADAPTER	Adapter, char	*pFileName, u32	ConfigType);
-int phy_ConfigBBWithPgParaFile(PADAPTER	Adapter, const char *pFileName);
-int phy_ConfigBBWithMpParaFile(PADAPTER	Adapter, char	*pFileName);
-int PHY_ConfigRFWithParaFile(PADAPTER	Adapter, char	*pFileName, enum rf_path	eRFPath);
-int PHY_ConfigRFWithTxPwrTrackParaFile(PADAPTER	Adapter, char	*pFileName);
+int phy_ConfigMACWithParaFilex(PADAPTER	Adapter, char	*pFileName);
+int phy_ConfigBBWithParaFilex(PADAPTER	Adapter, char	*pFileName, u32	ConfigType);
+int phy_ConfigBBWithPgParaFilex(PADAPTER	Adapter, const char *pFileName);
+int phy_ConfigBBWithMpParaFilex(PADAPTER	Adapter, char	*pFileName);
+int PHY_ConfigRFWithParaFilex(PADAPTER	Adapter, char	*pFileName, enum rf_path	eRFPath);
+int PHY_ConfigRFWithTxPwrTrackParaFilex(PADAPTER	Adapter, char	*pFileName);
 #if CONFIG_TXPWR_LIMIT
-int PHY_ConfigRFWithPowerLimitTableParaFile(PADAPTER	Adapter, const char *pFileName);
+int PHY_ConfigRFWithPowerLimitTableParaFilex(PADAPTER	Adapter, const char *pFileName);
 #endif
-void phy_free_filebuf_mask(_adapter *padapter, u8 mask);
-void phy_free_filebuf(_adapter *padapter);
+void phy_free_filebufx_mask(_adapter *padapter, u8 mask);
+void phy_free_filebufx(_adapter *padapter);
 #endif /* CONFIG_LOAD_PHY_PARA_FROM_FILE */
-u8 phy_check_under_survey_ch(_adapter *adapter);
+u8 phy_check_under_survey_chx(_adapter *adapter);
 #endif /* __HAL_COMMON_H__ */

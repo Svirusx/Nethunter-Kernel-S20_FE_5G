@@ -56,7 +56,7 @@ int rtl8189es_sdio_poweroff(void)
  *	0:	power on successfully
  *	others:	power on failed
  */
-int platform_wifi_power_on(void)
+int platform_wifi_power_onx(void)
 {
 	int ret = 0;
 #ifdef CONFIG_MMC_SUNXI_POWER_CONTROL
@@ -78,7 +78,7 @@ int platform_wifi_power_on(void)
 	return ret;
 }
 
-void platform_wifi_power_off(void)
+void platform_wifi_power_offx(void)
 {
 #ifdef CONFIG_MMC_SUNXI_POWER_CONTROL
 	sunximmc_rescan_card(SDIOID, 0);

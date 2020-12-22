@@ -15,13 +15,13 @@
 #ifndef __USB_HAL_H__
 #define __USB_HAL_H__
 
-int usb_init_recv_priv(_adapter *padapter, u16 ini_in_buf_sz);
-void usb_free_recv_priv(_adapter *padapter, u16 ini_in_buf_sz);
+int usb_init_recv_privx(_adapter *padapter, u16 ini_in_buf_sz);
+void usb_free_recv_privx(_adapter *padapter, u16 ini_in_buf_sz);
 #ifdef CONFIG_FW_C2H_REG
 void usb_c2h_hisr_hdl(_adapter *adapter, u8 *buf);
 #endif
 
-u8 rtw_set_hal_ops(_adapter *padapter);
+u8 rtw_set_hal_opsx(_adapter *padapter);
 
 #ifdef CONFIG_RTL8188E
 void rtl8188eu_set_hal_ops(_adapter *padapter);

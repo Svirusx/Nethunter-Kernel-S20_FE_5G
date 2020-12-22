@@ -90,7 +90,7 @@ PHY_SwitchWirelessBand8812(
 /*
  * BB TX Power R/W
  *   */
-void	PHY_SetTxPowerLevel8812(PADAPTER	Adapter, u8	Channel);
+void	PHY_SetTxPowerxLevel8812(PADAPTER	Adapter, u8	Channel);
 
 u8 PHY_GetTxPowerIndex_8812A(
 		PADAPTER			pAdapter,
@@ -108,7 +108,7 @@ u32 phy_get_tx_bb_swing_8812a(
 );
 
 void
-PHY_SetTxPowerIndex_8812A(
+PHY_SetTxPowerxIndexx_8812A(
 		PADAPTER		Adapter,
 		u32				PowerIndex,
 		enum rf_path		RFPath,

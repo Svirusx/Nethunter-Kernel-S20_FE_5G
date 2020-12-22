@@ -197,7 +197,7 @@ Chip specific
 -------------------------------------------------------------------------*/
 
 /* pic buffer descriptor */
-#if 1 /* according to the define in the rtw_xmit.h, rtw_recv.h */
+#if 1 /* according to the define in the rtw_xmitx.h, rtw_recv.h */
 	#define RTL8814AE_SEG_NUM  TX_BUFFER_SEG_NUM /* 0:2 seg, 1: 4 seg, 2: 8 seg */
 	#define TX_DESC_NUM_8814A  TX_BD_NUM   /* 128 */
 	#define RX_DESC_NUM_8814A  PCI_MAX_RX_COUNT /* 128 */
@@ -291,7 +291,7 @@ void	hal_EfuseParseBTCoexistInfo8814A(PADAPTER Adapter, u8 *hwinfo, BOOLEAN Auto
 /* void	hal_ReadUsbType_8812AU(PADAPTER Adapter, u8 *PROMContent, BOOLEAN AutoloadFail);
  * int	FirmwareDownloadBT(PADAPTER Adapter, PRT_MP_FIRMWARE pFirmware); */
 void	hal_ReadRemoteWakeup_8814A(PADAPTER padapter, u8 *hwinfo, BOOLEAN AutoLoadFail);
-u8	MgntQuery_NssTxRate(u16 Rate);
+u8	MgntQuery_NssTxRatex(u16 Rate);
 
 /* BOOLEAN HalDetectPwrDownMode8812(PADAPTER Adapter); */
 
@@ -305,10 +305,10 @@ void SetBeaconRelatedRegisters8814A(PADAPTER padapter);
 void ReadRFType8814A(PADAPTER padapter);
 void InitDefaultValue8814A(PADAPTER padapter);
 
-u8 SetHwReg8814A(PADAPTER padapter, u8 variable, u8 *pval);
-void GetHwReg8814A(PADAPTER padapter, u8 variable, u8 *pval);
-u8 SetHalDefVar8814A(PADAPTER padapter, HAL_DEF_VARIABLE variable, void *pval);
-u8 GetHalDefVar8814A(PADAPTER padapter, HAL_DEF_VARIABLE variable, void *pval);
+u8 SetHwRegx8814A(PADAPTER padapter, u8 variable, u8 *pval);
+void GetHwRegx8814A(PADAPTER padapter, u8 variable, u8 *pval);
+u8 SetHalDefVarx8814A(PADAPTER padapter, HAL_DEF_VARIABLE variable, void *pval);
+u8 GetHalDefVarx8814A(PADAPTER padapter, HAL_DEF_VARIABLE variable, void *pval);
 void rtl8814_set_hal_ops(struct hal_ops *pHalFunc);
 void init_hal_spec_8814a(_adapter *adapter);
 

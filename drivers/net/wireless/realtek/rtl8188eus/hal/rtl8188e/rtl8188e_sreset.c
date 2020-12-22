@@ -29,26 +29,26 @@ void rtl8188e_sreset_xmit_status_check(_adapter *padapter)
 	unsigned int diff_time;
 	u32 txdma_status;
 
-	txdma_status = rtw_read32(padapter, REG_TXDMA_STATUS);
+	txdma_status = rtw_read32x(padapter, REG_TXDMA_STATUS);
 	if (txdma_status != 0x00 && txdma_status != 0xeaeaeaea) {
 		RTW_INFO("%s REG_TXDMA_STATUS:0x%08x\n", __FUNCTION__, txdma_status);
-		rtw_hal_sreset_reset(padapter);
+		rtw_hal_sreset_resetxx(padapter);
 	}
 #ifdef CONFIG_USB_HCI
 	/* total xmit irp = 4 */
 	/* RTW_INFO("==>%s free_xmitbuf_cnt(%d),txirp_cnt(%d)\n",__FUNCTION__,pxmitpriv->free_xmitbuf_cnt,pxmitpriv->txirp_cnt); */
 	/* if(pxmitpriv->txirp_cnt == NR_XMITBUFF+1) */
-	current_time = rtw_get_current_time();
+	current_time = rtw_get_current_timex();
 
 	if (0 == pxmitpriv->free_xmitbuf_cnt || 0 == pxmitpriv->free_xmit_extbuf_cnt) {
 
-		diff_time = rtw_get_passing_time_ms(psrtpriv->last_tx_time);
+		diff_time = rtw_get_passing_time_msx(psrtpriv->last_tx_time);
 
 		if (diff_time > 2000) {
 			if (psrtpriv->last_tx_complete_time == 0)
 				psrtpriv->last_tx_complete_time = current_time;
 			else {
-				diff_time = rtw_get_passing_time_ms(psrtpriv->last_tx_complete_time);
+				diff_time = rtw_get_passing_time_msx(psrtpriv->last_tx_complete_time);
 				if (diff_time > 4000) {
 					u32 ability = 0;
 
@@ -58,7 +58,7 @@ void rtl8188e_sreset_xmit_status_check(_adapter *padapter)
 						(ability & ODM_BB_ADAPTIVITY) ? "ODM_BB_ADAPTIVITY" : "");
 
 					if (!(ability & ODM_BB_ADAPTIVITY))
-						rtw_hal_sreset_reset(padapter);
+						rtw_hal_sreset_resetxx(padapter);
 				}
 			}
 		}
@@ -67,7 +67,7 @@ void rtl8188e_sreset_xmit_status_check(_adapter *padapter)
 
 	if (psrtpriv->dbg_trigger_point == SRESET_TGP_XMIT_STATUS) {
 		psrtpriv->dbg_trigger_point = SRESET_TGP_NULL;
-		rtw_hal_sreset_reset(padapter);
+		rtw_hal_sreset_resetxx(padapter);
 		return;
 	}
 }
@@ -79,12 +79,12 @@ void rtl8188e_sreset_linked_status_check(_adapter *padapter)
 
 	u32 rx_dma_status = 0;
 	u8 fw_status = 0;
-	rx_dma_status = rtw_read32(padapter, REG_RXDMA_STATUS);
+	rx_dma_status = rtw_read32x(padapter, REG_RXDMA_STATUS);
 	if (rx_dma_status != 0x00) {
 		RTW_INFO("%s REG_RXDMA_STATUS:0x%08x\n", __FUNCTION__, rx_dma_status);
-		rtw_write32(padapter, REG_RXDMA_STATUS, rx_dma_status);
+		rtw_write32x(padapter, REG_RXDMA_STATUS, rx_dma_status);
 	}
-	fw_status = rtw_read8(padapter, REG_FMETHR);
+	fw_status = rtw_read8x(padapter, REG_FMETHR);
 	if (fw_status != 0x00) {
 		if (fw_status == 1)
 			RTW_INFO("%s REG_FW_STATUS (0x%02x), Read_Efuse_Fail !!\n", __FUNCTION__, fw_status);
@@ -93,23 +93,23 @@ void rtl8188e_sreset_linked_status_check(_adapter *padapter)
 	}
 #if 0
 	u32 regc50, regc58, reg824, reg800;
-	regc50 = rtw_read32(padapter, 0xc50);
-	regc58 = rtw_read32(padapter, 0xc58);
-	reg824 = rtw_read32(padapter, 0x824);
-	reg800 = rtw_read32(padapter, 0x800);
+	regc50 = rtw_read32x(padapter, 0xc50);
+	regc58 = rtw_read32x(padapter, 0xc58);
+	reg824 = rtw_read32x(padapter, 0x824);
+	reg800 = rtw_read32x(padapter, 0x800);
 	if (((regc50 & 0xFFFFFF00) != 0x69543400) ||
 	    ((regc58 & 0xFFFFFF00) != 0x69543400) ||
 	    (((reg824 & 0xFFFFFF00) != 0x00390000) && (((reg824 & 0xFFFFFF00) != 0x80390000))) ||
 	    (((reg800 & 0xFFFFFF00) != 0x03040000) && ((reg800 & 0xFFFFFF00) != 0x83040000))) {
 		RTW_INFO("%s regc50:0x%08x, regc58:0x%08x, reg824:0x%08x, reg800:0x%08x,\n", __FUNCTION__,
 			 regc50, regc58, reg824, reg800);
-		rtw_hal_sreset_reset(padapter);
+		rtw_hal_sreset_resetxx(padapter);
 	}
 #endif
 
 	if (psrtpriv->dbg_trigger_point == SRESET_TGP_LINK_STATUS) {
 		psrtpriv->dbg_trigger_point = SRESET_TGP_NULL;
-		rtw_hal_sreset_reset(padapter);
+		rtw_hal_sreset_resetxx(padapter);
 		return;
 	}
 }

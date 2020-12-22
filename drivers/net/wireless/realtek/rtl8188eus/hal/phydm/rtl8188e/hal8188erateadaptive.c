@@ -599,7 +599,7 @@ odm_rate_decision_8188e(
 			/*update rate information*/
 			cmd_buf[0] = (p_ra_info->rate_sgi << 7) | (p_ra_info->decision_rate & 0x7f);
 			cmd_buf[1] = mac_id;
-			phydm_c2h_ra_report_handler(dm, &(cmd_buf[0]), 3);
+			phydm_c2h_ra_report_handlerx(dm, &(cmd_buf[0]), 3);
 		}
 
 		if (dynamic_tx_rpt_timing_counter >= 4) {
@@ -648,19 +648,19 @@ odm_arfb_refresh_8188e(
 		p_ra_info->ra_use_rate = (p_ra_info->rate_mask) & 0x0000000d;
 		break;
 	case 12:
-		mask_from_reg = odm_read_4byte(dm, REG_ARFR0);
+		mask_from_reg = odm_read_4bytex(dm, REG_ARFR0);
 		p_ra_info->ra_use_rate = (p_ra_info->rate_mask) & mask_from_reg;
 		break;
 	case 13:
-		mask_from_reg = odm_read_4byte(dm, REG_ARFR1);
+		mask_from_reg = odm_read_4bytex(dm, REG_ARFR1);
 		p_ra_info->ra_use_rate = (p_ra_info->rate_mask) & mask_from_reg;
 		break;
 	case 14:
-		mask_from_reg = odm_read_4byte(dm, REG_ARFR2);
+		mask_from_reg = odm_read_4bytex(dm, REG_ARFR2);
 		p_ra_info->ra_use_rate = (p_ra_info->rate_mask) & mask_from_reg;
 		break;
 	case 15:
-		mask_from_reg = odm_read_4byte(dm, REG_ARFR3);
+		mask_from_reg = odm_read_4bytex(dm, REG_ARFR3);
 		p_ra_info->ra_use_rate = (p_ra_info->rate_mask) & mask_from_reg;
 		break;
 
@@ -1047,7 +1047,7 @@ u8 odm_ra_get_hw_pwr_status_8188e(struct dm_struct *dm, u8 mac_id)
 	return pt_stage;
 }
 
-u8 phydm_get_rate_id_88e(void *dm_void, u8 sta_idx)
+u8 phydm_get_rate_idx_88e(void *dm_void, u8 sta_idx)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct cmn_sta_info *sta = dm->phydm_sta_info[sta_idx];
@@ -1127,13 +1127,13 @@ void odm_ra_set_tx_rpt_time(struct dm_struct *dm, u16 min_rpt_time)
 #if (DM_ODM_SUPPORT_TYPE & (ODM_AP))
 	if (min_rpt_time != 0xffff) {
 #if defined(CONFIG_PCI_HCI)
-		odm_write_2byte(dm, REG_TX_RPT_TIME, min_rpt_time);
+		odm_write_2bytex(dm, REG_TX_RPT_TIME, min_rpt_time);
 #elif defined(CONFIG_USB_HCI) || defined(CONFIG_SDIO_HCI)
 		notify_tx_report_interval_change(dm->priv, min_rpt_time);
 #endif
 	}
 #else
-	odm_write_2byte(dm, REG_TX_RPT_TIME, min_rpt_time);
+	odm_write_2bytex(dm, REG_TX_RPT_TIME, min_rpt_time);
 #endif
 }
 

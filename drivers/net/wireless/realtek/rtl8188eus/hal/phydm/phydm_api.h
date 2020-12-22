@@ -89,68 +89,68 @@ struct phydm_api_stuc {
  * 1  function prototype
  * 1 ============================================================
  */
-void phydm_reset_bb_hw_cnt(void *dm_void);
+void phydm_reset_bb_hw_cntx(void *dm_void);
 
-void phydm_dynamic_ant_weighting(void *dm_void);
+void phydm_dynamic_ant_weightingx(void *dm_void);
 
 #ifdef DYN_ANT_WEIGHTING_SUPPORT
 void phydm_ant_weight_dbg(void *dm_void, char input[][16], u32 *_used,
 			  char *output, u32 *_out_len);
 #endif
 
-void phydm_trx_antenna_setting_init(void *dm_void, u8 num_rf_path);
+void phydm_trx_antenna_setting_initx(void *dm_void, u8 num_rf_path);
 
-void phydm_config_ofdm_rx_path(void *dm_void, u32 path);
+void phydm_config_ofdm_rx_pathx(void *dm_void, u32 path);
 
-void phydm_config_cck_rx_path(void *dm_void, enum bb_path path);
+void phydm_config_cck_rx_pathx(void *dm_void, enum bb_path path);
 
-void phydm_config_cck_rx_antenna_init(void *dm_void);
+void phydm_config_cck_rx_antenna_initx(void *dm_void);
 
-void phydm_config_trx_path(void *dm_void, char input[][16], u32 *_used,
+void phydm_config_trx_pathx(void *dm_void, char input[][16], u32 *_used,
 			   char *output, u32 *_out_len);
 
-void phydm_tx_2path(void *dm_void);
+void phydm_tx_2pathx(void *dm_void);
 
-void phydm_stop_3_wire(void *dm_void, u8 set_type);
+void phydm_stop_3_wirex(void *dm_void, u8 set_type);
 
-u8 phydm_stop_ic_trx(void *dm_void, u8 set_type);
+u8 phydm_stop_ic_trxx(void *dm_void, u8 set_type);
 
-void phydm_dis_cck_trx(void *dm_void, u8 set_type);
+void phydm_dis_cck_trxx(void *dm_void, u8 set_type);
 
-void phydm_set_ext_switch(void *dm_void, u32 ext_ant_switch);
+void phydm_set_ext_switchx(void *dm_void, u32 ext_ant_switch);
 
-void phydm_nbi_enable(void *dm_void, u32 enable);
+void phydm_nbi_enablex(void *dm_void, u32 enable);
 
-u8 phydm_csi_mask_setting(void *dm_void, u32 enable, u32 ch, u32 bw, u32 f_intf,
+u8 phydm_csi_mask_settingx(void *dm_void, u32 enable, u32 ch, u32 bw, u32 f_intf,
 			  u32 sec_ch);
 
-u8 phydm_nbi_setting(void *dm_void, u32 enable, u32 ch, u32 bw, u32 f_intf,
+u8 phydm_nbi_settingx(void *dm_void, u32 enable, u32 ch, u32 bw, u32 f_intf,
 		     u32 sec_ch);
 
-void phydm_nbi_debug(void *dm_void, char input[][16], u32 *_used,
+void phydm_nbi_debugx(void *dm_void, char input[][16], u32 *_used,
 		     char *output, u32 *_out_len);
 
-void phydm_csi_debug(void *dm_void, char input[][16], u32 *_used,
+void phydm_csi_debugx(void *dm_void, char input[][16], u32 *_used,
 		     char *output, u32 *_out_len);
 
-void phydm_stop_ck320(void *dm_void, u8 enable);
+void phydm_stop_ck320x(void *dm_void, u8 enable);
 
 boolean
-phydm_set_bb_txagc_offset(void *dm_void, s8 power_offset, u8 add_half_db);
+phydm_set_bb_txagc_offsetx(void *dm_void, s8 power_offset, u8 add_half_db);
 #ifdef PHYDM_IC_JGR3_SERIES_SUPPORT
-u8 phydm_csi_mask_setting_jgr3(void *dm_void, u32 enable, u32 ch, u32 bw,
+u8 phydm_csi_mask_settingx_jgr3(void *dm_void, u32 enable, u32 ch, u32 bw,
 			       u32 f_intf, u32 sec_ch, u8 wgt);
 
-void phydm_set_csi_mask_jgr3(void *dm_void, u32 tone_idx_tmp, u8 tone_direction,
+void phydm_set_csi_maskx_jgr3(void *dm_void, u32 tone_idx_tmp, u8 tone_direction,
 			     u8 wgt);
 
-u8 phydm_nbi_setting_jgr3(void *dm_void, u32 enable, u32 ch, u32 bw, u32 f_intf,
+u8 phydm_nbi_settingx_jgr3(void *dm_void, u32 enable, u32 ch, u32 bw, u32 f_intf,
 			  u32 sec_ch, u8 path);
 
-void phydm_set_nbi_reg_jgr3(void *dm_void, u32 tone_idx_tmp, u8 tone_direction,
+void phydm_set_nbi_regx_jgr3(void *dm_void, u32 tone_idx_tmp, u8 tone_direction,
 			    u8 path);
 
-void phydm_nbi_enable_jgr3(void *dm_void, u32 enable, u8 path);
+void phydm_nbi_enablex_jgr3(void *dm_void, u32 enable, u8 path);
 
 u8 phydm_phystat_rpt_jgr3(void *dm_void, enum phystat_rpt info,
 			  enum rf_path ant_path);
@@ -180,7 +180,7 @@ phydm_api_trx_mode(void *dm_void, enum bb_path tx_path, enum bb_path rx_path,
 
 #ifdef CONFIG_MCC_DM
 #ifdef DYN_ANT_WEIGHTING_SUPPORT
-void phydm_dynamic_ant_weighting_mcc_8822b(void *dm_void);
+void phydm_dynamic_ant_weightingx_mcc_8822b(void *dm_void);
 #endif /*#ifdef DYN_ANT_WEIGHTING_SUPPORT*/
 void phydm_fill_mcccmd(void *dm_void, u8 regid, u16 reg_add,
 		       u8 val0,	u8 val1);

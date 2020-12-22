@@ -32,7 +32,7 @@
 /*PHYDM header*/
 #include "phydm_pre_define.h"
 #include "phydm_features.h"
-#include "phydm_dig.h"
+#include "phydm_digx.h"
 #ifdef CONFIG_PATH_DIVERSITY
 #include "phydm_pathdiv.h"
 #endif
@@ -53,7 +53,7 @@
 #include "phydm_dynamictxpower.h"
 #endif
 #include "phydm_cfotracking.h"
-#include "phydm_adaptivity.h"
+#include "phydm_adaptivityx.h"
 #include "phydm_dfs.h"
 #include "phydm_ccx.h"
 #include "txbf/phydm_hal_txbf_api.h"
@@ -61,7 +61,7 @@
 #include "phydm_adc_sampling.h"
 #endif
 #ifdef CONFIG_PSD_TOOL
-#include "phydm_psd.h"
+#include "phydm_psdx.h"
 #endif
 #ifdef PHYDM_PRIMARY_CCA
 #include "phydm_primary_cca.h"
@@ -111,7 +111,7 @@
 	#include "halrf/halphyrf_iot.h"
 #endif
 
-extern const u16	phy_rate_table[84];
+extern const u16	phy_rate_tablex[84];
 
 /*@============================================================*/
 /*@Definition */
@@ -847,7 +847,7 @@ struct dm_struct {
 /*@====[ CALL BY VALUE ]===========================================*/
 /*@===========================================================*/
 
-	u8			disable_phydm_watchdog;
+	u8			disable_phydm_watchdogx;
 	boolean			is_link_in_process;
 	boolean			is_wifi_direct;
 	boolean			is_wifi_display;
@@ -1128,7 +1128,7 @@ struct dm_struct {
 #endif
 
 	struct	pkt_process_info	pkt_proc_struct;
-	struct phydm_adaptivity_struct	adaptivity;
+	struct phydm_adaptivityx_struct	adaptivity;
 	struct _DFS_STATISTICS		dfs;
 	struct odm_noise_monitor	noise_level;
 	struct odm_phy_dbg_info		phy_dbg_info;
@@ -1164,7 +1164,7 @@ struct dm_struct {
 	struct phydm_fat_struct		dm_fat_table;
 	struct sw_antenna_switch	dm_swat_table;
 #endif
-	struct phydm_dig_struct		dm_dig_table;
+	struct phydm_digx_struct		dm_dig_table;
 #ifdef PHYDM_LNA_SAT_CHK_SUPPORT
 	struct phydm_lna_sat_t		dm_lna_sat_info;
 #endif
@@ -1323,82 +1323,82 @@ enum rt_status {
 #endif	/*@end of enum rt_status definition*/
 
 void
-phydm_watchdog_lps(struct dm_struct *dm);
+phydm_watchdogx_lps(struct dm_struct *dm);
 
 void
-phydm_watchdog_lps_32k(struct dm_struct *dm);
+phydm_watchdogx_lps_32k(struct dm_struct *dm);
 
 void
 phydm_txcurrentcalibration(struct dm_struct *dm);
 
 void
-phydm_dm_early_init(struct dm_struct *dm);
+phydm_dm_early_initx(struct dm_struct *dm);
 
 void
-odm_dm_init(struct dm_struct *dm);
+odm_dm_initx(struct dm_struct *dm);
 
 void
-odm_dm_reset(struct dm_struct *dm);
+odm_dm_resetx(struct dm_struct *dm);
 
 void
-phydm_fwoffload_ability_init(struct dm_struct *dm,
+phydm_fwoffload_ability_initx(struct dm_struct *dm,
 			     enum phydm_offload_ability offload_ability);
 
 void
-phydm_fwoffload_ability_clear(struct dm_struct *dm,
+phydm_fwoffload_ability_clearx(struct dm_struct *dm,
 			      enum phydm_offload_ability offload_ability);
 
 void
-phydm_supportability_en(void *dm_void, char input[][16], u32 *_used,
+phydm_supportability_enx(void *dm_void, char input[][16], u32 *_used,
 			char *output, u32 *_out_len);
 
 void
-phydm_pause_dm_watchdog(void *dm_void, enum phydm_pause_type pause_type);
+phydm_pause_dm_watchdogx(void *dm_void, enum phydm_pause_type pause_type);
 
 void
-phydm_watchdog(struct dm_struct *dm);
+phydm_watchdogx(struct dm_struct *dm);
 
 void
-phydm_watchdog_mp(struct dm_struct *dm);
+phydm_watchdogx_mp(struct dm_struct *dm);
 
 u8
-phydm_pause_func(void *dm_void, enum phydm_func_idx pause_func,
+phydm_pause_funcx(void *dm_void, enum phydm_func_idx pause_func,
 		 enum phydm_pause_type pause_type,
 		 enum phydm_pause_level pause_lv, u8 val_lehgth, u32 *val_buf);
 
 void
-phydm_pause_func_console(void *dm_void, char input[][16], u32 *_used,
+phydm_pause_funcx_console(void *dm_void, char input[][16], u32 *_used,
 			 char *output, u32 *_out_len);
 
 void
-odm_cmn_info_init(struct dm_struct *dm, enum odm_cmninfo cmn_info, u64 value);
+odm_cmn_info_initx(struct dm_struct *dm, enum odm_cmninfo cmn_info, u64 value);
 
 void
-odm_cmn_info_hook(struct dm_struct *dm, enum odm_cmninfo cmn_info, void *value);
+odm_cmn_info_hookx(struct dm_struct *dm, enum odm_cmninfo cmn_info, void *value);
 
 void
-odm_cmn_info_update(struct dm_struct *dm, u32 cmn_info, u64 value);
+odm_cmn_info_updatex(struct dm_struct *dm, u32 cmn_info, u64 value);
 
 u32
-phydm_cmn_info_query(struct dm_struct *dm, enum phydm_info_query info_type);
+phydm_cmn_info_queryx(struct dm_struct *dm, enum phydm_info_query info_type);
 
 void
-odm_init_all_timers(struct dm_struct *dm);
+odm_init_all_timersx(struct dm_struct *dm);
 
 void
-odm_cancel_all_timers(struct dm_struct *dm);
+odm_cancel_all_timersx(struct dm_struct *dm);
 
 void
-odm_release_all_timers(struct dm_struct *dm);
+odm_release_all_timersx(struct dm_struct *dm);
 
 void *
-phydm_get_structure(struct dm_struct *dm, u8 structure_type);
+phydm_get_structurex(struct dm_struct *dm, u8 structure_type);
 
 void
-phydm_dc_cancellation(struct dm_struct *dm);
+phydm_dc_cancellationx(struct dm_struct *dm);
 
 void
-phydm_receiver_blocking(void *dm_void);
+phydm_receiver_blockingx(void *dm_void);
 
 #if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
 void
@@ -1413,7 +1413,7 @@ odm_free_all_work_items(
 
 #if (DM_ODM_SUPPORT_TYPE == ODM_CE)
 void
-odm_dtc(struct dm_struct *dm);
+odm_dtcx(struct dm_struct *dm);
 #endif
 
 #if (DM_ODM_SUPPORT_TYPE == ODM_AP)

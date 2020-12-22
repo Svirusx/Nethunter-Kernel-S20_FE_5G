@@ -28,7 +28,7 @@
 
 #define INTERFACE_VERSION "1.2"
 
-#define pdm_set_reg odm_set_bb_reg
+#define pdm_set_reg odm_set_bb_regx
 
 /*@=========== Constant/Structure/Enum/... Define*/
 
@@ -168,52 +168,52 @@ ODM_REG(DIG,_pdm_odm)
  * =========== EXtern Function Prototype
  */
 
-u8 odm_read_1byte(struct dm_struct *dm, u32 reg_addr);
+u8 odm_read_1bytex(struct dm_struct *dm, u32 reg_addr);
 
-u16 odm_read_2byte(struct dm_struct *dm, u32 reg_addr);
+u16 odm_read_2bytex(struct dm_struct *dm, u32 reg_addr);
 
-u32 odm_read_4byte(struct dm_struct *dm, u32 reg_addr);
+u32 odm_read_4bytex(struct dm_struct *dm, u32 reg_addr);
 
-void odm_write_1byte(struct dm_struct *dm, u32 reg_addr, u8 data);
+void odm_write_1bytex(struct dm_struct *dm, u32 reg_addr, u8 data);
 
-void odm_write_2byte(struct dm_struct *dm, u32 reg_addr, u16 data);
+void odm_write_2bytex(struct dm_struct *dm, u32 reg_addr, u16 data);
 
-void odm_write_4byte(struct dm_struct *dm, u32 reg_addr, u32 data);
+void odm_write_4bytex(struct dm_struct *dm, u32 reg_addr, u32 data);
 
-void odm_set_mac_reg(struct dm_struct *dm, u32 reg_addr, u32 bit_mask,
+void odm_set_mac_regx(struct dm_struct *dm, u32 reg_addr, u32 bit_mask,
 		     u32 data);
 
-u32 odm_get_mac_reg(struct dm_struct *dm, u32 reg_addr, u32 bit_mask);
+u32 odm_get_mac_regx(struct dm_struct *dm, u32 reg_addr, u32 bit_mask);
 
-void odm_set_bb_reg(struct dm_struct *dm, u32 reg_addr, u32 bit_mask, u32 data);
+void odm_set_bb_regx(struct dm_struct *dm, u32 reg_addr, u32 bit_mask, u32 data);
 
-u32 odm_get_bb_reg(struct dm_struct *dm, u32 reg_addr, u32 bit_mask);
+u32 odm_get_bb_regx(struct dm_struct *dm, u32 reg_addr, u32 bit_mask);
 
-void odm_set_rf_reg(struct dm_struct *dm, u8 e_rf_path, u32 reg_addr,
+void odm_set_rf_regx(struct dm_struct *dm, u8 e_rf_path, u32 reg_addr,
 		    u32 bit_mask, u32 data);
 
-u32 odm_get_rf_reg(struct dm_struct *dm, u8 e_rf_path, u32 reg_addr,
+u32 odm_get_rf_regx(struct dm_struct *dm, u8 e_rf_path, u32 reg_addr,
 		   u32 bit_mask);
 
 /*@
  * Memory Relative Function.
  */
-void odm_allocate_memory(struct dm_struct *dm, void **ptr, u32 length);
-void odm_free_memory(struct dm_struct *dm, void *ptr, u32 length);
+void odm_allocate_memoryx(struct dm_struct *dm, void **ptr, u32 length);
+void odm_free_memoryx(struct dm_struct *dm, void *ptr, u32 length);
 
-void odm_move_memory(struct dm_struct *dm, void *dest, void *src, u32 length);
+void odm_move_memoryx(struct dm_struct *dm, void *dest, void *src, u32 length);
 
-s32 odm_compare_memory(struct dm_struct *dm, void *buf1, void *buf2,
+s32 odm_compare_memoryx(struct dm_struct *dm, void *buf1, void *buf2,
 		       u32 length);
 
-void odm_memory_set(struct dm_struct *dm, void *pbuf, s8 value, u32 length);
+void odm_memory_setx(struct dm_struct *dm, void *pbuf, s8 value, u32 length);
 
 /*@
  * ODM MISC-spin lock relative API.
  */
-void odm_acquire_spin_lock(struct dm_struct *dm, enum rt_spinlock_type type);
+void odm_acquire_spin_lockx(struct dm_struct *dm, enum rt_spinlock_type type);
 
-void odm_release_spin_lock(struct dm_struct *dm, enum rt_spinlock_type type);
+void odm_release_spin_lockx(struct dm_struct *dm, enum rt_spinlock_type type);
 
 #if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
 /*@
@@ -246,82 +246,82 @@ odm_is_work_item_scheduled(
 /*@
  * ODM Timer relative API.
  */
-void ODM_delay_ms(u32 ms);
+void ODM_delay_msx(u32 ms);
 
-void ODM_delay_us(u32 us);
+void ODM_delay_usx(u32 us);
 
-void ODM_sleep_ms(u32 ms);
+void ODM_sleep_msx(u32 ms);
 
-void ODM_sleep_us(u32 us);
+void ODM_sleep_usx(u32 us);
 
-void odm_set_timer(struct dm_struct *dm, struct phydm_timer_list *timer,
+void odm_set_timerx(struct dm_struct *dm, struct phydm_timer_list *timer,
 		   u32 ms_delay);
 
-void odm_initialize_timer(struct dm_struct *dm, struct phydm_timer_list *timer,
+void odm_initialize_timerx(struct dm_struct *dm, struct phydm_timer_list *timer,
 			  void *call_back_func, void *context,
 			  const char *sz_id);
 
-void odm_cancel_timer(struct dm_struct *dm, struct phydm_timer_list *timer);
+void odm_cancel_timerx(struct dm_struct *dm, struct phydm_timer_list *timer);
 
-void odm_release_timer(struct dm_struct *dm, struct phydm_timer_list *timer);
+void odm_release_timerx(struct dm_struct *dm, struct phydm_timer_list *timer);
 
 /*ODM FW relative API.*/
 
 enum hal_status
-phydm_set_reg_by_fw(struct dm_struct *dm, enum phydm_halmac_param config_type,
+phydm_set_reg_by_fwx(struct dm_struct *dm, enum phydm_halmac_param config_type,
 		    u32 offset, u32 data, u32 mask, enum rf_path e_rf_path,
 		    u32 delay_time);
 
-void odm_fill_h2c_cmd(struct dm_struct *dm, u8 element_id, u32 cmd_len,
+void odm_fill_h2c_cmdx(struct dm_struct *dm, u8 element_id, u32 cmd_len,
 		      u8 *cmd_buffer);
 
-u8 phydm_c2H_content_parsing(void *dm_void, u8 c2h_cmd_id, u8 c2h_cmd_len,
+u8 phydm_c2H_content_parsingx(void *dm_void, u8 c2h_cmd_id, u8 c2h_cmd_len,
 			     u8 *tmp_buf);
 
-u64 odm_get_current_time(struct dm_struct *dm);
-u64 odm_get_progressing_time(struct dm_struct *dm, u64 start_time);
+u64 odm_get_current_timex(struct dm_struct *dm);
+u64 odm_get_progressing_timex(struct dm_struct *dm, u64 start_time);
 
 #if (DM_ODM_SUPPORT_TYPE & (ODM_WIN | ODM_CE)) && \
 	(!defined(DM_ODM_CE_MAC80211) && !defined(DM_ODM_CE_MAC80211_V2))
 
-void phydm_set_hw_reg_handler_interface(struct dm_struct *dm, u8 reg_Name,
+void phydm_set_hw_reg_handler_interfacex(struct dm_struct *dm, u8 reg_Name,
 					u8 *val);
 
-void phydm_get_hal_def_var_handler_interface(struct dm_struct *dm,
+void phydm_get_hal_def_var_handler_interfacex(struct dm_struct *dm,
 					     enum _HAL_DEF_VARIABLE e_variable,
 					     void *value);
 
 #endif
 
-void odm_set_tx_power_index_by_rate_section(struct dm_struct *dm,
+void odm_set_tx_power_index_by_rate_sectionx(struct dm_struct *dm,
 					    enum rf_path path, u8 channel,
 					    u8 rate_section);
 
-u8 odm_get_tx_power_index(struct dm_struct *dm, enum rf_path path, u8 tx_rate,
+u8 odm_get_tx_power_indexx(struct dm_struct *dm, enum rf_path path, u8 tx_rate,
 			  u8 band_width, u8 channel);
 
-u8 odm_efuse_one_byte_read(struct dm_struct *dm, u16 addr, u8 *data,
+u8 odm_efuse_one_byte_readx(struct dm_struct *dm, u16 addr, u8 *data,
 			   boolean b_pseu_do_test);
 
-void odm_efuse_logical_map_read(struct dm_struct *dm, u8 type, u16 offset,
+void odm_efuse_logical_map_readx(struct dm_struct *dm, u8 type, u16 offset,
 				u32 *data);
 
 enum hal_status
-odm_iq_calibrate_by_fw(struct dm_struct *dm, u8 clear, u8 segment);
+odm_iq_calibratex_by_fw(struct dm_struct *dm, u8 clear, u8 segment);
 
-void odm_cmn_info_ptr_array_hook(struct dm_struct *dm,
+void odm_cmn_info_ptr_array_hookx(struct dm_struct *dm,
 				 enum odm_cmninfo cmn_info, u16 index,
 				 void *value);
 
-void phydm_cmn_sta_info_hook(struct dm_struct *dm, u8 index,
+void phydm_cmn_sta_info_hookx(struct dm_struct *dm, u8 index,
 			     struct cmn_sta_info *pcmn_sta_info);
 
-void phydm_macid2sta_idx_table(struct dm_struct *dm, u8 entry_idx,
+void phydm_macid2sta_idx_tablex(struct dm_struct *dm, u8 entry_idx,
 			       struct cmn_sta_info *pcmn_sta_info);
 
-void phydm_add_interrupt_mask_handler(struct dm_struct *dm, u8 interrupt_type);
+void phydm_add_interrupt_mask_handlerx(struct dm_struct *dm, u8 interrupt_type);
 
-void phydm_enable_rx_related_interrupt_handler(struct dm_struct *dm);
+void phydm_enable_rx_related_interrupt_handlerx(struct dm_struct *dm);
 
 #if 0
 boolean
@@ -332,13 +332,13 @@ phydm_get_txbf_en(
 );
 #endif
 
-void phydm_iqk_wait(struct dm_struct *dm, u32 timeout);
-u8 phydm_get_hwrate_to_mrate(struct dm_struct *dm, u8 rate);
+void phydm_iqk_waitx(struct dm_struct *dm, u32 timeout);
+u8 phydm_get_hwrate_to_mratex(struct dm_struct *dm, u8 rate);
 
-void phydm_set_crystalcap(struct dm_struct *dm, u8 crystal_cap);
-void phydm_run_in_thread_cmd(struct dm_struct *dm, void (*func)(void *),
+void phydm_set_crystalcapx(struct dm_struct *dm, u8 crystal_cap);
+void phydm_run_in_thread_cmdx(struct dm_struct *dm, void (*func)(void *),
 			     void *context);
-u8 phydm_get_tx_rate(struct dm_struct *dm);
+u8 phydm_get_tx_ratex(struct dm_struct *dm);
 u8 phydm_get_tx_power_dbm(struct dm_struct *dm, u8 rf_path,
 					u8 rate, u8 bandwidth, u8 channel);
 u64 phydm_division64(u64 x, u64 y);

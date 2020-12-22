@@ -44,14 +44,14 @@ void phydm_write_dynamic_cca(
 
 	if (dm->support_ic_type & ODM_IC_11N_SERIES) {
 		if (curr_mf_state == MF_USC_LSC) {
-			odm_set_bb_reg(dm, R_0xc6c, 0x180, MF_USC_LSC);
+			odm_set_bb_regx(dm, R_0xc6c, 0x180, MF_USC_LSC);
 			/*@40M OFDM MF CCA threshold*/
-			odm_set_bb_reg(dm, R_0xc84, 0xf0000000,
+			odm_set_bb_regx(dm, R_0xc84, 0xf0000000,
 				       pri_cca->cca_th_40m_bkp);
 		} else {
-			odm_set_bb_reg(dm, R_0xc6c, 0x180, curr_mf_state);
+			odm_set_bb_regx(dm, R_0xc6c, 0x180, curr_mf_state);
 			/*@40M OFDM MF CCA threshold*/
-			odm_set_bb_reg(dm, R_0xc84, 0xf0000000, 0);
+			odm_set_bb_regx(dm, R_0xc84, 0xf0000000, 0);
 		}
 	}
 
@@ -152,7 +152,7 @@ void phydm_primary_cca_init(void *dm_void)
 #endif
 	pri_cca->mf_state = 0xff;
 	pri_cca->pre_bw = (enum channel_width)0xff;
-	pri_cca->cca_th_40m_bkp = (u8)odm_get_bb_reg(dm, R_0xc84, 0xf0000000);
+	pri_cca->cca_th_40m_bkp = (u8)odm_get_bb_regx(dm, R_0xc84, 0xf0000000);
 }
 
 void phydm_primary_cca(void *dm_void)

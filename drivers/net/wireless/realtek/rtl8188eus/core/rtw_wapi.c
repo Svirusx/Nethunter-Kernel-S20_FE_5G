@@ -149,7 +149,7 @@ WapiGetEntryForCamWrite(_adapter *padapter, u8 *pMacAddr, u8 KID, BOOLEAN IsMsk)
 	/* exist? */
 	for (i = 0; i < WAPI_CAM_ENTRY_NUM; i++) {
 		if (pWapiInfo->wapiCamEntry[i].IsUsed
-		    && (_rtw_memcmp(pMacAddr, pWapiInfo->wapiCamEntry[i].PeerMacAddr, ETH_ALEN) == _TRUE)
+		    && (_rtw_memcmpx(pMacAddr, pWapiInfo->wapiCamEntry[i].PeerMacAddr, ETH_ALEN) == _TRUE)
 		    && pWapiInfo->wapiCamEntry[i].keyidx == KID
 		    && pWapiInfo->wapiCamEntry[i].type == IsMsk) {
 			ret = pWapiInfo->wapiCamEntry[i].entry_idx; /* cover it */
@@ -163,7 +163,7 @@ WapiGetEntryForCamWrite(_adapter *padapter, u8 *pMacAddr, u8 KID, BOOLEAN IsMsk)
 				pWapiInfo->wapiCamEntry[i].IsUsed = 1;
 				pWapiInfo->wapiCamEntry[i].type = IsMsk;
 				pWapiInfo->wapiCamEntry[i].keyidx = KID;
-				_rtw_memcpy(pWapiInfo->wapiCamEntry[i].PeerMacAddr, pMacAddr, ETH_ALEN);
+				_rtw_memcpyx(pWapiInfo->wapiCamEntry[i].PeerMacAddr, pMacAddr, ETH_ALEN);
 				ret = pWapiInfo->wapiCamEntry[i].entry_idx;
 				break;
 			}
@@ -196,12 +196,12 @@ u8 WapiGetEntryForCamClear(_adapter *padapter, u8 *pPeerMac, u8 keyid, u8 IsMsk)
 
 	for (i = 0; i < WAPI_CAM_ENTRY_NUM; i++) {
 		if (pWapiInfo->wapiCamEntry[i].IsUsed
-		    && (_rtw_memcmp(pPeerMac, pWapiInfo->wapiCamEntry[i].PeerMacAddr, ETH_ALEN) == _TRUE)
+		    && (_rtw_memcmpx(pPeerMac, pWapiInfo->wapiCamEntry[i].PeerMacAddr, ETH_ALEN) == _TRUE)
 		    && pWapiInfo->wapiCamEntry[i].keyidx == keyid
 		    && pWapiInfo->wapiCamEntry[i].type == IsMsk) {
 			pWapiInfo->wapiCamEntry[i].IsUsed = 0;
 			pWapiInfo->wapiCamEntry[i].keyidx = 2;
-			_rtw_memset(pWapiInfo->wapiCamEntry[i].PeerMacAddr, 0, ETH_ALEN);
+			_rtw_memsetx(pWapiInfo->wapiCamEntry[i].PeerMacAddr, 0, ETH_ALEN);
 
 			WAPI_TRACE(WAPI_API, "<========== %s\n", __FUNCTION__);
 			return pWapiInfo->wapiCamEntry[i].entry_idx;
@@ -244,7 +244,7 @@ WapiResetAllCamEntry(_adapter *padapter)
 	pWapiInfo =  &padapter->wapiInfo;
 
 	for (i = 0; i < WAPI_CAM_ENTRY_NUM; i++) {
-		_rtw_memset(pWapiInfo->wapiCamEntry[i].PeerMacAddr, 0, ETH_ALEN);
+		_rtw_memsetx(pWapiInfo->wapiCamEntry[i].PeerMacAddr, 0, ETH_ALEN);
 		pWapiInfo->wapiCamEntry[i].IsUsed = 0;
 		pWapiInfo->wapiCamEntry[i].keyidx = 2; /* invalid */
 		pWapiInfo->wapiCamEntry[i].entry_idx = 4 + i * 2;
@@ -284,7 +284,7 @@ u8 WapiWriteOneCamEntry(
 			usConfig |= (0x01 << 5);
 	}
 
-	write_cam(padapter, EntryId, usConfig, pMacAddr, pKey);
+	write_camx(padapter, EntryId, usConfig, pMacAddr, pKey);
 
 	WAPI_TRACE(WAPI_API, "===========> %s\n", __FUNCTION__);
 	return 1;
@@ -310,13 +310,13 @@ void rtw_wapi_init(_adapter *padapter)
 	INIT_LIST_HEAD(&pWapiInfo->wapiBKIDIdleList);
 	INIT_LIST_HEAD(&pWapiInfo->wapiBKIDStoreList);
 	for (i = 0; i < WAPI_MAX_BKID_NUM; i++)
-		list_add_tail(&pWapiInfo->wapiBKID[i].list, &pWapiInfo->wapiBKIDIdleList);
+		list_addx_tail(&pWapiInfo->wapiBKID[i].list, &pWapiInfo->wapiBKIDIdleList);
 
 	/* Init STA List */
 	INIT_LIST_HEAD(&pWapiInfo->wapiSTAIdleList);
 	INIT_LIST_HEAD(&pWapiInfo->wapiSTAUsedList);
 	for (i = 0; i < WAPI_MAX_STAINFO_NUM; i++)
-		list_add_tail(&pWapiInfo->wapiSta[i].list, &pWapiInfo->wapiSTAIdleList);
+		list_addx_tail(&pWapiInfo->wapiSta[i].list, &pWapiInfo->wapiSTAIdleList);
 
 	for (i = 0; i < WAPI_CAM_ENTRY_NUM; i++) {
 		pWapiInfo->wapiCamEntry[i].IsUsed = 0;
@@ -387,7 +387,7 @@ u8 rtw_wapi_is_wai_packet(_adapter *padapter, u8 *pkt_data)
 		bFind = false;
 	else {
 		list_for_each_entry(pWapiSta, &pWapiInfo->wapiSTAUsedList, list) {
-			if (_rtw_memcmp(pTaddr, pWapiSta->PeerMacAddr, 6) == _TRUE) {
+			if (_rtw_memcmpx(pTaddr, pWapiSta->PeerMacAddr, 6) == _TRUE) {
 				bFind = true;
 				break;
 			}
@@ -438,9 +438,9 @@ void rtw_wapi_update_info(_adapter *padapter, union recv_frame *precv_frame)
 		precv_hdr->UserPriority = 0;
 
 	pTA = get_addr2_ptr(ptr);
-	_rtw_memcpy((u8 *)precv_hdr->WapiSrcAddr, pTA, 6);
+	_rtw_memcpyx((u8 *)precv_hdr->WapiSrcAddr, pTA, 6);
 	pRecvPN = ptr + precv_hdr->attrib.hdrlen + 2;
-	_rtw_memcpy((u8 *)precv_hdr->WapiTempPN, pRecvPN, 16);
+	_rtw_memcpyx((u8 *)precv_hdr->WapiTempPN, pRecvPN, 16);
 
 	WAPI_TRACE(WAPI_RX, "<========== %s\n", __FUNCTION__);
 }
@@ -503,7 +503,7 @@ u8 rtw_wapi_check_for_drop(
 		bFind = false;
 	else {
 		list_for_each_entry(pWapiSta, &pWapiInfo->wapiSTAUsedList, list) {
-			if (_rtw_memcmp(precv_hdr->WapiSrcAddr, pWapiSta->PeerMacAddr, ETH_ALEN) == _TRUE) {
+			if (_rtw_memcmpx(precv_hdr->WapiSrcAddr, pWapiSta->PeerMacAddr, ETH_ALEN) == _TRUE) {
 				bFind = true;
 				break;
 			}
@@ -543,12 +543,12 @@ u8 rtw_wapi_check_for_drop(
 		if (!WapiComparePN(precv_hdr->WapiTempPN, pLastRecvPN)) {
 			WAPI_TRACE(WAPI_RX, "%s: Equal PN!!\n", __FUNCTION__);
 			if (IS_MCAST(precv_hdr->attrib.ra))
-				_rtw_memcpy(pLastRecvPN, WapiAEMultiCastPNInitialValueSrc, 16);
+				_rtw_memcpyx(pLastRecvPN, WapiAEMultiCastPNInitialValueSrc, 16);
 			else
-				_rtw_memcpy(pLastRecvPN, WapiAEPNInitialValueSrc, 16);
+				_rtw_memcpyx(pLastRecvPN, WapiAEPNInitialValueSrc, 16);
 			bDrop = true;
 		} else
-			_rtw_memcpy(pLastRecvPN, precv_hdr->WapiTempPN, 16);
+			_rtw_memcpyx(pLastRecvPN, precv_hdr->WapiTempPN, 16);
 	}
 
 	WAPI_TRACE(WAPI_RX, "<========== %s\n", __FUNCTION__);
@@ -571,7 +571,7 @@ void rtw_build_probe_resp_wapi_ie(_adapter *padapter, unsigned char *pframe, str
 	WapiIELength = pWapiInfo->wapiIELength;
 	pframe[0] = _WAPI_IE_;
 	pframe[1] = WapiIELength;
-	_rtw_memcpy(pframe + 2, pWapiInfo->wapiIE, WapiIELength);
+	_rtw_memcpyx(pframe + 2, pWapiInfo->wapiIE, WapiIELength);
 	pframe += WapiIELength + 2;
 	pattrib->pktlen += WapiIELength + 2;
 
@@ -593,7 +593,7 @@ void rtw_build_beacon_wapi_ie(_adapter *padapter, unsigned char *pframe, struct 
 	WapiIELength = pWapiInfo->wapiIELength;
 	pframe[0] = _WAPI_IE_;
 	pframe[1] = WapiIELength;
-	_rtw_memcpy(pframe + 2, pWapiInfo->wapiIE, WapiIELength);
+	_rtw_memcpyx(pframe + 2, pWapiInfo->wapiIE, WapiIELength);
 	pframe += WapiIELength + 2;
 	pattrib->pktlen += WapiIELength + 2;
 
@@ -620,16 +620,16 @@ void rtw_build_assoc_req_wapi_ie(_adapter *padapter, unsigned char *pframe, stru
 	if (!list_empty(&(pWapiInfo->wapiBKIDStoreList))) {
 		list_for_each_entry(pWapiBKID, &pWapiInfo->wapiBKIDStoreList, list) {
 			bkidNum++;
-			_rtw_memcpy(pWapiInfo->wapiIE + WapiIELength + 2, pWapiBKID->bkid, 16);
+			_rtw_memcpyx(pWapiInfo->wapiIE + WapiIELength + 2, pWapiBKID->bkid, 16);
 			WapiIELength += 16;
 		}
 	}
-	_rtw_memcpy(pWapiInfo->wapiIE + WapiIELength, &bkidNum, 2);
+	_rtw_memcpyx(pWapiInfo->wapiIE + WapiIELength, &bkidNum, 2);
 	WapiIELength += 2;
 
 	pframe[0] = _WAPI_IE_;
 	pframe[1] = WapiIELength;
-	_rtw_memcpy(pframe + 2, pWapiInfo->wapiIE, WapiIELength);
+	_rtw_memcpyx(pframe + 2, pWapiInfo->wapiIE, WapiIELength);
 	pframe += WapiIELength + 2;
 	pattrib->pktlen += WapiIELength + 2;
 	WAPI_TRACE(WAPI_MLME, "<========== %s\n", __FUNCTION__);
@@ -652,16 +652,16 @@ void rtw_wapi_on_assoc_ok(_adapter *padapter, PNDIS_802_11_VARIABLE_IEs pIE)
 
 	pWapiSta = (PRT_WAPI_STA_INFO)list_entry(pWapiInfo->wapiSTAIdleList.next, RT_WAPI_STA_INFO, list);
 	list_del_init(&pWapiSta->list);
-	list_add_tail(&pWapiSta->list, &pWapiInfo->wapiSTAUsedList);
-	_rtw_memcpy(pWapiSta->PeerMacAddr, padapter->mlmeextpriv.mlmext_info.network.MacAddress, 6);
-	_rtw_memcpy(pWapiSta->lastRxMulticastPN, WapiAEMultiCastPNInitialValueSrc, 16);
-	_rtw_memcpy(pWapiSta->lastRxUnicastPN, WapiAEPNInitialValueSrc, 16);
+	list_addx_tail(&pWapiSta->list, &pWapiInfo->wapiSTAUsedList);
+	_rtw_memcpyx(pWapiSta->PeerMacAddr, padapter->mlmeextpriv.mlmext_info.network.MacAddress, 6);
+	_rtw_memcpyx(pWapiSta->lastRxMulticastPN, WapiAEMultiCastPNInitialValueSrc, 16);
+	_rtw_memcpyx(pWapiSta->lastRxUnicastPN, WapiAEPNInitialValueSrc, 16);
 
 	/* For chenk PN error with Qos Data after s3: add by ylb 20111114 */
-	_rtw_memcpy(pWapiSta->lastRxUnicastPNBEQueue, WapiAEPNInitialValueSrc, 16);
-	_rtw_memcpy(pWapiSta->lastRxUnicastPNBKQueue, WapiAEPNInitialValueSrc, 16);
-	_rtw_memcpy(pWapiSta->lastRxUnicastPNVIQueue, WapiAEPNInitialValueSrc, 16);
-	_rtw_memcpy(pWapiSta->lastRxUnicastPNVOQueue, WapiAEPNInitialValueSrc, 16);
+	_rtw_memcpyx(pWapiSta->lastRxUnicastPNBEQueue, WapiAEPNInitialValueSrc, 16);
+	_rtw_memcpyx(pWapiSta->lastRxUnicastPNBKQueue, WapiAEPNInitialValueSrc, 16);
+	_rtw_memcpyx(pWapiSta->lastRxUnicastPNVIQueue, WapiAEPNInitialValueSrc, 16);
+	_rtw_memcpyx(pWapiSta->lastRxUnicastPNVOQueue, WapiAEPNInitialValueSrc, 16);
 
 	WAPI_TRACE(WAPI_MLME, "<========== %s\n", __FUNCTION__);
 }
@@ -683,12 +683,12 @@ void rtw_wapi_return_one_sta_info(_adapter *padapter, u8 *MacAddr)
 		return;
 	}
 
-	if (check_fwstate(pmlmepriv, WIFI_STATION_STATE)) {
+	if (check_fwstatex(pmlmepriv, WIFI_STATION_STATE)) {
 		while (!list_empty(&(pWapiInfo->wapiBKIDStoreList))) {
 			pWapiBkid = (PRT_WAPI_BKID)list_entry(pWapiInfo->wapiBKIDStoreList.next, RT_WAPI_BKID, list);
 			list_del_init(&pWapiBkid->list);
-			_rtw_memset(pWapiBkid->bkid, 0, 16);
-			list_add_tail(&pWapiBkid->list, &pWapiInfo->wapiBKIDIdleList);
+			_rtw_memsetx(pWapiBkid->bkid, 0, 16);
+			list_addx_tail(&pWapiBkid->list, &pWapiInfo->wapiBKIDIdleList);
 		}
 	}
 
@@ -729,12 +729,12 @@ void rtw_wapi_return_one_sta_info(_adapter *padapter, u8 *MacAddr)
 				return;
 			}
 
-			if (_rtw_memcmp(pWapiStaInfo->PeerMacAddr, MacAddr, ETH_ALEN) == _TRUE) {
+			if (_rtw_memcmpx(pWapiStaInfo->PeerMacAddr, MacAddr, ETH_ALEN) == _TRUE) {
 				pWapiStaInfo->bAuthenticateInProgress = false;
 				pWapiStaInfo->bSetkeyOk = false;
-				_rtw_memset(pWapiStaInfo->PeerMacAddr, 0, ETH_ALEN);
+				_rtw_memsetx(pWapiStaInfo->PeerMacAddr, 0, ETH_ALEN);
 				list_del_init(&pWapiStaInfo->list);
-				list_add_tail(&pWapiStaInfo->list, &pWapiInfo->wapiSTAIdleList);
+				list_addx_tail(&pWapiStaInfo->list, &pWapiInfo->wapiSTAIdleList);
 				break;
 			}
 
@@ -750,7 +750,7 @@ void rtw_wapi_return_one_sta_info(_adapter *padapter, u8 *MacAddr)
 			list_del_init(&pWapiStaInfo->list);
 			memset(pWapiStaInfo->PeerMacAddr, 0, ETH_ALEN);
 			pWapiStaInfo->bSetkeyOk = 0;
-			list_add_tail(&pWapiStaInfo->list, &pWapiInfo->wapiSTAIdleList);
+			list_addx_tail(&pWapiStaInfo->list, &pWapiInfo->wapiSTAIdleList);
 		}
 
 	}
@@ -779,7 +779,7 @@ void rtw_wapi_return_all_sta_info(_adapter *padapter)
 		list_del_init(&pWapiStaInfo->list);
 		memset(pWapiStaInfo->PeerMacAddr, 0, ETH_ALEN);
 		pWapiStaInfo->bSetkeyOk = 0;
-		list_add_tail(&pWapiStaInfo->list, &pWapiInfo->wapiSTAIdleList);
+		list_addx_tail(&pWapiStaInfo->list, &pWapiInfo->wapiSTAIdleList);
 	}
 
 	/* BKID List */
@@ -787,7 +787,7 @@ void rtw_wapi_return_all_sta_info(_adapter *padapter)
 		pWapiBkid = (PRT_WAPI_BKID)list_entry(pWapiInfo->wapiBKIDStoreList.next, RT_WAPI_BKID, list);
 		list_del_init(&pWapiBkid->list);
 		memset(pWapiBkid->bkid, 0, 16);
-		list_add_tail(&pWapiBkid->list, &pWapiInfo->wapiBKIDIdleList);
+		list_addx_tail(&pWapiBkid->list, &pWapiInfo->wapiBKIDIdleList);
 	}
 	WAPI_TRACE(WAPI_API, "<========== %s\n", __FUNCTION__);
 }
@@ -797,10 +797,10 @@ void CAM_empty_entry(
 	u8			ucIndex
 )
 {
-	rtw_hal_set_hwreg(Adapter, HW_VAR_CAM_EMPTY_ENTRY, (u8 *)(&ucIndex));
+	rtw_hal_set_hwregx(Adapter, HW_VAR_CAM_EMPTY_ENTRY, (u8 *)(&ucIndex));
 }
 
-void rtw_wapi_clear_cam_entry(_adapter *padapter, u8 *pMacAddr)
+void rtw_wapi_clear_cam_entryx(_adapter *padapter, u8 *pMacAddr)
 {
 	u8 UcIndex = 0;
 
@@ -847,7 +847,7 @@ void rtw_wapi_clear_all_cam_entry(_adapter *padapter)
 		return;
 	}
 
-	invalidate_cam_all(padapter); /* is this ok? */
+	invalidate_cam_allx(padapter); /* is this ok? */
 	WapiResetAllCamEntry(padapter);
 
 	WAPI_TRACE(WAPI_API, "===========> %s\n", __FUNCTION__);
@@ -944,7 +944,7 @@ void wapi_test_set_key(struct _adapter *padapter, u8 *buf)
 			list_del_init(&pWapiBkid->list);
 			memcpy(pWapiBkid->bkid, data + 10, 16);
 			WAPI_DATA(WAPI_INIT, "SetKey - BKID", pWapiBkid->bkid, 16);
-			list_add_tail(&pWapiBkid->list, &pWapiInfo->wapiBKIDStoreList);
+			list_addx_tail(&pWapiBkid->list, &pWapiInfo->wapiBKIDStoreList);
 		}
 	} else {
 		list_for_each_entry(pWapiSta, &pWapiInfo->wapiSTAUsedList, list) {
@@ -1171,12 +1171,12 @@ void rtw_wapi_get_iv(_adapter *padapter, u8 *pRA, u8 *IV)
 	} else {
 		if (list_empty(&pWapiInfo->wapiSTAUsedList)) {
 			WAPI_TRACE(WAPI_RX, "rtw_wapi_get_iv: list is empty\n");
-			_rtw_memset(IV, 10, 18);
+			_rtw_memsetx(IV, 10, 18);
 			return;
 		} else {
 			list_for_each_entry(pWapiSta, &pWapiInfo->wapiSTAUsedList, list) {
 				WAPI_DATA(WAPI_RX, "rtw_wapi_get_iv: peermacaddr ", pWapiSta->PeerMacAddr, 6);
-				if (_rtw_memcmp((u8 *)pWapiSta->PeerMacAddr, pRA, 6) == _TRUE) {
+				if (_rtw_memcmpx((u8 *)pWapiSta->PeerMacAddr, pRA, 6) == _TRUE) {
 					bFindMatchPeer = true;
 					break;
 				}
@@ -1197,7 +1197,7 @@ void rtw_wapi_get_iv(_adapter *padapter, u8 *pRA, u8 *IV)
 
 					pWapiExt->Reserved = 0;
 					bPNOverflow = WapiIncreasePN(pWapiSta->lastTxUnicastPN, 2);
-					_rtw_memcpy(pWapiExt->PN, pWapiSta->lastTxUnicastPN, 16);
+					_rtw_memcpyx(pWapiExt->PN, pWapiSta->lastTxUnicastPN, 16);
 
 				}
 			}
@@ -1231,7 +1231,7 @@ bool rtw_wapi_drop_for_key_absent(_adapter *padapter, u8 *pRA)
 			if (!list_empty(&pWapiInfo->wapiSTAUsedList)) {
 				list_for_each_entry(pWapiSta, &pWapiInfo->wapiSTAUsedList, list) {
 					WAPI_DATA(WAPI_RX, "rtw_wapi_drop_for_key_absent: pWapiSta->PeerMacAddr ", pWapiSta->PeerMacAddr, 6);
-					if (_rtw_memcmp(pRA, pWapiSta->PeerMacAddr, 6) == _TRUE) {
+					if (_rtw_memcmpx(pRA, pWapiSta->PeerMacAddr, 6) == _TRUE) {
 						bFindMatchPeer = true;
 						break;
 					}
@@ -1272,20 +1272,20 @@ void rtw_wapi_set_set_encryption(_adapter *padapter, struct ieee_param *param)
 
 	if (param->u.crypt.set_tx == 1) {
 		list_for_each_entry(pWapiSta, &pWapiInfo->wapiSTAUsedList, list) {
-			if (_rtw_memcmp(pWapiSta->PeerMacAddr, param->sta_addr, 6)) {
-				_rtw_memcpy(pWapiSta->lastTxUnicastPN, WapiASUEPNInitialValueSrc, 16);
+			if (_rtw_memcmpx(pWapiSta->PeerMacAddr, param->sta_addr, 6)) {
+				_rtw_memcpyx(pWapiSta->lastTxUnicastPN, WapiASUEPNInitialValueSrc, 16);
 
 				pWapiSta->wapiUsk.bSet = true;
-				_rtw_memcpy(pWapiSta->wapiUsk.dataKey, param->u.crypt.key, 16);
-				_rtw_memcpy(pWapiSta->wapiUsk.micKey, param->u.crypt.key + 16, 16);
+				_rtw_memcpyx(pWapiSta->wapiUsk.dataKey, param->u.crypt.key, 16);
+				_rtw_memcpyx(pWapiSta->wapiUsk.micKey, param->u.crypt.key + 16, 16);
 				pWapiSta->wapiUsk.keyId = param->u.crypt.idx ;
 				pWapiSta->wapiUsk.bTxEnable = true;
 
-				_rtw_memcpy(pWapiSta->lastRxUnicastPNBEQueue, WapiAEPNInitialValueSrc, 16);
-				_rtw_memcpy(pWapiSta->lastRxUnicastPNBKQueue, WapiAEPNInitialValueSrc, 16);
-				_rtw_memcpy(pWapiSta->lastRxUnicastPNVIQueue, WapiAEPNInitialValueSrc, 16);
-				_rtw_memcpy(pWapiSta->lastRxUnicastPNVOQueue, WapiAEPNInitialValueSrc, 16);
-				_rtw_memcpy(pWapiSta->lastRxUnicastPN, WapiAEPNInitialValueSrc, 16);
+				_rtw_memcpyx(pWapiSta->lastRxUnicastPNBEQueue, WapiAEPNInitialValueSrc, 16);
+				_rtw_memcpyx(pWapiSta->lastRxUnicastPNBKQueue, WapiAEPNInitialValueSrc, 16);
+				_rtw_memcpyx(pWapiSta->lastRxUnicastPNVIQueue, WapiAEPNInitialValueSrc, 16);
+				_rtw_memcpyx(pWapiSta->lastRxUnicastPNVOQueue, WapiAEPNInitialValueSrc, 16);
+				_rtw_memcpyx(pWapiSta->lastRxUnicastPN, WapiAEPNInitialValueSrc, 16);
 				pWapiSta->wapiUskUpdate.bTxEnable = false;
 				pWapiSta->wapiUskUpdate.bSet = false;
 
@@ -1297,17 +1297,17 @@ void rtw_wapi_set_set_encryption(_adapter *padapter, struct ieee_param *param)
 		}
 	} else {
 		list_for_each_entry(pWapiSta, &pWapiInfo->wapiSTAUsedList, list) {
-			if (_rtw_memcmp(pWapiSta->PeerMacAddr, get_bssid(pmlmepriv), 6)) {
+			if (_rtw_memcmpx(pWapiSta->PeerMacAddr, get_bssid(pmlmepriv), 6)) {
 				pWapiSta->wapiMsk.bSet = true;
-				_rtw_memcpy(pWapiSta->wapiMsk.dataKey, param->u.crypt.key, 16);
-				_rtw_memcpy(pWapiSta->wapiMsk.micKey, param->u.crypt.key + 16, 16);
+				_rtw_memcpyx(pWapiSta->wapiMsk.dataKey, param->u.crypt.key, 16);
+				_rtw_memcpyx(pWapiSta->wapiMsk.micKey, param->u.crypt.key + 16, 16);
 				pWapiSta->wapiMsk.keyId = param->u.crypt.idx ;
 				pWapiSta->wapiMsk.bTxEnable = false;
 				if (!pWapiSta->bSetkeyOk)
 					pWapiSta->bSetkeyOk = true;
 				pWapiSta->bAuthenticateInProgress = false;
 
-				_rtw_memcpy(pWapiSta->lastRxMulticastPN, WapiAEMultiCastPNInitialValueSrc, 16);
+				_rtw_memcpyx(pWapiSta->lastRxMulticastPN, WapiAEMultiCastPNInitialValueSrc, 16);
 
 				if (psecuritypriv->sw_decrypt == false) {
 					/* set rx broadcast key for ASUE */

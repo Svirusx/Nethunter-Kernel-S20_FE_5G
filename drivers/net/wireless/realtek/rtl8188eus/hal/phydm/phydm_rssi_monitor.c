@@ -32,7 +32,7 @@
 
 #ifdef PHYDM_SUPPORT_RSSI_MONITOR
 
-void phydm_rssi_monitor_h2c(void *dm_void, u8 macid)
+void phydm_rssi_monitor_h2cx(void *dm_void, u8 macid)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ra_table *ra_t = &dm->dm_ra_table;
@@ -91,11 +91,11 @@ void phydm_rssi_monitor_h2c(void *dm_void, u8 macid)
 	else
 	#endif
 	{
-		odm_fill_h2c_cmd(dm, ODM_H2C_RSSI_REPORT, H2C_MAX_LENGTH, h2c);
+		odm_fill_h2c_cmdx(dm, ODM_H2C_RSSI_REPORT, H2C_MAX_LENGTH, h2c);
 	}
 }
 
-void phydm_calculate_rssi_min_max(void *dm_void)
+void phydm_calculate_rssi_min_maxx(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct cmn_sta_info *sta;
@@ -125,7 +125,7 @@ void phydm_calculate_rssi_min_max(void *dm_void)
 
 			/*@[Send RSSI to FW]*/
 			if (!sta->ra_info.disable_ra)
-				phydm_rssi_monitor_h2c(dm, i);
+				phydm_rssi_monitor_h2cx(dm, i);
 
 			if (sta_cnt == dm->number_linked_client)
 				break;
@@ -137,7 +137,7 @@ void phydm_calculate_rssi_min_max(void *dm_void)
 	dm->rssi_min = (u8)rssi_min_tmp;
 }
 
-void phydm_rssi_monitor_check(void *dm_void)
+void phydm_rssi_monitor_checkx(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
@@ -150,13 +150,13 @@ void phydm_rssi_monitor_check(void *dm_void)
 
 	PHYDM_DBG(dm, DBG_RSSI_MNTR, "%s ======>\n", __func__);
 
-	phydm_calculate_rssi_min_max(dm);
+	phydm_calculate_rssi_min_maxx(dm);
 
 	PHYDM_DBG(dm, DBG_RSSI_MNTR, "RSSI {max, min} = {%d, %d}\n",
 		  dm->rssi_max, dm->rssi_min);
 }
 
-void phydm_rssi_monitor_init(void *dm_void)
+void phydm_rssi_monitor_initx(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ra_table *ra_tab = &dm->dm_ra_table;

@@ -151,24 +151,24 @@ typedef _sema _pwrlock;
 
 __inline static void _init_pwrlock(_pwrlock *plock)
 {
-	_rtw_init_sema(plock, 1);
+	_rtw_init_semax(plock, 1);
 }
 
 __inline static void _free_pwrlock(_pwrlock *plock)
 {
-	_rtw_free_sema(plock);
+	_rtw_free_semax(plock);
 }
 
 
 __inline static void _enter_pwrlock(_pwrlock *plock)
 {
-	_rtw_down_sema(plock);
+	_rtw_down_semax(plock);
 }
 
 
 __inline static void _exit_pwrlock(_pwrlock *plock)
 {
-	_rtw_up_sema(plock);
+	_rtw_up_semax(plock);
 }
 
 #define LPS_DELAY_MS	1000 /* 1 sec */
@@ -380,7 +380,7 @@ struct pwrctrl_priv {
 	/* and this variable should be protected by lock. */
 	u32 ps_deny;
 
-	u8 ps_processing; /* temporarily used to mark whether in rtw_ps_processor */
+	u8 ps_processing; /* temporarily used to mark whether in rtw_ps_processorx */
 
 	u8 fw_psmode_iface_id;
 	u8	bLeisurePs;
@@ -495,7 +495,7 @@ struct pwrctrl_priv {
 #define rtw_get_ips_mode_req(pwrctl) \
 	(pwrctl)->ips_mode_req
 
-#define rtw_ips_mode_req(pwrctl, ips_mode) \
+#define rtw_ips_modex_req(pwrctl, ips_mode) \
 	(pwrctl)->ips_mode_req = (ips_mode)
 
 #define RTW_PWR_STATE_CHK_INTERVAL 2000
@@ -509,8 +509,8 @@ struct pwrctrl_priv {
 #define rtw_set_pwr_state_check_timer(pwrctl) \
 	_rtw_set_pwr_state_check_timer((pwrctl), (pwrctl)->pwr_state_check_interval)
 
-extern void rtw_init_pwrctrl_priv(_adapter *adapter);
-extern void rtw_free_pwrctrl_priv(_adapter *adapter);
+extern void rtw_init_pwrctrl_privx(_adapter *adapter);
+extern void rtw_free_pwrctrl_privx(_adapter *adapter);
 
 #ifdef CONFIG_LPS_LCLK
 s32 rtw_register_task_alive(PADAPTER, u32 task);
@@ -527,8 +527,8 @@ extern void cpwm_int_hdl(PADAPTER padapter, struct reportpwrstate_parm *preportp
 extern void LPS_Leave_check(PADAPTER padapter);
 #endif
 
-extern void LeaveAllPowerSaveMode(PADAPTER Adapter);
-extern void LeaveAllPowerSaveModeDirect(PADAPTER Adapter);
+extern void LeaveAllPowerSaveModex(PADAPTER Adapter);
+extern void LeaveAllPowerSaveModexDirect(PADAPTER Adapter);
 #ifdef CONFIG_IPS
 void _ips_enter(_adapter *padapter);
 void ips_enter(_adapter *padapter);
@@ -536,13 +536,13 @@ int _ips_leave(_adapter *padapter);
 int ips_leave(_adapter *padapter);
 #endif
 
-void rtw_ps_processor(_adapter *padapter);
+void rtw_ps_processorx(_adapter *padapter);
 
 #ifdef CONFIG_AUTOSUSPEND
 int autoresume_enter(_adapter *padapter);
 #endif
 #ifdef SUPPORT_HW_RFOFF_DETECTED
-rt_rf_power_state RfOnOffDetect(PADAPTER pAdapter);
+rt_rf_power_state RfOnOffDetectx(PADAPTER pAdapter);
 #endif
 
 
@@ -583,22 +583,22 @@ void rtw_unregister_early_suspend(struct pwrctrl_priv *pwrpriv);
 #define rtw_unregister_early_suspend(pwrpriv) do {} while (0)
 #endif /* CONFIG_HAS_EARLYSUSPEND || CONFIG_ANDROID_POWER */
 
-u8 rtw_interface_ps_func(_adapter *padapter, HAL_INTF_PS_FUNC efunc_id, u8 *val);
-void rtw_set_ips_deny(_adapter *padapter, u32 ms);
-int _rtw_pwr_wakeup(_adapter *padapter, u32 ips_deffer_ms, const char *caller);
-#define rtw_pwr_wakeup(adapter) _rtw_pwr_wakeup(adapter, RTW_PWR_STATE_CHK_INTERVAL, __FUNCTION__)
-#define rtw_pwr_wakeup_ex(adapter, ips_deffer_ms) _rtw_pwr_wakeup(adapter, ips_deffer_ms, __FUNCTION__)
-int rtw_pm_set_ips(_adapter *padapter, u8 mode);
-int rtw_pm_set_lps(_adapter *padapter, u8 mode);
-int rtw_pm_set_lps_level(_adapter *padapter, u8 level);
+u8 rtw_interface_ps_funcx(_adapter *padapter, HAL_INTF_PS_FUNC efunc_id, u8 *val);
+void rtw_set_ips_denyx(_adapter *padapter, u32 ms);
+int _rtw_pwr_wakeupx(_adapter *padapter, u32 ips_deffer_ms, const char *caller);
+#define rtw_pwr_wakeupx(adapter) _rtw_pwr_wakeupx(adapter, RTW_PWR_STATE_CHK_INTERVAL, __FUNCTION__)
+#define rtw_pwr_wakeupx_ex(adapter, ips_deffer_ms) _rtw_pwr_wakeupx(adapter, ips_deffer_ms, __FUNCTION__)
+int rtw_pm_set_ipsx(_adapter *padapter, u8 mode);
+int rtw_pm_set_lpsx(_adapter *padapter, u8 mode);
+int rtw_pm_set_lpsx_level(_adapter *padapter, u8 level);
 #ifdef CONFIG_WOWLAN
 int rtw_pm_set_wow_lps(_adapter *padapter, u8 mode);
 int rtw_pm_set_wow_lps_level(_adapter *padapter, u8 level);
 #endif /* CONFIG_WOWLAN */
 
-void rtw_ps_deny(PADAPTER padapter, PS_DENY_REASON reason);
-void rtw_ps_deny_cancel(PADAPTER padapter, PS_DENY_REASON reason);
-u32 rtw_ps_deny_get(PADAPTER padapter);
+void rtw_ps_denyx(PADAPTER padapter, PS_DENY_REASON reason);
+void rtw_ps_denyx_cancel(PADAPTER padapter, PS_DENY_REASON reason);
+u32 rtw_ps_denyx_get(PADAPTER padapter);
 
 #if defined(CONFIG_WOWLAN)
 void rtw_get_current_ip_address(PADAPTER padapter, u8 *pcurrentip);
@@ -610,6 +610,6 @@ void rtw_wow_pattern_sw_reset(_adapter *adapter);
 u8 rtw_set_default_pattern(_adapter *adapter);
 void rtw_wow_pattern_sw_dump(_adapter *adapter);
 #endif /* CONFIG_WOWLAN */
-void rtw_ssmps_enter(_adapter *adapter, struct sta_info *sta);
-void rtw_ssmps_leave(_adapter *adapter, struct sta_info *sta);
+void rtw_ssmps_enterx(_adapter *adapter, struct sta_info *sta);
+void rtw_ssmps_leavex(_adapter *adapter, struct sta_info *sta);
 #endif /* __RTL871X_PWRCTRL_H_ */

@@ -59,7 +59,7 @@ int is_match_bssid(u8 *mac, u8 bssid_array[][6], int num)
 	int i;
 
 	for (i = 0; i < num; i++)
-		if (_rtw_memcmp(mac, bssid_array[i], 6) == _TRUE)
+		if (_rtw_memcmpx(mac, bssid_array[i], 6) == _TRUE)
 			return _TRUE;
 	return _FALSE;
 }
@@ -77,7 +77,7 @@ void init_rtw_rson_data(struct dvobj_priv *dvobj)
 	dvobj->rson_data.connectible = RTW_RSON_DENYCONNECT;
 #endif
 	dvobj->rson_data.loading = 0;
-	_rtw_memset(dvobj->rson_data.res, 0xAA, sizeof(dvobj->rson_data.res));
+	_rtw_memsetx(dvobj->rson_data.res, 0xAA, sizeof(dvobj->rson_data.res));
 }
 
 void	rtw_rson_get_property_str(_adapter *padapter, char *rson_data_str)
@@ -106,7 +106,7 @@ int str2hexbuf(char *str, u8 *hexbuf, int len)
 		return _FALSE;
 	p += 2;
 	for (i = 0 ; i < len; i++, idx = idx+2) {
-		hexbuf[i] = key_2char2num(p[idx], p[idx + 1]);
+		hexbuf[i] = key_2char2numx(p[idx], p[idx + 1]);
 		if (slen <= idx+2)
 			break;
 	}
@@ -118,17 +118,17 @@ int rtw_rson_set_property(_adapter *padapter, char *field, char *value)
 	struct dvobj_priv *pdvobj = adapter_to_dvobj(padapter);
 	int num = 0;
 
-	if (_rtw_memcmp(field, (u8 *)"ver", 3) == _TRUE)
-		pdvobj->rson_data.ver = rtw_atoi(value);
-	else if (_rtw_memcmp(field, (u8 *)"id", 2) == _TRUE)
+	if (_rtw_memcmpx(field, (u8 *)"ver", 3) == _TRUE)
+		pdvobj->rson_data.ver = rtw_atoix(value);
+	else if (_rtw_memcmpx(field, (u8 *)"id", 2) == _TRUE)
 		num = sscanf(value, "%08x",   &(pdvobj->rson_data.id));
-	else if (_rtw_memcmp(field, (u8 *)"hc", 2) == _TRUE)
+	else if (_rtw_memcmpx(field, (u8 *)"hc", 2) == _TRUE)
 		num = sscanf(value, "%hhu", &(pdvobj->rson_data.hopcnt));
-	else if (_rtw_memcmp(field, (u8 *)"cnt", 3) == _TRUE)
+	else if (_rtw_memcmpx(field, (u8 *)"cnt", 3) == _TRUE)
 		num = sscanf(value, "%hhu", &(pdvobj->rson_data.connectible));
-	else if (_rtw_memcmp(field, (u8 *)"loading", 2) == _TRUE)
+	else if (_rtw_memcmpx(field, (u8 *)"loading", 2) == _TRUE)
 		num = sscanf(value, "%hhu", &(pdvobj->rson_data.loading));
-	else if (_rtw_memcmp(field, (u8 *)"res", 2) == _TRUE) {
+	else if (_rtw_memcmpx(field, (u8 *)"res", 2) == _TRUE) {
 		str2hexbuf(value, pdvobj->rson_data.res, 16);
 		return 1;
 	} else
@@ -218,11 +218,11 @@ int rtw_get_rson_struct(WLAN_BSSID_EX *bssid, struct  rtw_rson_struct *rson_data
 	limit = bssid->IELength - _BEACON_IE_OFFSET_;
 
 	for (p = bssid->IEs + _BEACON_IE_OFFSET_; ; p += (len + 2)) {
-		p = rtw_get_ie(p, _VENDOR_SPECIFIC_IE_, &len, limit);
+		p = rtw_get_iex(p, _VENDOR_SPECIFIC_IE_, &len, limit);
 		limit -= len;
 		if ((p == NULL) || (len == 0))
 			break;
-		if (p && (_rtw_memcmp(p + 2, RTW_RSON_OUI, sizeof(RTW_RSON_OUI)) == _TRUE)
+		if (p && (_rtw_memcmpx(p + 2, RTW_RSON_OUI, sizeof(RTW_RSON_OUI)) == _TRUE)
 			&& rtw_rson_varify_ie(p)) {
 			p = p + 2 + sizeof(RTW_RSON_OUI);
 			rson_data->ver = *p;
@@ -254,7 +254,7 @@ u32 rtw_rson_append_ie(_adapter *padapter, unsigned char *pframe, u32 *len)
 	ptr = ori = pframe;
 	*ptr++ = _VENDOR_SPECIFIC_IE_;
 	*ptr++ = ie_len = sizeof(RTW_RSON_OUI)+sizeof(pdvobj->rson_data);
-	_rtw_memcpy(ptr, RTW_RSON_OUI, sizeof(RTW_RSON_OUI));
+	_rtw_memcpyx(ptr, RTW_RSON_OUI, sizeof(RTW_RSON_OUI));
 	ptr = ptr + sizeof(RTW_RSON_OUI);
 	*ptr++ = pdvobj->rson_data.ver;
 	*(s32 *)ptr = cpu_to_le32(pdvobj->rson_data.id);
@@ -262,7 +262,7 @@ u32 rtw_rson_append_ie(_adapter *padapter, unsigned char *pframe, u32 *len)
 	*ptr++ = pdvobj->rson_data.hopcnt;
 	*ptr++ = pdvobj->rson_data.connectible;
 	*ptr++ = pdvobj->rson_data.loading;
-	_rtw_memcpy(ptr, pdvobj->rson_data.res, sizeof(pdvobj->rson_data.res));
+	_rtw_memcpyx(ptr, pdvobj->rson_data.res, sizeof(pdvobj->rson_data.res));
 	pframe = ptr;
 /*
 	iii = iii % 20;
@@ -285,7 +285,7 @@ void rtw_rson_do_disconnect(_adapter *padapter)
 	pdvobj->rson_data.hopcnt = RTW_RSON_HC_NOTREADY;
 	pdvobj->rson_data.connectible = RTW_RSON_DENYCONNECT;
 	pdvobj->rson_data.loading = 0;
-	rtw_mi_tx_beacon_hdl(padapter);
+	rtw_mi_tx_beacon_hdlxx(padapter);
 #endif
 }
 
@@ -311,7 +311,7 @@ void rtw_rson_join_done(_adapter *padapter)
 	pdvobj->rson_data.hopcnt = rson_data.hopcnt + 1;
 	pdvobj->rson_data.connectible = RTW_RSON_ALLOWCONNECT;
 	pdvobj->rson_data.loading = 0;
-	rtw_mi_tx_beacon_hdl(padapter);
+	rtw_mi_tx_beacon_hdlxx(padapter);
 #endif
 }
 
@@ -334,7 +334,7 @@ int rtw_rson_isupdate_roamcan(struct mlme_priv *mlme
 		|| (rtw_get_rson_struct(&(mlme->cur_network_scanned->network), &rson_curr)) != _TRUE)
 		return _FALSE;
 
-	if (rtw_get_passing_time_ms((u32)competitor->last_scanned) >= mlme->roam_scanr_exp_ms)
+	if (rtw_get_passing_time_msx((u32)competitor->last_scanned) >= mlme->roam_scanr_exp_ms)
 		return _FALSE;
 
 	comp_score = rtw_cal_rson_score(&rson_comp, competitor->network.Rssi);
@@ -358,9 +358,9 @@ int rtw_rson_isupdate_roamcan(struct mlme_priv *mlme
 #if 0		/*	Handle 11R protocol	*/
 #ifdef CONFIG_RTW_80211R
 	if (rtw_chk_ft_flags(adapter, RTW_FT_SUPPORTED)) {
-		ptmp = rtw_get_ie(&competitor->network.IEs[12], _MDIE_, &mdie_len, competitor->network.IELength-12);
+		ptmp = rtw_get_iex(&competitor->network.IEs[12], _MDIE_, &mdie_len, competitor->network.IELength-12);
 		if (ptmp) {
-			if (!_rtw_memcmp(&pftpriv->mdid, ptmp+2, 2))
+			if (!_rtw_memcmpx(&pftpriv->mdid, ptmp+2, 2))
 				goto exit;
 
 			/*The candidate don't support over-the-DS*/
@@ -389,14 +389,14 @@ void rtw_rson_show_survey_info(struct seq_file *m, _list *plist, _list *phead)
 
 	RTW_PRINT_SEL(m, "%5s  %-17s  %3s  %5s %14s  %10s  %-3s  %5s %32s\n", "index", "bssid", "ch", "id", "hop_cnt", "loading", "RSSI", "score", "ssid");
 	while (1) {
-		if (rtw_end_of_queue_search(phead, plist) == _TRUE)
+		if (rtw_end_of_queue_searchx(phead, plist) == _TRUE)
 			break;
 
 		pnetwork = LIST_CONTAINOR(plist, struct wlan_network, list);
 		if (!pnetwork)
 			break;
 
-		_rtw_memset(&rson_data, 0, sizeof(rson_data));
+		_rtw_memsetx(&rson_data, 0, sizeof(rson_data));
 		rson_score = 0;
 		if (rtw_get_rson_struct(&(pnetwork->network), &rson_data) == _TRUE)
 			rson_score = rtw_cal_rson_score(&rson_data, pnetwork->network.Rssi);
@@ -432,14 +432,14 @@ u8 rtw_rson_ap_check_sta(_adapter *padapter, u8 *pframe, uint pkt_len, unsigned 
 	u8 *p;
 
 #ifndef CONFIG_RTW_REPEATER_SON_ROOT
-	_rtw_memset(&rson_target, 0, sizeof(rson_target));
+	_rtw_memsetx(&rson_target, 0, sizeof(rson_target));
 	for (p = pframe + WLAN_HDR_A3_LEN + ie_offset; ; p += (len + 2)) {
-		p = rtw_get_ie(p, _VENDOR_SPECIFIC_IE_, &len, pkt_len - WLAN_HDR_A3_LEN - ie_offset);
+		p = rtw_get_iex(p, _VENDOR_SPECIFIC_IE_, &len, pkt_len - WLAN_HDR_A3_LEN - ie_offset);
 
 		if ((p == NULL) || (len == 0))
 			break;
 
-		if (p && (_rtw_memcmp(p + 2, RTW_RSON_OUI, sizeof(RTW_RSON_OUI)) == _TRUE)
+		if (p && (_rtw_memcmpx(p + 2, RTW_RSON_OUI, sizeof(RTW_RSON_OUI)) == _TRUE)
 			&& rtw_rson_varify_ie(p)) {
 			p = p + 2 + sizeof(RTW_RSON_OUI);
 			rson_target.ver = *p;
@@ -480,15 +480,15 @@ u8 rtw_rson_scan_wk_cmd(_adapter *padapter, int op)
 	u8 *extra_cmd_buf;
 	u8 res = _SUCCESS;
 
-	ph2c = (struct cmd_obj *)rtw_zmalloc(sizeof(struct cmd_obj));
+	ph2c = (struct cmd_obj *)rtw_zmallocx(sizeof(struct cmd_obj));
 	if (ph2c == NULL) {
 		res = _FAIL;
 		goto exit;
 	}
 
-	pdrvextra_cmd_parm = (struct drvextra_cmd_parm *)rtw_zmalloc(sizeof(struct drvextra_cmd_parm));
+	pdrvextra_cmd_parm = (struct drvextra_cmd_parm *)rtw_zmallocx(sizeof(struct drvextra_cmd_parm));
 	if (pdrvextra_cmd_parm == NULL) {
-		rtw_mfree((u8 *)ph2c, sizeof(struct cmd_obj));
+		rtw_mfreex((u8 *)ph2c, sizeof(struct cmd_obj));
 		res = _FAIL;
 		goto exit;
 	}
@@ -499,7 +499,7 @@ u8 rtw_rson_scan_wk_cmd(_adapter *padapter, int op)
 
 	init_h2fwcmd_w_parm_no_rsp(ph2c, pdrvextra_cmd_parm, GEN_CMD_CODE(_Set_Drv_Extra));
 
-	res = rtw_enqueue_cmd(pcmdpriv, ph2c);
+	res = rtw_enqueue_cmdx(pcmdpriv, ph2c);
 
 exit:
 	return res;
@@ -518,50 +518,50 @@ void rtw_rson_scan_cmd_hdl(_adapter *padapter, int op)
 	if (op == RSON_SCAN_PROCESS) {
 		padapter->rtw_rson_scanstage = RSON_SCAN_PROCESS;
 		val8 = 0x1e;
-		rtw_hal_set_odm_var(padapter, HAL_ODM_INITIAL_GAIN, &val8, _FALSE);
+		rtw_hal_set_odm_varx(padapter, HAL_ODM_INITIAL_GAIN, &val8, _FALSE);
 		val8 = 1;
-		rtw_hal_set_hwreg(padapter, HW_VAR_MLME_SITESURVEY, (u8 *)(&val8));
-		issue_probereq(padapter, NULL, NULL);
+		rtw_hal_set_hwregx(padapter, HW_VAR_MLME_SITESURVEY, (u8 *)(&val8));
+		issue_probereqx(padapter, NULL, NULL);
 		/*	stop rson_scan after 100ms	*/
 		_set_timer(&(pmlmeext->rson_scan_timer), 100);
 	} else if  (op == RSON_SCAN_DISABLE) {
 		padapter->rtw_rson_scanstage = RSON_SCAN_DISABLE;
 		val8 = 0;
-		rtw_hal_set_hwreg(padapter, HW_VAR_MLME_SITESURVEY, (u8 *)(&val8));
+		rtw_hal_set_hwregx(padapter, HW_VAR_MLME_SITESURVEY, (u8 *)(&val8));
 		val8 = 0xff;
-		rtw_hal_set_odm_var(padapter, HAL_ODM_INITIAL_GAIN, &val8, _FALSE);
-		/*	report_surveydone_event(padapter);*/
+		rtw_hal_set_odm_varx(padapter, HAL_ODM_INITIAL_GAIN, &val8, _FALSE);
+		/*	report_surveydone_eventx(padapter);*/
 		if (pmlmepriv->to_join == _TRUE) {
-			if (check_fwstate(pmlmepriv, WIFI_ADHOC_STATE) != _TRUE) {
+			if (check_fwstatex(pmlmepriv, WIFI_ADHOC_STATE) != _TRUE) {
 				int s_ret;
 
 				set_fwstate(pmlmepriv, _FW_UNDER_LINKING);
 				pmlmepriv->to_join = _FALSE;
-				s_ret = rtw_select_and_join_from_scanned_queue(pmlmepriv);
+				s_ret = rtw_select_and_join_from_scanned_queuex(pmlmepriv);
 				if (s_ret == _SUCCESS)
 					_set_timer(&pmlmepriv->assoc_timer, MAX_JOIN_TIMEOUT);
 				else if (s_ret == 2) {
 					_clr_fwstate_(pmlmepriv, _FW_UNDER_LINKING);
-					rtw_indicate_connect(padapter);
+					rtw_indicate_connectx(padapter);
 				} else {
-					RTW_INFO("try_to_join, but select scanning queue fail, to_roam:%d\n", rtw_to_roam(padapter));
-					if (rtw_to_roam(padapter) != 0) {
-						if (rtw_dec_to_roam(padapter) == 0) {
-							rtw_set_to_roam(padapter, 0);
-							rtw_free_assoc_resources(padapter, _TRUE);
-							rtw_indicate_disconnect(padapter, 0, _FALSE);
+					RTW_INFO("try_to_join, but select scanning queue fail, to_roam:%d\n", rtw_to_roamx(padapter));
+					if (rtw_to_roamx(padapter) != 0) {
+						if (rtw_dec_to_roamx(padapter) == 0) {
+							rtw_set_to_roamx(padapter, 0);
+							rtw_free_assoc_resourcesx(padapter, _TRUE);
+							rtw_indicate_disconnectx(padapter, 0, _FALSE);
 						} else
 							pmlmepriv->to_join = _TRUE;
 					} else
-						rtw_indicate_disconnect(padapter, 0, _FALSE);
+						rtw_indicate_disconnectx(padapter, 0, _FALSE);
 					_clr_fwstate_(pmlmepriv, _FW_UNDER_LINKING);
 				}
 			}
 		} else {
 			if (rtw_chk_roam_flags(padapter, RTW_ROAM_ACTIVE)) {
-				if (check_fwstate(pmlmepriv, WIFI_STATION_STATE)
-				    && check_fwstate(pmlmepriv, _FW_LINKED)) {
-					if (rtw_select_roaming_candidate(pmlmepriv) == _SUCCESS) {
+				if (check_fwstatex(pmlmepriv, WIFI_STATION_STATE)
+				    && check_fwstatex(pmlmepriv, _FW_LINKED)) {
+					if (rtw_select_roaming_candidatex(pmlmepriv) == _SUCCESS) {
 #ifdef CONFIG_RTW_80211R
 						if (rtw_chk_ft_flags(padapter, RTW_FT_OVER_DS_SUPPORTED)) {
 							start_clnt_ft_action(adapter, (u8 *)pmlmepriv->roam_network->network.MacAddress);
@@ -570,15 +570,15 @@ void rtw_rson_scan_cmd_hdl(_adapter *padapter, int op)
 							_set_timer(&pmlmeext->ft_roam_timer, 30);
 						}
 #else
-						receive_disconnect(padapter, pmlmepriv->cur_network.network.MacAddress
+						receive_disconnectx(padapter, pmlmepriv->cur_network.network.MacAddress
 							, WLAN_REASON_ACTIVE_ROAM, _FALSE);
 #endif
 					}
 				}
 			}
-			issue_action_BSSCoexistPacket(padapter);
-			issue_action_BSSCoexistPacket(padapter);
-			issue_action_BSSCoexistPacket(padapter);
+			issue_action_BSSCoexistPacketx(padapter);
+			issue_action_BSSCoexistPacketx(padapter);
+			issue_action_BSSCoexistPacketx(padapter);
 		}
 	} else {
 		RTW_ERR("%s : improper parameter -- op = %d\n", __func__, op);

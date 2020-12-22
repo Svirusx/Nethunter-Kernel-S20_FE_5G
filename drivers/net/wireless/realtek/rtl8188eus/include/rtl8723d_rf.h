@@ -17,5 +17,5 @@
 
 int PHY_RF6052_Config8723D(PADAPTER pdapter);
 
-void PHY_RF6052SetBandwidth8723D(PADAPTER Adapter, enum channel_width Bandwidth);
+void PHY_RF6052SetBandwidthx8723D(PADAPTER Adapter, enum channel_width Bandwidth);
 #endif

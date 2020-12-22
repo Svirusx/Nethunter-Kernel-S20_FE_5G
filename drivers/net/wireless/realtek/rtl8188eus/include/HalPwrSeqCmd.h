@@ -120,7 +120,7 @@ typedef struct _WL_PWR_CFG_ {
 /* ********************************************************************************
  *	Prototype of protected function.
  * ******************************************************************************** */
-u8 HalPwrSeqCmdParsing(
+u8 HalPwrSeqCmdParsingx(
 	PADAPTER		padapter,
 	u8				CutVersion,
 	u8				FabVersion,

@@ -1106,13 +1106,13 @@ void phydm_rx_physts_3rd_type(void *dm_void, u8 *phy_sts,
 			      struct phydm_phyinfo_struct *phy_info);
 #endif
 
-void phydm_reset_phystatus_avg(struct dm_struct *dm);
+void phydm_reset_phystatus_avgx(struct dm_struct *dm);
 
-void phydm_reset_phystatus_statistic(struct dm_struct *dm);
+void phydm_reset_phystatus_statisticx(struct dm_struct *dm);
 
-void phydm_reset_rssi_for_dm(struct dm_struct *dm, u8 station_id);
+void phydm_reset_rssi_for_dmx(struct dm_struct *dm, u8 station_id);
 
-void phydm_get_cck_rssi_table_from_reg(struct dm_struct *dm);
+void phydm_get_cck_rssix_table_from_reg(struct dm_struct *dm);
 
 #if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
 void phydm_normal_driver_rx_sniffer(
@@ -1127,11 +1127,11 @@ void phydm_normal_driver_rx_sniffer(
 s32 phydm_signal_scale_mapping(struct dm_struct *dm, s32 curr_sig);
 #endif
 
-void odm_phy_status_query(struct dm_struct *dm,
+void odm_phy_status_queryx(struct dm_struct *dm,
 			  struct phydm_phyinfo_struct *phy_info,
 			  u8 *phy_status_inf,
 			  struct phydm_perpkt_info_struct *pktinfo);
 
-void phydm_rx_phy_status_init(void *dm_void);
+void phydm_rx_phy_status_initx(void *dm_void);
 
 #endif /*@#ifndef	__HALHWOUTSRC_H__*/

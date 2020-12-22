@@ -40,7 +40,7 @@ Major Change History:
  *
  *	2011.07.07, added by Roger.
  *   */
-u8 HalPwrSeqCmdParsing(
+u8 HalPwrSeqCmdParsingx(
 	PADAPTER		padapter,
 	u8				CutVersion,
 	u8				FabVersion,
@@ -94,13 +94,13 @@ u8 HalPwrSeqCmdParsing(
 						offset = SPI_LOCAL_OFFSET | offset;
 #endif
 					/* Read the value from system register */
-					value = rtw_read8(padapter, offset);
+					value = rtw_read8x(padapter, offset);
 
 					value = value & (~(GET_PWR_CFG_MASK(PwrCfgCmd)));
 					value = value | (GET_PWR_CFG_VALUE(PwrCfgCmd) & GET_PWR_CFG_MASK(PwrCfgCmd));
 
 					/* Write the value back to sytem register */
-					rtw_write8(padapter, offset, value);
+					rtw_write8x(padapter, offset, value);
 				}
 				break;
 
@@ -109,7 +109,7 @@ u8 HalPwrSeqCmdParsing(
 				bPollingBit = _FALSE;
 				offset = GET_PWR_CFG_OFFSET(PwrCfgCmd);
 
-				rtw_hal_get_hwreg(padapter, HW_VAR_PWR_CMD, &bHWICSupport);
+				rtw_hal_get_hwregx(padapter, HW_VAR_PWR_CMD, &bHWICSupport);
 				if (bHWICSupport && offset == 0x06) {
 					flag = 0;
 					maxPollingCnt = 100000;
@@ -126,16 +126,16 @@ u8 HalPwrSeqCmdParsing(
 						value = SdioLocalCmd52Read1Byte(padapter, offset);
 					else
 #endif
-						value = rtw_read8(padapter, offset);
+						value = rtw_read8x(padapter, offset);
 
 					value = value & GET_PWR_CFG_MASK(PwrCfgCmd);
 					if (value == (GET_PWR_CFG_VALUE(PwrCfgCmd) & GET_PWR_CFG_MASK(PwrCfgCmd)))
 						bPollingBit = _TRUE;
 					else
-						rtw_udelay_os(10);
+						rtw_udelay_osx(10);
 
 					if (pollingCount++ > maxPollingCnt) {
-						RTW_ERR("HalPwrSeqCmdParsing: Fail to polling Offset[%#x]=%02x\n", offset, value);
+						RTW_ERR("HalPwrSeqCmdParsingx: Fail to polling Offset[%#x]=%02x\n", offset, value);
 
 						/* For PCIE + USB package poll power bit timeout issue only modify 8821AE and 8723BE */
 						if (bHWICSupport && offset == 0x06  && flag == 0) {
@@ -163,9 +163,9 @@ u8 HalPwrSeqCmdParsing(
 
 			case PWR_CMD_DELAY:
 				if (GET_PWR_CFG_VALUE(PwrCfgCmd) == PWRSEQ_DELAY_US)
-					rtw_udelay_os(GET_PWR_CFG_OFFSET(PwrCfgCmd));
+					rtw_udelay_osx(GET_PWR_CFG_OFFSET(PwrCfgCmd));
 				else
-					rtw_udelay_os(GET_PWR_CFG_OFFSET(PwrCfgCmd) * 1000);
+					rtw_udelay_osx(GET_PWR_CFG_OFFSET(PwrCfgCmd) * 1000);
 				break;
 
 			case PWR_CMD_END:

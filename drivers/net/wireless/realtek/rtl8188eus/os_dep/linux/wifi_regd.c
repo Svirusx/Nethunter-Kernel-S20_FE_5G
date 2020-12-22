@@ -164,7 +164,7 @@ static void _rtw_reg_apply_beaconing_flags(struct wiphy *wiphy,
 
 		for (i = 0; i < sband->n_channels; i++) {
 			ch = &sband->channels[i];
-			if (rtw_is_dfs_ch(ch->hw_value) ||
+			if (rtw_is_dfs_chx(ch->hw_value) ||
 			    (ch->flags & IEEE80211_CHAN_RADAR))
 				continue;
 			if (initiator == NL80211_REGDOM_SET_BY_COUNTRY_IE) {
@@ -252,7 +252,7 @@ static void _rtw_reg_apply_active_scan_flags(struct wiphy *wiphy,
 }
 #endif
 
-void rtw_regd_apply_flags(struct wiphy *wiphy)
+void rtw_regd_apply_flagsx(struct wiphy *wiphy)
 {
 	struct dvobj_priv *dvobj = wiphy_to_dvobj(wiphy);
 	struct rf_ctl_t *rfctl = dvobj_to_rfctl(dvobj);
@@ -284,7 +284,7 @@ void rtw_regd_apply_flags(struct wiphy *wiphy)
 	/* channels apply by channel plans. */
 	for (i = 0; i < max_chan_nums; i++) {
 		channel = channel_set[i].ChannelNum;
-		freq = rtw_ch2freq(channel);
+		freq = rtw_ch2freqx(channel);
 
 		ch = ieee80211_get_channel(wiphy, freq);
 		if (!ch)
@@ -292,7 +292,7 @@ void rtw_regd_apply_flags(struct wiphy *wiphy)
 
 		if (channel_set[i].ScanType == SCAN_PASSIVE
 			#if defined(CONFIG_DFS_MASTER)
-			&& rtw_odm_dfs_domain_unknown(dvobj)
+			&& rtw_odm_dfs_domain_unknownx(dvobj)
 			#endif
 		) {
 			#if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 14, 0))
@@ -304,9 +304,9 @@ void rtw_regd_apply_flags(struct wiphy *wiphy)
 			ch->flags = 0;
 
 		#ifdef CONFIG_DFS
-		if (rtw_is_dfs_ch(ch->hw_value)
+		if (rtw_is_dfs_chx(ch->hw_value)
 			#if defined(CONFIG_DFS_MASTER)
-			&& rtw_odm_dfs_domain_unknown(dvobj)
+			&& rtw_odm_dfs_domain_unknownx(dvobj)
 			#endif
 		) {
 			ch->flags |= IEEE80211_CHAN_RADAR;
@@ -347,14 +347,14 @@ static void rtw_reg_notifier(struct wiphy *wiphy, struct regulatory_request *req
 	case NL80211_REGDOM_SET_BY_USER:
 		RTW_INFO("%s: %s alpha2:%c%c\n", __func__, "NL80211_REGDOM_SET_BY_USER"
 			, request->alpha2[0], request->alpha2[1]);
-		rtw_set_country(wiphy_to_adapter(wiphy), request->alpha2);
+		rtw_set_countryx(wiphy_to_adapter(wiphy), request->alpha2);
 		break;
 	case NL80211_REGDOM_SET_BY_COUNTRY_IE:
 		RTW_INFO("%s: %s\n", __func__, "NL80211_REGDOM_SET_BY_COUNTRY_IE");
 		break;
 	}
 
-	rtw_regd_apply_flags(wiphy);
+	rtw_regd_apply_flagsx(wiphy);
 }
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0))
@@ -365,7 +365,7 @@ static int rtw_reg_notifier_return(struct wiphy *wiphy, struct regulatory_reques
 }
 #endif
 
-static void _rtw_regd_init_wiphy(struct rtw_regulatory *reg, struct wiphy *wiphy)
+static void _rtw_regd_initx_wiphy(struct rtw_regulatory *reg, struct wiphy *wiphy)
 {
 	const struct ieee80211_regdomain *regd;
 
@@ -388,15 +388,15 @@ static void _rtw_regd_init_wiphy(struct rtw_regulatory *reg, struct wiphy *wiphy
 	regd = _rtw_regdomain_select(reg);
 	wiphy_apply_custom_regulatory(wiphy, regd);
 
-	rtw_regd_apply_flags(wiphy);
+	rtw_regd_apply_flagsx(wiphy);
 }
 
-int rtw_regd_init(struct wiphy *wiphy)
+int rtw_regd_initx(struct wiphy *wiphy)
 {
 #if 0
 	if (rtw_regd == NULL) {
 		rtw_regd = (struct rtw_regulatory *)
-			   rtw_malloc(sizeof(struct rtw_regulatory));
+			   rtw_mallocx(sizeof(struct rtw_regulatory));
 
 		rtw_regd->alpha2[0] = '9';
 		rtw_regd->alpha2[1] = '9';
@@ -408,7 +408,7 @@ int rtw_regd_init(struct wiphy *wiphy)
 		 __func__, rtw_regd->alpha2[0], rtw_regd->alpha2[1]);
 #endif
 
-	_rtw_regd_init_wiphy(NULL, wiphy);
+	_rtw_regd_initx_wiphy(NULL, wiphy);
 
 	return 0;
 }

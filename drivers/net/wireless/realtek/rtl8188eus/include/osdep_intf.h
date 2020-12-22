@@ -59,45 +59,45 @@ struct intf_priv {
 
 };
 
-struct dvobj_priv *devobj_init(void);
-void devobj_deinit(struct dvobj_priv *pdvobj);
+struct dvobj_priv *devobj_initx(void);
+void devobj_deinitx(struct dvobj_priv *pdvobj);
 
-u8 rtw_init_drv_sw(_adapter *padapter);
-u8 rtw_free_drv_sw(_adapter *padapter);
-u8 rtw_reset_drv_sw(_adapter *padapter);
-void rtw_dev_unload(PADAPTER padapter);
+u8 rtw_init_drv_swx(_adapter *padapter);
+u8 rtw_free_drv_swx(_adapter *padapter);
+u8 rtw_reset_drv_swx(_adapter *padapter);
+void rtw_dev_unloadx(PADAPTER padapter);
 
-u32 rtw_start_drv_threads(_adapter *padapter);
-void rtw_stop_drv_threads(_adapter *padapter);
+u32 rtw_start_drv_threadsx(_adapter *padapter);
+void rtw_stop_drv_threadsx(_adapter *padapter);
 #if defined(CONFIG_WOWLAN) || defined(CONFIG_AP_WOWLAN)
 void rtw_cancel_dynamic_chk_timer(_adapter *padapter);
 #endif
-void rtw_cancel_all_timer(_adapter *padapter);
+void rtw_cancel_all_timerx(_adapter *padapter);
 
-uint loadparam(_adapter *adapter);
+uint loadparamx(_adapter *adapter);
 
 #ifdef PLATFORM_LINUX
-int rtw_ioctl(struct net_device *dev, struct ifreq *rq, int cmd);
+int rtw_ioctlx(struct net_device *dev, struct ifreq *rq, int cmd);
 
-int rtw_init_netdev_name(struct net_device *pnetdev, const char *ifname);
-struct net_device *rtw_init_netdev(_adapter *padapter);
+int rtw_init_netdevx_name(struct net_device *pnetdev, const char *ifnamex);
+struct net_device *rtw_init_netdevx(_adapter *padapter);
 
-void rtw_os_ndev_free(_adapter *adapter);
-int rtw_os_ndev_init(_adapter *adapter, const char *name);
-void rtw_os_ndev_deinit(_adapter *adapter);
-void rtw_os_ndev_unregister(_adapter *adapter);
-void rtw_os_ndevs_unregister(struct dvobj_priv *dvobj);
-int rtw_os_ndevs_init(struct dvobj_priv *dvobj);
-void rtw_os_ndevs_deinit(struct dvobj_priv *dvobj);
+void rtw_os_ndev_freex(_adapter *adapter);
+int rtw_os_ndev_initx(_adapter *adapter, const char *name);
+void rtw_os_ndev_deinitx(_adapter *adapter);
+void rtw_os_ndev_unregisterx(_adapter *adapter);
+void rtw_os_ndevs_unregisterx(struct dvobj_priv *dvobj);
+int rtw_os_ndevs_initx(struct dvobj_priv *dvobj);
+void rtw_os_ndevs_deinitx(struct dvobj_priv *dvobj);
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 35))
-u16 rtw_recv_select_queue(struct sk_buff *skb);
+u16 rtw_recv_select_queuex(struct sk_buff *skb);
 #endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 35) */
 
-int rtw_ndev_notifier_register(void);
-void rtw_ndev_notifier_unregister(void);
-void rtw_inetaddr_notifier_register(void);
-void rtw_inetaddr_notifier_unregister(void);
+int rtw_ndev_notifier_registerx(void);
+void rtw_ndev_notifier_unregisterx(void);
+void rtw_inetaddr_notifier_registerx(void);
+void rtw_inetaddr_notifier_unregisterx(void);
 
 #include "../os_dep/linux/rtw_proc.h"
 
@@ -105,17 +105,17 @@ void rtw_inetaddr_notifier_unregister(void);
 	#include "../os_dep/linux/ioctl_cfg80211.h"
 #endif /* CONFIG_IOCTL_CFG80211 */
 
-u8 rtw_rtnl_lock_needed(struct dvobj_priv *dvobj);
-void rtw_set_rtnl_lock_holder(struct dvobj_priv *dvobj, _thread_hdl_ thd_hdl);
+u8 rtw_rtnl_lock_neededx(struct dvobj_priv *dvobj);
+void rtw_set_rtnl_lock_holderx(struct dvobj_priv *dvobj, _thread_hdl_ thd_hdl);
 
 #endif /* PLATFORM_LINUX */
 
 
 #ifdef PLATFORM_FREEBSD
-extern int rtw_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data);
+extern int rtw_ioctlx(struct ifnet *ifp, u_long cmd, caddr_t data);
 #endif
 
-void rtw_ips_dev_unload(_adapter *padapter);
+void rtw_ips_dev_unloadx(_adapter *padapter);
 
 #ifdef CONFIG_IPS
 int rtw_ips_pwr_up(_adapter *padapter);
@@ -130,12 +130,12 @@ void rtw_drv_stop_vir_ifaces(struct dvobj_priv *dvobj);
 void rtw_drv_free_vir_ifaces(struct dvobj_priv *dvobj);
 #endif
 
-void rtw_ndev_destructor(_nic_hdl ndev);
+void rtw_ndev_destructorx(_nic_hdl ndev);
 #ifdef CONFIG_ARP_KEEP_ALIVE
 int rtw_gw_addr_query(_adapter *padapter);
 #endif
 
-int rtw_suspend_common(_adapter *padapter);
-int rtw_resume_common(_adapter *padapter);
+int rtw_suspend_commonx(_adapter *padapter);
+int rtw_resume_commonx(_adapter *padapter);
 
 #endif /* _OSDEP_INTF_H_ */

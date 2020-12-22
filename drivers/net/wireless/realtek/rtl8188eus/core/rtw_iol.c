@@ -24,16 +24,16 @@ struct xmit_frame	*rtw_IOL_accquire_xmit_frame(ADAPTER *adapter)
 	struct xmit_priv	*pxmitpriv = &(adapter->xmitpriv);
 
 #if 1
-	xmit_frame = rtw_alloc_xmitframe(pxmitpriv);
+	xmit_frame = rtw_alloc_xmitframex(pxmitpriv);
 	if (xmit_frame == NULL) {
-		RTW_INFO("%s rtw_alloc_xmitframe return null\n", __FUNCTION__);
+		RTW_INFO("%s rtw_alloc_xmitframex return null\n", __FUNCTION__);
 		goto exit;
 	}
 
-	xmitbuf = rtw_alloc_xmitbuf(pxmitpriv);
+	xmitbuf = rtw_alloc_xmitbufx(pxmitpriv);
 	if (xmitbuf == NULL) {
-		RTW_INFO("%s rtw_alloc_xmitbuf return null\n", __FUNCTION__);
-		rtw_free_xmitframe(pxmitpriv, xmit_frame);
+		RTW_INFO("%s rtw_alloc_xmitbufx return null\n", __FUNCTION__);
+		rtw_free_xmitframex(pxmitpriv, xmit_frame);
 		xmit_frame = NULL;
 		goto exit;
 	}
@@ -44,18 +44,18 @@ struct xmit_frame	*rtw_IOL_accquire_xmit_frame(ADAPTER *adapter)
 	xmitbuf->priv_data = xmit_frame;
 
 	pattrib = &xmit_frame->attrib;
-	update_mgntframe_attrib(adapter, pattrib);
+	update_mgntframe_attribx(adapter, pattrib);
 	pattrib->qsel = QSLT_BEACON;/* Beacon	 */
 	pattrib->subtype = WIFI_BEACON;
 	pattrib->pktlen = pattrib->last_txcmdsz = 0;
 
 #else
-	xmit_frame = alloc_mgtxmitframe(pxmitpriv);
+	xmit_frame = alloc_mgtxmitframex(pxmitpriv);
 	if (xmit_frame == NULL)
-		RTW_INFO("%s alloc_mgtxmitframe return null\n", __FUNCTION__);
+		RTW_INFO("%s alloc_mgtxmitframex return null\n", __FUNCTION__);
 	else {
 		pattrib = &xmit_frame->attrib;
-		update_mgntframe_attrib(adapter, pattrib);
+		update_mgntframe_attribx(adapter, pattrib);
 		pattrib->qsel = QSLT_BEACON;
 		pattrib->pktlen = pattrib->last_txcmdsz = 0;
 	}
@@ -82,7 +82,7 @@ int rtw_IOL_append_cmds(struct xmit_frame *xmit_frame, u8 *IOL_cmds, u32 cmd_len
 		return _FAIL;
 	}
 
-	_rtw_memcpy(xmit_frame->buf_addr + buf_offset + pattrib->pktlen, IOL_cmds, cmd_len);
+	_rtw_memcpyx(xmit_frame->buf_addr + buf_offset + pattrib->pktlen, IOL_cmds, cmd_len);
 	pattrib->pktlen += cmd_len;
 	pattrib->last_txcmdsz += cmd_len;
 
