@@ -444,20 +444,6 @@ pld_pcie_smmu_map(struct device *dev,
 	return cnss_smmu_map(dev, paddr, iova_addr, size);
 }
 
-#ifdef CONFIG_SMMU_S1_UNMAP
-static inline int
-pld_pcie_smmu_unmap(struct device *dev, uint32_t iova_addr, size_t size)
-{
-	return cnss_smmu_unmap(dev, iova_addr, size);
-}
-#else /* !CONFIG_SMMU_S1_UNMAP */
-static inline int
-pld_pcie_smmu_unmap(struct device *dev, uint32_t iova_addr, size_t size)
-{
-	return 0;
-}
-#endif /* CONFIG_SMMU_S1_UNMAP */
-
 static inline int pld_pcie_prevent_l1(struct device *dev)
 {
 	return cnss_pci_prevent_l1(dev);
@@ -536,12 +522,6 @@ static inline int pld_pcie_auto_resume(struct device *dev)
 static inline int pld_pcie_force_wake_request(struct device *dev)
 {
 	return cnss_pci_force_wake_request(dev);
-}
-
-static inline int pld_pcie_force_wake_request_sync(struct device *dev,
-						   int timeout_us)
-{
-	return cnss_pci_force_wake_request_sync(dev, timeout_us);
 }
 
 static inline int pld_pcie_is_device_awake(struct device *dev)

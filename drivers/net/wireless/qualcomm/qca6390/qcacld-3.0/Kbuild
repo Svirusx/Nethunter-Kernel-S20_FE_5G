@@ -10,7 +10,7 @@ ifeq ($(KERNEL_BUILD), y)
 	# These are provided in external module based builds
 	# Need to explicitly define for Kernel-based builds
 	MODNAME := wlan
-	WLAN_ROOT := drivers/staging/qcacld-3.0
+	WLAN_ROOT := drivers/net/wireless/qualcomm/qca6390/qcacld-3.0
 	WLAN_COMMON_ROOT := ../qca-wifi-host-cmn
 	WLAN_COMMON_INC := $(WLAN_ROOT)/$(WLAN_COMMON_ROOT)
 	WLAN_FW_API := $(WLAN_ROOT)/../fw-api/
@@ -3273,6 +3273,18 @@ cppflags-$(CONFIG_SMMU_S1_UNMAP) += -DCONFIG_SMMU_S1_UNMAP
 cppflags-$(CONFIG_GENERIC_SHADOW_REGISTER_ACCESS_ENABLE) += -DGENERIC_SHADOW_REGISTER_ACCESS_ENABLE
 
 KBUILD_CPPFLAGS += $(cppflags-y)
+
+########## SAMSUNG FEATURE ###########
+CONFIG_WLAN_SAMSUNG_FEATURE=y
+
+ifeq ($(CONFIG_WLAN_SAMSUNG_FEATURE), y)
+EXTRA_CFLAGS += -DCONFIG_SEC
+EXTRA_CFLAGS += -DSEC_READ_MACADDR_SYSFS
+EXTRA_CFLAGS += -DSEC_CONFIG_PSM_SYSFS
+#EXTRA_CFLAGS += -DSEC_CONFIG_POWER_BACKOFF
+EXTRA_CFLAGS += -DSEC_WRITE_VERSION_IN_SYSFS
+EXTRA_CFLAGS += -DSEC_WRITE_SOFTAP_INFO_IN_SYSFS
+endif
 
 # Currently, for versions of gcc which support it, the kernel Makefile
 # is disabling the maybe-uninitialized warning.  Re-enable it for the
