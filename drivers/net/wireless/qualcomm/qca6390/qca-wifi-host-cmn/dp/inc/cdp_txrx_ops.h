@@ -1097,12 +1097,35 @@ struct ol_if_ops {
 	bool (*is_roam_inprogress)(uint32_t vdev_id);
 	enum QDF_GLOBAL_MODE (*get_con_mode)(void);
 #ifdef QCA_PEER_MULTIQ_SUPPORT
-	int  (*peer_ast_flowid_map)(struct cdp_ctrl_objmgr_psoc *ol_soc_handle,
-			       uint16_t peer_id, uint8_t vdev_id, uint8_t *peer_mac_addr);
+	int (*peer_ast_flowid_map)(struct cdp_ctrl_objmgr_psoc *ol_soc_handle,
+				   uint16_t peer_id, uint8_t vdev_id,
+				   uint8_t *peer_mac_addr);
 #endif
-	/* TODO: Add any other control path calls required to OL_IF/WMA layer */
+#ifdef DP_MEM_PRE_ALLOC
+	void *(*dp_prealloc_get_context)(uint32_t ctxt_type);
 
+	QDF_STATUS(*dp_prealloc_put_context)(uint32_t ctxt_type, void *vaddr);
+	void *(*dp_prealloc_get_consistent)(uint32_t *size,
+					    void **base_vaddr_unaligned,
+					    qdf_dma_addr_t *paddr_unaligned,
+					    qdf_dma_addr_t *paddr_aligned,
+					    uint32_t align,
+					    uint32_t ring_type);
+	void (*dp_prealloc_put_consistent)(qdf_size_t size,
+					   void *vaddr_unligned,
+					   qdf_dma_addr_t paddr);
+	void (*dp_get_multi_pages)(uint32_t desc_type,
+				   size_t element_size,
+				   uint16_t element_num,
+				   struct qdf_mem_multi_page_t *pages,
+				   bool cacheable);
+	void (*dp_put_multi_pages)(uint32_t desc_type,
+				   struct qdf_mem_multi_page_t *pages);
+#endif
+	int (*dp_rx_get_pending)(ol_txrx_soc_handle soc);
+	/* TODO: Add any other control path calls required to OL_IF/WMA layer */
 };
+
 
 #ifdef DP_PEER_EXTENDED_API
 /**
@@ -1524,8 +1547,9 @@ struct cdp_ipa_ops {
 				bool is_rm_enabled, uint32_t *tx_pipe_handle,
 				uint32_t *rx_pipe_handle);
 #endif /* CONFIG_IPA_WDI_UNIFIED_API */
-	QDF_STATUS (*ipa_cleanup)(uint32_t tx_pipe_handle,
-		uint32_t rx_pipe_handle);
+	QDF_STATUS (*ipa_cleanup)(struct cdp_soc_t *soc_hdl, uint8_t pdev_id,
+				  uint32_t tx_pipe_handle,
+				  uint32_t rx_pipe_handle);
 	QDF_STATUS (*ipa_setup_iface)(char *ifname, uint8_t *mac_addr,
 		qdf_ipa_client_type_t prod_client,
 		qdf_ipa_client_type_t cons_client,

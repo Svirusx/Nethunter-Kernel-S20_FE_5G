@@ -841,6 +841,16 @@ struct wlan_crypto_key *wlan_crypto_get_key(struct wlan_objmgr_vdev *vdev,
 QDF_STATUS wlan_crypto_set_key_req(struct wlan_objmgr_vdev *vdev,
 				   struct wlan_crypto_key *req,
 				   enum wlan_crypto_key_type key_type);
+
+/**
+ * wlan_crypto_free_vdev_key - Free keys for vdev
+ * @vdev: vdev object
+ *
+ * This function frees keys stored in vdev crypto object.
+ *
+ * Return: None
+ */
+void wlan_crypto_free_vdev_key(struct wlan_objmgr_vdev *vdev);
 #else
 static inline void wlan_crypto_update_set_key_peer(
 						struct wlan_objmgr_vdev *vdev,
@@ -870,6 +880,10 @@ QDF_STATUS wlan_crypto_set_key_req(struct wlan_objmgr_vdev *vdev,
 {
 	return QDF_STATUS_SUCCESS;
 }
+
+static inline void wlan_crypto_free_vdev_key(struct wlan_objmgr_vdev *vdev)
+{
+}
 #endif /* CRYPTO_SET_KEY_CONVERGED */
 
 /**
@@ -897,6 +911,21 @@ wlan_crypto_get_peer_pmksa(struct wlan_objmgr_vdev *vdev,
 struct wlan_crypto_pmksa *
 wlan_crypto_get_pmksa(struct wlan_objmgr_vdev *vdev,
 		      struct qdf_mac_addr *bssid);
+
+/**
+ * wlan_crypto_get_fils_pmksa  - Get the PMKSA for FILS
+ * SSID, if the SSID and cache id matches
+ * @vdev:     Pointer with VDEV object
+ * @cache_id: Cache id
+ * @ssid:     Pointer to ssid
+ * @ssid_len: SSID length
+ *
+ * Return: PMKSA entry if the cache id and SSID matches
+ */
+struct wlan_crypto_pmksa *
+wlan_crypto_get_fils_pmksa(struct wlan_objmgr_vdev *vdev,
+			   uint8_t *cache_id, uint8_t *ssid,
+			   uint8_t ssid_len);
 
 /**
  * wlan_crypto_pmksa_flush - called to flush saved pmksa

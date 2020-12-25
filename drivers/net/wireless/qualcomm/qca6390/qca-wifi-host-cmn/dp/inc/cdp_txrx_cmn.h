@@ -2545,4 +2545,21 @@ cdp_vdev_get_peer_mac_list(ol_txrx_soc_handle soc,
 			(soc, vdev_id, newmac, mac_cnt);
 }
 
+/**
+ * cdp_rx_get_pending() - Get number of pending frames of RX threads
+ * @soc: opaque soc handle
+ * Return: number of pending frames
+ */
+static inline int
+cdp_rx_get_pending(ol_txrx_soc_handle soc)
+{
+	if (!soc || !soc->ol_ops ||
+	    !soc->ol_ops->dp_rx_get_pending)
+		return 0;
+
+	if (cdp_cfg_get(soc, cfg_dp_wow_check_rx_pending))
+		return soc->ol_ops->dp_rx_get_pending(soc);
+	else
+		return 0;
+}
 #endif /* _CDP_TXRX_CMN_H_ */

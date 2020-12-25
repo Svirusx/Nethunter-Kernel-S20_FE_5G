@@ -706,6 +706,12 @@ enum qca_wlan_vendor_hang_reason {
 	 * the FW on a specific VDEV.
 	 */
 	QCA_WLAN_HANG_VDEV_PEER_DELETE_ALL_RESPONSE_TIMED_OUT = 22,
+	/* WMI sequence mismatch between WMI command and Tx completion */
+	QCA_WLAN_HANG_WMI_BUF_SEQUENCE_MISMATCH = 23,
+	/* Write to Device HAL register failed */
+	QCA_WLAN_HANG_REG_WRITE_FAILURE = 24,
+	/* No credit left to send the wow_wakeup_from_sleep to firmware */
+	QCA_WLAN_HANG_SUSPEND_NO_CREDIT = 25,
 };
 
 /**
@@ -4302,6 +4308,24 @@ enum qca_wlan_vendor_attr_config {
 	 * to disable.
 	 */
 	QCA_WLAN_VENDOR_ATTR_CONFIG_UDP_QOS_UPGRADE = 72,
+
+	/* 8-bit unsigned value. This attribute is used to dynamically configure
+	 * the number of chains to be used for transmitting data. This
+	 * configuration is allowed only when in connected state and will be
+	 * effective until disconnected. The driver rejects this configuration
+	 * if the number of spatial streams being used in the current connection
+	 * cannot be supported by this configuration.
+	 */
+	QCA_WLAN_VENDOR_ATTR_CONFIG_NUM_TX_CHAINS = 73,
+
+	/* 8-bit unsigned value. This attribute is used to dynamically configure
+	 * the number of chains to be used for receiving data. This
+	 * configuration is allowed only when in connected state and will be
+	 * effective until disconnected. The driver rejects this configuration
+	 * if the number of spatial streams being used in the current connection
+	 * cannot be supported by this configuration.
+	 */
+	QCA_WLAN_VENDOR_ATTR_CONFIG_NUM_RX_CHAINS = 74,
 
 	/* keep last */
 	QCA_WLAN_VENDOR_ATTR_CONFIG_AFTER_LAST,

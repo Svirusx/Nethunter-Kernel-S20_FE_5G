@@ -4153,6 +4153,7 @@ void dp_peer_stats_update_protocol_cnt(struct cdp_soc_t *soc,
 }
 #endif
 
+#ifdef WDI_EVENT_ENABLE
 QDF_STATUS dp_peer_stats_notify(struct dp_pdev *dp_pdev, struct dp_peer *peer)
 {
 	struct cdp_interface_peer_stats peer_stats_intf;
@@ -4187,6 +4188,7 @@ QDF_STATUS dp_peer_stats_notify(struct dp_pdev *dp_pdev, struct dp_peer *peer)
 
 	return QDF_STATUS_SUCCESS;
 }
+#endif
 
 #ifdef QCA_ENH_V3_STATS_SUPPORT
 /**
@@ -5539,6 +5541,8 @@ void dp_txrx_path_stats(struct dp_soc *soc)
 			       pdev->soc->stats.rx.err.pkt_delivered_no_peer);
 		DP_PRINT_STATS("RX invalid cookie: %d",
 			       soc->stats.rx.err.invalid_cookie);
+		DP_PRINT_STATS("RX stale cookie: %d",
+			       soc->stats.rx.err.stale_cookie);
 		DP_PRINT_STATS("2k jump delba sent: %u",
 			       pdev->soc->stats.rx.err.rx_2k_jump_delba_sent);
 		DP_PRINT_STATS("2k jump msdu to stack: %u",
@@ -5553,10 +5557,13 @@ void dp_txrx_path_stats(struct dp_soc *soc)
 			       soc->stats.rx.err.rejected);
 		DP_PRINT_STATS("Rx raw frame dropped: %d",
 			       soc->stats.rx.err.raw_frm_drop);
-		DP_PRINT_STATS("Rx nbuf sanity fails: %d",
-			       pdev->soc->stats.rx.err.nbuf_sanity_fail);
 		DP_PRINT_STATS("Rx stale link desc cookie: %d",
 			       pdev->soc->stats.rx.err.invalid_link_cookie);
+		DP_PRINT_STATS("Rx nbuf sanity fails: %d",
+			       pdev->soc->stats.rx.err.nbuf_sanity_fail);
+		DP_PRINT_STATS("Rx refill duplicate link desc: %d",
+			       pdev->soc->stats.rx.err.dup_refill_link_desc);
+
 		DP_PRINT_STATS("Reo Statistics");
 		DP_PRINT_STATS("near_full: %u ", soc->stats.rx.near_full);
 		DP_PRINT_STATS("rbm error: %u msdus",
@@ -5566,6 +5573,8 @@ void dp_txrx_path_stats(struct dp_soc *soc)
 
 		DP_PRINT_STATS("hal ring access full fail: %u msdus",
 			       pdev->soc->stats.rx.err.hal_ring_access_full_fail);
+
+		DP_PRINT_STATS("Rx BAR frames:%d", soc->stats.rx.bar_frame);
 
 		for (error_code = 0; error_code < HAL_REO_ERR_MAX;
 				error_code++) {
@@ -6067,6 +6076,9 @@ dp_print_soc_rx_stats(struct dp_soc *soc)
 	DP_PRINT_STATS("RX invalid cookie: %d",
 		       soc->stats.rx.err.invalid_cookie);
 
+	DP_PRINT_STATS("RX stale cookie: %d",
+		       soc->stats.rx.err.stale_cookie);
+
 	DP_PRINT_STATS("RX wait completed msdu break: %d",
 		       soc->stats.rx.msdu_scatter_wait_break);
 
@@ -6088,11 +6100,11 @@ dp_print_soc_rx_stats(struct dp_soc *soc)
 	DP_PRINT_STATS("Rx err msdu rejected: %d",
 		       soc->stats.rx.err.rejected);
 
-	DP_PRINT_STATS("Rx nbuf sanity fail: %d",
-		       soc->stats.rx.err.nbuf_sanity_fail);
-
 	DP_PRINT_STATS("Rx stale link desc cookie: %d",
 		       soc->stats.rx.err.invalid_link_cookie);
+
+	DP_PRINT_STATS("Rx nbuf sanity fail: %d",
+		       soc->stats.rx.err.nbuf_sanity_fail);
 
 	for (i = 0; i < HAL_RXDMA_ERR_MAX; i++) {
 		index += qdf_snprint(&rxdma_error[index],
@@ -6110,6 +6122,8 @@ dp_print_soc_rx_stats(struct dp_soc *soc)
 	DP_PRINT_STATS("REO Error(0-14):%s", reo_error);
 	DP_PRINT_STATS("REO CMD SEND FAIL: %d",
 		       soc->stats.rx.err.reo_cmd_send_fail);
+
+	DP_PRINT_STATS("Rx BAR frames:%d", soc->stats.rx.bar_frame);
 }
 
 #ifdef FEATURE_TSO_STATS

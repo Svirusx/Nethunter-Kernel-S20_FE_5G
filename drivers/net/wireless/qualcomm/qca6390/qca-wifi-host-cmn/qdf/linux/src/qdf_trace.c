@@ -1557,14 +1557,16 @@ void qdf_dp_log_proto_pkt_info(uint8_t *sa, uint8_t *da, uint8_t type,
 		last_ticks_rx[subtype] = curr_ticks;
 
 	if (status == QDF_TX_RX_STATUS_INVALID)
-		qdf_nofl_info("%s %s: SA:%pM DA:%pM",
-			      qdf_get_pkt_type_string(type, subtype),
-			      dir ? "RX":"TX", sa, da);
+		qdf_nofl_debug("%s %s: SA:"QDF_MAC_ADDR_FMT" DA:"QDF_MAC_ADDR_FMT,
+			       qdf_get_pkt_type_string(type, subtype),
+			       dir ? "RX":"TX", QDF_MAC_ADDR_REF(sa),
+			       QDF_MAC_ADDR_REF(da));
 	else
-		qdf_nofl_info("%s %s: SA:%pM DA:%pM msdu_id:%d status: %s",
-			      qdf_get_pkt_type_string(type, subtype),
-			      dir ? "RX":"TX", sa, da, msdu_id,
-			      qdf_get_pkt_status_string(status));
+		qdf_nofl_debug("%s %s: SA:"QDF_MAC_ADDR_FMT" DA:"QDF_MAC_ADDR_FMT" msdu_id:%d status: %s",
+			       qdf_get_pkt_type_string(type, subtype),
+			       dir ? "RX":"TX", QDF_MAC_ADDR_REF(sa),
+			       QDF_MAC_ADDR_REF(da), msdu_id,
+			       qdf_get_pkt_status_string(status));
 }
 
 qdf_export_symbol(qdf_dp_log_proto_pkt_info);
@@ -2084,14 +2086,14 @@ void qdf_dp_display_proto_pkt(struct qdf_dp_trace_record_s *record,
 	loc = qdf_dp_trace_fill_meta_str(prepend_str, sizeof(prepend_str),
 					 index, info, record);
 	DPTRACE_PRINT("%s [%d] [%s] SA: "
-		      QDF_MAC_ADDR_STR " %s DA: "
-		      QDF_MAC_ADDR_STR,
+		      QDF_MAC_ADDR_FMT " %s DA: "
+		      QDF_MAC_ADDR_FMT,
 		      prepend_str,
 		      buf->vdev_id,
 		      qdf_dp_subtype_to_str(buf->subtype),
-		      QDF_MAC_ADDR_ARRAY(buf->sa.bytes),
+		      QDF_MAC_ADDR_REF(buf->sa.bytes),
 		      qdf_dp_dir_to_str(buf->dir),
-		      QDF_MAC_ADDR_ARRAY(buf->da.bytes));
+		      QDF_MAC_ADDR_REF(buf->da.bytes));
 }
 qdf_export_symbol(qdf_dp_display_proto_pkt);
 
@@ -2546,14 +2548,14 @@ static void qdf_dpt_display_proto_pkt_debugfs(qdf_debugfs_file_t file,
 	loc = qdf_dp_trace_fill_meta_str(prepend_str, sizeof(prepend_str),
 					 index, 0, record);
 	qdf_debugfs_printf(file, "%s [%d] [%s] SA: "
-			   QDF_MAC_ADDR_STR " %s DA: "
-			   QDF_MAC_ADDR_STR,
+			   QDF_MAC_ADDR_FMT " %s DA: "
+			   QDF_MAC_ADDR_FMT,
 			   prepend_str,
 			   buf->vdev_id,
 			   qdf_dp_subtype_to_str(buf->subtype),
-			   QDF_MAC_ADDR_ARRAY(buf->sa.bytes),
+			   QDF_MAC_ADDR_REF(buf->sa.bytes),
 			   qdf_dp_dir_to_str(buf->dir),
-			   QDF_MAC_ADDR_ARRAY(buf->da.bytes));
+			   QDF_MAC_ADDR_REF(buf->da.bytes));
 	qdf_debugfs_printf(file, "\n");
 }
 
@@ -2823,26 +2825,27 @@ QDF_STATUS qdf_dpt_dump_stats_debugfs(qdf_debugfs_file_t file,
 			break;
 
 		case QDF_DP_TRACE_HDD_TX_TIMEOUT:
-			qdf_debugfs_printf(file, "DPT: %04d: %s %s\n",
-				i, p_record.time,
-				qdf_dp_code_to_string(p_record.code));
-			qdf_debugfs_printf(file, "%s: HDD TX Timeout\n");
+			qdf_debugfs_printf(
+					file, "DPT: %04d: %llu %s\n",
+					i, p_record.time,
+					qdf_dp_code_to_string(p_record.code));
+			qdf_debugfs_printf(file, "HDD TX Timeout\n");
 			break;
 
 		case QDF_DP_TRACE_HDD_SOFTAP_TX_TIMEOUT:
-			qdf_debugfs_printf(file, "%04d: %s %s\n",
-				i, p_record.time,
-				qdf_dp_code_to_string(p_record.code));
-			qdf_debugfs_printf(file,
-					   "%s: HDD  SoftAP TX Timeout\n");
+			qdf_debugfs_printf(
+					file, "DPT: %04d: %llu %s\n",
+					i, p_record.time,
+					qdf_dp_code_to_string(p_record.code));
+			qdf_debugfs_printf(file, "HDD SoftAP TX Timeout\n");
 			break;
 
 		case QDF_DP_TRACE_CE_FAST_PACKET_ERR_RECORD:
-			qdf_debugfs_printf(file, "DPT: %04d: %s %s\n",
-				i, p_record.time,
-				qdf_dp_code_to_string(p_record.code));
-			qdf_debugfs_printf(file,
-					   "%s: CE Fast Packet Error\n");
+			qdf_debugfs_printf(
+					file, "DPT: %04d: %llu %s\n",
+					i, p_record.time,
+					qdf_dp_code_to_string(p_record.code));
+			qdf_debugfs_printf(file, "CE Fast Packet Error\n");
 			break;
 
 		case QDF_DP_TRACE_MAX:

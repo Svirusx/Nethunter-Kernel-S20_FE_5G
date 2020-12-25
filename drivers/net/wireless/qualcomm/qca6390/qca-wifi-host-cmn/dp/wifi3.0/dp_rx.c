@@ -1902,18 +1902,33 @@ bool dp_rx_is_raw_frame_dropped(qdf_nbuf_t nbuf)
 #endif
 
 #ifdef WLAN_FEATURE_DP_RX_RING_HISTORY
+/**
+ * dp_rx_ring_record_entry() - Record an entry into the rx ring history.
+ * @soc: Datapath soc structure
+ * @ring_num: REO ring number
+ * @ring_desc: REO ring descriptor
+ *
+ * Returns: None
+ */
 static inline void
-dp_rx_ring_record_entry(struct dp_soc *soc, uint8_t ring_num, hal_ring_desc_t ring_desc)
+dp_rx_ring_record_entry(struct dp_soc *soc, uint8_t ring_num,
+			hal_ring_desc_t ring_desc)
 {
 	struct dp_buf_info_record *record;
 	uint8_t rbm;
 	struct hal_buf_info hbi;
 	uint32_t idx;
 
+	if (qdf_unlikely(!&soc->rx_ring_history[ring_num]))
+		return;
+
 	hal_rx_reo_buf_paddr_get(ring_desc, &hbi);
 	rbm = hal_rx_ret_buf_manager_get(ring_desc);
 
-	idx = dp_history_get_next_index(&soc->rx_ring_history[ring_num]->index, DP_RX_HIST_MAX);
+	idx = dp_history_get_next_index(&soc->rx_ring_history[ring_num]->index,
+					DP_RX_HIST_MAX);
+
+	/* No NULL check needed for record since its an array */
 	record = &soc->rx_ring_history[ring_num]->entry[idx];
 
 	record->timestamp = qdf_get_log_timestamp();
@@ -1923,7 +1938,8 @@ dp_rx_ring_record_entry(struct dp_soc *soc, uint8_t ring_num, hal_ring_desc_t ri
 }
 #else
 static inline void
-dp_rx_ring_record_entry(struct dp_soc *soc, uint8_t ring_num, hal_ring_desc_t ring_desc)
+dp_rx_ring_record_entry(struct dp_soc *soc, uint8_t ring_num,
+			hal_ring_desc_t ring_desc)
 {
 }
 #endif
@@ -2051,6 +2067,7 @@ more_data:
 		rx_buf_cookie = HAL_RX_REO_BUF_COOKIE_GET(ring_desc);
 		status = dp_rx_cookie_check_and_invalidate(ring_desc);
 		if (qdf_unlikely(QDF_IS_STATUS_ERROR(status))) {
+			DP_STATS_INC(soc, rx.err.stale_cookie, 1);
 			break;
 		}
 
@@ -2060,6 +2077,9 @@ more_data:
 		if (QDF_IS_STATUS_ERROR(status)) {
 			if (qdf_unlikely(rx_desc && rx_desc->nbuf)) {
 				qdf_assert_always(rx_desc->unmapped);
+				dp_ipa_handle_rx_buf_smmu_mapping(soc,
+								  rx_desc->nbuf,
+								  false);
 				qdf_nbuf_unmap_single(soc->osdev,
 						      rx_desc->nbuf,
 						      QDF_DMA_FROM_DEVICE);
@@ -2148,6 +2168,7 @@ more_data:
 		 * move unmap after scattered msdu waiting break logic
 		 * in case double skb unmap happened.
 		 */
+		dp_ipa_handle_rx_buf_smmu_mapping(soc, rx_desc->nbuf, false);
 		qdf_nbuf_unmap_single(soc->osdev, rx_desc->nbuf,
 				      QDF_DMA_FROM_DEVICE);
 		rx_desc->unmapped = 1;
@@ -2289,7 +2310,13 @@ done:
 			tid = qdf_nbuf_get_tid_val(nbuf);
 
 		peer_id =  QDF_NBUF_CB_RX_PEER_ID(nbuf);
-		peer = dp_peer_find_by_id(soc, peer_id);
+
+		if (qdf_unlikely(!peer)) {
+			peer = dp_peer_find_by_id(soc, peer_id);
+		} else if (peer && peer->peer_ids[0] != peer_id) {
+			dp_peer_unref_del_find_by_id(peer);
+			peer = dp_peer_find_by_id(soc, peer_id);
+		}
 
 		if (peer) {
 			QDF_NBUF_CB_DP_TRACE_PRINT(nbuf) = false;
@@ -2314,7 +2341,6 @@ done:
 			qdf_nbuf_free(nbuf);
 			nbuf = next;
 			DP_STATS_INC(soc, rx.err.invalid_vdev, 1);
-			dp_peer_unref_del_find_by_id(peer);
 			continue;
 		}
 
@@ -2402,7 +2428,6 @@ done:
 				dp_info_rl("scatter msdu len %d, dropped",
 					   msdu_len);
 				nbuf = next;
-				dp_peer_unref_del_find_by_id(peer);
 				continue;
 			}
 		} else {
@@ -2424,7 +2449,6 @@ done:
 				DP_STATS_INC(peer, rx.multipass_rx_pkt_drop, 1);
 				qdf_nbuf_free(nbuf);
 				nbuf = next;
-				dp_peer_unref_del_find_by_id(peer);
 				continue;
 			}
 		}
@@ -2438,7 +2462,6 @@ done:
 			qdf_nbuf_free(nbuf);
 			/* Statistics */
 			nbuf = next;
-			dp_peer_unref_del_find_by_id(peer);
 			continue;
 		}
 
@@ -2451,7 +2474,6 @@ done:
 			DP_STATS_INC(peer, rx.nawds_mcast_drop, 1);
 			qdf_nbuf_free(nbuf);
 			nbuf = next;
-			dp_peer_unref_del_find_by_id(peer);
 			continue;
 		}
 
@@ -2480,7 +2502,6 @@ done:
 
 				qdf_nbuf_free(nbuf);
 				nbuf = next;
-				dp_peer_unref_del_find_by_id(peer);
 				continue;
 			}
 			dp_rx_fill_mesh_stats(vdev, nbuf, rx_tlv_hdr, peer);
@@ -2507,7 +2528,6 @@ done:
 				qdf_nbuf_free(nbuf);
 				nbuf = next;
 				DP_STATS_INC(soc, rx.err.invalid_sa_da_idx, 1);
-				dp_peer_unref_del_find_by_id(peer);
 				continue;
 			}
 			/* WDS Source Port Learning */
@@ -2526,7 +2546,6 @@ done:
 							nbuf,
 							msdu_metadata)) {
 					nbuf = next;
-					dp_peer_unref_del_find_by_id(peer);
 					tid_stats->intrabss_cnt++;
 					continue; /* Get next desc */
 				}
@@ -2542,7 +2561,6 @@ done:
 
 		tid_stats->delivered_to_stack++;
 		nbuf = next;
-		dp_peer_unref_del_find_by_id(peer);
 	}
 
 	if (qdf_likely(deliver_list_head)) {
@@ -2560,6 +2578,9 @@ done:
 			}
 		}
 	}
+
+	if (qdf_likely(peer))
+		dp_peer_unref_del_find_by_id(peer);
 
 	if (dp_rx_enable_eol_data_check(soc) && rx_bufs_used) {
 		if (quota) {
@@ -2852,6 +2873,7 @@ dp_rx_pdev_attach(struct dp_pdev *pdev)
 	rx_desc_pool = &soc->rx_desc_buf[mac_for_pdev];
 	rx_sw_desc_weight = wlan_cfg_get_dp_soc_rx_sw_desc_weight(soc->wlan_cfg_ctx);
 
+	rx_desc_pool->desc_type = DP_RX_DESC_BUF_TYPE;
 	dp_rx_desc_pool_alloc(soc, mac_for_pdev,
 			      rx_sw_desc_weight * rxdma_entries,
 			      rx_desc_pool);

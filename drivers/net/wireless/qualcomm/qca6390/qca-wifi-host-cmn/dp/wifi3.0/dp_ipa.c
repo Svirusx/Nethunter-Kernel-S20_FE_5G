@@ -31,6 +31,9 @@
 #include "dp_rx.h"
 #include "dp_ipa.h"
 
+/* Ring index for WBM2SW2 release ring */
+#define IPA_TX_COMP_RING_IDX HAL_IPA_TX_COMP_RING_IDX
+
 /* Hard coded config parameters until dp_ops_cfg.cfg_attach implemented */
 #define CFG_IPA_UC_TX_BUF_SIZE_DEFAULT            (2048)
 
@@ -815,7 +818,7 @@ QDF_STATUS dp_ipa_enable_autonomy(struct cdp_soc_t *soc_hdl, uint8_t pdev_id)
 	/* Call HAL API to remap REO rings to REO2IPA ring */
 	ix0 = HAL_REO_REMAP_IX0(REO_REMAP_TCL, 0) |
 	      HAL_REO_REMAP_IX0(REO_REMAP_SW4, 1) |
-	      HAL_REO_REMAP_IX0(REO_REMAP_SW4, 2) |
+	      HAL_REO_REMAP_IX0(REO_REMAP_SW1, 2) |
 	      HAL_REO_REMAP_IX0(REO_REMAP_SW4, 3) |
 	      HAL_REO_REMAP_IX0(REO_REMAP_SW4, 4) |
 	      HAL_REO_REMAP_IX0(REO_REMAP_RELEASE, 5) |
@@ -1258,7 +1261,8 @@ QDF_STATUS dp_ipa_setup_iface(char *ifname, uint8_t *mac_addr,
 	struct dp_ipa_uc_tx_hdr uc_tx_hdr_v6;
 	int ret = -EINVAL;
 
-	dp_debug("Add Partial hdr: %s, %pM", ifname, mac_addr);
+	dp_debug("Add Partial hdr: %s, "QDF_MAC_ADDR_FMT, ifname,
+		 QDF_MAC_ADDR_REF(mac_addr));
 	qdf_mem_zero(&hdr_info, sizeof(qdf_ipa_wdi_hdr_info_t));
 	qdf_ether_addr_copy(uc_tx_hdr.eth.h_source, mac_addr);
 
@@ -1513,8 +1517,8 @@ QDF_STATUS dp_ipa_setup_iface(char *ifname, uint8_t *mac_addr,
 	int ret = -EINVAL;
 
 	QDF_TRACE(QDF_MODULE_ID_TXRX, QDF_TRACE_LEVEL_DEBUG,
-		  "%s: Add Partial hdr: %s, %pM",
-		  __func__, ifname, mac_addr);
+		  "%s: Add Partial hdr: %s, "QDF_MAC_ADDR_FMT,
+		  __func__, ifname, QDF_MAC_ADDR_REF(mac_addr));
 
 	qdf_mem_zero(&hdr_info, sizeof(qdf_ipa_wdi_hdr_info_t));
 	qdf_ether_addr_copy(uc_tx_hdr.eth.h_source, mac_addr);
@@ -1560,23 +1564,55 @@ QDF_STATUS dp_ipa_setup_iface(char *ifname, uint8_t *mac_addr,
 
 /**
  * dp_ipa_cleanup() - Disconnect IPA pipes
+ * @soc_hdl: dp soc handle
+ * @pdev_id: dp pdev id
  * @tx_pipe_handle: Tx pipe handle
  * @rx_pipe_handle: Rx pipe handle
  *
  * Return: QDF_STATUS
  */
-QDF_STATUS dp_ipa_cleanup(uint32_t tx_pipe_handle, uint32_t rx_pipe_handle)
+QDF_STATUS dp_ipa_cleanup(struct cdp_soc_t *soc_hdl, uint8_t pdev_id,
+			  uint32_t tx_pipe_handle, uint32_t rx_pipe_handle)
 {
+	struct dp_soc *soc = cdp_soc_t_to_dp_soc(soc_hdl);
+	QDF_STATUS status = QDF_STATUS_SUCCESS;
+	struct dp_ipa_resources *ipa_res;
+	struct dp_pdev *pdev;
 	int ret;
 
 	ret = qdf_ipa_wdi_disconn_pipes();
 	if (ret) {
 		dp_err("ipa_wdi_disconn_pipes: IPA pipe cleanup failed: ret=%d",
 		       ret);
-		return QDF_STATUS_E_FAILURE;
+		status = QDF_STATUS_E_FAILURE;
 	}
 
-	return QDF_STATUS_SUCCESS;
+	pdev = dp_get_pdev_from_soc_pdev_id_wifi3(soc, pdev_id);
+	if (qdf_unlikely(!pdev)) {
+		dp_err_rl("Invalid pdev for pdev_id %d", pdev_id);
+		status = QDF_STATUS_E_FAILURE;
+		goto exit;
+	}
+
+	if (qdf_mem_smmu_s1_enabled(soc->osdev)) {
+		ipa_res = &pdev->ipa_resource;
+
+		/* unmap has to be the reverse order of smmu map */
+		ret = pld_smmu_unmap(soc->osdev->dev,
+				     ipa_res->rx_ready_doorbell_paddr,
+				     sizeof(uint32_t));
+		if (ret)
+			dp_err_rl("IPA RX DB smmu unmap failed");
+
+		ret = pld_smmu_unmap(soc->osdev->dev,
+				     ipa_res->tx_comp_doorbell_paddr,
+				     sizeof(uint32_t));
+		if (ret)
+			dp_err_rl("IPA TX DB smmu unmap failed");
+	}
+
+exit:
+	return status;
 }
 
 /**
@@ -1632,11 +1668,41 @@ QDF_STATUS dp_ipa_enable_pipes(struct cdp_soc_t *soc_hdl, uint8_t pdev_id)
 	}
 
 	if (soc->ipa_first_tx_db_access) {
-		hal_srng_dst_init_hp(wbm_srng, ipa_res->tx_comp_doorbell_vaddr);
+		hal_srng_dst_init_hp(
+			soc->hal_soc, wbm_srng,
+			ipa_res->tx_comp_doorbell_vaddr);
 		soc->ipa_first_tx_db_access = false;
 	}
 
 	return QDF_STATUS_SUCCESS;
+}
+
+/*
+ * dp_ipa_get_tx_comp_pending_check() - Check if tx completions are pending.
+ * @soc: DP pdev Context
+ *
+ * Ring full condition is checked to find if buffers are left for
+ * processing as host only allocates buffers in this ring and IPA HW processes
+ * the buffer.
+ *
+ * Return: True if tx completions are pending
+ */
+static bool dp_ipa_get_tx_comp_pending_check(struct dp_soc *soc)
+{
+	struct dp_srng *tx_comp_ring =
+				&soc->tx_comp_ring[IPA_TX_COMP_RING_IDX];
+	uint32_t hp, tp, entry_size, buf_cnt;
+
+	hal_get_hw_hptp(soc->hal_soc, tx_comp_ring->hal_srng, &hp, &tp,
+			WBM2SW_RELEASE);
+	entry_size = hal_srng_get_entrysize(soc->hal_soc, WBM2SW_RELEASE) >> 2;
+
+	if (hp > tp)
+		buf_cnt = (hp - tp) / entry_size;
+	else
+		buf_cnt = (tx_comp_ring->num_entries - tp + hp) / entry_size;
+
+	return (soc->ipa_uc_tx_rsc.alloc_tx_buf_cnt != buf_cnt);
 }
 
 QDF_STATUS dp_ipa_disable_pipes(struct cdp_soc_t *soc_hdl, uint8_t pdev_id)
@@ -1644,6 +1710,7 @@ QDF_STATUS dp_ipa_disable_pipes(struct cdp_soc_t *soc_hdl, uint8_t pdev_id)
 	struct dp_soc *soc = cdp_soc_t_to_dp_soc(soc_hdl);
 	struct dp_pdev *pdev =
 		dp_get_pdev_from_soc_pdev_id_wifi3(soc, pdev_id);
+	int timeout = TX_COMP_DRAIN_WAIT_TIMEOUT_MS;
 	QDF_STATUS result;
 
 	if (!pdev) {
@@ -1651,11 +1718,21 @@ QDF_STATUS dp_ipa_disable_pipes(struct cdp_soc_t *soc_hdl, uint8_t pdev_id)
 		return QDF_STATUS_E_FAILURE;
 	}
 
+	while (dp_ipa_get_tx_comp_pending_check(soc)) {
+		qdf_sleep(TX_COMP_DRAIN_WAIT_MS);
+		timeout -= TX_COMP_DRAIN_WAIT_MS;
+		if (timeout <= 0) {
+			dp_err("Tx completions pending. Force Disabling pipes");
+			break;
+		}
+	}
+
 	result = qdf_ipa_wdi_disable_pipes();
 	if (result) {
 		QDF_TRACE(QDF_MODULE_ID_TXRX, QDF_TRACE_LEVEL_ERROR,
 			  "%s: Disable WDI PIPE fail, code %d",
 			  __func__, result);
+		qdf_assert_always(0);
 		return QDF_STATUS_E_FAILURE;
 	}
 
@@ -1774,18 +1851,18 @@ bool dp_ipa_rx_intrabss_fwd(struct cdp_soc_t *soc_hdl, uint8_t vdev_id,
 	if (!qdf_mem_cmp(eh->h_dest, vdev->mac_addr.raw, QDF_MAC_ADDR_SIZE))
 		return false;
 
-	da_peer = dp_find_peer_by_addr((struct cdp_pdev *)pdev, eh->h_dest);
+	da_peer = dp_find_peer_by_addr_and_vdev(dp_pdev_to_cdp_pdev(pdev),
+						dp_vdev_to_cdp_vdev(vdev),
+						eh->h_dest);
+
 	if (!da_peer)
 		return false;
 
-	if (da_peer->vdev != vdev)
-		return false;
+	sa_peer = dp_find_peer_by_addr_and_vdev(dp_pdev_to_cdp_pdev(pdev),
+						dp_vdev_to_cdp_vdev(vdev),
+						eh->h_source);
 
-	sa_peer = dp_find_peer_by_addr((struct cdp_pdev *)pdev, eh->h_source);
 	if (!sa_peer)
-		return false;
-
-	if (sa_peer->vdev != vdev)
 		return false;
 
 	/*

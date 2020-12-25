@@ -106,6 +106,14 @@
 #define WLAN_CFG_INT_TIMER_THRESHOLD_OTHER 8
 #endif
 
+#define WLAN_CFG_RX_PENDING_HL_THRESHOLD 0x60000
+#define WLAN_CFG_RX_PENDING_HL_THRESHOLD_MIN 0
+#define WLAN_CFG_RX_PENDING_HL_THRESHOLD_MAX 0x80000
+
+#define WLAN_CFG_RX_PENDING_LO_THRESHOLD 0x60000
+#define WLAN_CFG_RX_PENDING_LO_THRESHOLD_MIN 100
+#define WLAN_CFG_RX_PENDING_LO_THRESHOLD_MAX 0x80000
+
 #define WLAN_CFG_INT_TIMER_THRESHOLD_WBM_RELEASE_RING 256
 #define WLAN_CFG_INT_TIMER_THRESHOLD_REO_RING 512
 
@@ -246,7 +254,7 @@
 #define WLAN_CFG_REO_CMD_RING_SIZE_MIN 64
 #define WLAN_CFG_REO_CMD_RING_SIZE_MAX 128
 
-#define WLAN_CFG_REO_STATUS_RING_SIZE 256
+#define WLAN_CFG_REO_STATUS_RING_SIZE 128
 #define WLAN_CFG_REO_STATUS_RING_SIZE_MIN 128
 #define WLAN_CFG_REO_STATUS_RING_SIZE_MAX 2048
 
@@ -509,6 +517,49 @@
 		WLAN_CFG_PER_PDEV_LMAC_RING_MAX, \
 		WLAN_CFG_PER_PDEV_LMAC_RING, \
 		CFG_VALUE_OR_DEFAULT, "DP pdev LMAC ring")
+/*
+ * <ini>
+ * dp_rx_pending_hl_threshold - High threshold of frame number to start
+ * frame dropping scheme
+ * @Min: 0
+ * @Max: 524288
+ * @Default: 393216
+ *
+ * This ini entry is used to set a high limit threshold to start frame
+ * dropping scheme
+ *
+ * Usage: External
+ *
+ * </ini>
+ */
+#define CFG_DP_RX_PENDING_HL_THRESHOLD \
+		CFG_INI_UINT("dp_rx_pending_hl_threshold", \
+		WLAN_CFG_RX_PENDING_HL_THRESHOLD_MIN, \
+		WLAN_CFG_RX_PENDING_HL_THRESHOLD_MAX, \
+		WLAN_CFG_RX_PENDING_HL_THRESHOLD, \
+		CFG_VALUE_OR_DEFAULT, "DP rx pending hl threshold")
+
+/*
+ * <ini>
+ * dp_rx_pending_lo_threshold - Low threshold of frame number to stop
+ * frame dropping scheme
+ * @Min: 100
+ * @Max: 524288
+ * @Default: 393216
+ *
+ * This ini entry is used to set a low limit threshold to stop frame
+ * dropping scheme
+ *
+ * Usage: External
+ *
+ * </ini>
+ */
+#define CFG_DP_RX_PENDING_LO_THRESHOLD \
+		CFG_INI_UINT("dp_rx_pending_lo_threshold", \
+		WLAN_CFG_RX_PENDING_LO_THRESHOLD_MIN, \
+		WLAN_CFG_RX_PENDING_LO_THRESHOLD_MAX, \
+		WLAN_CFG_RX_PENDING_LO_THRESHOLD, \
+		CFG_VALUE_OR_DEFAULT, "DP rx pending lo threshold")
 
 #define CFG_DP_BASE_HW_MAC_ID \
 		CFG_INI_UINT("dp_base_hw_macid", \
@@ -875,6 +926,25 @@
 	CFG_INI_BOOL("legacy_mode_csum_disable", false, \
 		     "Enable/Disable legacy mode checksum")
 
+/*
+ * <ini>
+ * wow_check_rx_pending_enable - control to check RX frames pending in Wow
+ * @Min: 0
+ * @Max: 1
+ * @Default: 0
+ *
+ * This ini is used to control DP Software to perform RX pending check
+ * before entering WoW mode
+ *
+ * Usage: Internal
+ *
+ * </ini>
+ */
+#define CFG_DP_WOW_CHECK_RX_PENDING \
+		CFG_INI_BOOL("wow_check_rx_pending_enable", \
+		false, \
+		"enable rx frame pending check in WoW mode")
+
 #define CFG_DP \
 		CFG(CFG_DP_HTT_PACKET_TYPE) \
 		CFG(CFG_DP_INT_BATCH_THRESHOLD_OTHER) \
@@ -950,5 +1020,8 @@
 		CFG(CFG_DP_RXDMA_MONITOR_RX_DROP_THRESHOLD) \
 		CFG(CFG_DP_PKTLOG_BUFFER_SIZE) \
 		CFG(CFG_DP_RX_FISA_ENABLE) \
-		CFG(CFG_DP_LEGACY_MODE_CSUM_DISABLE)
+		CFG(CFG_DP_LEGACY_MODE_CSUM_DISABLE) \
+		CFG(CFG_DP_RX_PENDING_HL_THRESHOLD) \
+		CFG(CFG_DP_RX_PENDING_LO_THRESHOLD) \
+		CFG(CFG_DP_WOW_CHECK_RX_PENDING)
 #endif /* _CFG_DP_H_ */
