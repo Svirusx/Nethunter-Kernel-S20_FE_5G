@@ -98,6 +98,7 @@
 #include "nan_ucfg_api.h"
 #include "wma_coex.h"
 #include "target_if_vdev_mgr_rx_ops.h"
+#include "wlan_tdls_cfg_api.h"
 #include "wlan_policy_mgr_i.h"
 #include "target_if_psoc_timer_tx_ops.h"
 
@@ -314,7 +315,7 @@ static void wma_set_default_tgt_config(tp_wma_handle wma_handle,
 	tgt_cfg->max_frag_entries = CFG_TGT_MAX_FRAG_TABLE_ENTRIES;
 	tgt_cfg->num_tdls_vdevs = CFG_TGT_NUM_TDLS_VDEVS;
 	tgt_cfg->num_tdls_conn_table_entries =
-		CFG_TGT_NUM_TDLS_CONN_TABLE_ENTRIES;
+			cfg_tdls_get_max_peer_count(wma_handle->psoc);
 	tgt_cfg->beacon_tx_offload_max_vdev =
 		CFG_TGT_DEFAULT_BEACON_TX_OFFLOAD_MAX_VDEV;
 	tgt_cfg->num_multicast_filter_entries =
@@ -695,8 +696,8 @@ static void wma_process_send_addba_req(tp_wma_handle wma_handle,
 	if (QDF_STATUS_SUCCESS != status) {
 		WMA_LOGE(FL("Failed to process WMA_SEND_ADDBA_REQ"));
 	}
-	wma_debug("sent ADDBA req to" QDF_MAC_ADDR_STR "tid %d buff_size %d",
-			QDF_MAC_ADDR_ARRAY(send_addba->mac_addr),
+	wma_debug("sent ADDBA req to" QDF_MAC_ADDR_FMT "tid %d buff_size %d",
+			QDF_MAC_ADDR_REF(send_addba->mac_addr),
 			send_addba->param.tidno,
 			send_addba->param.buffersize);
 
@@ -1065,6 +1066,13 @@ static void wma_process_cli_set_cmd(tp_wma_handle wma,
 			if (ret)
 				WMA_LOGE("dbglog_module_log_enable failed ret %d",
 					 ret);
+			break;
+		case WMI_DBGLOG_MOD_WOW_LOG_LEVEL:
+			ret = dbglog_set_mod_wow_log_lvl(wma->wmi_handle,
+							 privcmd->param_value);
+			if (ret)
+				wma_err("WMI_DBGLOG_MOD_WOW_LOG_LEVEL failed ret %d",
+					ret);
 			break;
 		case WMI_DBGLOG_TYPE:
 			ret = dbglog_parser_type_init(wma->wmi_handle,
@@ -3514,6 +3522,7 @@ void wma_send_msg_by_priority(tp_wma_handle wma_handle, uint16_t msg_type,
 	if (!QDF_IS_STATUS_SUCCESS(status)) {
 		if (body_ptr)
 			qdf_mem_free(body_ptr);
+		wma_err("Failed to send msg");
 	}
 }
 
@@ -3548,8 +3557,8 @@ static int wma_set_base_macaddr_indicate(tp_wma_handle wma_handle,
 				     (uint8_t *)customAddr);
 	if (err)
 		return -EIO;
-	wma_debug("Base MAC Addr: " QDF_MAC_ADDR_STR,
-		 QDF_MAC_ADDR_ARRAY((*customAddr)));
+	wma_debug("Base MAC Addr: " QDF_MAC_ADDR_FMT,
+		 QDF_MAC_ADDR_REF((*customAddr)));
 
 	return 0;
 }

@@ -557,25 +557,29 @@ dp_rx_fisa_aggr_tcp(struct dp_rx_fst *fisa_hdl,
 static int get_transport_payload_offset(struct dp_rx_fst *fisa_hdl,
 					uint8_t *rx_tlv_hdr)
 {
+	uint32_t eth_hdr_len = HAL_RX_TLV_GET_IP_OFFSET(rx_tlv_hdr);
 	uint32_t ip_hdr_len = HAL_RX_TLV_GET_TCP_OFFSET(rx_tlv_hdr);
 
 	/* ETHERNET_HDR_LEN + ip_hdr_len + UDP/TCP; */
-	return (ETHERNET_HDR_LEN + ip_hdr_len + sizeof(struct udphdr));
+	return (eth_hdr_len + ip_hdr_len + sizeof(struct udphdr));
 }
 
 /**
  * get_transport_header_offset() - Get transport header offset
  * @fisa_flow: Handle to FISA sw flow entry
- * @nbuf: Incoming nbuf, should have data pointing to ethernet hdr
+ * @rx_tlv_hdr: TLV hdr pointer
  *
  * Return: Offset value to transport header
  */
 static int get_transport_header_offset(struct dp_fisa_rx_sw_ft *fisa_flow,
-				       qdf_nbuf_t nbuf)
+				       uint8_t *rx_tlv_hdr)
 
 {
-	return (fisa_flow->head_skb_ip_hdr_offset +
-		fisa_flow->head_skb_l4_hdr_offset);
+	uint32_t eth_hdr_len = HAL_RX_TLV_GET_IP_OFFSET(rx_tlv_hdr);
+	uint32_t ip_hdr_len = HAL_RX_TLV_GET_TCP_OFFSET(rx_tlv_hdr);
+
+	/* ETHERNET_HDR_LEN + ip_hdr_len */
+	return (eth_hdr_len + ip_hdr_len);
 }
 
 /**
@@ -600,7 +604,7 @@ dp_rx_fisa_aggr_udp(struct dp_rx_fst *fisa_hdl,
 	qdf_nbuf_pull_head(nbuf, RX_PKT_TLVS_LEN + l2_hdr_offset);
 
 	udp_hdr = (struct udphdr *)(qdf_nbuf_data(nbuf) +
-			get_transport_header_offset(fisa_flow, nbuf));
+			get_transport_header_offset(fisa_flow, rx_tlv_hdr));
 
 	/**
 	 * Incoming nbuf is of size greater than ongoing aggregation
@@ -629,6 +633,10 @@ dp_rx_fisa_aggr_udp(struct dp_rx_fst *fisa_hdl,
 					sizeof(struct udphdr);
 		fisa_flow->adjusted_cumulative_ip_length =
 					qdf_ntohs(udp_hdr->len);
+		fisa_flow->head_skb_ip_hdr_offset =
+					HAL_RX_TLV_GET_IP_OFFSET(rx_tlv_hdr);
+		fisa_flow->head_skb_l4_hdr_offset =
+					HAL_RX_TLV_GET_TCP_OFFSET(rx_tlv_hdr);
 
 		return FISA_AGGR_DONE;
 	}
@@ -795,7 +803,8 @@ dp_rx_fisa_flush_udp_flow(struct dp_vdev *vdev,
 						   head_skb_iph->ihl);
 
 		head_skb_udp_hdr->len =
-			qdf_htons(qdf_ntohs(head_skb_iph->tot_len) - 20);
+			qdf_htons(qdf_ntohs(head_skb_iph->tot_len) -
+				  fisa_flow->head_skb_l4_hdr_offset);
 		head_skb_udp_hdr->check = pseudo;
 		head_skb->csum_start = (u8 *)head_skb_udp_hdr - head_skb->head;
 		head_skb->csum_offset = offsetof(struct udphdr, check);
@@ -809,6 +818,7 @@ dp_rx_fisa_flush_udp_flow(struct dp_vdev *vdev,
 	}
 
 	qdf_nbuf_set_next(fisa_flow->head_skb, NULL);
+	QDF_NBUF_CB_RX_NUM_ELEMENTS_IN_LIST(fisa_flow->head_skb) = 1;
 	if (fisa_flow->last_skb)
 		qdf_nbuf_set_next(fisa_flow->last_skb, NULL);
 
@@ -1022,10 +1032,6 @@ static int dp_add_nbuf_to_fisa_flow(struct dp_rx_fst *fisa_hdl,
 
 	if (!fisa_flow->head_skb) {
 		/* This is start of aggregation for the flow, save the offsets*/
-		fisa_flow->head_skb_ip_hdr_offset =
-					HAL_RX_TLV_GET_IP_OFFSET(rx_tlv_hdr);
-		fisa_flow->head_skb_l4_hdr_offset =
-					HAL_RX_TLV_GET_TCP_OFFSET(rx_tlv_hdr);
 		fisa_flow->napi_flush_cumulative_l4_checksum = 0;
 		fisa_flow->cur_aggr = 0;
 	}
@@ -1086,7 +1092,8 @@ static bool dp_is_nbuf_bypass_fisa(qdf_nbuf_t nbuf)
 {
 	/* RX frame from non-regular path or DHCP packet */
 	if (qdf_nbuf_is_exc_frame(nbuf) ||
-	    qdf_nbuf_is_ipv4_dhcp_pkt(nbuf))
+	    qdf_nbuf_is_ipv4_dhcp_pkt(nbuf) ||
+	    qdf_nbuf_is_da_mcbc(nbuf))
 		return true;
 
 	return false;
@@ -1225,6 +1232,7 @@ pull_nbuf:
 				     head_nbuf);
 
 deliver_nbuf: /* Deliver without FISA */
+		QDF_NBUF_CB_RX_NUM_ELEMENTS_IN_LIST(head_nbuf) = 1;
 		qdf_nbuf_set_next(head_nbuf, NULL);
 		hex_dump_skb_data(head_nbuf, false);
 		if (!vdev->osif_rx || QDF_STATUS_SUCCESS !=

@@ -90,11 +90,14 @@ static struct __qdf_device g_qdf_ctx;
 
 static uint8_t cds_multicast_logging;
 
+#define DRIVER_VER_LEN (11)
+#define HANG_EVENT_VER_LEN (1)
+
 struct cds_hang_event_fixed_param {
 	uint16_t tlv_header;
 	uint8_t recovery_reason;
-	char driver_version[11];
-	char hang_event_version;
+	char driver_version[DRIVER_VER_LEN];
+	char hang_event_version[HANG_EVENT_VER_LEN];
 } qdf_packed;
 
 #ifdef QCA_WIFI_QCA8074
@@ -116,6 +119,15 @@ static struct ol_if_ops  dp_ol_if_ops = {
 	.is_roam_inprogress = wma_is_roam_in_progress,
 	.get_con_mode = cds_get_conparam,
 	.send_delba = cds_send_delba,
+#ifdef DP_MEM_PRE_ALLOC
+	.dp_prealloc_get_context = dp_prealloc_get_context_memory,
+	.dp_prealloc_put_context = dp_prealloc_put_context_memory,
+	.dp_prealloc_get_consistent = dp_prealloc_get_coherent,
+	.dp_prealloc_put_consistent = dp_prealloc_put_coherent,
+	.dp_get_multi_pages = dp_prealloc_get_multi_pages,
+	.dp_put_multi_pages = dp_prealloc_put_multi_pages,
+#endif
+	.dp_rx_get_pending = dp_rx_tm_get_pending,
     /* TODO: Add any other control path calls required to OL_IF/WMA layer */
 };
 #else
@@ -182,6 +194,22 @@ static bool cds_is_drv_connected(void)
 	return ((ret > 0) ? true : false);
 }
 
+static bool cds_is_drv_supported(void)
+{
+	qdf_device_t qdf_ctx;
+	struct pld_platform_cap cap = {0};
+
+	qdf_ctx = cds_get_context(QDF_MODULE_ID_QDF_DEVICE);
+	if (!qdf_ctx) {
+		cds_err("cds context is invalid");
+		return false;
+	}
+
+	pld_get_platform_cap(qdf_ctx->dev, &cap);
+
+	return ((cap.cap_flag & PLD_HAS_DRV_SUPPORT) ? true : false);
+}
+
 static QDF_STATUS cds_wmi_send_recv_qmi(void *buf, uint32_t len, void * cb_ctx,
 					qdf_wmi_recv_qmi_cb wmi_rx_cb)
 {
@@ -220,6 +248,7 @@ QDF_STATUS cds_init(void)
 	qdf_register_is_driver_unloading_callback(cds_is_driver_unloading);
 	qdf_register_recovering_state_query_callback(cds_is_driver_recovering);
 	qdf_register_drv_connected_callback(cds_is_drv_connected);
+	qdf_register_drv_supported_callback(cds_is_drv_supported);
 	qdf_register_wmi_send_recv_qmi_callback(cds_wmi_send_recv_qmi);
 
 	return QDF_STATUS_SUCCESS;
@@ -547,10 +576,9 @@ static int cds_hang_event_notifier_call(struct notifier_block *block,
 	if (!cds_hang_evt_buff)
 		return NOTIFY_STOP_MASK;
 
-	if (cds_hang_data->offset >= QDF_WLAN_MAX_HOST_OFFSET)
-		return NOTIFY_STOP_MASK;
-
 	total_len = sizeof(*cmd);
+	if (cds_hang_data->offset + total_len > QDF_WLAN_HANG_FW_OFFSET)
+		return NOTIFY_STOP_MASK;
 
 	cds_hang_evt_buff = cds_hang_data->hang_data + cds_hang_data->offset;
 	cmd = (struct cds_hang_event_fixed_param *)cds_hang_evt_buff;
@@ -559,9 +587,11 @@ static int cds_hang_event_notifier_call(struct notifier_block *block,
 
 	cmd->recovery_reason = gp_cds_context->recovery_reason;
 
-	qdf_mem_copy(&cmd->driver_version, QWLAN_VERSIONSTR, 11);
+	qdf_mem_copy(&cmd->driver_version, QWLAN_VERSIONSTR,
+		     DRIVER_VER_LEN);
 
-	qdf_mem_copy(&cmd->hang_event_version, QDF_HANG_EVENT_VERSION, 3);
+	qdf_mem_copy(&cmd->hang_event_version, QDF_HANG_EVENT_VERSION,
+		     HANG_EVENT_VER_LEN);
 
 	cds_hang_data->offset += total_len;
 	return NOTIFY_OK;
@@ -1251,6 +1281,8 @@ QDF_STATUS cds_close(struct wlan_objmgr_psoc *psoc)
 
 	dispatcher_psoc_close(psoc);
 
+	qdf_flush_work(&gp_cds_context->cds_recovery_work);
+
 	qdf_status = wma_wmi_work_close();
 	if (!QDF_IS_STATUS_SUCCESS(qdf_status)) {
 		cds_err("Failed to close wma_wmi_work");
@@ -1889,8 +1921,6 @@ static void cds_trigger_recovery_work(void *context)
 void __cds_trigger_recovery(enum qdf_hang_reason reason, const char *func,
 			    const uint32_t line)
 {
-	bool is_work_queue_needed = false;
-
 	if (!gp_cds_context) {
 		cds_err("gp_cds_context is null");
 		return;
@@ -1898,19 +1928,10 @@ void __cds_trigger_recovery(enum qdf_hang_reason reason, const char *func,
 
 	gp_cds_context->recovery_reason = reason;
 
-	if (in_atomic() ||
-	    (QDF_RESUME_TIMEOUT == reason || QDF_SUSPEND_TIMEOUT == reason))
-		is_work_queue_needed = true;
-
-	if (is_work_queue_needed) {
-		__cds_recovery_caller.func = func;
-		__cds_recovery_caller.line = line;
-		qdf_queue_work(0, gp_cds_context->cds_recovery_wq,
-			       &gp_cds_context->cds_recovery_work);
-		return;
-	}
-
-	cds_trigger_recovery_handler(func, line);
+	__cds_recovery_caller.func = func;
+	__cds_recovery_caller.line = line;
+	qdf_queue_work(0, gp_cds_context->cds_recovery_wq,
+		       &gp_cds_context->cds_recovery_work);
 }
 
 void cds_trigger_recovery_psoc(void *psoc, enum qdf_hang_reason reason,

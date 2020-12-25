@@ -629,12 +629,16 @@ QDF_STATUS ol_txrx_ipa_setup(struct cdp_soc_t *soc_hdl, uint8_t pdev_id,
 
 /**
  * ol_txrx_ipa_cleanup() - Disconnect IPA pipes
+ * @soc_hdl: soc handle
+ * @pdev_id: pdev id
  * @tx_pipe_handle: Tx pipe handle
  * @rx_pipe_handle: Rx pipe handle
  *
  * Return: QDF_STATUS
  */
-QDF_STATUS ol_txrx_ipa_cleanup(uint32_t tx_pipe_handle, uint32_t rx_pipe_handle)
+QDF_STATUS ol_txrx_ipa_cleanup(struct cdp_soc_t *soc_hdl, uint8_t pdev_id,
+			       uint32_t tx_pipe_handle,
+			       uint32_t rx_pipe_handle)
 {
 	int ret;
 	struct ol_txrx_ipa_resources *ipa_res;
@@ -698,8 +702,8 @@ QDF_STATUS ol_txrx_ipa_setup_iface(char *ifname, uint8_t *mac_addr,
 	int ret = -EINVAL;
 
 	QDF_TRACE(QDF_MODULE_ID_TXRX, QDF_TRACE_LEVEL_DEBUG,
-		  "%s: Add Partial hdr: %s, %pM",
-		  __func__, ifname, mac_addr);
+		  "%s: Add Partial hdr: %s, "QDF_MAC_ADDR_FMT,
+		  __func__, ifname, QDF_MAC_ADDR_REF(mac_addr));
 
 	qdf_mem_zero(&hdr_info, sizeof(qdf_ipa_wdi_hdr_info_t));
 	memcpy(&uc_tx_hdr, &ipa_uc_tx_hdr, OL_TXRX_IPA_UC_WLAN_TX_HDR_LEN);
@@ -1133,12 +1137,16 @@ QDF_STATUS ol_txrx_ipa_setup(struct cdp_soc_t *soc_hdl, uint8_t pdev_id,
 
 /**
  * ol_txrx_ipa_cleanup() - Disconnect IPA pipes
+ * @soc_hdl: soc handle
+ * @pdev_id: pdev id
  * @tx_pipe_handle: Tx pipe handle
  * @rx_pipe_handle: Rx pipe handle
  *
  * Return: QDF_STATUS
  */
-QDF_STATUS ol_txrx_ipa_cleanup(uint32_t tx_pipe_handle, uint32_t rx_pipe_handle)
+QDF_STATUS ol_txrx_ipa_cleanup(struct cdp_soc_t *soc_hdl, uint8_t pdev_id,
+			       uint32_t tx_pipe_handle,
+			       uint32_t rx_pipe_handle)
 {
 	int ret;
 
@@ -1227,7 +1235,8 @@ static int ol_txrx_ipa_add_header_info(char *ifname, uint8_t *mac_addr,
 	struct ol_txrx_ipa_uc_tx_hdr *uc_tx_hdr = NULL;
 
 	QDF_TRACE(QDF_MODULE_ID_TXRX, QDF_TRACE_LEVEL_DEBUG,
-		  "Add Partial hdr: %s, %pM", ifname, mac_addr);
+		  "Add Partial hdr: %s, "QDF_MAC_ADDR_FMT, ifname,
+		  QDF_MAC_ADDR_REF(mac_addr));
 
 	/* dynamically allocate the memory to add the hdrs */
 	ipa_hdr = qdf_mem_malloc(sizeof(qdf_ipa_ioc_add_hdr_t)

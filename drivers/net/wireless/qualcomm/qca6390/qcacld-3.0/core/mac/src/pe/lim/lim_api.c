@@ -763,6 +763,7 @@ static int pe_hang_event_notifier_call(struct notifier_block *block,
 	uint8_t *pe_data;
 	uint8_t i;
 	struct pe_hang_event_fixed_param *cmd;
+	size_t size;
 
 	if (!data)
 		return NOTIFY_STOP_MASK;
@@ -771,13 +772,13 @@ static int pe_hang_event_notifier_call(struct notifier_block *block,
 	if (!mac)
 		return NOTIFY_STOP_MASK;
 
-	if (pe_hang_data->offset >= QDF_WLAN_MAX_HOST_OFFSET)
-		return NOTIFY_STOP_MASK;
-
+	size = sizeof(*cmd);
 	for (i = 0; i < mac->lim.maxBssId; i++) {
 		session = &mac->lim.gpSession[i];
 		if (!session->valid)
 			continue;
+		if (pe_hang_data->offset + size > QDF_WLAN_HANG_FW_OFFSET)
+			return NOTIFY_STOP_MASK;
 
 		pe_data = (pe_hang_data->hang_data + pe_hang_data->offset);
 		cmd = (struct pe_hang_event_fixed_param *)pe_data;
@@ -788,7 +789,7 @@ static int pe_hang_event_notifier_call(struct notifier_block *block,
 		cmd->limprevmlmstate = session->limPrevMlmState;
 		cmd->limsmestate = session->limSmeState;
 		cmd->limprevsmestate = session->limPrevSmeState;
-		pe_hang_data->offset += sizeof(*cmd);
+		pe_hang_data->offset += size;
 	}
 
 	return NOTIFY_OK;
@@ -2030,8 +2031,8 @@ lim_roam_gen_mbssid_beacon(struct mac_context *mac,
 		scan_entry = scan_node->entry;
 		if (qdf_is_macaddr_equal(&roam_ind->bssid,
 					 &scan_entry->bssid)) {
-			pe_debug("matched BSSID %pM bcn len %d profiles %d",
-				 scan_entry->bssid.bytes,
+			pe_debug("matched BSSID "QDF_MAC_ADDR_FMT" bcn len %d profiles %d",
+				 QDF_MAC_ADDR_REF(scan_entry->bssid.bytes),
 				 scan_entry->raw_frame.len,
 				 list_count);
 			nontx_bcn_prbrsp = scan_entry->raw_frame.ptr;
@@ -2126,17 +2127,17 @@ lim_roam_gen_beacon_descr(struct mac_context *mac,
 	ie_offset = SIR_MAC_HDR_LEN_3A + SIR_MAC_B_PR_SSID_OFFSET;
 
 	if (qdf_is_macaddr_zero((struct qdf_mac_addr *)mac_hdr->bssId)) {
-		pe_debug("bssid is 0 in beacon/probe update it with bssId %pM in sync ind",
-			roam_ind->bssid.bytes);
+		pe_debug("bssid is 0 in beacon/probe update it with bssId "QDF_MAC_ADDR_FMT" in sync ind",
+			QDF_MAC_ADDR_REF(roam_ind->bssid.bytes));
 		qdf_mem_copy(mac_hdr->bssId, roam_ind->bssid.bytes,
 			     sizeof(tSirMacAddr));
 	}
 
 	if (qdf_mem_cmp(&roam_ind->bssid.bytes,
 			&mac_hdr->bssId, QDF_MAC_ADDR_SIZE) != 0) {
-		pe_debug("LFR3:MBSSID Beacon/Prb Rsp: %d bssid %pM",
+		pe_debug("LFR3:MBSSID Beacon/Prb Rsp: %d bssid "QDF_MAC_ADDR_FMT,
 			 roam_ind->isBeacon,
-			 mac_hdr->bssId);
+			 QDF_MAC_ADDR_REF(mac_hdr->bssId));
 		/*
 		 * Its a MBSSID non-tx BSS roaming scenario.
 		 * Generate non tx BSS beacon/probe response
@@ -2220,10 +2221,10 @@ lim_roam_fill_bss_descr(struct mac_context *mac,
 		qdf_mem_free(parsed_frm_ptr);
 		return QDF_STATUS_E_FAILURE;
 	}
-	pe_debug("LFR3:Beacon/Prb Rsp: %d bssid %pM beacon %pM",
+	pe_debug("LFR3:Beacon/Prb Rsp: %d bssid "QDF_MAC_ADDR_FMT" beacon "QDF_MAC_ADDR_FMT,
 		 roam_synch_ind_ptr->isBeacon,
-		 roam_synch_ind_ptr->bssid.bytes,
-		 mac_hdr->bssId);
+		 QDF_MAC_ADDR_REF(roam_synch_ind_ptr->bssid.bytes),
+		 QDF_MAC_ADDR_REF(mac_hdr->bssId));
 
 	status = lim_roam_gen_beacon_descr(mac,
 					   roam_synch_ind_ptr,
@@ -2614,8 +2615,9 @@ pe_roam_synch_callback(struct mac_context *mac_ctx,
 		return status;
 	}
 
-	pe_debug("LFR3:Received ROAM_OFFLOAD_SYNCH_IND bssid %pM auth: %d vdevId: %d",
-		 roam_sync_ind_ptr->bssid.bytes, roam_sync_ind_ptr->authStatus,
+	pe_debug("LFR3:Received ROAM_OFFLOAD_SYNCH_IND bssid "QDF_MAC_ADDR_FMT" auth: %d vdevId: %d",
+		 QDF_MAC_ADDR_REF(roam_sync_ind_ptr->bssid.bytes),
+		 roam_sync_ind_ptr->authStatus,
 		 roam_sync_ind_ptr->roamed_vdev_id);
 
 	/*
@@ -2657,10 +2659,9 @@ pe_roam_synch_callback(struct mac_context *mac_ctx,
 	ft_session_ptr->csaOffloadEnable = session_ptr->csaOffloadEnable;
 
 	/* Next routine will update nss and vdev_nss with AP's capabilities */
-	lim_fill_ft_session(mac_ctx, bss_desc, ft_session_ptr, session_ptr);
-	
-	pe_set_rmf_caps(mac_ctx, ft_session_ptr, roam_sync_ind_ptr);	
-	
+	lim_fill_ft_session(mac_ctx, bss_desc, ft_session_ptr,
+			    session_ptr, roam_sync_ind_ptr->phy_mode);
+	pe_set_rmf_caps(mac_ctx, ft_session_ptr, roam_sync_ind_ptr);
 	/* Next routine may update nss based on dot11Mode */
 	lim_ft_prepare_add_bss_req(mac_ctx, ft_session_ptr, bss_desc);
 	if (session_ptr->is11Rconnection)
@@ -2688,8 +2689,8 @@ pe_roam_synch_callback(struct mac_context *mac_ctx,
 					 DPH_STA_HASH_INDEX_PEER,
 					 &ft_session_ptr->dph.dphHashTable);
 	if (!curr_sta_ds) {
-		pe_err("LFR3:failed to add hash entry for %pM",
-		       add_bss_params->staContext.staMac);
+		pe_err("LFR3:failed to add hash entry for "QDF_MAC_ADDR_FMT,
+		       QDF_MAC_ADDR_REF(add_bss_params->staContext.staMac));
 		ft_session_ptr->bRoamSynchInProgress = false;
 		return status;
 	}

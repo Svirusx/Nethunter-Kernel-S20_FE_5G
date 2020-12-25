@@ -27,6 +27,7 @@
 #include <wlan_utility.h>
 #include <wlan_policy_mgr_api.h>
 #include "wlan_reg_ucfg_api.h"
+#include <host_diag_core_event.h>
 
 static uint8_t calculate_hash_key(const uint8_t *macaddr)
 {
@@ -60,8 +61,8 @@ struct tdls_peer *tdls_find_peer(struct tdls_vdev_priv_obj *vdev_obj,
 		status = qdf_list_peek_next(head, p_node, &p_node);
 	}
 
-	tdls_debug("no tdls peer " QDF_MAC_ADDR_STR,
-		   QDF_MAC_ADDR_ARRAY(macaddr));
+	tdls_debug("no tdls peer " QDF_MAC_ADDR_FMT,
+		   QDF_MAC_ADDR_REF(macaddr));
 	return NULL;
 }
 
@@ -193,8 +194,8 @@ static struct tdls_peer *tdls_add_peer(struct tdls_vdev_priv_obj *vdev_obj,
 
 	qdf_list_insert_back(head, &peer->node);
 
-	tdls_debug("add tdls peer: " QDF_MAC_ADDR_STR,
-		   QDF_MAC_ADDR_ARRAY(macaddr));
+	tdls_debug("add tdls peer: " QDF_MAC_ADDR_FMT,
+		   QDF_MAC_ADDR_REF(macaddr));
 	return peer;
 }
 
@@ -227,8 +228,8 @@ tdls_find_progress_peer_in_list(qdf_list_t *head,
 			status = qdf_list_peek_next(head, p_node, &p_node);
 			continue;
 		} else if (TDLS_LINK_CONNECTING == peer->link_status) {
-			tdls_debug(QDF_MAC_ADDR_STR " TDLS_LINK_CONNECTING",
-				   QDF_MAC_ADDR_ARRAY(peer->peer_mac.bytes));
+			tdls_debug(QDF_MAC_ADDR_FMT " TDLS_LINK_CONNECTING",
+				   QDF_MAC_ADDR_REF(peer->peer_mac.bytes));
 			return peer;
 		}
 		status = qdf_list_peek_next(head, p_node, &p_node);
@@ -358,9 +359,9 @@ tdls_find_first_connected_peer(struct tdls_vdev_priv_obj *vdev_obj)
 			peer = qdf_container_of(p_node, struct tdls_peer, node);
 
 			if (peer && TDLS_LINK_CONNECTED == peer->link_status) {
-				tdls_debug(QDF_MAC_ADDR_STR
+				tdls_debug(QDF_MAC_ADDR_FMT
 					   " TDLS_LINK_CONNECTED",
-					   QDF_MAC_ADDR_ARRAY(
+					   QDF_MAC_ADDR_REF(
 						   peer->peer_mac.bytes));
 				return peer;
 			}
@@ -552,6 +553,84 @@ void tdls_extract_peer_state_param(struct tdls_peer_update_state *peer_param,
 			peer->supported_oper_classes[i];
 }
 
+#ifdef TDLS_WOW_ENABLED
+/**
+ * tdls_prevent_suspend(): Prevent suspend for TDLS
+ *
+ * Acquire wake lock and prevent suspend for TDLS
+ *
+ * Return None
+ */
+static void tdls_prevent_suspend(struct tdls_soc_priv_obj *tdls_soc)
+{
+	if (tdls_soc->is_prevent_suspend)
+		return;
+
+	qdf_wake_lock_acquire(&tdls_soc->wake_lock,
+			      WIFI_POWER_EVENT_WAKELOCK_TDLS);
+	qdf_runtime_pm_prevent_suspend(&tdls_soc->runtime_lock);
+	tdls_soc->is_prevent_suspend = true;
+}
+
+/**
+ * tdls_allow_suspend(): Allow suspend for TDLS
+ *
+ * Release wake lock and allow suspend for TDLS
+ *
+ * Return None
+ */
+static void tdls_allow_suspend(struct tdls_soc_priv_obj *tdls_soc)
+{
+	if (!tdls_soc->is_prevent_suspend)
+		return;
+
+	qdf_wake_lock_release(&tdls_soc->wake_lock,
+			      WIFI_POWER_EVENT_WAKELOCK_TDLS);
+	qdf_runtime_pm_allow_suspend(&tdls_soc->runtime_lock);
+	tdls_soc->is_prevent_suspend = false;
+}
+
+/**
+ * tdls_update_pmo_status() - Update PMO status by TDLS status
+ * @tdls_vdev: TDLS vdev object
+ * @old_status: old link status
+ * @new_status: new link status
+ *
+ * Return: None.
+ */
+static void tdls_update_pmo_status(struct tdls_vdev_priv_obj *tdls_vdev,
+				   enum tdls_link_state old_status,
+				   enum tdls_link_state new_status)
+{
+	struct tdls_soc_priv_obj *tdls_soc;
+
+	tdls_soc = wlan_vdev_get_tdls_soc_obj(tdls_vdev->vdev);
+	if (!tdls_soc) {
+		tdls_err("NULL psoc object");
+		return;
+	}
+
+	if (tdls_soc->is_drv_supported)
+		return;
+
+	if ((old_status < TDLS_LINK_CONNECTING) &&
+	    (new_status == TDLS_LINK_CONNECTING))
+		tdls_prevent_suspend(tdls_soc);
+
+	if ((old_status > TDLS_LINK_IDLE) &&
+	    (new_status == TDLS_LINK_IDLE) &&
+	    (!tdls_soc->connected_peer_count) &&
+	    (!tdls_is_progress(tdls_vdev, NULL, 0)))
+		tdls_allow_suspend(tdls_soc);
+}
+#else
+static void tdls_update_pmo_status(struct tdls_vdev_priv_obj *tdls_vdev,
+				   enum tdls_link_state old_status,
+				   enum tdls_link_state new_status)
+{
+}
+#endif
+
 /**
  * tdls_set_link_status() - set link statue for TDLS peer
  * @vdev_obj: TDLS vdev object
@@ -572,6 +651,7 @@ void tdls_set_link_status(struct tdls_vdev_priv_obj *vdev_obj,
 	uint32_t channel = 0;
 	struct tdls_peer *peer;
 	struct tdls_soc_priv_obj *soc_obj;
+	enum tdls_link_state old_status;
 
 	peer = tdls_find_peer(vdev_obj, mac);
 	if (!peer) {
@@ -580,7 +660,9 @@ void tdls_set_link_status(struct tdls_vdev_priv_obj *vdev_obj,
 		return;
 	}
 
+	old_status = peer->link_status;
 	peer->link_status = link_status;
+	tdls_update_pmo_status(vdev_obj, old_status, link_status);
 
 	if (link_status >= TDLS_LINK_DISCOVERED)
 		peer->discovery_attempt = 0;
@@ -612,11 +694,16 @@ void tdls_set_peer_link_status(struct tdls_peer *peer,
 	uint32_t channel = 0;
 	struct tdls_soc_priv_obj *soc_obj;
 	struct tdls_vdev_priv_obj *vdev_obj;
+	enum tdls_link_state old_status;
 
-	tdls_debug("state %d reason %d peer:" QDF_MAC_ADDR_STR,
+	tdls_debug("state %d reason %d peer:" QDF_MAC_ADDR_FMT,
 		   link_status, link_reason,
-		   QDF_MAC_ADDR_ARRAY(peer->peer_mac.bytes));
+		   QDF_MAC_ADDR_REF(peer->peer_mac.bytes));
+
+	vdev_obj = peer->vdev_priv;
+	old_status = peer->link_status;
 	peer->link_status = link_status;
+	tdls_update_pmo_status(vdev_obj, old_status, link_status);
 
 	if (link_status >= TDLS_LINK_DISCOVERED)
 		peer->discovery_attempt = 0;
@@ -624,7 +711,6 @@ void tdls_set_peer_link_status(struct tdls_peer *peer,
 	if (peer->is_forced_peer && peer->state_change_notification) {
 		peer->reason = link_reason;
 
-		vdev_obj = peer->vdev_priv;
 		soc_obj = wlan_vdev_get_tdls_soc_obj(vdev_obj->vdev);
 		if (!soc_obj) {
 			tdls_err("NULL psoc object");
@@ -782,8 +868,8 @@ QDF_STATUS tdls_reset_peer(struct tdls_vdev_priv_obj *vdev_obj,
 	}
 
 	if (curr_peer->is_peer_idle_timer_initialised) {
-		tdls_debug(QDF_MAC_ADDR_STR ": destroy  idle timer ",
-			   QDF_MAC_ADDR_ARRAY(curr_peer->peer_mac.bytes));
+		tdls_debug(QDF_MAC_ADDR_FMT ": destroy  idle timer ",
+			   QDF_MAC_ADDR_REF(curr_peer->peer_mac.bytes));
 		qdf_mc_timer_stop(&curr_peer->peer_idle_timer);
 		qdf_mc_timer_destroy(&curr_peer->peer_idle_timer);
 		curr_peer->is_peer_idle_timer_initialised = false;
@@ -816,9 +902,9 @@ void tdls_peer_idle_timers_destroy(struct tdls_vdev_priv_obj *vdev_obj)
 		while (QDF_IS_STATUS_SUCCESS(status)) {
 			peer = qdf_container_of(p_node, struct tdls_peer, node);
 			if (peer && peer->is_peer_idle_timer_initialised) {
-				tdls_debug(QDF_MAC_ADDR_STR
+				tdls_debug(QDF_MAC_ADDR_FMT
 					   ": destroy  idle timer ",
-					   QDF_MAC_ADDR_ARRAY(
+					   QDF_MAC_ADDR_REF(
 						   peer->peer_mac.bytes));
 				qdf_mc_timer_stop(&peer->peer_idle_timer);
 				qdf_mc_timer_destroy(&peer->peer_idle_timer);

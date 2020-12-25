@@ -604,9 +604,9 @@ bool hdd_get_interface_info(struct hdd_adapter *adapter,
 		if ((eConnectionState_Associated ==
 		     sta_ctx->conn_info.conn_state) &&
 		    (!sta_ctx->conn_info.is_authenticated)) {
-			hdd_err("client " QDF_MAC_ADDR_STR
+			hdd_err("client " QDF_MAC_ADDR_FMT
 				" is in the middle of WPS/EAPOL exchange.",
-				QDF_MAC_ADDR_ARRAY(adapter->mac_addr.bytes));
+				QDF_MAC_ADDR_REF(adapter->mac_addr.bytes));
 			info->state = WIFI_AUTHENTICATING;
 		}
 		if (eConnectionState_Associated ==
@@ -755,11 +755,14 @@ hdd_link_layer_process_iface_stats(struct hdd_adapter *adapter,
 {
 	struct sk_buff *vendor_event;
 	struct hdd_context *hdd_ctx = WLAN_HDD_GET_CTX(adapter);
-	int status;
 
-	status = wlan_hdd_validate_context(hdd_ctx);
-	if (0 != status)
-		return;
+	/*
+	 * There is no need for wlan_hdd_validate_context here. This is a NB
+	 * operation that will come with DSC synchronization. This ensures that
+	 * no driver transition will take place as long as this operation is
+	 * not complete. Thus the need to check validity of hdd_context is not
+	 * required.
+	 */
 
 	/*
 	 * Allocate a size of 4096 for the interface stats comprising
@@ -1744,6 +1747,61 @@ __wlan_hdd_cfg80211_ll_stats_get(struct wiphy *wiphy,
 	return 0;
 }
 
+#ifdef WLAN_FEATURE_WMI_SEND_RECV_QMI
+/**
+ * wlan_hdd_qmi_get_sync_resume() - Get operation to trigger RTPM
+ * sync resume without WoW exit
+ * @hdd_ctx: hdd context
+ * @dev: device context
+ *
+ * Returns: 0 for success, non-zero for failure
+ */
+static inline
+int wlan_hdd_qmi_get_sync_resume(struct hdd_context *hdd_ctx,
+				 struct device *dev)
+{
+	if (!hdd_ctx->config->is_qmi_stats_enabled) {
+		hdd_debug("periodic stats over qmi is disabled");
+		return 0;
+	}
+
+	return pld_qmi_send_get(dev);
+}
+
+/**
+ * wlan_hdd_qmi_put_suspend() - Put operation to trigger RTPM suspend
+ * without WoW entry
+ * @hdd_ctx: hdd context
+ * @dev: device context
+ *
+ * Returns: 0 for success, non-zero for failure
+ */
+static inline
+int wlan_hdd_qmi_put_suspend(struct hdd_context *hdd_ctx,
+			     struct device *dev)
+{
+	if (!hdd_ctx->config->is_qmi_stats_enabled) {
+		hdd_debug("periodic stats over qmi is disabled");
+		return 0;
+	}
+
+	return pld_qmi_send_put(dev);
+}
+#else
+static inline
+int wlan_hdd_qmi_get_sync_resume(struct hdd_context *hdd_ctx,
+				 struct device *dev)
+{
+	return 0;
+}
+
+static inline int wlan_hdd_qmi_put_suspend(struct hdd_context *hdd_ctx,
+					   struct device *dev)
+{
+	return 0;
+}
+#endif /* end if of WLAN_FEATURE_WMI_SEND_RECV_QMI */
+
 /**
  * wlan_hdd_cfg80211_ll_stats_get() - get ll stats
  * @wiphy: Pointer to wiphy
@@ -1758,9 +1816,14 @@ int wlan_hdd_cfg80211_ll_stats_get(struct wiphy *wiphy,
 				   const void *data,
 				   int data_len)
 {
+	struct hdd_context *hdd_ctx = wiphy_priv(wiphy);
 	struct osif_vdev_sync *vdev_sync;
 	int errno;
 	qdf_device_t qdf_ctx = cds_get_context(QDF_MODULE_ID_QDF_DEVICE);
+
+	errno = wlan_hdd_validate_context(hdd_ctx);
+	if (0 != errno)
+		return -EINVAL;
 
 	if (!qdf_ctx)
 		return -EINVAL;
@@ -1769,13 +1832,13 @@ int wlan_hdd_cfg80211_ll_stats_get(struct wiphy *wiphy,
 	if (errno)
 		return errno;
 
-	errno = pld_qmi_send_get(qdf_ctx->dev);
+	errno = wlan_hdd_qmi_get_sync_resume(hdd_ctx, qdf_ctx->dev);
 	if (errno)
 		goto end;
 
 	errno = __wlan_hdd_cfg80211_ll_stats_get(wiphy, wdev, data, data_len);
 
-	pld_qmi_send_put(qdf_ctx->dev);
+	wlan_hdd_qmi_put_suspend(hdd_ctx, qdf_ctx->dev);
 
 end:
 	osif_vdev_sync_op_stop(vdev_sync);
@@ -4146,18 +4209,21 @@ static int wlan_hdd_get_station_remote(struct wiphy *wiphy,
 	if (status != 0)
 		return status;
 
-	hdd_debug("Peer %pM", mac);
+	hdd_debug("Peer "QDF_MAC_ADDR_FMT, QDF_MAC_ADDR_REF(mac));
 
-	stainfo = hdd_get_sta_info_by_mac(&adapter->sta_info_list, mac);
+	stainfo = hdd_get_sta_info_by_mac(&adapter->sta_info_list, mac,
+					  STA_INFO_WLAN_HDD_GET_STATION_REMOTE);
 	if (!stainfo) {
-		hdd_err("peer %pM not found", mac);
+		hdd_err("peer "QDF_MAC_ADDR_FMT" not found",
+			QDF_MAC_ADDR_REF(mac));
 		return -EINVAL;
 	}
 
 	qdf_mem_copy(macaddr.bytes, mac, QDF_MAC_ADDR_SIZE);
 	status = wlan_hdd_get_peer_info(adapter, macaddr, &peer_info);
 	if (status) {
-		hdd_put_sta_info_ref(&adapter->sta_info_list, &stainfo, true);
+		hdd_put_sta_info_ref(&adapter->sta_info_list, &stainfo, true,
+				     STA_INFO_WLAN_HDD_GET_STATION_REMOTE);
 		hdd_err("fail to get peer info from fw");
 		return -EPERM;
 	}
@@ -4177,7 +4243,8 @@ static int wlan_hdd_get_station_remote(struct wiphy *wiphy,
 				WLAN_HDD_TGT_NOISE_FLOOR_DBM;
 	wlan_hdd_fill_rate_info(&txrx_stats, &peer_info);
 	wlan_hdd_fill_station_info(hddctx->psoc, sinfo, stainfo, &txrx_stats);
-	hdd_put_sta_info_ref(&adapter->sta_info_list, &stainfo, true);
+	hdd_put_sta_info_ref(&adapter->sta_info_list, &stainfo, true,
+			     STA_INFO_WLAN_HDD_GET_STATION_REMOTE);
 
 	return status;
 }
@@ -4304,7 +4371,7 @@ bool hdd_report_max_rate(mac_handle_t mac_handle,
 			 uint8_t mcs_index,
 			 uint16_t fw_rate, uint8_t nss)
 {
-	uint8_t i, j, rssidx;
+	uint8_t i, j, rssidx = 0;
 	uint16_t max_rate = 0;
 	uint32_t vht_mcs_map;
 	bool is_vht20_mcs9 = false;
@@ -4339,12 +4406,7 @@ bool hdd_report_max_rate(mac_handle_t mac_handle,
 				       &link_speed_rssi_low,
 				       &link_speed_rssi_report);
 
-	/* we do not want to necessarily report the current speed */
-	if (ucfg_mlme_stats_is_link_speed_report_max(hdd_ctx->psoc)) {
-		/* report the max possible speed */
-		rssidx = 0;
-	} else if (ucfg_mlme_stats_is_link_speed_report_max_scaled(
-				hdd_ctx->psoc)) {
+	if (ucfg_mlme_stats_is_link_speed_report_max_scaled(hdd_ctx->psoc)) {
 		/* report the max possible speed with RSSI scaling */
 		if (signal >= link_speed_rssi_high) {
 			/* report the max possible speed */
@@ -4359,14 +4421,7 @@ bool hdd_report_max_rate(mac_handle_t mac_handle,
 			/* report actual speed */
 			rssidx = 3;
 		}
-	} else {
-		/* unknown, treat as eHDD_LINK_SPEED_REPORT_MAX */
-		hdd_err("Invalid value for reportMaxLinkSpeed: %u",
-			link_speed_rssi_report);
-		rssidx = 0;
 	}
-
-	max_rate = 0;
 
 	/* Get Basic Rate Set */
 	if (0 != ucfg_mlme_get_opr_rate_set(hdd_ctx->psoc,
@@ -4543,8 +4598,9 @@ bool hdd_report_max_rate(mac_handle_t mac_handle,
 	if ((max_rate < fw_rate) || (0 == max_rate)) {
 		max_rate = fw_rate;
 	}
-	hdd_debug("rate_flags 0x%x, max_rate %d mcs %d nss %d",
-		  rate_flags, max_rate, max_mcs_idx, nss);
+	hdd_debug("RLMS %u, rate_flags 0x%x, max_rate %d mcs %d nss %d",
+		  link_speed_rssi_report, rate_flags,
+		  max_rate, max_mcs_idx, nss);
 	wlan_hdd_fill_os_rate_info(rate_flags, max_rate, rate,
 				   max_mcs_idx, nss, 0, 0);
 
@@ -4640,32 +4696,20 @@ static void hdd_fill_fcs_and_mpdu_count(struct hdd_adapter *adapter,
 }
 #endif
 
-/**
- * hdd_check_and_update_nss() - Check and update NSS as per DBS capability
- * @hdd_ctx: HDD Context pointer
- * @tx_nss: pointer to variable storing the tx_nss
- * @rx_nss: pointer to variable storing the rx_nss
- *
- * The parameters include the NSS obtained from the FW or static NSS. This NSS
- * could be invalid in the case the current HW mode is DBS where the connection
- * are 1x1. Rectify these NSS values as per the current HW mode.
- *
- * Return: none
- */
-static void hdd_check_and_update_nss(struct hdd_context *hdd_ctx,
-				     uint8_t *tx_nss, uint8_t *rx_nss)
+void hdd_check_and_update_nss(struct hdd_context *hdd_ctx,
+			      uint8_t *tx_nss, uint8_t *rx_nss)
 {
-	if ((*tx_nss > 1) &&
+	if (tx_nss && (*tx_nss > 1) &&
 	    policy_mgr_is_current_hwmode_dbs(hdd_ctx->psoc) &&
 	    !policy_mgr_is_hw_dbs_2x2_capable(hdd_ctx->psoc)) {
 		hdd_debug("Hw mode is DBS, Reduce tx nss(%d) to 1", *tx_nss);
 		(*tx_nss)--;
 	}
 
-	if ((*rx_nss > 1) &&
+	if (rx_nss && (*rx_nss > 1) &&
 	    policy_mgr_is_current_hwmode_dbs(hdd_ctx->psoc) &&
 	    !policy_mgr_is_hw_dbs_2x2_capable(hdd_ctx->psoc)) {
-		hdd_debug("Hw mode is DBS, Reduce tx nss(%d) to 1", *rx_nss);
+		hdd_debug("Hw mode is DBS, Reduce rx nss(%d) to 1", *rx_nss);
 		(*rx_nss)--;
 	}
 }
@@ -4996,13 +5040,13 @@ static int _wlan_hdd_cfg80211_get_station(struct wiphy *wiphy,
 	if (!qdf_ctx)
 		return -EINVAL;
 
-	errno = pld_qmi_send_get(qdf_ctx->dev);
+	errno = wlan_hdd_qmi_get_sync_resume(hdd_ctx, qdf_ctx->dev);
 	if (errno)
 		return errno;
 
 	errno = __wlan_hdd_cfg80211_get_station(wiphy, dev, mac, sinfo);
 
-	pld_qmi_send_put(qdf_ctx->dev);
+	wlan_hdd_qmi_put_suspend(hdd_ctx, qdf_ctx->dev);
 
 	return errno;
 }
@@ -6242,9 +6286,9 @@ static void hdd_lost_link_cp_stats_info_cb(void *stats_ev)
 		}
 		adapter->rssi_on_disconnect =
 					ev->vdev_summary_stats[i].stats.rssi;
-		hdd_debug("rssi %d for " QDF_MAC_ADDR_STR,
+		hdd_debug("rssi %d for " QDF_MAC_ADDR_FMT,
 			  adapter->rssi_on_disconnect,
-			  QDF_MAC_ADDR_ARRAY(adapter->mac_addr.bytes));
+			  QDF_MAC_ADDR_REF(adapter->mac_addr.bytes));
 	}
 }
 

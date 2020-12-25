@@ -26,10 +26,6 @@
 #include "cfg_ucfg_api.h"
 #include "wlan_fwol_ucfg_api.h"
 
-#ifdef SEC_CONFIG_PSM_SYSFS
-extern int wlan_hdd_sec_get_psm(void);
-#endif /* SEC_CONFIG_PSM_SYSFS */
-
 static struct wlan_pmo_ctx *gp_pmo_ctx;
 
 QDF_STATUS pmo_allocate_ctx(void)
@@ -188,6 +184,8 @@ static void wlan_pmo_init_cfg(struct wlan_objmgr_psoc *psoc,
 	psoc_cfg->sta_mod_dtim = cfg_get(psoc, CFG_PMO_ENABLE_MODULATED_DTIM);
 	psoc_cfg->enable_mc_list = cfg_get(psoc, CFG_PMO_MC_ADDR_LIST_ENABLE);
 	psoc_cfg->power_save_mode = cfg_get(psoc, CFG_PMO_POWERSAVE_MODE);
+	psoc_cfg->is_mod_dtim_on_sys_suspend_enabled =
+			cfg_get(psoc, CFG_PMO_MOD_DTIM_ON_SYS_SUSPEND);
 	psoc_cfg->max_ps_poll = cfg_get(psoc, CFG_PMO_MAX_PS_POLL);
 
 	psoc_cfg->wow_enable = cfg_get(psoc, CFG_PMO_WOW_ENABLE);
@@ -215,12 +213,6 @@ static void wlan_pmo_init_cfg(struct wlan_objmgr_psoc *psoc,
 			cfg_get(psoc, CFG_ACTIVE_MC_BC_APF_MODE);
 	psoc_cfg->ito_repeat_count = cfg_get(psoc, CFG_ITO_REPEAT_COUNT);
 	wlan_pmo_ra_filtering_init_cfg(psoc, psoc_cfg);
-#ifdef SEC_CONFIG_PSM_SYSFS
-	if (wlan_hdd_sec_get_psm()) {
-		psoc_cfg->arp_offload_enable = 0;
-		printk("[WIFI] CFG_PMO_ENABLE_HOST_ARPOFFLOAD : sec_control_psm = %d", psoc_cfg->arp_offload_enable);
-	}
-#endif /* SEC_CONFIG_PSM_SYSFS */
 }
 
 QDF_STATUS pmo_psoc_open(struct wlan_objmgr_psoc *psoc)

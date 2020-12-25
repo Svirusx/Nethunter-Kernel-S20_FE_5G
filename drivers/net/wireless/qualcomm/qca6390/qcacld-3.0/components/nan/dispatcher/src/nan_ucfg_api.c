@@ -625,7 +625,7 @@ QDF_STATUS ucfg_nan_discovery_req(void *in_req, uint32_t req_type)
 	struct osif_request *request = NULL;
 	static const struct osif_request_params params = {
 		.priv_size = 0,
-		.timeout_ms = 1000,
+		.timeout_ms = 4000,
 	};
 	int err;
 
@@ -1128,11 +1128,29 @@ ucfg_nan_is_vdev_creation_supp_by_host(struct nan_psoc_priv_obj *nan_obj)
 	return nan_obj->cfg_param.nan_separate_iface_support;
 }
 
+static void ucfg_nan_cleanup_all_ndps(struct wlan_objmgr_psoc *psoc)
+{
+	QDF_STATUS status;
+	uint32_t ndi_count, vdev_id, i;
+
+	ndi_count = policy_mgr_mode_specific_connection_count(psoc, PM_NDI_MODE,
+							      NULL);
+	for (i = 0; i < ndi_count; i++) {
+		vdev_id = policy_mgr_mode_specific_vdev_id(psoc, PM_NDI_MODE);
+		status = ucfg_nan_disable_ndi(psoc, vdev_id);
+		if (status == QDF_STATUS_E_TIMEOUT)
+			policy_mgr_decr_session_set_pcl(psoc, QDF_NDI_MODE,
+							vdev_id);
+	}
+}
+
 QDF_STATUS ucfg_disable_nan_discovery(struct wlan_objmgr_psoc *psoc,
 				      uint8_t *data, uint32_t data_len)
 {
 	struct nan_disable_req *nan_req;
 	QDF_STATUS status;
+
+	ucfg_nan_cleanup_all_ndps(psoc);
 
 	nan_req = qdf_mem_malloc(sizeof(*nan_req) + data_len);
 	if (!nan_req)
@@ -1198,6 +1216,32 @@ ucfg_nan_set_vdev_creation_supp_by_fw(struct wlan_objmgr_psoc *psoc, bool set)
 	psoc_nan_obj->nan_caps.nan_vdev_allowed = set;
 }
 
+QDF_STATUS ucfg_get_nan_feature_config(struct wlan_objmgr_psoc *psoc,
+				       uint32_t *nan_feature_config)
+{
+	struct nan_psoc_priv_obj *psoc_nan_obj;
+
+	psoc_nan_obj = nan_get_psoc_priv_obj(psoc);
+	if (!psoc_nan_obj) {
+		nan_err("psoc_nan_obj is null");
+		*nan_feature_config = cfg_default(CFG_NAN_FEATURE_CONFIG);
+		return QDF_STATUS_E_INVAL;
+	}
+
+	*nan_feature_config = psoc_nan_obj->cfg_param.nan_feature_config;
+	return QDF_STATUS_SUCCESS;
+}
+
+bool ucfg_is_nan_vdev(struct wlan_objmgr_vdev *vdev)
+{
+	if (wlan_vdev_mlme_get_opmode(vdev) == QDF_NAN_DISC_MODE ||
+	    (!ucfg_nan_is_vdev_creation_allowed(wlan_vdev_get_psoc(vdev)) &&
+	     wlan_vdev_mlme_get_opmode(vdev) == QDF_STA_MODE))
+		return true;
+
+	return false;
+}
+
 QDF_STATUS ucfg_nan_disable_ind_to_userspace(struct wlan_objmgr_psoc *psoc)
 {
 	struct nan_psoc_priv_obj *psoc_nan_obj;
@@ -1227,30 +1271,4 @@ QDF_STATUS ucfg_nan_disable_ind_to_userspace(struct wlan_objmgr_psoc *psoc)
 
 	qdf_mem_free(disable_ind);
 	return QDF_STATUS_SUCCESS;
-}
-
-QDF_STATUS ucfg_get_nan_feature_config(struct wlan_objmgr_psoc *psoc,
-				       uint32_t *nan_feature_config)
-{
-	struct nan_psoc_priv_obj *psoc_nan_obj;
-
-	psoc_nan_obj = nan_get_psoc_priv_obj(psoc);
-	if (!psoc_nan_obj) {
-		nan_err("psoc_nan_obj is null");
-		*nan_feature_config = cfg_default(CFG_NAN_FEATURE_CONFIG);
-		return QDF_STATUS_E_INVAL;
-	}
-
-	*nan_feature_config = psoc_nan_obj->cfg_param.nan_feature_config;
-	return QDF_STATUS_SUCCESS;
-}
-
-bool ucfg_is_nan_vdev(struct wlan_objmgr_vdev *vdev)
-{
-	if (wlan_vdev_mlme_get_opmode(vdev) == QDF_NAN_DISC_MODE ||
-	    (!ucfg_nan_is_vdev_creation_allowed(wlan_vdev_get_psoc(vdev)) &&
-	     wlan_vdev_mlme_get_opmode(vdev) == QDF_STA_MODE))
-		return true;
-
-	return false;
 }

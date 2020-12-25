@@ -72,6 +72,7 @@ fwol_psoc_object_created_notification(struct wlan_objmgr_psoc *psoc, void *arg)
 	if (QDF_IS_STATUS_ERROR(status)) {
 		fwol_err("Failed to attach psoc_ctx with psoc");
 		qdf_mem_free(fwol_obj);
+		return status;
 	}
 
 	tgt_fwol_register_rx_ops(&fwol_obj->rx_ops);
@@ -501,6 +502,26 @@ QDF_STATUS ucfg_fwol_get_enable_fw_module_log_level(
 	*enable_fw_module_log_level = fwol_obj->cfg.enable_fw_module_log_level;
 	*enable_fw_module_log_level_num =
 				fwol_obj->cfg.enable_fw_module_log_level_num;
+	return QDF_STATUS_SUCCESS;
+}
+
+QDF_STATUS ucfg_fwol_wow_get_enable_fw_module_log_level(
+				struct wlan_objmgr_psoc *psoc,
+				uint8_t **enable_fw_wow_module_log_level,
+				uint8_t *enable_fw_wow_module_log_level_num)
+{
+	struct wlan_fwol_psoc_obj *fwol_obj;
+
+	fwol_obj = fwol_get_psoc_obj(psoc);
+	if (!fwol_obj) {
+		fwol_err("Failed to get FWOL obj");
+		return QDF_STATUS_E_FAILURE;
+	}
+
+	*enable_fw_wow_module_log_level =
+				fwol_obj->cfg.enable_fw_mod_wow_log_level;
+	*enable_fw_wow_module_log_level_num =
+				fwol_obj->cfg.enable_fw_mod_wow_log_level_num;
 	return QDF_STATUS_SUCCESS;
 }
 

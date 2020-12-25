@@ -460,7 +460,6 @@ QDF_STATUS policy_mgr_psoc_enable(struct wlan_objmgr_psoc *psoc)
 	}
 	policy_mgr_get_mcc_adaptive_sch(psoc, &enable_mcc_adaptive_sch);
 	policy_mgr_set_dynamic_mcc_adaptive_sch(psoc, enable_mcc_adaptive_sch);
-	pm_ctx->do_hw_mode_change = false;
 	pm_ctx->hw_mode_change_in_progress = POLICY_MGR_HW_MODE_NOT_IN_PROGRESS;
 	/* reset sap mandatory channels */
 	status = policy_mgr_reset_sap_mandatory_channels(pm_ctx);
@@ -677,8 +676,6 @@ QDF_STATUS policy_mgr_register_hdd_cb(struct wlan_objmgr_psoc *psoc,
 		hdd_cbacks->get_mode_for_non_connected_vdev;
 	pm_ctx->hdd_cbacks.hdd_get_device_mode =
 		hdd_cbacks->hdd_get_device_mode;
-	pm_ctx->hdd_cbacks.hdd_wapi_security_sta_exist =
-		hdd_cbacks->hdd_wapi_security_sta_exist;
 	pm_ctx->hdd_cbacks.hdd_is_chan_switch_in_progress =
 		hdd_cbacks->hdd_is_chan_switch_in_progress;
 	pm_ctx->hdd_cbacks.hdd_is_cac_in_progress =

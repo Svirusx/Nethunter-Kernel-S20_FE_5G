@@ -82,6 +82,7 @@
 #include "wlan_mlme_ucfg_api.h"
 #include "wlan_osif_request_manager.h"
 #include <wlan_hdd_sar_limits.h>
+#include "wlan_hdd_thermal.h"
 
 /* Preprocessor definitions and constants */
 #ifdef QCA_WIFI_NAPIER_EMULATION
@@ -257,6 +258,7 @@ static void hdd_disable_gtk_offload(struct hdd_adapter *adapter)
 /**
  * __wlan_hdd_ipv6_changed() - IPv6 notifier callback function
  * @net_dev: net_device whose IP address changed
+ * @event: event from kernel, NETDEV_UP or NETDEV_DOWN
  *
  * This is a callback function that is registered with the kernel via
  * register_inet6addr_notifier() which allows the driver to be
@@ -264,7 +266,8 @@ static void hdd_disable_gtk_offload(struct hdd_adapter *adapter)
  *
  * Return: None
  */
-static void __wlan_hdd_ipv6_changed(struct net_device *net_dev)
+static void __wlan_hdd_ipv6_changed(struct net_device *net_dev,
+				    unsigned long event)
 {
 	struct hdd_adapter *adapter = WLAN_HDD_GET_PRIV_PTR(net_dev);
 	struct hdd_context *hdd_ctx;
@@ -281,8 +284,12 @@ static void __wlan_hdd_ipv6_changed(struct net_device *net_dev)
 	if (errno)
 		goto exit;
 
-	if (adapter->device_mode == QDF_STA_MODE ||
-	    adapter->device_mode == QDF_P2P_CLIENT_MODE) {
+	/* Only need to be notified for ipv6_add_addr
+	 * No need for ipv6_del_addr or addrconf_ifdown
+	 */
+	if (event == NETDEV_UP &&
+	    (adapter->device_mode == QDF_STA_MODE ||
+	     adapter->device_mode == QDF_P2P_CLIENT_MODE)) {
 		hdd_debug("invoking sme_dhcp_done_ind");
 		sme_dhcp_done_ind(hdd_ctx->mac_handle, adapter->vdev_id);
 		schedule_work(&adapter->ipv6_notifier_work);
@@ -302,7 +309,7 @@ int wlan_hdd_ipv6_changed(struct notifier_block *nb,
 	if (osif_vdev_sync_op_start(net_dev, &vdev_sync))
 		return NOTIFY_DONE;
 
-	__wlan_hdd_ipv6_changed(net_dev);
+	__wlan_hdd_ipv6_changed(net_dev, data);
 
 	osif_vdev_sync_op_stop(vdev_sync);
 
@@ -527,6 +534,34 @@ out:
 }
 
 /**
+ * hdd_send_ps_config_to_fw() - Check user pwr save config set/reset PS
+ * @adapter: pointer to hdd adapter
+ *
+ * This function checks the power save configuration saved in MAC context
+ * and sends power save config to FW.
+ *
+ * Return: None
+ */
+static void hdd_send_ps_config_to_fw(struct hdd_adapter *adapter)
+{
+	struct mac_context *mac_ctx;
+	struct hdd_context *hdd_ctx;
+
+	if (hdd_validate_adapter(adapter))
+		return;
+
+	hdd_ctx = WLAN_HDD_GET_CTX(adapter);
+	mac_ctx  = MAC_CONTEXT(hdd_ctx->mac_handle);
+
+	if (mac_ctx->usr_cfg_ps_enable)
+		sme_ps_enable_disable(hdd_ctx->mac_handle, adapter->vdev_id,
+				      SME_PS_ENABLE);
+	else
+		sme_ps_enable_disable(hdd_ctx->mac_handle, adapter->vdev_id,
+				      SME_PS_DISABLE);
+}
+
+/**
  * __hdd_ipv6_notifier_work_queue() - IPv6 notification work function
  * @adapter: adapter whose IP address changed
  *
@@ -555,6 +590,7 @@ static void __hdd_ipv6_notifier_work_queue(struct hdd_adapter *adapter)
 
 	hdd_enable_ns_offload(adapter, pmo_ipv6_change_notify);
 
+	hdd_send_ps_config_to_fw(adapter);
 exit:
 	hdd_exit();
 }
@@ -677,7 +713,8 @@ void hdd_disable_host_offloads(struct hdd_adapter *adapter,
 	hdd_disable_arp_offload(adapter, trigger);
 	hdd_disable_ns_offload(adapter, trigger);
 	hdd_disable_mc_addr_filtering(adapter, trigger);
-	hdd_disable_hw_filter(adapter);
+	if (adapter->device_mode != QDF_NDI_MODE)
+		hdd_disable_hw_filter(adapter);
 	hdd_disable_action_frame_patterns(adapter);
 out:
 	hdd_exit();
@@ -864,6 +901,7 @@ static void __hdd_ipv4_notifier_work_queue(struct hdd_adapter *adapter)
 	if (ifa && hdd_ctx->is_fils_roaming_supported)
 		sme_send_hlp_ie_info(hdd_ctx->mac_handle, adapter->vdev_id,
 				     roam_profile, ifa->ifa_local);
+	hdd_send_ps_config_to_fw(adapter);
 exit:
 	hdd_exit();
 }
@@ -1560,6 +1598,7 @@ QDF_STATUS hdd_wlan_re_init(void)
 	sme_set_chip_pwr_save_fail_cb(hdd_ctx->mac_handle,
 				      hdd_chip_pwr_save_fail_detected_cb);
 
+	hdd_restore_thermal_mitigation_config(hdd_ctx);
 	hdd_restore_sar_config(hdd_ctx);
 
 	hdd_send_default_scan_ies(hdd_ctx);
@@ -1798,14 +1837,20 @@ static int _wlan_hdd_cfg80211_resume_wlan(struct wiphy *wiphy)
 	struct hdd_context *hdd_ctx = wiphy_priv(wiphy);
 	int errno;
 
-	errno = wlan_hdd_validate_context(hdd_ctx);
-	if (errno)
-		return errno;
+	if(!hdd_ctx) {
+		hdd_err_rl("hdd context is null");
+		return -ENODEV;
+	}
 
+	/* If Wifi is off, return success for system resume */
 	if (hdd_ctx->driver_status != DRIVER_MODULES_ENABLED) {
 		hdd_debug("Driver Modules not Enabled ");
 		return 0;
 	}
+
+	errno = wlan_hdd_validate_context(hdd_ctx);
+	if (errno)
+		return errno;
 
 	hif_ctx = cds_get_context(QDF_MODULE_ID_HIF);
 	errno = __wlan_hdd_cfg80211_resume_wlan(wiphy);
@@ -2029,14 +2074,20 @@ static int _wlan_hdd_cfg80211_suspend_wlan(struct wiphy *wiphy,
 	struct hdd_context *hdd_ctx = wiphy_priv(wiphy);
 	int errno;
 
-	errno = wlan_hdd_validate_context(hdd_ctx);
-	if (errno)
-		return errno;
+	if(!hdd_ctx) {
+		hdd_err_rl("hdd context is null");
+		return -ENODEV;
+	}
 
+	/* If Wifi is off, return success for system suspend */
 	if (hdd_ctx->driver_status != DRIVER_MODULES_ENABLED) {
 		hdd_debug("Driver Modules not Enabled ");
 		return 0;
 	}
+
+	errno = wlan_hdd_validate_context(hdd_ctx);
+	if (errno)
+		return errno;
 
 	hif_ctx = cds_get_context(QDF_MODULE_ID_HIF);
 	errno = hif_pm_runtime_get_sync(hif_ctx, RTPM_ID_SUSPEND_RESUME);
@@ -2449,6 +2500,7 @@ static int __wlan_hdd_cfg80211_get_txpower(struct wiphy *wiphy,
 	struct hdd_adapter *adapter = WLAN_HDD_GET_PRIV_PTR(ndev);
 	int status;
 	struct hdd_station_ctx *sta_ctx;
+	static bool is_rate_limited;
 
 	hdd_enter_dev(ndev);
 
@@ -2493,8 +2545,11 @@ static int __wlan_hdd_cfg80211_get_txpower(struct wiphy *wiphy,
 		return 0;
 	}
 
-	if (hdd_ctx->driver_status != DRIVER_MODULES_ENABLED) {
-		hdd_debug("Driver Module not enabled return success");
+	HDD_IS_RATE_LIMIT_REQ(is_rate_limited,
+			      hdd_ctx->config->nb_commands_interval);
+	if (hdd_ctx->driver_status != DRIVER_MODULES_ENABLED ||
+	    is_rate_limited) {
+		hdd_debug("Modules not enabled/rate limited, use cached stats");
 		/* Send cached data to upperlayer*/
 		*dbm = adapter->hdd_stats.class_a_stat.max_pwr;
 		return 0;

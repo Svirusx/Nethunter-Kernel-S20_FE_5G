@@ -939,8 +939,8 @@ QDF_STATUS wlan_mlme_configure_chain_mask(struct wlan_objmgr_psoc *psoc,
 			  mlme_obj->cfg.chainmask_cfg.tx_chain_mask_5g,
 			  mlme_obj->cfg.chainmask_cfg.rx_chain_mask_5g);
 
-	if (enable2x2 || !enable_bt_chain_sep || as_enabled ||
-	   (!hw_dbs_2x2_cap && dual_mac_feature != DISABLE_DBS_CXN_AND_SCAN)) {
+	if ((enable2x2 && !enable_bt_chain_sep) || as_enabled ||
+	    (!hw_dbs_2x2_cap && dual_mac_feature != DISABLE_DBS_CXN_AND_SCAN)) {
 		mlme_legacy_debug("Cannot configure chainmask to FW");
 		return QDF_STATUS_E_FAILURE;
 	}
@@ -2101,6 +2101,9 @@ void wlan_mlme_update_oce_flags(struct wlan_objmgr_pdev *pdev)
 	go_connected_peer =
 	wlan_util_get_peer_count_for_mode(pdev, QDF_P2P_GO_MODE);
 	mlme_obj = mlme_get_psoc_ext_obj(psoc);
+
+	if (!mlme_obj)
+		return;
 
 	if (sap_connected_peer || go_connected_peer) {
 		updated_fw_value = mlme_obj->cfg.oce.feature_bitmap;
@@ -3864,6 +3867,7 @@ bool wlan_mlme_get_peer_unmap_conf(struct wlan_objmgr_psoc *psoc)
 #define AUTH_INDEX 0
 #define MAX_RETRIES 2
 #define MAX_ROAM_AUTH_RETRIES 1
+#define MAX_AUTH_RETRIES 3
 
 QDF_STATUS
 wlan_mlme_get_sae_assoc_retry_count(struct wlan_objmgr_psoc *psoc,
@@ -3904,7 +3908,7 @@ wlan_mlme_get_sae_auth_retry_count(struct wlan_objmgr_psoc *psoc,
 		WLAN_GET_BITS(mlme_obj->cfg.gen.sae_connect_retries,
 			      AUTH_INDEX * NUM_RETRY_BITS, NUM_RETRY_BITS);
 
-	*retry_count = QDF_MIN(MAX_RETRIES, *retry_count);
+	*retry_count = QDF_MIN(MAX_AUTH_RETRIES, *retry_count);
 
 	return QDF_STATUS_SUCCESS;
 }

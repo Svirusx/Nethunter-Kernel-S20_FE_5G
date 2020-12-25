@@ -129,7 +129,7 @@ static void lim_update_stads_htcap(struct mac_context *mac_ctx,
  */
 void lim_update_assoc_sta_datas(struct mac_context *mac_ctx,
 	tpDphHashNode sta_ds, tpSirAssocRsp assoc_rsp,
-	struct pe_session *session_entry)
+	struct pe_session *session_entry, tSchBeaconStruct *beacon)
 {
 	uint32_t phy_mode;
 	bool qos_mode;
@@ -186,7 +186,8 @@ void lim_update_assoc_sta_datas(struct mac_context *mac_ctx,
 	}
 
 	if (IS_DOT11_MODE_HE(session_entry->dot11mode))
-		lim_update_stads_he_caps(sta_ds, assoc_rsp, session_entry);
+		lim_update_stads_he_caps(sta_ds, assoc_rsp,
+					 session_entry, beacon);
 
 	if (lim_is_sta_he_capable(sta_ds))
 		he_cap = &assoc_rsp->he_cap;
@@ -660,11 +661,11 @@ lim_process_assoc_rsp_frame(struct mac_context *mac_ctx,
 		return;
 	}
 
-	pe_nofl_info("Assoc rsp RX: subtype %d vdev %d sys role %d lim state %d rssi %d from " QDF_MAC_ADDR_STR,
+	pe_nofl_info("Assoc rsp RX: subtype %d vdev %d sys role %d lim state %d rssi %d from " QDF_MAC_ADDR_FMT,
 		     subtype, session_entry->vdev_id,
 		     GET_LIM_SYSTEM_ROLE(session_entry),
 		     session_entry->limMlmState, rssi,
-		     QDF_MAC_ADDR_ARRAY(hdr->sa));
+		     QDF_MAC_ADDR_REF(hdr->sa));
 	QDF_TRACE_HEX_DUMP(QDF_MODULE_ID_PE, QDF_TRACE_LEVEL_DEBUG,
 			   (uint8_t *)hdr, frame_len + SIR_MAC_HDR_LEN_3A);
 
@@ -704,8 +705,8 @@ lim_process_assoc_rsp_frame(struct mac_context *mac_ctx,
 			 * other than one to which request was initiated.
 			 * Ignore this and wait until Assoc Failure Timeout
 			 */
-			pe_warn("received AssocRsp from unexpected peer "QDF_MAC_ADDR_STR,
-				QDF_MAC_ADDR_ARRAY(hdr->sa));
+			pe_warn("received AssocRsp from unexpected peer "QDF_MAC_ADDR_FMT,
+				QDF_MAC_ADDR_REF(hdr->sa));
 			qdf_mem_free(beacon);
 			return;
 		}
@@ -718,8 +719,8 @@ lim_process_assoc_rsp_frame(struct mac_context *mac_ctx,
 			 * other than one to which request was initiated.
 			 * Ignore this and wait until Reassoc Failure Timeout.
 			 */
-			pe_warn("received ReassocRsp from unexpected peer "QDF_MAC_ADDR_STR,
-				QDF_MAC_ADDR_ARRAY(hdr->sa));
+			pe_warn("received ReassocRsp from unexpected peer "QDF_MAC_ADDR_FMT,
+				QDF_MAC_ADDR_REF(hdr->sa));
 			qdf_mem_free(beacon);
 			return;
 		}
@@ -964,7 +965,7 @@ lim_process_assoc_rsp_frame(struct mac_context *mac_ctx,
 			lim_is_roam_synch_in_progress(session_entry)) {
 			pe_debug("Sending self sta");
 			lim_update_assoc_sta_datas(mac_ctx, sta_ds, assoc_rsp,
-				session_entry);
+				session_entry, NULL);
 			lim_update_stads_ext_cap(mac_ctx, session_entry,
 						 assoc_rsp, sta_ds);
 			/* Store assigned AID for TIM processing */
@@ -1017,8 +1018,8 @@ lim_process_assoc_rsp_frame(struct mac_context *mac_ctx,
 		qdf_mem_free(beacon);
 		return;
 	}
-	pe_debug("Successfully Associated with BSS " QDF_MAC_ADDR_STR,
-		 QDF_MAC_ADDR_ARRAY(hdr->sa));
+	pe_debug("Successfully Associated with BSS " QDF_MAC_ADDR_FMT,
+		 QDF_MAC_ADDR_REF(hdr->sa));
 #ifdef FEATURE_WLAN_ESE
 	if (session_entry->eseContext.tsm.tsmInfo.state)
 		session_entry->eseContext.tsm.tsmMetrics.RoamingCount = 0;
@@ -1052,17 +1053,18 @@ lim_process_assoc_rsp_frame(struct mac_context *mac_ctx,
 				   session_entry->smeSessionId,
 				   session_entry->nss);
 
-	lim_update_assoc_sta_datas(mac_ctx, sta_ds, assoc_rsp, session_entry);
 	/*
 	 * Extract the AP capabilities from the beacon that
 	 * was received earlier
-	*/
+	 */
 	ie_len = lim_get_ielen_from_bss_description(
 		&session_entry->lim_join_req->bssDescription);
 	lim_extract_ap_capabilities(mac_ctx,
 		(uint8_t *)session_entry->lim_join_req->bssDescription.ieFields,
 		ie_len, beacon);
 
+	lim_update_assoc_sta_datas(mac_ctx, sta_ds, assoc_rsp,
+				   session_entry, beacon);
 	if (lim_is_session_he_capable(session_entry)) {
 		session_entry->mu_edca_present = assoc_rsp->mu_edca_present;
 		if (session_entry->mu_edca_present) {
@@ -1129,10 +1131,10 @@ assocReject:
 		&& (session_entry->limMlmState ==
 		    eLIM_MLM_WT_FT_REASSOC_RSP_STATE))) {
 		pe_err("Assoc Rejected by the peer mlmestate: %d sessionid: %d Reason: %d MACADDR:"
-			QDF_MAC_ADDR_STR,
+			QDF_MAC_ADDR_FMT,
 			session_entry->limMlmState,
 			session_entry->peSessionId,
-			assoc_cnf.resultCode, QDF_MAC_ADDR_ARRAY(hdr->sa));
+			assoc_cnf.resultCode, QDF_MAC_ADDR_REF(hdr->sa));
 		session_entry->limMlmState = eLIM_MLM_IDLE_STATE;
 		MTRACE(mac_trace(mac_ctx, TRACE_CODE_MLM_STATE,
 			session_entry->peSessionId,

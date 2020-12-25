@@ -544,7 +544,7 @@ __hdd_sysfs_dp_aggregation_show(struct hdd_context *hdd_ctx,
 	if (!wlan_hdd_validate_modules_state(hdd_ctx))
 		return -EINVAL;
 
-	hdd_err("dp_aggregation: %d",
+	hdd_debug("dp_aggregation: %d",
 		  qdf_atomic_read(&hdd_ctx->dp_agg_param.rx_aggregation));
 
 	return 0;
@@ -604,7 +604,7 @@ __hdd_sysfs_dp_aggregation_store(struct hdd_context *hdd_ctx,
 	if (kstrtou32(token, 0, &value))
 		return -EINVAL;
 
-	hdd_err("dp_aggregation: %d", value);
+	hdd_debug("dp_aggregation: %d", value);
 
 	hdd_rx_skip_fisa(dp_soc, value);
 	qdf_atomic_set(&hdd_ctx->dp_agg_param.rx_aggregation, !!value);

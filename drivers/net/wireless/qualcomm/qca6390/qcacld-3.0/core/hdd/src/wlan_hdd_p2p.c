@@ -696,14 +696,8 @@ struct wireless_dev *__wlan_hdd_add_virtual_intf(struct wiphy *wiphy,
 
 	adapter = NULL;
 	cfg_p2p_get_device_addr_admin(hdd_ctx->psoc, &p2p_dev_addr_admin);
-#ifdef SEC_READ_MACADDR_SYSFS
-	if ((p2p_dev_addr_admin &&
-	    (mode == QDF_P2P_GO_MODE || mode == QDF_P2P_CLIENT_MODE)
-        ) || !(strncmp(name, "swlan", 5))) {
-#else //!SEC_READ_MACADDR_SYSFS
 	if (p2p_dev_addr_admin &&
 	    (mode == QDF_P2P_GO_MODE || mode == QDF_P2P_CLIENT_MODE)) {
-#endif //SEC_READ_MACADDR_SYSFS
 		/*
 		 * Generate the P2P Interface Address. this address must be
 		 * different from the P2P Device Address.
@@ -1006,7 +1000,7 @@ __hdd_indicate_mgmt_frame_to_user(struct hdd_adapter *adapter,
 			 * we are dropping action frame
 			 */
 			hdd_err("adapter for action frame is NULL Macaddr = "
-				QDF_MAC_ADDR_STR, QDF_MAC_ADDR_ARRAY(dest_addr));
+				QDF_MAC_ADDR_FMT, QDF_MAC_ADDR_REF(dest_addr));
 			hdd_debug("Frame Type = %d Frame Length = %d subType = %d",
 				  frame_type, frm_len, sub_type);
 			/*

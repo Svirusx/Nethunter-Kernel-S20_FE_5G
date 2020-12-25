@@ -155,6 +155,29 @@ struct hdd_apf_context {
 #define NUM_TX_QUEUES 4
 #endif
 
+/* HDD_IS_RATE_LIMIT_REQ: Macro helper to implement rate limiting
+ * @flag: The flag to determine if limiting is required or not
+ * @rate: The number of seconds within which if multiple commands come, the
+ *	  flag will be set to true
+ *
+ * If the function in which this macro is used is called multiple times within
+ * "rate" number of seconds, the "flag" will be set to true which can be used
+ * to reject/take appropriate action.
+ */
+#define HDD_IS_RATE_LIMIT_REQ(flag, rate)\
+	do {\
+		static ulong __last_ticks;\
+		ulong __ticks = jiffies;\
+		flag = false; \
+		if (!time_after(__ticks,\
+		    __last_ticks + rate * HZ)) {\
+			flag = true; \
+		} \
+		else { \
+			__last_ticks = __ticks;\
+		} \
+	} while (0)
+
 /*
  * API in_compat_syscall() is introduced in 4.6 kernel to check whether we're
  * in a compat syscall or not. It is a new way to query the syscall type, which
@@ -1054,14 +1077,14 @@ struct hdd_context;
  * @latency_level: 0 - normal, 1 - moderate, 2 - low, 3 - ultralow
  * @last_disconnect_reason: Last disconnected internal reason code
  *                          as per enum qca_disconnect_reason_codes
+ * @upgrade_udp_qos_threshold: The threshold for user priority upgrade for
+			       any UDP packet.
  * @handle_feature_update: Handle feature update only if it is triggered
  *			   by hdd_netdev_feature_update
  * @netdev_features_update_work: work for handling the netdev features update
 				 for the adapter.
  * @gro_disallowed: Flag to check if GRO is enabled or disable for adapter
  * @gro_flushed: Flag to indicate if GRO explicit flush is done or not
- * @upgrade_udp_qos_threshold: The threshold for user priority upgrade fo
-                  any UDP packet.
  */
 struct hdd_adapter {
 	/* Magic cookie for adapter sanity verification.  Note that this
@@ -1620,7 +1643,14 @@ struct hdd_fw_ver_info {
 	uint32_t crmid;
 };
 
+/**
+ * The logic for get current index of history is dependent on this
+ * value being power of 2.
+ */
 #define WLAN_HDD_ADAPTER_OPS_HISTORY_MAX 4
+QDF_COMPILE_TIME_ASSERT(adapter_ops_history_size,
+			(WLAN_HDD_ADAPTER_OPS_HISTORY_MAX &
+			 (WLAN_HDD_ADAPTER_OPS_HISTORY_MAX - 1)) == 0);
 
 /**
  * enum hdd_adapter_ops_event - events for adapter ops history
@@ -1997,6 +2027,9 @@ struct hdd_context {
 		qdf_atomic_t rx_aggregation;
 		uint8_t gro_force_flush[DP_MAX_RX_THREADS];
 	} dp_agg_param;
+#ifdef FW_THERMAL_THROTTLE_SUPPORT
+	uint8_t dutycycle_off_percent;
+#endif
 
 	qdf_workqueue_t *adapter_ops_wq;
 	struct hdd_adapter_ops_history adapter_ops_history;
@@ -2073,9 +2106,7 @@ struct hdd_channel_info {
 /*
  * Function declarations and documentation
  */
-#ifdef SEC_CONFIG_PSM_SYSFS
-int wlan_hdd_sec_get_psm(void);
-#endif /* SEC_CONFIG_PSM_SYSFS */
+
 /**
  * wlan_hdd_history_get_next_index() - get next index to store the history
 				       entry
@@ -2767,6 +2798,23 @@ hdd_get_current_throughput_level(struct hdd_context *hdd_ctx)
 {
 	return hdd_ctx->cur_vote_level;
 }
+
+#ifdef DP_MEM_PRE_ALLOC
+static inline
+void *hdd_get_prealloc_dma_mem_unaligned(size_t size,
+					 qdf_dma_addr_t *paddr,
+					 uint32_t ring_type)
+{
+	return dp_prealloc_get_consistent_mem_unaligned(size, paddr,
+							ring_type);
+}
+
+static inline
+void hdd_put_prealloc_dma_mem_unaligned(void *vaddr)
+{
+	dp_prealloc_put_consistent_mem_unaligned(vaddr);
+}
+#endif
 
 /**
  * hdd_set_current_throughput_level() - update the current vote
@@ -3803,6 +3851,8 @@ static inline void hdd_send_peer_status_ind_to_app(
 		return;
 	}
 
+	/* chan_id is obsoleted by mhz */
+	ch_info.chan_id = 0;
 	ch_info.mhz = chan_info->mhz;
 	ch_info.band_center_freq1 = chan_info->band_center_freq1;
 	ch_info.band_center_freq2 = chan_info->band_center_freq2;

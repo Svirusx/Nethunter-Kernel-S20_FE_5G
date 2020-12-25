@@ -432,7 +432,7 @@ ucfg_nan_disable_ndi(struct wlan_objmgr_psoc *psoc, uint32_t ndi_vdev_id);
  * Return: QDF_STATUS
  */
 QDF_STATUS ucfg_get_nan_feature_config(struct wlan_objmgr_psoc *psoc,
-                      uint32_t *nan_feature_config);
+				       uint32_t *nan_feature_config);
 
 /**
  * ucfg_is_nan_vdev() - Check if the current vdev supports NAN or not
@@ -539,12 +539,6 @@ ucfg_nan_disable_ndi(struct wlan_objmgr_psoc *psoc, uint32_t ndi_vdev_id)
 }
 
 static inline
-QDF_STATUS ucfg_nan_disable_ind_to_userspace(struct wlan_objmgr_psoc *psoc)
-{
-	return QDF_STATUS_SUCCESS;
-}
-
-static inline
 bool ucfg_is_nan_disable_supported(struct wlan_objmgr_psoc *psoc)
 {
 	return false;
@@ -561,6 +555,12 @@ static inline
 bool ucfg_is_nan_vdev(struct wlan_objmgr_vdev *vdev)
 {
 	return false;
+}
+
+static inline
+QDF_STATUS ucfg_nan_disable_ind_to_userspace(struct wlan_objmgr_psoc *psoc)
+{
+	return QDF_STATUS_SUCCESS;
 }
 #endif /* WLAN_FEATURE_NAN */
 #endif /* _NAN_UCFG_API_H_ */

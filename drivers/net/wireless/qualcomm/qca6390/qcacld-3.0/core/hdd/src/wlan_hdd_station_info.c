@@ -39,6 +39,8 @@
 #include <cdp_txrx_stats_struct.h>
 #include <cdp_txrx_peer_ops.h>
 #include <cdp_txrx_host_stats.h>
+#include "wlan_hdd_object_manager.h"
+
 /*
  * define short names for the global vendor params
  * used by __wlan_hdd_cfg80211_get_station_cmd()
@@ -405,6 +407,7 @@ static void hdd_get_max_tx_bitrate(struct hdd_context *hdd_ctx,
 	uint8_t tx_mcs_index, tx_nss = 1;
 	uint16_t my_tx_rate;
 	struct hdd_station_ctx *hdd_sta_ctx;
+	struct wlan_objmgr_vdev *vdev;
 
 	hdd_sta_ctx = WLAN_HDD_GET_STATION_CTX_PTR(adapter);
 
@@ -416,14 +419,22 @@ static void hdd_get_max_tx_bitrate(struct hdd_context *hdd_ctx,
 	my_tx_rate = adapter->hdd_stats.class_a_stat.tx_rate;
 
 	if (!(tx_rate_flags & TX_RATE_LEGACY)) {
-		tx_nss = adapter->hdd_stats.class_a_stat.tx_nss;
-		if (tx_nss > 1 &&
-		    policy_mgr_is_current_hwmode_dbs(hdd_ctx->psoc) &&
-		    !policy_mgr_is_hw_dbs_2x2_capable(hdd_ctx->psoc)) {
-			hdd_debug("Hw mode is DBS, Reduce nss(%d) to 1",
-				  tx_nss);
-			tx_nss--;
+		vdev = hdd_objmgr_get_vdev(adapter);
+		if (vdev) {
+			/*
+			 * Take static NSS for reporting max rates.
+			 * NSS from FW is not reliable as it changes
+			 * as per the environment quality.
+			 */
+			tx_nss = wlan_vdev_mlme_get_nss(vdev);
+			hdd_objmgr_put_vdev(vdev);
+		} else {
+			tx_nss = adapter->hdd_stats.class_a_stat.tx_nss;
 		}
+		hdd_check_and_update_nss(hdd_ctx, &tx_nss, NULL);
+
+		if (tx_mcs_index == INVALID_MCS_IDX)
+			tx_mcs_index = 0;
 	}
 	if (hdd_report_max_rate(hdd_ctx->mac_handle, &sinfo.txrate,
 				sinfo.signal, tx_rate_flags, tx_mcs_index,
@@ -1136,11 +1147,12 @@ static int hdd_get_cached_station_remote(struct hdd_context *hdd_ctx,
 	uint8_t channel_width;
 
 	stainfo = hdd_get_sta_info_by_mac(&adapter->cache_sta_info_list,
-					   mac_addr.bytes);
+					  mac_addr.bytes,
+					  STA_INFO_GET_CACHED_STATION_REMOTE);
 
 	if (!stainfo) {
-		hdd_err("peer " QDF_MAC_ADDR_STR " not found",
-			QDF_MAC_ADDR_ARRAY(mac_addr.bytes));
+		hdd_err("peer " QDF_MAC_ADDR_FMT " not found",
+			QDF_MAC_ADDR_REF(mac_addr.bytes));
 		return -EINVAL;
 	}
 
@@ -1162,7 +1174,8 @@ static int hdd_get_cached_station_remote(struct hdd_context *hdd_ctx,
 	skb = cfg80211_vendor_cmd_alloc_reply_skb(hdd_ctx->wiphy, nl_buf_len);
 	if (!skb) {
 		hdd_put_sta_info_ref(&adapter->cache_sta_info_list,
-				     &stainfo, true);
+				     &stainfo, true,
+				     STA_INFO_GET_CACHED_STATION_REMOTE);
 		hdd_err("cfg80211_vendor_cmd_alloc_reply_skb failed");
 		return -ENOMEM;
 	}
@@ -1231,12 +1244,14 @@ static int hdd_get_cached_station_remote(struct hdd_context *hdd_ctx,
 		}
 	}
 	hdd_sta_info_detach(&adapter->cache_sta_info_list, &stainfo);
-	hdd_put_sta_info_ref(&adapter->cache_sta_info_list, &stainfo, true);
+	hdd_put_sta_info_ref(&adapter->cache_sta_info_list, &stainfo, true,
+			     STA_INFO_GET_CACHED_STATION_REMOTE);
 	qdf_atomic_dec(&adapter->cache_sta_count);
 
 	return cfg80211_vendor_cmd_reply(skb);
 fail:
-	hdd_put_sta_info_ref(&adapter->cache_sta_info_list, &stainfo, true);
+	hdd_put_sta_info_ref(&adapter->cache_sta_info_list, &stainfo, true,
+			     STA_INFO_GET_CACHED_STATION_REMOTE);
 	if (skb)
 		kfree_skb(skb);
 
@@ -1468,8 +1483,10 @@ static int hdd_get_station_remote(struct hdd_context *hdd_ctx,
 	int status = 0;
 	bool is_associated = false;
 	struct hdd_station_info *stainfo =
-			hdd_get_sta_info_by_mac(&adapter->sta_info_list,
-						mac_addr.bytes);
+			hdd_get_sta_info_by_mac(
+					&adapter->sta_info_list,
+					mac_addr.bytes,
+					STA_INFO_HDD_GET_STATION_REMOTE);
 
 	if (!stainfo) {
 		status = hdd_get_cached_station_remote(hdd_ctx, adapter,
@@ -1481,13 +1498,15 @@ static int hdd_get_station_remote(struct hdd_context *hdd_ctx,
 	if (!is_associated) {
 		status = hdd_get_cached_station_remote(hdd_ctx, adapter,
 						       mac_addr);
-		hdd_put_sta_info_ref(&adapter->sta_info_list, &stainfo, true);
+		hdd_put_sta_info_ref(&adapter->sta_info_list, &stainfo, true,
+				     STA_INFO_HDD_GET_STATION_REMOTE);
 		return status;
 	}
 
 	status = hdd_get_connected_station_info(hdd_ctx, adapter,
 						mac_addr, stainfo);
-	hdd_put_sta_info_ref(&adapter->sta_info_list, &stainfo, true);
+	hdd_put_sta_info_ref(&adapter->sta_info_list, &stainfo, true,
+			     STA_INFO_HDD_GET_STATION_REMOTE);
 	return status;
 }
 
@@ -1553,8 +1572,8 @@ __hdd_cfg80211_get_station_cmd(struct wiphy *wiphy,
 		nla_memcpy(mac_addr.bytes, tb[STATION_REMOTE],
 			   QDF_MAC_ADDR_SIZE);
 
-		hdd_debug("STATION_REMOTE " QDF_MAC_ADDR_STR,
-			  QDF_MAC_ADDR_ARRAY(mac_addr.bytes));
+		hdd_debug("STATION_REMOTE " QDF_MAC_ADDR_FMT,
+			  QDF_MAC_ADDR_REF(mac_addr.bytes));
 
 		status = hdd_get_station_remote(hdd_ctx, adapter, mac_addr);
 	} else {
