@@ -1033,13 +1033,15 @@ static void __hdd_hard_start_xmit(struct sk_buff *skb,
 		hdd_tx_rx_collect_connectivity_stats_info(skb, adapter,
 						PKT_TYPE_REQ, &pkt_type);
 
-	hdd_get_transmit_mac_addr(adapter, skb, &mac_addr_tx_allowed);
-	if (qdf_is_macaddr_zero(&mac_addr_tx_allowed)) {
-		QDF_TRACE(QDF_MODULE_ID_HDD_DATA, QDF_TRACE_LEVEL_INFO_HIGH,
-			  "tx not allowed, transmit operation suspended");
-		goto drop_pkt;
+	/* Allow tx in monitor mode */
+	if (hdd_get_conparam() != QDF_GLOBAL_MONITOR_MODE) {
+		hdd_get_transmit_mac_addr(adapter, skb, &mac_addr_tx_allowed);
+		if (qdf_is_macaddr_zero(&mac_addr_tx_allowed)) {
+			QDF_TRACE(QDF_MODULE_ID_HDD_DATA, QDF_TRACE_LEVEL_INFO_HIGH,
+				  "tx not allowed, transmit operation suspended");
+			goto drop_pkt;
+		}
 	}
-
 	hdd_get_tx_resource(adapter, &mac_addr,
 			    WLAN_HDD_TX_FLOW_CONTROL_OS_Q_BLOCK_TIME);
 
@@ -3069,6 +3071,9 @@ int hdd_set_mon_rx_cb(struct net_device *dev)
 	WLAN_ADDR_COPY(sta_desc.peer_addr.bytes, adapter->mac_addr.bytes);
 	qdf_mem_zero(&txrx_ops, sizeof(txrx_ops));
 	txrx_ops.rx.rx = hdd_mon_rx_packet_cbk;
+
+	adapter->tx_fn = txrx_ops.tx.tx;
+
 	hdd_monitor_set_rx_monitor_cb(&txrx_ops, hdd_rx_monitor_callback);
 	cdp_vdev_register(soc, adapter->vdev_id,
 			  (ol_osif_vdev_handle)adapter,
