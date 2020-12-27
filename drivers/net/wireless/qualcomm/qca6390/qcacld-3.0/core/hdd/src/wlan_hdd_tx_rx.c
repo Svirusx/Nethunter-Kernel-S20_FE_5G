@@ -3082,12 +3082,12 @@ int hdd_set_mon_rx_cb(struct net_device *dev)
 	qdf_mem_zero(&txrx_ops, sizeof(txrx_ops));
 	txrx_ops.rx.rx = hdd_mon_rx_packet_cbk;
 
-	adapter->tx_fn = txrx_ops.tx.tx;
-
 	hdd_monitor_set_rx_monitor_cb(&txrx_ops, hdd_rx_monitor_callback);
 	cdp_vdev_register(soc, adapter->vdev_id,
 			  (ol_osif_vdev_handle)adapter,
 			  &txrx_ops);
+	txrx_ops.rx.stats_rx = hdd_tx_rx_collect_connectivity_stats_info;
+	adapter->tx_fn = txrx_ops.tx.tx;
 	/* peer is created wma_vdev_attach->wma_create_peer */
 	qdf_status = cdp_peer_register(soc, OL_TXRX_PDEV_ID, &sta_desc);
 	if (QDF_STATUS_SUCCESS != qdf_status) {
