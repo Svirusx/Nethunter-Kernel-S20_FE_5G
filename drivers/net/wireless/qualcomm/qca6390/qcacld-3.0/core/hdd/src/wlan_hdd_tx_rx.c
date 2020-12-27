@@ -991,7 +991,7 @@ static void __hdd_hard_start_xmit(struct sk_buff *skb,
 	struct wlan_objmgr_vdev *vdev;
 	struct hdd_context *hdd_ctx;
 	void *soc = cds_get_context(QDF_MODULE_ID_SOC);
-
+printk("TEST 1");
 #ifdef QCA_WIFI_FTM
 	if (hdd_get_conparam() == QDF_GLOBAL_FTM_MODE) {
 		kfree_skb(skb);
@@ -1002,49 +1002,53 @@ static void __hdd_hard_start_xmit(struct sk_buff *skb,
 	++adapter->hdd_stats.tx_rx_stats.tx_called;
 	adapter->hdd_stats.tx_rx_stats.cont_txtimeout_cnt = 0;
 	qdf_mem_copy(mac_addr.bytes, skb->data, sizeof(mac_addr.bytes));
-
+printk("TEST 2");
 	if (cds_is_driver_recovering() || cds_is_driver_in_bad_state() ||
 	    cds_is_load_or_unload_in_progress()) {
 		QDF_TRACE_DEBUG_RL(QDF_MODULE_ID_HDD_DATA,
 				   "Recovery/(Un)load in progress, dropping the packet");
 		goto drop_pkt;
 	}
-
+printk("TEST 3");
 	hdd_ctx = adapter->hdd_ctx;
 	if (wlan_hdd_validate_context(hdd_ctx)) {
+printk("TEST 4");
 		QDF_TRACE_DEBUG_RL(QDF_MODULE_ID_HDD_DATA,
 				   "Invalid HDD context");
 		goto drop_pkt;
 	}
-
+printk("TEST 5");
 	wlan_hdd_classify_pkt(skb);
 	if (QDF_NBUF_CB_GET_PACKET_TYPE(skb) == QDF_NBUF_CB_PACKET_TYPE_ARP) {
+printk("TEST 6");
 		if (qdf_nbuf_data_is_arp_req(skb) &&
 		    (adapter->track_arp_ip == qdf_nbuf_get_arp_tgt_ip(skb))) {
 			is_arp = true;
+printk("TEST 7");
 			++adapter->hdd_stats.hdd_arp_stats.tx_arp_req_count;
 			QDF_TRACE(QDF_MODULE_ID_HDD_DATA,
 				  QDF_TRACE_LEVEL_INFO_HIGH,
 					"%s : ARP packet", __func__);
 		}
 	}
+printk("TEST 8");
 	/* track connectivity stats */
 	if (adapter->pkt_type_bitmap)
 		hdd_tx_rx_collect_connectivity_stats_info(skb, adapter,
 						PKT_TYPE_REQ, &pkt_type);
-
-	/* Allow tx in monitor mode */
-	if (hdd_get_conparam() != QDF_GLOBAL_MONITOR_MODE) {
+printk("TEST 9");
 		hdd_get_transmit_mac_addr(adapter, skb, &mac_addr_tx_allowed);
-		if (qdf_is_macaddr_zero(&mac_addr_tx_allowed)) {
-			QDF_TRACE(QDF_MODULE_ID_HDD_DATA, QDF_TRACE_LEVEL_INFO_HIGH,
-				  "tx not allowed, transmit operation suspended");
-			goto drop_pkt;
+
+		if (hdd_get_conparam() != QDF_GLOBAL_MONITOR_MODE) {
+			if (qdf_is_macaddr_zero(&mac_addr_tx_allowed)) {
+				QDF_TRACE(QDF_MODULE_ID_HDD_DATA, QDF_TRACE_LEVEL_INFO_HIGH,
+					  "tx not allowed, transmit operation suspended");
+				goto drop_pkt;
+			}
 		}
-	}
 	hdd_get_tx_resource(adapter, &mac_addr,
 			    WLAN_HDD_TX_FLOW_CONTROL_OS_Q_BLOCK_TIME);
-
+printk("TEST 10");
 	/* Get TL AC corresponding to Qdisc queue index/AC. */
 	ac = hdd_qdisc_ac_to_tl_ac[skb->queue_mapping];
 
@@ -1053,7 +1057,7 @@ static void __hdd_hard_start_xmit(struct sk_buff *skb,
 		if (!skb)
 			goto drop_pkt_accounting;
 	}
-
+printk("TEST 11");
 	/*
 	 * Add SKB to internal tracking table before further processing
 	 * in WLAN driver.
@@ -1065,13 +1069,13 @@ static void __hdd_hard_start_xmit(struct sk_buff *skb,
 	 * select_queue call back function
 	 */
 	up = skb->priority;
-
+printk("TEST 12");
 	++adapter->hdd_stats.tx_rx_stats.tx_classified_ac[ac];
 #ifdef HDD_WMM_DEBUG
 	QDF_TRACE(QDF_MODULE_ID_HDD_DATA, QDF_TRACE_LEVEL_DEBUG,
 		  "%s: Classified as ac %d up %d", __func__, ac, up);
 #endif /* HDD_WMM_DEBUG */
-
+printk("TEST 13");
 	if (HDD_PSB_CHANGED == adapter->psb_changed) {
 		/*
 		 * Function which will determine acquire admittance for a
@@ -1085,7 +1089,7 @@ static void __hdd_hard_start_xmit(struct sk_buff *skb,
 	 * or it is EAPOL or WAPI frame during initial authentication which
 	 * can have artifically boosted higher qos priority.
 	 */
-
+printk("TEST 14");
 	if (((adapter->psb_changed & (1 << ac)) &&
 		likely(adapter->hdd_wmm_status.ac_status[ac].
 			is_access_allowed)) ||
@@ -1137,16 +1141,19 @@ static void __hdd_hard_start_xmit(struct sk_buff *skb,
 	}
 
 	adapter->stats.tx_bytes += skb->len;
-
+printk("TEST 15");
 	vdev = hdd_objmgr_get_vdev(adapter);
 	if (vdev) {
+printk("TEST 16");
 		ucfg_tdls_update_tx_pkt_cnt(vdev, &mac_addr);
 		hdd_objmgr_put_vdev(vdev);
 	}
-
+printk("TEST 17");
 	if (qdf_nbuf_is_tso(skb)) {
+printk("TEST 18");
 		adapter->stats.tx_packets += qdf_nbuf_get_tso_num_seg(skb);
 	} else {
+printk("TEST 19");
 		++adapter->stats.tx_packets;
 		hdd_ctx->no_tx_offload_pkt_cnt++;
 	}
@@ -1154,25 +1161,27 @@ static void __hdd_hard_start_xmit(struct sk_buff *skb,
 	hdd_event_eapol_log(skb, QDF_TX);
 	QDF_NBUF_CB_TX_PACKET_TRACK(skb) = QDF_NBUF_TX_PKT_DATA_TRACK;
 	QDF_NBUF_UPDATE_TX_PKT_COUNT(skb, QDF_NBUF_TX_PKT_HDD);
-
+printk("TEST 20");
 	qdf_dp_trace_set_track(skb, QDF_TX);
 
 	DPTRACE(qdf_dp_trace(skb, QDF_DP_TRACE_HDD_TX_PACKET_PTR_RECORD,
 			QDF_TRACE_DEFAULT_PDEV_ID, qdf_nbuf_data_addr(skb),
 			sizeof(qdf_nbuf_data(skb)),
 			QDF_TX));
-
-	if (!hdd_is_tx_allowed(skb, adapter->vdev_id,
-			       mac_addr_tx_allowed.bytes)) {
-		QDF_TRACE(QDF_MODULE_ID_HDD_DATA,
-			  QDF_TRACE_LEVEL_INFO_HIGH,
-			  FL("Tx not allowed for sta: "
-			  QDF_MAC_ADDR_STR), QDF_MAC_ADDR_ARRAY(
-			  mac_addr_tx_allowed.bytes));
-		++adapter->hdd_stats.tx_rx_stats.tx_dropped_ac[ac];
-		goto drop_pkt_and_release_skb;
+printk("TEST 21");
+	if (hdd_get_conparam() != QDF_GLOBAL_MONITOR_MODE) {
+		if (!hdd_is_tx_allowed(skb, adapter->vdev_id,
+				       mac_addr_tx_allowed.bytes)) {
+			QDF_TRACE(QDF_MODULE_ID_HDD_DATA,
+				  QDF_TRACE_LEVEL_INFO_HIGH,
+				  FL("Tx not allowed for sta: "
+				  QDF_MAC_ADDR_STR), QDF_MAC_ADDR_ARRAY(
+				  mac_addr_tx_allowed.bytes));
+			++adapter->hdd_stats.tx_rx_stats.tx_dropped_ac[ac];
+			goto drop_pkt_and_release_skb;
+		}
 	}
-
+printk("TEST 23");
 	/* check whether need to linearize skb, like non-linear udp data */
 	if (hdd_skb_nontso_linearize(skb) != QDF_STATUS_SUCCESS) {
 		QDF_TRACE(QDF_MODULE_ID_HDD_DATA,
@@ -1182,18 +1191,19 @@ static void __hdd_hard_start_xmit(struct sk_buff *skb,
 		++adapter->hdd_stats.tx_rx_stats.tx_dropped_ac[ac];
 		goto drop_pkt_and_release_skb;
 	}
-
+printk("TEST 24");
 	/*
 	 * If a transmit function is not registered, drop packet
 	 */
-	if (!adapter->tx_fn) {
+	if (!adapter->tx_fn) {/*ERROR HERE*/
+printk("TEST 25");
 		QDF_TRACE(QDF_MODULE_ID_HDD_SAP_DATA, QDF_TRACE_LEVEL_INFO_HIGH,
 			 "%s: TX function not registered by the data path",
 			 __func__);
 		++adapter->hdd_stats.tx_rx_stats.tx_dropped_ac[ac];
 		goto drop_pkt_and_release_skb;
 	}
-
+printk("TEST 26");
 	wlan_hdd_fix_broadcast_eapol(adapter, skb);
 
 	if (adapter->tx_fn(soc, adapter->vdev_id, (qdf_nbuf_t)skb)) {
@@ -1204,11 +1214,11 @@ static void __hdd_hard_start_xmit(struct sk_buff *skb,
 		++adapter->hdd_stats.tx_rx_stats.tx_dropped_ac[ac];
 		goto drop_pkt_and_release_skb;
 	}
-
+printk("TEST 27");
 	netif_trans_update(dev);
 
 	wlan_hdd_sar_unsolicited_timer_start(hdd_ctx);
-
+printk("TEST 28");
 	return;
 
 drop_pkt_and_release_skb:
