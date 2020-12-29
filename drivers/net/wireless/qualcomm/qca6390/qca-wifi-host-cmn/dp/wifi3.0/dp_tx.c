@@ -920,14 +920,19 @@ static struct dp_tx_desc_s *dp_tx_prepare_desc(struct dp_vdev *vdev,
 	struct dp_tx_ext_desc_elem_s *msdu_ext_desc;
 	struct dp_pdev *pdev = vdev->pdev;
 	struct dp_soc *soc = pdev->soc;
-
-	if (dp_tx_limit_check(vdev))
+printk("PREPARE_DESC TEST 1");
+	if (dp_tx_limit_check(vdev)) {
+printk("PREPARE_DESC TEST 2");
 		return NULL;
+	}
 
+printk("PREPARE_DESC TEST 3");
 	/* Allocate software Tx descriptor */
 	tx_desc = dp_tx_desc_alloc(soc, desc_pool_id);
+printk("PREPARE_DESC TEST 4");
 	if (!tx_desc) {
 		DP_STATS_INC(vdev, tx_i.dropped.desc_na.num, 1);
+printk("PREPARE_DESC TEST 5");
 		return NULL;
 	}
 
@@ -944,7 +949,7 @@ static struct dp_tx_desc_s *dp_tx_prepare_desc(struct dp_vdev *vdev,
 	tx_desc->tso_num_desc = msdu_info->u.tso_info.tso_num_seg_list;
 
 	dp_tx_trace_pkt(nbuf, tx_desc->id, vdev->vdev_id);
-
+printk("PREPARE_DESC TEST 6");
 	/* Handle scattered frames - TSO/SG/ME */
 	/* Allocate and prepare an extension descriptor for scattered frames */
 	msdu_ext_desc = dp_tx_prepare_ext_desc(vdev, msdu_info, desc_pool_id);
@@ -952,23 +957,27 @@ static struct dp_tx_desc_s *dp_tx_prepare_desc(struct dp_vdev *vdev,
 		QDF_TRACE(QDF_MODULE_ID_DP, QDF_TRACE_LEVEL_INFO,
 				"%s Tx Extension Descriptor Alloc Fail",
 				__func__);
+printk("PREPARE_DESC TEST 7");
 		goto failure;
 	}
-
+printk("PREPARE_DESC TEST 8");
 #if TQM_BYPASS_WAR
+printk("PREPARE_DESC TEST 9");
 	/* Temporary WAR due to TQM VP issues */
 	tx_desc->flags |= DP_TX_DESC_FLAG_TO_FW;
 	qdf_atomic_inc(&pdev->num_tx_exception);
 #endif
+printk("PREPARE_DESC TEST 10");
 	if (qdf_unlikely(msdu_info->exception_fw))
 		tx_desc->flags |= DP_TX_DESC_FLAG_TO_FW;
-
+printk("PREPARE_DESC TEST 11");
 	tx_desc->msdu_ext_desc = msdu_ext_desc;
 	tx_desc->flags |= DP_TX_DESC_FLAG_FRAG;
-
+printk("PREPARE_DESC TEST 12 SUCCESS");
 	return tx_desc;
 failure:
 	dp_tx_desc_release(tx_desc, desc_pool_id);
+printk("PREPARE_DESC TEST 13 FAIL");
 	return NULL;
 }
 
