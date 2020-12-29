@@ -1173,9 +1173,11 @@ static QDF_STATUS dp_tx_hw_enqueue(struct dp_soc *soc, struct dp_vdev *vdev,
 	hal_tx_desc_set_buf_addr(hal_tx_desc_cached,
 					dma_addr, bm_id, tx_desc->id,
 					type, soc->hal_soc);
-
-	if (!dp_tx_is_desc_id_valid(soc, tx_desc->id))
+printk("dp_tx_hw_enqueue TEST1");
+	if (!dp_tx_is_desc_id_valid(soc, tx_desc->id)) {
+printk("dp_tx_hw_enqueue TEST2");
 		return QDF_STATUS_E_RESOURCES;
+	}
 
 	hal_tx_desc_set_buf_length(hal_tx_desc_cached, length);
 	hal_tx_desc_set_buf_offset(hal_tx_desc_cached, tx_desc->pkt_offset);
@@ -1222,10 +1224,12 @@ static QDF_STATUS dp_tx_hw_enqueue(struct dp_soc *soc, struct dp_vdev *vdev,
 	/* Sync cached descriptor with HW */
 	hal_tx_desc = hal_srng_src_get_next(soc->hal_soc, hal_ring_hdl);
 
+printk("dp_tx_hw_enqueue TEST3");
 	if (!hal_tx_desc) {
 		dp_verbose_debug("TCL ring full ring_id:%d", ring_id);
 		DP_STATS_INC(soc, tx.tcl_ring_full[ring_id], 1);
 		DP_STATS_INC(vdev, tx_i.dropped.enqueue_fail, 1);
+printk("dp_tx_hw_enqueue TEST4");
 		return QDF_STATUS_E_RESOURCES;
 	}
 
