@@ -1745,7 +1745,9 @@ qdf_nbuf_t dp_tx_send_msdu_multiple(struct dp_vdev *vdev, qdf_nbuf_t nbuf,
 				soc->tcl_data_ring[tx_q->ring_id].hal_srng;
 	struct cdp_tid_tx_stats *tid_stats = NULL;
 
+printk("SEND_MSDU TEST 1");
 	if (qdf_unlikely(hal_srng_access_start(soc->hal_soc, hal_ring_hdl))) {
+printk("SEND_MSDU TEST 2");
 		QDF_TRACE(QDF_MODULE_ID_TXRX, QDF_TRACE_LEVEL_ERROR,
 				"%s %d : HAL RING Access Failed -- %pK",
 				__func__, __LINE__, hal_ring_hdl);
@@ -1754,17 +1756,21 @@ qdf_nbuf_t dp_tx_send_msdu_multiple(struct dp_vdev *vdev, qdf_nbuf_t nbuf,
 			    tid_tx_stats[tx_q->ring_id][msdu_info->tid];
 		tid_stats->swdrop_cnt[TX_HAL_RING_ACCESS_ERR]++;
 		DP_STATS_INC(vdev, tx_i.dropped.ring_full, 1);
+printk("SEND_MSDU TEST 3");
 		return nbuf;
 	}
 
+printk("SEND_MSDU TEST 4");
 	if (qdf_unlikely(soc->cce_disable)) {
+printk("SEND_MSDU TEST 5");
 		is_cce_classified = dp_cce_classify(vdev, nbuf);
 		if (is_cce_classified) {
+printk("SEND_MSDU TEST 6");
 			DP_STATS_INC(vdev, tx_i.cce_classified, 1);
 			msdu_info->tid = DP_VO_TID;
 		}
 	}
-
+printk("SEND_MSDU TEST 7");
 	if (msdu_info->frm_type == dp_tx_frm_me)
 		nbuf = msdu_info->u.sg_info.curr_seg->nbuf;
 
@@ -1775,15 +1781,18 @@ qdf_nbuf_t dp_tx_send_msdu_multiple(struct dp_vdev *vdev, qdf_nbuf_t nbuf,
 	 * descriptors using information in msdu_info
 	 */
 	while (i < msdu_info->num_seg) {
+printk("SEND_MSDU TEST 8  i =", i);
 		/*
 		 * Setup Tx descriptor for an MSDU, and MSDU extension
 		 * descriptor
 		 */
 		tx_desc = dp_tx_prepare_desc(vdev, nbuf, msdu_info,
 				tx_q->desc_pool_id);
-
+printk("SEND_MSDU TEST 9");
 		if (!tx_desc) {
+printk("SEND_MSDU TEST 10");
 			if (msdu_info->frm_type == dp_tx_frm_me) {
+printk("SEND_MSDU TEST 11");
 				dp_tx_me_free_buf(pdev,
 					(void *)(msdu_info->u.sg_info
 						.curr_seg->frags[0].vaddr));
@@ -1792,42 +1801,48 @@ qdf_nbuf_t dp_tx_send_msdu_multiple(struct dp_vdev *vdev, qdf_nbuf_t nbuf,
 			}
 			goto done;
 		}
-
+printk("SEND_MSDU TEST 12");
 		if (msdu_info->frm_type == dp_tx_frm_me) {
+printk("SEND_MSDU TEST 13");
 			tx_desc->me_buffer =
 				msdu_info->u.sg_info.curr_seg->frags[0].vaddr;
 			tx_desc->flags |= DP_TX_DESC_FLAG_ME;
 		}
-
-		if (is_cce_classified)
+printk("SEND_MSDU TEST 14");
+		if (is_cce_classified) {
+printk("SEND_MSDU TEST 15");
 			tx_desc->flags |= DP_TX_DESC_FLAG_TO_FW;
-
+		}
+printk("SEND_MSDU TEST 16");
 		htt_tcl_metadata = vdev->htt_tcl_metadata;
 		if (msdu_info->exception_fw) {
+printk("SEND_MSDU TEST 17");
 			HTT_TX_TCL_METADATA_VALID_HTT_SET(htt_tcl_metadata, 1);
 		}
-
+printk("SEND_MSDU TEST 18");
 		/*
 		 * Enqueue the Tx MSDU descriptor to HW for transmit
 		 */
 		status = dp_tx_hw_enqueue(soc, vdev, tx_desc, msdu_info->tid,
 			htt_tcl_metadata, tx_q->ring_id, NULL);
-
+printk("SEND_MSDU TEST 19");
 		if (status != QDF_STATUS_SUCCESS) {
 			QDF_TRACE(QDF_MODULE_ID_DP, QDF_TRACE_LEVEL_ERROR,
 					"%s Tx_hw_enqueue Fail tx_desc %pK queue %d",
 					__func__, tx_desc, tx_q->ring_id);
-
+printk("SEND_MSDU TEST 20");
 			dp_tx_get_tid(vdev, nbuf, msdu_info);
 			tid_stats = &pdev->stats.tid_stats.
 				    tid_tx_stats[tx_q->ring_id][msdu_info->tid];
 			tid_stats->swdrop_cnt[TX_HW_ENQUEUE]++;
-
+printk("SEND_MSDU TEST 21");
 			dp_tx_desc_release(tx_desc, tx_q->desc_pool_id);
 			if (msdu_info->frm_type == dp_tx_frm_me) {
 				i++;
+printk("SEND_MSDU TEST 22");
 				continue;
 			}
+printk("SEND_MSDU TEST 23");
 			goto done;
 		}
 
@@ -1842,8 +1857,11 @@ qdf_nbuf_t dp_tx_send_msdu_multiple(struct dp_vdev *vdev, qdf_nbuf_t nbuf,
 		 * For frames with multiple segments (TSO, ME), jump to next
 		 * segment.
 		 */
+printk("SEND_MSDU TEST 24");
 		if (msdu_info->frm_type == dp_tx_frm_tso) {
+printk("SEND_MSDU TEST 25");
 			if (msdu_info->u.tso_info.curr_seg->next) {
+printk("SEND_MSDU TEST 26");
 				msdu_info->u.tso_info.curr_seg =
 					msdu_info->u.tso_info.curr_seg->next;
 
@@ -1859,7 +1877,7 @@ qdf_nbuf_t dp_tx_send_msdu_multiple(struct dp_vdev *vdev, qdf_nbuf_t nbuf,
 				/* nbuf = msdu_info->u.tso_info.curr_seg->nbuf; */
 			}
 		}
-
+printk("SEND_MSDU TEST 27");
 		/*
 		 * For Multicast-Unicast converted packets,
 		 * each converted frame (for a client) is represented as
@@ -1867,7 +1885,9 @@ qdf_nbuf_t dp_tx_send_msdu_multiple(struct dp_vdev *vdev, qdf_nbuf_t nbuf,
 		 */
 		if ((msdu_info->frm_type == dp_tx_frm_sg) ||
 				(msdu_info->frm_type == dp_tx_frm_me)) {
+printk("SEND_MSDU TEST 28");
 			if (msdu_info->u.sg_info.curr_seg->next) {
+printk("SEND_MSDU TEST 29");
 				msdu_info->u.sg_info.curr_seg =
 					msdu_info->u.sg_info.curr_seg->next;
 				nbuf = msdu_info->u.sg_info.curr_seg->nbuf;
@@ -1875,21 +1895,23 @@ qdf_nbuf_t dp_tx_send_msdu_multiple(struct dp_vdev *vdev, qdf_nbuf_t nbuf,
 		}
 		i++;
 	}
-
+printk("SEND_MSDU TEST 30");
 	nbuf = NULL;
 
 done:
 	if (hif_pm_runtime_get(soc->hif_handle,
 			       RTPM_ID_DW_TX_HW_ENQUEUE) == 0) {
+printk("SEND_MSDU TEST 31");
 		hal_srng_access_end(soc->hal_soc, hal_ring_hdl);
 		hif_pm_runtime_put(soc->hif_handle,
 				   RTPM_ID_DW_TX_HW_ENQUEUE);
 	} else {
+printk("SEND_MSDU TEST 32");
 		hal_srng_access_end_reap(soc->hal_soc, hal_ring_hdl);
 		hal_srng_set_event(hal_ring_hdl, HAL_SRNG_FLUSH_EVENT);
 		hal_srng_inc_flush_cnt(hal_ring_hdl);
 	}
-
+printk("SEND_MSDU TEST 33");
 	return nbuf;
 }
 
