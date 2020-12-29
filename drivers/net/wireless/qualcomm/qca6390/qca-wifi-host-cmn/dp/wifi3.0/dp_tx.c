@@ -2325,15 +2325,16 @@ qdf_nbuf_t dp_tx_send(struct cdp_soc_t *soc, uint8_t vdev_id, qdf_nbuf_t nbuf)
 	struct dp_vdev *vdev =
 		dp_get_vdev_from_soc_vdev_id_wifi3((struct dp_soc *)soc,
 						   vdev_id);
+printk("SUPERTEST 1");
 
 	if (qdf_unlikely(!vdev))
 		return nbuf;
-
+printk("SUPERTEST 2");
 	qdf_mem_zero(&msdu_info, sizeof(msdu_info));
 	qdf_mem_zero(&seg_info, sizeof(seg_info));
 
 	eh = (qdf_ether_header_t *)qdf_nbuf_data(nbuf);
-
+printk("SUPERTEST 3");
 	dp_verbose_debug("skb %pM", nbuf->data);
 
 	/*
@@ -2342,15 +2343,18 @@ qdf_nbuf_t dp_tx_send(struct cdp_soc_t *soc, uint8_t vdev_id, qdf_nbuf_t nbuf)
 	 */
 	msdu_info.tid = HTT_TX_EXT_TID_INVALID;
 	DP_STATS_INC_PKT(vdev, tx_i.rcvd, 1, qdf_nbuf_len(nbuf));
-
+printk("SUPERTEST 4");
 	if (qdf_unlikely(vdev->mesh_vdev)) {
 		nbuf_mesh = dp_tx_extract_mesh_meta_data(vdev, nbuf,
 								&msdu_info);
+printk("SUPERTEST 5");
 		if (!nbuf_mesh) {
+printk("SUPERTEST 6");
 			dp_verbose_debug("Extracting mesh metadata failed");
 			return nbuf;
 		}
 		nbuf = nbuf_mesh;
+printk("SUPERTEST 7");
 	}
 
 	/*
@@ -2362,7 +2366,7 @@ qdf_nbuf_t dp_tx_send(struct cdp_soc_t *soc, uint8_t vdev_id, qdf_nbuf_t nbuf)
 	 *  to minimize lock contention for these resources.
 	 */
 	dp_tx_get_queue(vdev, nbuf, &msdu_info.tx_queue);
-
+printk("SUPERTEST 8");
 	/*
 	 * TCL H/W supports 2 DSCP-TID mapping tables.
 	 *  Table 1 - Default DSCP-TID mapping table
@@ -2374,7 +2378,7 @@ qdf_nbuf_t dp_tx_send(struct cdp_soc_t *soc, uint8_t vdev_id, qdf_nbuf_t nbuf)
 	 * to fill in TCL Input descriptor (per-packet TID override).
 	 */
 	dp_tx_classify_tid(vdev, nbuf, &msdu_info);
-
+printk("SUPERTEST 9");
 	/*
 	 * Classify the frame and call corresponding
 	 * "prepare" function which extracts the segment (TSO)
@@ -2383,42 +2387,46 @@ qdf_nbuf_t dp_tx_send(struct cdp_soc_t *soc, uint8_t vdev_id, qdf_nbuf_t nbuf)
 	 * SW and HW descriptors.
 	 */
 	if (qdf_nbuf_is_tso(nbuf)) {
+printk("SUPERTEST 10");
 		dp_verbose_debug("TSO frame %pK", vdev);
 		DP_STATS_INC_PKT(vdev->pdev, tso_stats.num_tso_pkts, 1,
 				 qdf_nbuf_len(nbuf));
 
 		if (dp_tx_prepare_tso(vdev, nbuf, &msdu_info)) {
+printk("SUPERTEST 11");
 			DP_STATS_INC_PKT(vdev->pdev, tso_stats.dropped_host, 1,
 					 qdf_nbuf_len(nbuf));
 			return nbuf;
 		}
-
+printk("SUPERTEST 12");
 		goto send_multiple;
 	}
 
 	/* SG */
 	if (qdf_unlikely(qdf_nbuf_is_nonlinear(nbuf))) {
+printk("SUPERTEST 13");
 		nbuf = dp_tx_prepare_sg(vdev, nbuf, &seg_info, &msdu_info);
 
 		if (!nbuf)
 			return NULL;
-
+printk("SUPERTEST 14");
 		dp_verbose_debug("non-TSO SG frame %pK", vdev);
 
 		DP_STATS_INC_PKT(vdev, tx_i.sg.sg_pkt, 1,
 				qdf_nbuf_len(nbuf));
-
+printk("SUPERTEST 15");
 		goto send_multiple;
 	}
 
 #ifdef ATH_SUPPORT_IQUE
 	/* Mcast to Ucast Conversion*/
+printk("SUPERTEST 16");
 	if (qdf_unlikely(vdev->mcast_enhancement_en > 0)) {
 		eh = (qdf_ether_header_t *)qdf_nbuf_data(nbuf);
 		if (DP_FRAME_IS_MULTICAST((eh)->ether_dhost) &&
 		    !DP_FRAME_IS_BROADCAST((eh)->ether_dhost)) {
 			dp_verbose_debug("Mcast frm for ME %pK", vdev);
-
+printk("SUPERTEST 17");
 			DP_STATS_INC_PKT(vdev,
 					tx_i.mcast_en.mcast_pkt, 1,
 					qdf_nbuf_len(nbuf));
@@ -2431,11 +2439,22 @@ qdf_nbuf_t dp_tx_send(struct cdp_soc_t *soc, uint8_t vdev_id, qdf_nbuf_t nbuf)
 #endif
 
 	/* RAW */
+printk("SUPERTEST 18 RAW");
 	if (qdf_unlikely(vdev->tx_encap_type == htt_cmn_pkt_type_raw)) {
-		nbuf = dp_tx_prepare_raw(vdev, nbuf, &seg_info, &msdu_info);
-		if (!nbuf)
-			return NULL;
+printk("SUPERTEST 19");
 
+		if (!vdev)
+		printk("SUPERTEST 19.1 vdev is NULL");
+		if (!nbuf)
+		printk("SUPERTEST 19.2 nbuf is NULL");
+
+		nbuf = dp_tx_prepare_raw(vdev, nbuf, &seg_info, &msdu_info);
+
+		if (!nbuf) {
+		printk("SUPERTEST dp_tx_prepare_raw nbuf is NULL");
+			return NULL;
+		}
+printk("SUPERTEST 20");
 		dp_verbose_debug("Raw frame %pK", vdev);
 
 		goto send_multiple;
@@ -2448,13 +2467,14 @@ qdf_nbuf_t dp_tx_send(struct cdp_soc_t *soc, uint8_t vdev_id, qdf_nbuf_t nbuf)
 	 * prepare direct-buffer type TCL descriptor and enqueue to TCL
 	 * SRNG. There is no need to setup a MSDU extension descriptor.
 	 */
+printk("SUPERTEST 21 Normal ?");
 	nbuf = dp_tx_send_msdu_single(vdev, nbuf, &msdu_info, peer_id, NULL);
 
 	return nbuf;
 
 send_multiple:
 	nbuf = dp_tx_send_msdu_multiple(vdev, nbuf, &msdu_info);
-
+printk("SUPERTEST 22");
 	if (qdf_unlikely(nbuf && msdu_info.frm_type == dp_tx_frm_raw))
 		dp_tx_raw_prepare_unset(vdev->pdev->soc, nbuf);
 

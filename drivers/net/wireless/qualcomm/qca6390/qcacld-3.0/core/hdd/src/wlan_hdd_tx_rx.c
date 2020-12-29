@@ -1212,6 +1212,7 @@ printk("TEST 26");
 			  QDF_MAC_ADDR_STR,
 			  __func__, QDF_MAC_ADDR_ARRAY(mac_addr.bytes));
 		++adapter->hdd_stats.tx_rx_stats.tx_dropped_ac[ac];
+printk("TEST 26.5");
 		goto drop_pkt_and_release_skb;
 	}
 printk("TEST 27");
@@ -3088,6 +3089,7 @@ int hdd_set_mon_rx_cb(struct net_device *dev)
 			  &txrx_ops);
 	txrx_ops.rx.stats_rx = hdd_tx_rx_collect_connectivity_stats_info;
 	adapter->tx_fn = txrx_ops.tx.tx;
+
 	/* peer is created wma_vdev_attach->wma_create_peer */
 	qdf_status = cdp_peer_register(soc, OL_TXRX_PDEV_ID, &sta_desc);
 	if (QDF_STATUS_SUCCESS != qdf_status) {
