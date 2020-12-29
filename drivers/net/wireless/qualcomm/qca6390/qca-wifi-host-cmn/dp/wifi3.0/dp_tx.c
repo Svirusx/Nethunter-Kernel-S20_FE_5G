@@ -995,53 +995,65 @@ static qdf_nbuf_t dp_tx_prepare_raw(struct dp_vdev *vdev, qdf_nbuf_t nbuf,
 	qdf_dot3_qosframe_t *qos_wh = (qdf_dot3_qosframe_t *) nbuf->data;
 
 	DP_STATS_INC_PKT(vdev, tx_i.raw.raw_pkt, 1, qdf_nbuf_len(nbuf));
-
-	/* Continue only if frames are of DATA type */
-	if (!DP_FRAME_IS_DATA(qos_wh)) {
-		DP_STATS_INC(vdev, tx_i.raw.invalid_raw_pkt_datatype, 1);
-		QDF_TRACE(QDF_MODULE_ID_DP, QDF_TRACE_LEVEL_DEBUG,
-			  "Pkt. recd is of not data type");
-		goto error;
+printk("PREPARERAWTEST 1");
+	/*If monitor mode bypass DATA type frame check*/
+	if (wlan_op_mode_monitor != vdev->opmode) {
+printk("PREPARERAWTEST 2");
+		/* Continue only if frames are of DATA type */
+		if (!DP_FRAME_IS_DATA(qos_wh)) {
+printk("PREPARERAWTEST 3");
+			DP_STATS_INC(vdev, tx_i.raw.invalid_raw_pkt_datatype, 1);
+			QDF_TRACE(QDF_MODULE_ID_DP, QDF_TRACE_LEVEL_DEBUG,
+				  "Pkt. recd is of not data type");
+			goto error;
+		}
 	}
+printk("PREPARERAWTEST 4");
 	/* SWAR for HW: Enable WEP bit in the AMSDU frames for RAW mode */
 	if (vdev->raw_mode_war &&
 	    (qos_wh->i_fc[0] & QDF_IEEE80211_FC0_SUBTYPE_QOS) &&
-	    (qos_wh->i_qos[0] & IEEE80211_QOS_AMSDU))
+	    (qos_wh->i_qos[0] & IEEE80211_QOS_AMSDU)) {
 		qos_wh->i_fc[1] |= IEEE80211_FC1_WEP;
-
+printk("PREPARERAWTEST 5");
+	}
+printk("PREPARERAWTEST 6");
 	for (curr_nbuf = nbuf, i = 0; curr_nbuf;
 			curr_nbuf = qdf_nbuf_next(curr_nbuf), i++) {
-
+printk("PREPARERAWTEST 7 i = ", i);
 		if (QDF_STATUS_SUCCESS != qdf_nbuf_map(vdev->osdev, curr_nbuf,
 					QDF_DMA_TO_DEVICE)) {
+printk("PREPARERAWTEST 8");
 			QDF_TRACE(QDF_MODULE_ID_DP, QDF_TRACE_LEVEL_ERROR,
 				"%s dma map error ", __func__);
 			DP_STATS_INC(vdev, tx_i.raw.dma_map_error, 1);
 			mapped_buf_num = i;
+printk("PREPARERAWTEST 8.5 GO ERROR!");
 			goto error;
 		}
-
+printk("PREPARERAWTEST 9");
 		paddr = qdf_nbuf_get_frag_paddr(curr_nbuf, 0);
 		seg_info->frags[i].paddr_lo = paddr;
 		seg_info->frags[i].paddr_hi = ((uint64_t)paddr >> 32);
 		seg_info->frags[i].len = qdf_nbuf_len(curr_nbuf);
 		seg_info->frags[i].vaddr = (void *) curr_nbuf;
 		total_len += qdf_nbuf_len(curr_nbuf);
+printk("PREPARERAWTEST 10");
 	}
 
 	seg_info->frag_cnt = i;
 	seg_info->total_len = total_len;
 	seg_info->next = NULL;
-
+printk("PREPARERAWTEST 11");
 	sg_info->curr_seg = seg_info;
 
 	msdu_info->frm_type = dp_tx_frm_raw;
 	msdu_info->num_seg = 1;
-
+printk("PREPARERAWTEST 12 SUCCES?");
 	return nbuf;
 
 error:
 	i = 0;
+printk("PREPARERAWTEST 13 ERROR");
 	while (nbuf) {
 		curr_nbuf = nbuf;
 		if (i < mapped_buf_num) {
@@ -1051,6 +1063,7 @@ error:
 		nbuf = qdf_nbuf_next(nbuf);
 		qdf_nbuf_free(curr_nbuf);
 	}
+printk("PREPARERAWTEST ERROR RETURN NULL");
 	return NULL;
 
 }
