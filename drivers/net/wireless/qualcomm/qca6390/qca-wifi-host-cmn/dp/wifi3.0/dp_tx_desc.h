@@ -541,24 +541,24 @@ static inline struct dp_tx_desc_s *dp_tx_desc_alloc(struct dp_soc *soc,
 	struct dp_tx_desc_s *tx_desc = NULL;
 
 	TX_DESC_LOCK_LOCK(&soc->tx_desc[desc_pool_id].lock);
-
+printk("TX DESC ALLOC TEST 1");
 	tx_desc = soc->tx_desc[desc_pool_id].freelist;
-
+printk("TX DESC ALLOC TEST 2");
 	/* Pool is exhausted */
 	if (!tx_desc) {
 		TX_DESC_LOCK_UNLOCK(&soc->tx_desc[desc_pool_id].lock);
 		return NULL;
 	}
-
+printk("TX DESC ALLOC TEST 3");
 	soc->tx_desc[desc_pool_id].freelist =
 		soc->tx_desc[desc_pool_id].freelist->next;
 	soc->tx_desc[desc_pool_id].num_allocated++;
 	soc->tx_desc[desc_pool_id].num_free--;
-
+printk("TX DESC ALLOC TEST 4");
 	tx_desc->flags = DP_TX_DESC_FLAG_ALLOCATED;
 
 	TX_DESC_LOCK_UNLOCK(&soc->tx_desc[desc_pool_id].lock);
-
+printk("TX DESC ALLOC TEST 5");
 	return tx_desc;
 }
 
