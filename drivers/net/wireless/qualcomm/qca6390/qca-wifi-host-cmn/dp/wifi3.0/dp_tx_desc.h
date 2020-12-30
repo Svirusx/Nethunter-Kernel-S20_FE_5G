@@ -189,6 +189,82 @@ dp_tx_is_threshold_reached(struct dp_tx_desc_pool_s *pool, uint16_t avail_desc)
 		return false;
 }
 
+
+static inline struct dp_tx_desc_s *
+dp_tx_mon_desc_alloc(struct dp_soc *soc, uint8_t desc_pool_id)
+{
+	struct dp_tx_desc_s *tx_desc = NULL;
+	struct dp_tx_desc_pool_s *pool = &soc->tx_desc[desc_pool_id];
+	bool is_pause = false;
+	enum netif_action_type act = WLAN_NETIF_ACTION_TYPE_NONE;
+	enum dp_fl_ctrl_threshold level = DP_TH_BE_BK;
+printk("SPECIAL WTF??? TX DESC ALLOC TEST 1");
+
+	if (qdf_likely(pool)) {
+printk("WTF??? TX DESC ALLOC TEST 2");
+		qdf_spin_lock_bh(&pool->flow_pool_lock);
+printk("WTF??? TX DESC ALLOC TEST 3");
+			tx_desc = dp_tx_get_desc_flow_pool(pool);
+			tx_desc->pool_id = desc_pool_id;
+			tx_desc->flags = DP_TX_DESC_FLAG_ALLOCATED;
+			is_pause = dp_tx_is_threshold_reached(pool,
+							      pool->avail_desc);
+
+			if (qdf_unlikely(is_pause)) {
+				switch (pool->status) {
+				case FLOW_POOL_ACTIVE_UNPAUSED:
+printk("WTF??? TX DESC ALLOC TEST 4");
+					/* pause network BE\BK queue */
+					act = WLAN_NETIF_BE_BK_QUEUE_OFF;
+					level = DP_TH_BE_BK;
+					pool->status = FLOW_POOL_BE_BK_PAUSED;
+					break;
+				case FLOW_POOL_BE_BK_PAUSED:
+printk("WTF??? TX DESC ALLOC TEST 5");
+					/* pause network VI queue */
+					act = WLAN_NETIF_VI_QUEUE_OFF;
+					level = DP_TH_VI;
+					pool->status = FLOW_POOL_VI_PAUSED;
+					break;
+				case FLOW_POOL_VI_PAUSED:
+printk("WTF??? TX DESC ALLOC TEST 6");
+					/* pause network VO queue */
+					act = WLAN_NETIF_VO_QUEUE_OFF;
+					level = DP_TH_VO;
+					pool->status = FLOW_POOL_VO_PAUSED;
+					break;
+				case FLOW_POOL_VO_PAUSED:
+printk("WTF??? TX DESC ALLOC TEST 7");
+					/* pause network HI PRI queue */
+					act = WLAN_NETIF_PRIORITY_QUEUE_OFF;
+					level = DP_TH_HI;
+					pool->status = FLOW_POOL_ACTIVE_PAUSED;
+					break;
+				case FLOW_POOL_ACTIVE_PAUSED:
+printk("WTF??? TX DESC ALLOC TEST 8");
+					act = WLAN_NETIF_ACTION_TYPE_NONE;
+					break;
+				default:
+printk("WTF??? TX DESC ALLOC TEST 9");
+					dp_err_rl("pool status is %d!",
+						  pool->status);
+					break;
+				}
+
+				if (act != WLAN_NETIF_ACTION_TYPE_NONE) {
+printk("WTF??? TX DESC ALLOC TEST 10");
+					pool->latest_pause_time[level] =
+						qdf_get_system_timestamp();
+					soc->pause_cb(desc_pool_id,
+						      act,
+						      WLAN_DATA_FLOW_CONTROL);
+				}
+			}
+	}
+	return tx_desc;
+}
+
+
 /**
  * dp_tx_desc_alloc() - Allocate a Software Tx descriptor from given pool
  *
@@ -205,10 +281,13 @@ dp_tx_desc_alloc(struct dp_soc *soc, uint8_t desc_pool_id)
 	bool is_pause = false;
 	enum netif_action_type act = WLAN_NETIF_ACTION_TYPE_NONE;
 	enum dp_fl_ctrl_threshold level = DP_TH_BE_BK;
+printk("WTF??? TX DESC ALLOC TEST 1");
 
 	if (qdf_likely(pool)) {
+printk("WTF??? TX DESC ALLOC TEST 2");
 		qdf_spin_lock_bh(&pool->flow_pool_lock);
 		if (qdf_likely(pool->avail_desc)) {
+printk("WTF??? TX DESC ALLOC TEST 3");
 			tx_desc = dp_tx_get_desc_flow_pool(pool);
 			tx_desc->pool_id = desc_pool_id;
 			tx_desc->flags = DP_TX_DESC_FLAG_ALLOCATED;
@@ -218,39 +297,46 @@ dp_tx_desc_alloc(struct dp_soc *soc, uint8_t desc_pool_id)
 			if (qdf_unlikely(is_pause)) {
 				switch (pool->status) {
 				case FLOW_POOL_ACTIVE_UNPAUSED:
+printk("WTF??? TX DESC ALLOC TEST 4");
 					/* pause network BE\BK queue */
 					act = WLAN_NETIF_BE_BK_QUEUE_OFF;
 					level = DP_TH_BE_BK;
 					pool->status = FLOW_POOL_BE_BK_PAUSED;
 					break;
 				case FLOW_POOL_BE_BK_PAUSED:
+printk("WTF??? TX DESC ALLOC TEST 5");
 					/* pause network VI queue */
 					act = WLAN_NETIF_VI_QUEUE_OFF;
 					level = DP_TH_VI;
 					pool->status = FLOW_POOL_VI_PAUSED;
 					break;
 				case FLOW_POOL_VI_PAUSED:
+printk("WTF??? TX DESC ALLOC TEST 6");
 					/* pause network VO queue */
 					act = WLAN_NETIF_VO_QUEUE_OFF;
 					level = DP_TH_VO;
 					pool->status = FLOW_POOL_VO_PAUSED;
 					break;
 				case FLOW_POOL_VO_PAUSED:
+printk("WTF??? TX DESC ALLOC TEST 7");
 					/* pause network HI PRI queue */
 					act = WLAN_NETIF_PRIORITY_QUEUE_OFF;
 					level = DP_TH_HI;
 					pool->status = FLOW_POOL_ACTIVE_PAUSED;
 					break;
 				case FLOW_POOL_ACTIVE_PAUSED:
+printk("WTF??? TX DESC ALLOC TEST 8");
 					act = WLAN_NETIF_ACTION_TYPE_NONE;
 					break;
 				default:
+printk("WTF??? TX DESC ALLOC TEST 9");
 					dp_err_rl("pool status is %d!",
 						  pool->status);
 					break;
 				}
 
 				if (act != WLAN_NETIF_ACTION_TYPE_NONE) {
+printk("WTF??? TX DESC ALLOC TEST 10");
 					pool->latest_pause_time[level] =
 						qdf_get_system_timestamp();
 					soc->pause_cb(desc_pool_id,
@@ -259,10 +345,12 @@ dp_tx_desc_alloc(struct dp_soc *soc, uint8_t desc_pool_id)
 				}
 			}
 		} else {
+printk("WTF??? TX DESC ALLOC TEST 11.5 NORMAL");
 			pool->pkt_drop_no_desc++;
 		}
 		qdf_spin_unlock_bh(&pool->flow_pool_lock);
 	} else {
+printk("WTF??? TX DESC ALLOC TEST 12");
 		soc->pool_stats.pkt_drop_no_pool++;
 	}
 
@@ -389,7 +477,7 @@ dp_tx_desc_alloc(struct dp_soc *soc, uint8_t desc_pool_id)
 {
 	struct dp_tx_desc_s *tx_desc = NULL;
 	struct dp_tx_desc_pool_s *pool = &soc->tx_desc[desc_pool_id];
-
+printk("WTF 2 ???? TX DESC ALLOC TEST 1");
 	if (pool) {
 		qdf_spin_lock_bh(&pool->flow_pool_lock);
 		if (pool->status <= FLOW_POOL_ACTIVE_PAUSED &&
@@ -578,7 +666,7 @@ static inline struct dp_tx_desc_s *dp_tx_desc_alloc_multiple(
 {
 	struct dp_tx_desc_s *c_desc = NULL, *h_desc = NULL;
 	uint8_t count;
-
+printk("MULTIPLE TX DESC ALLOC TEST 1");
 	TX_DESC_LOCK_LOCK(&soc->tx_desc[desc_pool_id].lock);
 
 	if ((num_requested == 0) ||
