@@ -1,0 +1,67 @@
+/* Copyright (c) 2020, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "kona-sec-c1q-r06.dtsi"
+#include "../drivers/input_c1q_r07.dtsi"
+
+/*
+ * CAUTION:
+ * There is no gpio change between r06 and r07.
+ * Thus this dtsi file includes pinctrl-r06.
+ */
+
+&soc {
+	battery {
+		battery,battery_full_capacity = <4300>;
+	};
+	max77705-fuelgauge {
+		fuelgauge,capacity = <0x0F50>; /* capacity = fullcapnom = DesignCap */
+		fuelgauge,fg_reset_wa_data = <0x0F50 0x3200 0x03D4 0x0033 0x1827>; /* fullcapnom(=capacity), dPacc, dQacc,  rcomp0, tempco */
+	};
+	cable-info {
+		current_group_6 {
+			charging_current = <3000>;
+		};
+		current_group_7 {
+			charging_current = <3000>;
+		};
+		current_group_10 {
+			charging_current = <3000>;
+		};
+		current_group_13 {
+			charging_current = <3000>;
+		};
+	};
+	wireless-power-info {
+		current_group_0 {
+			fast_charging_current = <3000>;
+		};
+		current_group_1 {
+			fast_charging_current = <3000>;
+		};
+		current_group_2 {
+			fast_charging_current = <3000>;
+		};
+		current_group_3 {
+			fast_charging_current = <3000>;
+		};
+	};
+};
+
+&tsp_lsi {
+	/delete-property/ sec,select_lcdid;
+	sec,bringup = <0>;
+};
+
+&wacom {
+	status = "okay";
+};

@@ -1,0 +1,265 @@
+config SAMSUNG_OIS_MCU_STM32
+        tristate "External ois MCU STM32 support"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for external ois module.
+
+config SAMSUNG_OIS_TAMODE_CONTROL
+	tristate "Use ois TAMODE control"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for actuator softlanding
+
+config SAMSUNG_OIS_RUMBA_S4
+        tristate "External RUMBA S4 OIS support"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for external ois module.
+
+config SAMSUNG_SBI
+        tristate "External SBI support"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for external SBI module.
+
+config SAMSUNG_APERTURE
+        tristate "External aperture support"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for external aperture module.
+
+config SAMSUNG_APERTURE_MULTI_MODE
+        tristate "External aperture support multiple mode(1.5, 1.8, 2.4, etc)"
+	depends on SAMSUNG_APERTURE
+	default n
+	---help---
+	Enables support for external aperture multiple mode.
+
+config SAMSUNG_APERTURE_HALLTEST
+        tristate "aperture hall test support"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for aperture hall est
+
+config SAMSUNG_REAR_DUAL
+	tristate "Rear dual camera support"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for rear dual camera.
+
+config SAMSUNG_REAR_TRIPLE
+	tristate "Rear triple camera support"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for rear triple camera.
+
+config SAMSUNG_FRONT_DUAL
+	tristate "Front dual camera support"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for front dual camera.
+
+config SAMSUNG_FRONT_TOP
+	tristate "Front top camera support"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for front top camera.
+
+config SAMSUNG_FRONT_TOF
+	tristate "Front tof camera support"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for front tof camera.
+
+config SAMSUNG_REAR_TOF
+	tristate "rear tof camera support"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for rear tof camera.
+
+config CAMERA_ADAPTIVE_MIPI
+	tristate "adaptive mipi support"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for adaptive mipi.
+
+config SAMSUNG_FRONT_TOP_EEPROM
+	tristate "Front top camera eeprom"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for front top camera eeprom.
+
+config CAMERA_SYSFS_V2
+	bool "CAMERA SYS"
+	depends on SPECTRA_CAMERA
+	---help---
+	Enable support CAMERA SYS.
+
+config SAMSUNG_FRONT_EEPROM
+	tristate "Front eeprom support"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for front eeprom
+
+config SAMSUNG_SECURE_CAMERA
+	tristate "Secure camera support"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for secure camera
+
+config CAMERA_DYNAMIC_MIPI
+	tristate "Multi camera support"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for dynamic mipi clock
+
+config SAMSUNG_REAR_TELE_BINNING
+	tristate "Rearfull camera support"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for rear tele binning
+
+config CAMERA_FRS_DRAM_TEST
+	tristate "Camera dram support"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for DRAM test
+
+config USE_CAMERA_HW_BIG_DATA
+	bool "CAMERA HW SYS"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	CAMERA HW SYS.
+
+config FLASH_CURRENT_JAPAN
+	tristate "flash current for jpn"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for JPN
+
+config CAMERA_SSM_I2C_ENV
+	tristate "Rear camera support"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for SSM I2C test
+
+config CAMERA_FRAME_CNT_DBG
+	tristate "Camera frame cnt for debug"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for debug
+
+config CAMERA_STREAMOFF_CHECK
+	tristate "Check Camera streamoff status"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for check streamoff status
+
+config EEPROM_FORCE_DOWN
+	tristate "EEPROM power down forcely when EEPROM i2c error"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for force EEPROM power down
+
+config SAMSUNG_ACTUATOR_AK7377
+	tristate "Actuator AK7377"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for actuator ak7377
+
+config SAMSUNG_REAR_BOKEH
+	tristate "bokeh camera"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for bokeh camera
+
+config LEDS_PMIC_QPNP
+	tristate "flash PMIC"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for PMIC flash
+
+config SAMSUNG_ACTUATOR_DW9808
+	tristate "Actuator DW9808"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for actuator DW9808
+
+config SAMSUNG_REAR_TELE_TETRA
+	tristate "RearTetra camera support"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for rear tetra
+
+config SAMSUNG_ACTUATOR_PREVENT_SHAKING
+	tristate "Prevent actuator shaking"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for actuator softlanding
+
+config SENSOR_RETENTION
+        tristate "2L4 sensor retention"
+        depends on SPECTRA_CAMERA
+        default n
+        ---help---
+        Enables support for 2L4 sensor retention
+
+config SAMSUNG_ACTUATOR_SOFTLANDING
+	tristate "actuator softlanding support"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for actuator softlanding
+
+config SAMSUNG_FRONT_FIXED_FOCUS
+	tristate "front camera fixed focus support"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	Enables support for front camera fixed focus
+
+config USE_CAMERA_HW_BIG_DATA
+	bool "CAMERA HW SYS"
+	depends on SPECTRA_CAMERA
+	default n
+	---help---
+	CAMERA HW SYS.
+
+config SAMSUNG_SUPPORT_REMOSAIC_MFNR_FEATURE
+        tristate "Remosaic MFNR Support"
+        depends on SPECTRA_CAMERA
+        default n
+        ---help---
+        Enables support for Remosaic MFNR
+

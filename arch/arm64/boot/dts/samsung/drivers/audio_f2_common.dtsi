@@ -1,0 +1,289 @@
+/* Copyright (c) 2018, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&soc {
+	sec-audio-sysfs {
+		compatible = "samsung,audio-sysfs";
+		status = "okay";
+		audio,no-earjack;
+		audio,num-amp = <3>;
+	};
+};
+
+&kona_snd {
+	qcom,model = "kona-mtp-snd-card";
+
+	asoc-platform = <&pcm0>, <&pcm1>, <&pcm2>, <&voip>, <&voice>,
+		<&loopback>, <&compress>, <&hostless>,
+		<&afe>, <&lsm>, <&routing>, <&compr>,
+		<&pcm_noirq>, <&samsung_q6audio_adaptation>;
+	asoc-platform-names = "msm-pcm-dsp.0", "msm-pcm-dsp.1",
+		"msm-pcm-dsp.2", "msm-voip-dsp",
+		"msm-pcm-voice", "msm-pcm-loopback",
+		"msm-compress-dsp", "msm-pcm-hostless",
+		"msm-pcm-afe", "msm-lsm-client",
+		"msm-pcm-routing", "msm-compr-dsp",
+		"msm-pcm-dsp-noirq", "q6audio-adaptation";
+	qcom,audio-routing =
+		"TX DMIC0", "Digital Mic0",
+		"TX DMIC1", "Digital Mic1",
+		"TX DMIC2", "Digital Mic2",
+		"TX DMIC3", "MIC BIAS External1",
+		"MIC BIAS External1", "Digital Mic3",
+		"TX DMIC4", "Digital Mic4",
+		"TX DMIC5", "MIC BIAS External2",
+		"MIC BIAS External2", "Digital Mic5",
+		"VA DMIC0", "Digital Mic0",
+		"VA DMIC1", "Digital Mic1",
+		"VA DMIC2", "Digital Mic2",
+		"VA DMIC3", "Digital Mic3",
+		"VA DMIC4", "Digital Mic4",
+		"VA DMIC5", "Digital Mic5",
+		"AMP0 SPK", "Left AMP SPK",
+		"AMP1 SPK", "Right AMP SPK";
+	qcom,msm-mbhc-hphl-swh = <0>;
+	qcom,msm-mbhc-gnd-swh = <0>;
+	qcom,wsa-max-devs = <0>;
+	qcom,codec-max-aux-devs = <0>;
+	fsa4480-i2c-handle = <>;
+	qcom,tdm-max-slots = <4>;
+	qcom,component-dai-name = "cs35l41-pcm";
+	qcom,component-devs = <&cs35l41_r>;
+	subpcb-ep-gpio = <&tlmm 38 0>;
+	qcom,tert-mi2s-gpios = <>;
+};
+
+&wsa_spkr_en1 {
+	pinctrl-0 = <>;
+	pinctrl-1 = <>;
+};
+
+&cdc_tert_mi2s_gpios {
+	pinctrl-0 = <>;
+	pinctrl-1 = <>;
+};
+
+&wcd938x_rst_gpio {
+	pinctrl-0 = <>;
+	pinctrl-1 = <>;
+};
+
+&dai_mi2s3 {
+	qcom,msm-mi2s-rx-lines = <2>;
+	qcom,msm-mi2s-tx-lines = <1>;
+};
+
+&tdm_pri_rx {
+	qcom,msm-cpudai-tdm-clk-rate = <6144000>;
+	qcom,msm-cpudai-tdm-clk-internal = <1>;
+	qcom,msm-cpudai-tdm-sync-mode = <0>;
+	qcom,msm-cpudai-tdm-sync-src = <1>;
+	qcom,msm-cpudai-tdm-data-out = <0>;
+	qcom,msm-cpudai-tdm-invert-sync = <0>;
+	qcom,msm-cpudai-tdm-data-delay = <1>;
+	qcom,msm-cpudai-tdm-clk-attribute = /bits/ 16 <1>;
+
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&pri_tdm_clk_active &pri_tdm_sync_active
+		    &pri_tdm_din_active &pri_tdm_dout_active>;
+	pinctrl-1 = <&pri_tdm_clk_sleep &pri_tdm_sync_sleep
+			&pri_tdm_din_sleep &pri_tdm_dout_sleep>;
+};
+
+&tdm_pri_tx {
+	qcom,msm-cpudai-tdm-clk-rate = <6144000>;
+	qcom,msm-cpudai-tdm-clk-internal = <1>;
+	qcom,msm-cpudai-tdm-sync-mode = <0>;
+	qcom,msm-cpudai-tdm-sync-src = <1>;
+	qcom,msm-cpudai-tdm-data-out = <0>;
+	qcom,msm-cpudai-tdm-invert-sync = <0>;
+	qcom,msm-cpudai-tdm-data-delay = <1>;
+	qcom,msm-cpudai-tdm-clk-attribute = /bits/ 16 <1>;
+};
+
+&pm8150_l7 {
+	regulator-min-microvolt = <1800000>;
+	regulator-max-microvolt = <1800000>;
+	qcom,init-voltage = <1800000>;
+	regulator-always-on;
+};
+
+&soc {
+	samsung_q6audio_adaptation: samsung,q6audio-adaptation {
+		compatible = "samsung,q6audio-adaptation";
+		adaptation,device-tx-port-id = <0xB037>;
+		adaptation,spk-rx-port-id = <0x9000>;
+		adaptation,usb-rx-port-id = <0x7000>;
+		adaptation,bt-rx-port-id = <0x400e>;
+		adaptation,headset-rx-port-id = <0>;
+	};
+
+	dummy_vreg: dummy_vreg {
+		compatible = "regulator-fixed";
+		status = "ok";
+		regulator-name = "dummy_vreg";
+		regulator-always-on;
+	};
+
+	cirrus_amps {
+		compatible = "cirrus-amp";
+		cirrus,num-amps = <3>;
+		cirrus,amps = <&cs35l41_r &cs35l41_l &cs35l41_c>;
+	};
+};
+
+
+&qupv3_se11_i2c {
+	qcom,clk-freq-out = <1000000>;
+	status = "ok";
+	pinctrl-0 = <&qupv3_se11_amp_i2c_active>;
+	pinctrl-1 = <&qupv3_se11_amp_i2c_sleep>;
+
+	cs35l41_r: cs35l41@40 {
+		#sound-dai-cells = <1>;
+		compatible = "cirrus,cs35l41";
+		reg = <0x40>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <84 0>;
+		reset-gpios = <&expander_gpios 9 0>;
+		VA-supply = <&dummy_vreg>;
+		VP-supply = <&dummy_vreg>;
+		cirrus,asp-sdout-hiz = <0x3>;
+
+		cirrus,dsp-part-name = "cs35l40-bot";
+		cirrus,right-channel-amp;
+		cirrus,mfd-suffix = "_r";
+		cirrus,bd-suffix = "_1";
+		cirrus,use-fsync-errata;
+		cirrus,bd-max-temp = <110>;
+
+		cirrus,dsp-noise-gate-enable;
+		cirrus,dsp-noise-gate-delay = <0x2>;
+		cirrus,dsp-noise-gate-threshold = <0x6>;
+
+		cirrus,hw-noise-gate-select = <0x3F>;
+		cirrus,hw-noise-gate-delay = <0x2>;
+		cirrus,hw-noise-gate-threshold = <0x6>;
+		cirrus,boost-peak-milliamp = <4100>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&cs35l41_gpio_default>;
+
+		cirrus,fixed-hw-params	{
+			cirrus,fixed-width = <32>;
+		};
+
+		cirrus,gpio-config2 {
+			cirrus,gpio-src-select = <0x4>;
+			cirrus,gpio-output-enable;
+		};
+
+		cirrus,pwr-params {
+			cirrus,pwr-target-temp = <3700>;
+			cirrus,pwr-exit-temp = <3600>;
+		};
+	};
+
+	cs35l41_l: cs35l41@41 {
+		#sound-dai-cells = <1>;
+		compatible = "cirrus,cs35l41";
+		reg = <0x41>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <84 0>;
+		reset-gpios = <&expander_gpios 8 0>;
+		VA-supply = <&dummy_vreg>;
+		VP-supply = <&dummy_vreg>;
+		cirrus,asp-sdout-hiz = <0x3>;
+
+		cirrus,dsp-part-name = "cs35l40-top";
+		cirrus,mfd-suffix = "";
+		cirrus,bd-suffix = "_0";
+		cirrus,use-fsync-errata;
+		cirrus,bd-max-temp = <110>;
+
+		cirrus,dsp-noise-gate-enable;
+		cirrus,dsp-noise-gate-delay = <0x2>;
+		cirrus,dsp-noise-gate-threshold = <0x6>;
+
+		cirrus,hw-noise-gate-select = <0x3F>;
+		cirrus,hw-noise-gate-delay = <0x2>;
+		cirrus,hw-noise-gate-threshold = <0x6>;
+		cirrus,boost-peak-milliamp = <4100>;
+
+		cirrus,fixed-hw-params	{
+			cirrus,fixed-width = <32>;
+		};
+
+		cirrus,gpio-config2 {
+			cirrus,gpio-src-select = <0x4>;
+			cirrus,gpio-output-enable;
+		};
+
+		cirrus,pwr-params {
+			cirrus,pwr-target-temp = <3900>;
+			cirrus,pwr-exit-temp = <3800>;
+		};
+	};
+
+	cs35l41_c: cs35l41@42 {
+		#sound-dai-cells = <1>;
+		compatible = "cirrus,cs35l41";
+		reg = <0x42>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <84 0>;
+		reset-gpios = <&expander_gpios 10 0>;
+		VA-supply = <&dummy_vreg>;
+		VP-supply = <&dummy_vreg>;
+		cirrus,asp-sdout-hiz = <0x3>;
+
+		cirrus,dsp-part-name = "cs35l40-rcv";
+		cirrus,mfd-suffix = "_c";
+		cirrus,use-fsync-errata;
+		cirrus,calibration-disable;
+
+		cirrus,dsp-noise-gate-enable;
+		cirrus,dsp-noise-gate-delay = <0x2>;
+		cirrus,dsp-noise-gate-threshold = <0x6>;
+
+		cirrus,hw-noise-gate-select = <0x3F>;
+		cirrus,hw-noise-gate-delay = <0x2>;
+		cirrus,hw-noise-gate-threshold = <0x6>;
+		cirrus,boost-peak-milliamp = <3000>;
+
+		cirrus,fixed-hw-params	{
+			cirrus,fixed-width = <32>;
+		};
+
+		cirrus,gpio-config2 {
+			cirrus,gpio-src-select = <0x4>;
+			cirrus,gpio-output-enable;
+		};
+
+		cirrus,pwr-params {
+			cirrus,pwr-target-temp = <3900>;
+			cirrus,pwr-exit-temp = <3800>;
+		};
+	};
+};
+
+&tx_macro {
+	sub-mic-bias-supply = <&pm8150a_l4>;
+	3rd-mic-bias-supply = <&pm8150a_l5>;
+};
+
+&wcd938x_codec {
+	status = "disabled";
+};
+
+&fsa4480 {
+	status = "disabled";
+};

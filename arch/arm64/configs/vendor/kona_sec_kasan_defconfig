@@ -1,0 +1,46 @@
+#
+# KASAN Kernel Address SANitizer
+#
+CONFIG_KASAN=y
+CONFIG_KASAN_INLINE=y
+CONFIG_LOG_BUF_SHIFT=21
+CONFIG_CC_OPTIMIZE_FOR_SIZE=y
+
+CONFIG_SLUB_DEBUG=y
+
+# Increase by 12kB because we increased KASAN_THREAD_SHIFT
+# Required because of  https://bugs.llvm.org/show_bug.cgi?id=38809
+#
+#CONFIG_FRAME_WARN=14336
+# With qcom llvm 8.0.12 or 10.0.2 warning->error can't be disabled, so just disable this warning:
+CONFIG_FRAME_WARN=0
+
+#
+# Enable multishot mode
+# https://github.sec.samsung.net/SRPOL-SRUK-SEC/syzkaller/issues/23
+#
+CONFIG_CMDLINE="kasan_multi_shot"
+# CONFIG_CMDLINE_FROM_BOOTLOADER is not set
+CONFIG_CMDLINE_EXTEND=y
+
+#
+# Undefined config for Kernel SANitizers
+#
+# CONFIG_SLUB_DEBUG_PANIC_ON is not set
+# CONFIG_UH is not set
+# CONFIG_UH_RKP is not set
+# CONFIG_RKP_TEST is not set
+# CONFIG_KDP_CRED is not set
+# CONFIG_KDP_TEST is not set
+# CONFIG_KDP_NS is not set
+# CONFIG_KDP_DMAP is not set
+
+# CONFIG_CFP_JOPP is not set
+# CONFIG_CFP_ROPP is not set
+# CONFIG_CFP_ROPP_SYSREGKEY is not set
+# CONFIG_RANDOMIZE_BASE is not set
+
+#
+# DO NOT REMOVE THE LAST BLANK LINE
+#
+

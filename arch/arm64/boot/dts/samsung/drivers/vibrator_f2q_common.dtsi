@@ -1,0 +1,125 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+/* VIBRATOR */
+
+/*disable extcon_usb1 because of pm8150_gpio 10 conflict*/
+&extcon_usb1 {
+	status = "disabled";
+};
+
+&pm8150_gpios {
+	motor_int {
+		motor_int_default: motor_int_default {
+			pins = "gpio10";
+			function = "normal";
+			input-enable;
+			bias-pull-up;
+			enable-active-low;
+			power-source = <1>;
+		};
+	};
+
+	fm_motor_sleep_clk_out_default: fm_motor_sleep_clk_out_default {
+		pins = "gpio3";
+		function = "func1";
+		bias-disable;
+		power-source = <0>;
+		output-low;
+		input-disable;
+	};
+};
+
+&qupv3_se10_i2c {
+	status = "okay";
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&qupv3_se10_motor_i2c_active &motor_int_default &motor_reset_default &fm_motor_sleep_clk_out_default>;
+	pinctrl-1 = <&qupv3_se10_motor_i2c_sleep &motor_int_default &motor_reset_default &fm_motor_sleep_clk_out_default>;
+
+	cs40l25a: cs40l25a@40 {
+		status = "okay";
+		compatible = "cirrus,cs40l25a";
+		reg = <0x40>;
+		reset-gpios = <&tlmm 131 0>; // MOTOR_RST
+		interrupt-parent = <&spmi_bus>;
+		interrupts = <0x0 0xc9 0 IRQ_TYPE_LEVEL_LOW>; // MOTOR_INT
+		interrupt-names = "default";
+		interrupt-controller;
+		cirrus,boost-ind-nanohenry = <1000>;
+		cirrus,boost-cap-microfarad = <4>;
+		cirrus,boost-ipk-milliamp = <4000>;
+		cirrus,refclk-gpio2;
+		cirrus,auto-recovery;
+		cirrus,amp-gnd-stby;
+		cirrus,hiber-enable;
+		cirrus,gpio-indv-enable = <0x4>;
+		cirrus,gpio1-mode = <1>;
+		samsung,vib_type = "LINEAR_INDEX_RC";	// using cirrus motor IC and 10*10 square motor(TOP project only)
+
+		samsung,folder_type;
+
+		samsung,dig_scale_close_short_duration = <5>;
+		samsung,dig_scale_close_long_duration = <30>;
+		samsung,dig_scale_open_short_duration = <30>;
+		samsung,dig_scale_open_long_duration = <70>;
+		samsung,dig_scale_high_temp = <100>;
+
+		samsung,high_temp = <550>;
+	};
+};
+
+&tlmm {
+	/delete-node/ qupv3_se10_i2c_pins;
+
+	qupv3_se10_motor_i2c_pins: qupv3_se10_motor_i2c_pins {
+		qupv3_se10_motor_i2c_active: qupv3_se10_motor_i2c_active {
+			mux {
+				pins = "gpio129", "gpio130";
+				function = "qup10";
+			};
+
+			config {
+				pins = "gpio129", "gpio130";
+				drive-strength = <2>;
+				output-high;
+				bias-disable; /* No PULL */
+			};
+		};
+
+		qupv3_se10_motor_i2c_sleep: qupv3_se10_motor_i2c_sleep {
+			mux {
+				pins = "gpio129", "gpio130";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio129", "gpio130";
+				drive-strength = <2>;
+				bias-disable; /* No PULL */
+			};
+		};
+	};
+
+	motor_reset_default: motor_reset_default {
+		mux {
+			pins = "gpio131";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio131";
+			drive-strength = <2>;
+			output-high;
+			bias-pull-up;
+		};
+	};
+};
+

@@ -1,0 +1,72 @@
+#
+# Samsung Canvas Projects
+#
+config MACH_C1Q_USA_SINGLE
+	default n
+	bool "Samsung C1Q USA SQ"
+	help
+	  Support for Samsung C1Q USA SQ device.
+
+config MACH_C1Q_CAN_SINGLE
+	select MACH_C1Q_USA_SINGLE
+	default n
+	bool "Samsung C1Q CAN SQ"
+	help
+	  Support for Samsung C1Q CAN SQ device.
+
+config MACH_C1Q_KOR_SINGLE
+	default n
+	bool "Samsung C1Q KOR SQ"
+	help
+	  Support for Samsung C1Q KOR SQ device.
+
+config MACH_C1Q_CHN_OPEN
+	default n
+	bool "Samsung C1Q CHN OPEN"
+	help
+	  Support for Samsung C1Q CHN OPEN device.
+
+config MACH_C1Q_CHN_HK
+	select MACH_C1Q_CHN_OPEN
+	default n
+	bool "Samsung C1Q CHN HK"
+	help
+	  Support for Samsung C1Q CHN HK device.
+
+config MACH_C2Q_USA_SINGLE
+	default n
+	bool "Samsung C2Q USA SQ"
+	help
+	  Support for Samsung C2Q USA SQ device.
+
+config MACH_C2Q_KOR_SINGLE
+	default n
+	bool "Samsung C2Q KOR SQ"
+	help
+	  Support for Samsung C2Q KOR SQ device.
+
+config MACH_C2Q_CAN_SINGLE
+        select MACH_C2Q_USA_SINGLE
+	default n
+	bool "Samsung C2Q CAN SQ"
+	help
+	  Support for Samsung C2Q CAN SQ device.
+
+config MACH_C2Q_JPN_SINGLE
+	default n
+	bool "Samsung C2Q JPN SQ"
+	help
+	  Support for Samsung C2Q JPN SQ device.
+
+config MACH_C2Q_CHN_OPEN
+	default n
+	bool "Samsung C2Q CHN OPEN"
+	help
+	  Support for Samsung C2Q CHN OPEN device.
+
+config MACH_C2Q_CHN_HK
+	select MACH_C2Q_CHN_OPEN
+	default n
+	bool "Samsung C2Q CHN HK"
+	help
+	  Support for Samsung C2Q CHN HK device.

@@ -1,0 +1,11 @@
+menu "Intelligence"
+
+config INTELLIGENCE
+	bool "Intelligent Resource Management"
+	depends on FAIR_GROUP_SCHED
+	default y
+	---help---
+	  Enable support for the Intelligence platform
+
+endmenu
+

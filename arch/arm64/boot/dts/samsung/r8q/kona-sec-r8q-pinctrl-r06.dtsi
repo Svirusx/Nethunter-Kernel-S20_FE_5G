@@ -1,0 +1,58 @@
+/* Copyright (c) 2020, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&tlmm {
+	wakeup-disabled-gpios = <
+		4	/* I2C : PM3003A_SDA_1P8 */
+		11	/* NC : NC */
+		14	/* NC : NC */
+		23	/* SPI : BTP_SPI_CS_N */
+		24	/* NC : NC */
+		27	/* NC : NC */
+		28	/* I2C : DIRECT_IF_PMIC_SDA_1P8 */
+		39	/* NC : NC */
+		40	/* I2C : AP_MCU_SDA_1P8 */
+		45	/* I2C : NFC_SCL_1P8 */
+		51	/* SPI : ESE_SPI_CS_N */
+		55	/* NC : NC */
+		59	/* NC : NC */
+		63	/* NC : NC */
+		64	/* NC : NC */
+		83	/* NC : NC */
+		100	/* NC : NC */
+		103	/* I2C : FCAM_I2C_SDA_1P8 */
+		104	/* I2C : FCAM_I2C_SCL_1P8 */
+		108	/* I2C : CAM_AF_EEP_SCL_1P8 */
+		112	/* I2C : GRIP_SDA_1P8 */
+		113	/* I2C : GRIP_SCL_1P8 */
+		118	/* NC : NC */
+		121	/* NC : NC */
+		122	/* NC : NC */
+		128	/* NC : NC */
+		129	/* I2C : RCAM3_I2C_SDA_1P8 */
+		134	/* NC : NC */
+		138	/* I2S : AMP_I2S_BCLK */
+		142	/* SLIMBUS : BT_SLIMBUS_CLK */
+		143	/* SLIMBUS : BT_SLIMBUS_DATA */
+		147	/* NC : NC */
+		150	/* NC : NC */
+		158	/* NC : NC */
+		160	/* I2C : 6AXIS_I3C_SDA_1P8 */
+		162	/* I2C : MAGNETIC_SDA_1P8 */
+		164	/* NC : NC */
+		166	/* NC : NC */
+		167	/* NC : NC */
+		175	/* NC : NC */
+		177	/* NC : NC */
+		179	/* NC : NC */
+	>;
+};

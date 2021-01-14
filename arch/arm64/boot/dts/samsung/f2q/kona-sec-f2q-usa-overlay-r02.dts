@@ -1,0 +1,43 @@
+/* Copyright (c) 2020, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+/dts-v1/;
+/plugin/;
+
+#include "../common/kona-sec-common.dtsi"
+#include "kona-sec-f2q-r02.dtsi"
+#include "kona-sec-f2q-laa-usa.dtsi"
+#include "../drivers/battery-data-f2q-r02.dtsi"
+#include "../drivers/fingerprint-sensor_f2q-r01.dtsi"
+
+/ {
+	model = "Samsung F2Q PROJECT - DV1 Rev01 (board-id,2)";
+	compatible = "qcom,kona-mtp", "qcom,kona", "qcom,mtp";
+	qcom,board-id = <8 2>;
+	dtbo-version = <0>;
+};
+
+&qupv3_se5_i2c {
+	touchscreen@49 {
+		stm,regulator_dvdd = "s2dos06-ldo2";
+		stm,regulator_avdd = "s2dos06-ldo3";
+		stm,bringup = <1>;
+	};
+};
+
+&qupv3_se13_i2c {
+	touchscreen@48 {
+		sec,regulator_dvdd = "s2dos05_sub-ldo2";
+		sec,regulator_avdd = "s2dos05_sub-ldo3";
+		sec,bringup = <1>;
+	};
+};

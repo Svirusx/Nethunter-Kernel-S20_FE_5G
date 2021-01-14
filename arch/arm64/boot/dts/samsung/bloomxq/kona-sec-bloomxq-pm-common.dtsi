@@ -1,0 +1,631 @@
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include <dt-bindings/regulator/qcom,rpmh-regulator-levels.h>
+
+&tlmm {
+	s2dos05_i2c_sda_default: s2dos05_i2c_sda_default {
+		mux {
+			pins = "gpio62";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio62";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+
+	s2dos05_i2c_scl_default: s2dos05_i2c_scl_default {
+		mux {
+			pins = "gpio63";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio63";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+
+	s2dos05_irq_default: s2dos05_irq_default {
+		mux {
+			pins = "gpio93";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio93";
+			drive-strength = <2>;
+			bias-disable;
+			input-enable;
+		};
+	};
+
+	s2mpb02_i2c_sda_default: s2mpb02_i2c_sda_default {
+		mux {
+			pins = "gpio98";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio98";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+
+	s2mpb02_i2c_scl_default: s2mpb02_i2c_scl_default {
+		mux {
+			pins = "gpio99";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio99";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+
+	s2mpb02_irq: s2mpb02_irq {
+		mux {
+			pins = "gpio109";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio109";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+};
+
+&soc {
+	/* S2DOS05 Display PMIC */
+	i2c-gpio-s2dos05 {
+		status = "okay";
+		compatible = "i2c-gpio";
+		gpios = <&tlmm 62 0 /* sda */
+			&tlmm 63 0 /* scl */
+		>;
+		#i2c-gpio,delay-us = <2>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&s2dos05_i2c_sda_default &s2dos05_i2c_scl_default>;
+
+		s2dos05@60 {
+			status = "okay";
+			compatible = "samsung,s2dos05pmic";
+			reg = <0x60>;
+			adc_mode = <2>; /* 0 : disable, 1 : current meter, 2 : power meter */
+			adc_sync_mode = <2>; /* 1 : sync mode, 2 : async mode */
+
+			pinctrl-names = "default";
+			pinctrl-0 = <&s2dos05_irq_default>;
+			s2dos05,s2dos05_int = <&tlmm 93 0>;
+
+			regulators {
+				s2dos05_l1: s2dos05-ldo1 {
+					regulator-name = "s2dos05-ldo1";
+					regulator-min-microvolt = <1500000>;
+					regulator-max-microvolt = <2000000>;
+					regulator-active-discharge = <1>;
+				};
+
+				s2dos05_l2: s2dos05-ldo2 {
+					regulator-name = "s2dos05-ldo2";
+					regulator-min-microvolt = <1500000>;
+					regulator-max-microvolt = <2000000>;
+					regulator-active-discharge = <1>;
+				};
+
+				s2dos05_l3: s2dos05-ldo3 {
+					regulator-name = "s2dos05-ldo3";
+					regulator-min-microvolt = <2700000>;
+					regulator-max-microvolt = <3775000>;
+					regulator-active-discharge = <1>;
+				};
+
+				s2dos05_l4: s2dos05-ldo4 {
+					regulator-name = "s2dos05-ldo4";
+					regulator-min-microvolt = <2700000>;
+					regulator-max-microvolt = <3775000>;
+					regulator-active-discharge = <1>;
+				};
+
+				s2dos05_buck1: s2dos05-buck1 {
+					regulator-name = "s2dos05-buck1";
+					regulator-min-microvolt = <850000>;
+					regulator-max-microvolt = <2100000>;
+					regulator-active-discharge = <1>;
+				};
+
+				s2dos05_elvss: s2dos05-elvss {
+					regulator-name = "s2dos05-elvss";
+				};
+			};
+		};
+	};
+
+	/* S2MPB02 Camera PMIC */
+	i2c-gpio-s2mpb02 {
+		status = "okay";
+		compatible = "i2c-gpio";
+		gpios = <&tlmm 98 0
+			&tlmm 99 0
+		>;
+		i2c-gpio,delay-us = <2>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&s2mpb02_i2c_sda_default &s2mpb02_i2c_scl_default>;
+
+		s2mpb02@59 {
+			status = "okay";
+			compatible = "s2mpb02,s2mpb02mfd";
+			reg = <0x59>;
+
+			pinctrl-names = "default";
+			pinctrl-0 = <&s2mpb02_irq>;
+			interrupt-parent = <&tlmm>;
+
+			regulators {
+				s2mpb02_l1: s2mpb02-ldo1 {
+					regulator-name = "s2mpb02-ldo1";
+					regulator-min-microvolt = <1100000>;
+					regulator-max-microvolt = <1100000>;
+				};
+
+				s2mpb02_l2: s2mpb02-ldo2 {
+					regulator-name = "s2mpb02-ldo2";
+					regulator-min-microvolt = <700000>;
+					regulator-max-microvolt = <1050000>;
+				};
+
+				s2mpb02_l3: s2mpb02-ldo3 {
+					regulator-name = "s2mpb02-ldo3";
+					regulator-min-microvolt = <1050000>;
+					regulator-max-microvolt = <1050000>;
+				};
+
+				s2mpb02_l4: s2mpb02-ldo4 {
+					regulator-name = "s2mpb02-ldo4";
+					regulator-min-microvolt = <1050000>;
+					regulator-max-microvolt = <1050000>;
+				};
+
+				s2mpb02_l5: s2mpb02-ldo5 {
+					regulator-name = "s2mpb02-ldo5";
+					regulator-min-microvolt = <1050000>;
+					regulator-max-microvolt = <1050000>;
+				};
+
+				s2mpb02_l6: s2mpb02-ldo6 {
+					regulator-name = "s2mpb02-ldo6";
+					regulator-min-microvolt = <1800000>;
+					regulator-max-microvolt = <1800000>;
+				};
+
+				s2mpb02_l7: s2mpb02-ldo7 {
+					regulator-name = "s2mpb02-ldo7";
+					regulator-min-microvolt = <1800000>;
+					regulator-max-microvolt = <1800000>;
+				};
+
+				s2mpb02_l8: s2mpb02-ldo8 {
+					regulator-name = "s2mpb02-ldo8";
+					regulator-min-microvolt = <1800000>;
+					regulator-max-microvolt = <1800000>;
+				};
+
+				s2mpb02_l9: s2mpb02-ldo9 {
+					regulator-name = "s2mpb02-ldo9";
+					regulator-min-microvolt = <1800000>;
+					regulator-max-microvolt = <1800000>;
+				};
+
+				s2mpb02_l10: s2mpb02-ldo10 {
+					regulator-name = "s2mpb02-ldo10";
+					regulator-min-microvolt = <1800000>;
+					regulator-max-microvolt = <1800000>;
+				};
+
+				s2mpb02_l11: s2mpb02-ldo11 {
+					regulator-name = "s2mpb02-ldo11";
+					regulator-min-microvolt = <3300000>;
+					regulator-max-microvolt = <3300000>;
+				};
+
+				s2mpb02_l12: s2mpb02-ldo12 {
+					regulator-name = "s2mpb02-ldo12";
+					regulator-min-microvolt = <2800000>;
+					regulator-max-microvolt = <2800000>;
+				};
+
+				s2mpb02_l13: s2mpb02-ldo13 {
+					regulator-name = "s2mpb02-ldo13";
+					regulator-min-microvolt = <2400000>;
+					regulator-max-microvolt = <2400000>;
+				};
+
+				s2mpb02_l14: s2mpb02-ldo14 {
+					regulator-name = "s2mpb02-ldo14";
+					regulator-min-microvolt = <3300000>;
+					regulator-max-microvolt = <3300000>;
+				};
+
+				s2mpb02_l15: s2mpb02-ldo15 {
+					regulator-name = "s2mpb02-ldo15";
+					regulator-min-microvolt = <2800000>;
+					regulator-max-microvolt = <2800000>;
+				};
+
+				s2mpb02_l16: s2mpb02-ldo16 {
+					regulator-name = "s2mpb02-ldo16";
+					regulator-min-microvolt = <2800000>;
+					regulator-max-microvolt = <2800000>;
+				};
+
+				s2mpb02_l17: s2mpb02-ldo17 {
+					regulator-name = "s2mpb02-ldo17";
+					regulator-min-microvolt = <2800000>;
+					regulator-max-microvolt = <2800000>;
+				};
+
+				s2mpb02_l18: s2mpb02-ldo18 {
+					regulator-name = "s2mpb02-ldo18";
+					regulator-min-microvolt = <2800000>;
+					regulator-max-microvolt = <2800000>;
+				};
+
+				s2mpb02_b1: s2mpb02-buck1 {
+					regulator-name = "s2mpb02-buck1";
+					regulator-min-microvolt = <1300000>;
+					regulator-max-microvolt = <1300000>;
+				};
+
+				s2mpb02_b2: s2mpb02-buck2 {
+					regulator-name = "s2mpb02-buck2";
+					regulator-min-microvolt = <1300000>;
+					regulator-max-microvolt = <1300000>;
+					regulator-always-on;
+				};
+
+				s2mpb02_bb: s2mpb02-bb {
+					regulator-name = "s2mpb02-bb";
+					regulator-min-microvolt = <3500000>;
+					regulator-max-microvolt = <3500000>;
+					regulator-always-on;
+				};
+			};
+
+			torch {
+				status = "okay";
+				s2mpb02_leds1: s2mpb02-leds1 {
+					ledname = "leds-sec1";
+					/* S2MPB02_FLASH_LED_1 */
+					id = <0>;
+					/* S2MPB02_FLASH_CURRENT */
+					brightness = <0xA>;
+					/* S2MPB02_FLASH_TIMEOUT */
+					timeout = <0x7>;
+					default-trigger = "flash_trigger";
+					gpios = <&tlmm 117 0>;
+				};
+
+				s2mpb02_leds2: s2mpb02-leds2 {
+					ledname = "torch-sec1";
+					/* S2MPB02_TORCH_LED_1 */
+					id = <1>;
+					/* S2MPB02_TORCH_CURRENT */
+					brightness = <0x9>;
+					/* S2MPB02_TORCH_TIMEOUT */
+					timeout = <0xF>;
+					default-trigger = "torch_trigger";
+					gpios = <&tlmm 136 0>;
+				};
+			};
+		};
+	};
+
+	/* AP Thermistor table */
+	sec_thermistor@0 {
+		compatible = "samsung,sec-thermistor";
+		status = "okay";
+		thermistor_name = "sec-ap-thermistor";
+		id = <0>;
+
+		io-channels = <&pm8150l_vadc ADC_AMUX_THM2_PU2>;
+		io-channel-names = "ap_therm";
+		io-channel-ranges;
+		use_iio_processed;
+
+		adc_array = <112240 133910 162846 193663 228633 271842 320242 375973 441241 515657
+				598442 692322 795350 903568 1014576 1125194 1234775 1337608
+				1436288
+				1523875 1597058 1659666 1708974>;
+
+		temp_array = <900 850 800 750 700 650 600 550 500 450
+				400 350 300 250 200 150 100 50
+				0
+				(-50) (-100) (-150) (-200)>;
+	};
+
+	/* CP Thermistor table */
+	sec_thermistor@1 {
+		compatible = "samsung,sec-thermistor";
+		status = "okay";
+		thermistor_name = "sec-cp-thermistor";
+		id = <1>;
+
+		io-channels = <&pm8150_vadc ADC_AMUX_THM1_PU2>;
+		io-channel-names = "cp_therm";
+		io-channel-ranges;
+		use_iio_processed;
+
+		adc_array = <113992 135467 167387 198399 234277 277162 326340 382655 448183 523442
+				606747 701081 804952 912391 1024307 1135640 1244182 1346950
+				1444139
+				1530817 1602768 1664013 1712608>;
+
+		temp_array = <900 850 800 750 700 650 600 550 500 450
+				400 350 300 250 200 150 100 50
+				0
+				(-50) (-100) (-150) (-200)>;
+	};
+
+	/* WiFi Thermistor table */
+	sec_thermistor@2 {
+		compatible = "samsung,sec-thermistor";
+		status = "okay";
+		thermistor_name = "sec-wf-thermistor";
+		id = <2>;
+
+		io-channels = <&pm8150l_vadc ADC_GPIO2_PU2>;
+		io-channel-names = "wf_therm";
+		io-channel-ranges;
+		use_iio_processed;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&gpio6_adc_default>;
+
+		adc_array = <119182 141176 170631 201578 237781 280601 329974 386224 452141 527660
+				611094 705947 810142 917257 1029498 1141284 1248918 1351946
+				1448680
+				1535099 1605947 1666998 1715268>;
+
+		temp_array = <900 850 800 750 700 650 600 550 500 450
+				400 350 300 250 200 150 100 50
+				0
+				(-50) (-100) (-150) (-200)>;
+	};
+
+	/* Camera Flash Thermistor table */
+	sec_thermistor@3 {
+		compatible = "samsung,sec-thermistor";
+		status = "okay";
+		thermistor_name = "sec-cf-thermistor";
+		id = <3>;
+
+		io-channels = <&pm8150l_vadc ADC_GPIO4_PU2>;
+		io-channel-names = "cf_therm";
+		io-channel-ranges;
+		use_iio_processed;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&gpio10_adc_default>;
+
+		adc_array = <118987 140916 170501 201643 237716 280730 330103 386548 452530 527984
+				611937 706596 810726 917906 1030406 1141998 1250086 1352984
+				1449459
+				1535618 1606855 1667452 1716046>;
+
+		temp_array = <900 850 800 750 700 650 600 550 500 450
+				400 350 300 250 200 150 100 50
+				0
+				(-50) (-100) (-150) (-200)>;
+	};
+};
+
+&pm8150_vadc {
+	/delete-node/ skin_therm;
+	cp_therm {
+		reg = <ADC_AMUX_THM1_PU2>;
+		label = "cp_therm";
+		qcom,ratiometric;
+		qcom,hw-settle-time = <200>;
+		qcom,pre-scaling = <1 1>;
+		qcom,decimation = <840>;
+		qcom,avg-samples = <8>;
+	};
+};
+
+&pm8150_gpios {
+	interrupts = <0x0 0xc0 0x0 IRQ_TYPE_NONE>,
+				<0x0 0xc1 0x0 IRQ_TYPE_NONE>,
+				<0x0 0xc2 0x0 IRQ_TYPE_NONE>,
+				<0x0 0xc3 0x0 IRQ_TYPE_NONE>,
+				<0x0 0xc4 0x0 IRQ_TYPE_NONE>,
+				<0x0 0xc5 0x0 IRQ_TYPE_NONE>,
+				<0x0 0xc6 0x0 IRQ_TYPE_NONE>,
+				<0x0 0xc7 0x0 IRQ_TYPE_NONE>,
+				<0x0 0xc8 0x0 IRQ_TYPE_NONE>,
+				<0x0 0xc9 0x0 IRQ_TYPE_NONE>;
+
+	interrupt-names = "pm8150_gpio1", "pm8150_gpio2",
+				"pm8150_gpio3", "pm8150_gpio4",
+				"pm8150_gpio5", "pm8150_gpio6",
+				"pm8150_gpio7", "pm8150_gpio8",
+				"pm8150_gpio9", "pm8150_gpio10";
+
+	/delete-property/ qcom,gpios-disallowed;
+};
+
+&pm8150l_vadc {
+	/delete-node/ skin_msm_therm;
+	ap_therm {
+		reg = <ADC_AMUX_THM2_PU2>;
+		label = "ap_therm";
+		qcom,ratiometric;
+		qcom,hw-settle-time = <200>;
+		qcom,pre-scaling = <1 1>;
+		qcom,decimation = <840>;
+		qcom,avg-samples = <8>;
+	};
+
+	wf_therm {
+		reg = <ADC_GPIO2_PU2>;
+		label = "wf_therm";
+		qcom,ratiometric;
+		qcom,hw-settle-time = <200>;
+		qcom,pre-scaling = <1 1>;
+		qcom,decimation = <840>;
+		qcom,avg-samples = <8>;
+	};
+
+	cf_therm {
+		reg = <ADC_GPIO4_PU2>;
+		label = "cf_therm";
+		qcom,ratiometric;
+		qcom,hw-settle-time = <200>;
+		qcom,pre-scaling = <1 1>;
+		qcom,decimation = <840>;
+		qcom,avg-samples = <8>;
+	};
+};
+
+&pm8150l_gpios {
+	interrupts = <0x4 0xc0 0x0 IRQ_TYPE_NONE>,
+				<0x4 0xc1 0x0 IRQ_TYPE_NONE>,
+				<0x4 0xc2 0x0 IRQ_TYPE_NONE>,
+				<0x4 0xc3 0x0 IRQ_TYPE_NONE>,
+				<0x4 0xc4 0x0 IRQ_TYPE_NONE>,
+				<0x4 0xc5 0x0 IRQ_TYPE_NONE>,
+				<0x4 0xc6 0x0 IRQ_TYPE_NONE>,
+				<0x4 0xc7 0x0 IRQ_TYPE_NONE>,
+				<0x4 0xc8 0x0 IRQ_TYPE_NONE>,
+				<0x4 0xc9 0x0 IRQ_TYPE_NONE>,
+				<0x4 0xca 0x0 IRQ_TYPE_NONE>,
+				<0x4 0xcb 0x0 IRQ_TYPE_NONE>;
+
+	interrupt-names = "pm8150l_gpio1", "pm8150l_gpio2",
+				"pm8150l_gpio3", "pm8150l_gpio4",
+				"pm8150l_gpio5", "pm8150l_gpio6",
+				"pm8150l_gpio7", "pm8150l_gpio8",
+				"pm8150l_gpio9", "pm8150l_gpio10",
+				"pm8150l_gpio11", "pm8150l_gpio12";
+
+	/delete-property/ qcom,gpios-disallowed;
+
+	gpio6_adc_default: gpio6_adc_default {
+		pins = "gpio6";
+		function = "normal";
+		bias-high-impedance;
+	};
+
+	gpio10_adc_default: gpio10_adc_default {
+		pins = "gpio10";
+		function = "normal";
+		bias-high-impedance;
+	};
+};
+
+&pm8150_adc_tm {
+	io-channels = <&pm8150_vadc ADC_XO_THERM_PU2>;
+	/delete-node/ skin_therm@4d;
+	/delete-node/ pa_therm1@4e;
+};
+
+&pm8150l_adc_tm {
+	io-channels = <&pm8150l_vadc ADC_AMUX_THM1_PU2>,
+			<&pm8150l_vadc ADC_GPIO1_PU2>;
+
+	/delete-node/ camera_flash_therm@4d;
+	/delete-node/ skin_msm_therm@4e;
+	/delete-node/ pa_therm2@4f;
+
+	usb_therm {
+		reg = <ADC_AMUX_THM1_PU2>;
+		qcom,ratiometric;
+		qcom,hw-settle-time = <200>;
+	};
+
+	wpc_therm {
+		reg = <ADC_GPIO1_PU2>;
+		qcom,ratiometric;
+		qcom,hw-settle-time = <200>;
+	};
+};
+
+&pm8150a_amoled {
+	status = "disabled";
+};
+
+&vreg_hap_boost {
+	status = "disabled";
+};
+
+&thermal_zones {
+	conn-therm-usr {
+		status = "disabled";
+	};
+	skin-therm-usr {
+		status = "disabled";
+	};
+	mmw-pa1-usr {
+		status = "disabled";
+	};
+	camera-therm-usr {
+		status = "disabled";
+	};
+	skin-msm-therm-usr {
+		status = "disabled";
+	};
+	mmw-pa2-usr {
+		status = "disabled";
+	};
+
+	usb-therm {
+		polling-delay-passive = <0>;
+		polling-delay = <0>;
+		thermal-governor = "user_space";
+		thermal-sensors = <&pm8150l_adc_tm ADC_AMUX_THM1_PU2>;
+		trips {
+			active-config0 {
+				temperature = <85000>;
+				hysteresis = <15000>;
+				type = "passive";
+			};
+		};
+	};
+
+	wpc-therm {
+		polling-delay-passive = <0>;
+		polling-delay = <0>;
+		thermal-governor = "user_space";
+		thermal-sensors = <&pm8150l_adc_tm ADC_GPIO1_PU2>;
+		trips {
+			active-config0 {
+				temperature = <85000>;
+				hysteresis = <15000>;
+				type = "passive";
+			};
+		};
+	};
+};

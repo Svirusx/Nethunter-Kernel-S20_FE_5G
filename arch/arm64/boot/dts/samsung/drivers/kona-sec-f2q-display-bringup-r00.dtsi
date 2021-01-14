@@ -1,0 +1,63 @@
+/* Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+#include "../../../../../../techpack/display/msm/samsung/PBA_BOOTING/dsi_panel_PBA_BOOTING_fhd_video.dtsi"
+#include "../../../../../../techpack/display/msm/samsung/PBA_BOOTING_DSI1/dsi_panel_PBA_BOOTING_fhd_video_dsi1.dtsi"
+
+&soc {
+
+	/* PBA */
+	ss_dsi_panel_PBA_BOOTING_FHD_display: qcom,dsi-display@19 {
+		label = "ss_dsi_panel_PBA_BOOTING_FHD";
+	};
+
+	/* PBA for secondary display (DSI1) */
+	ss_dsi_panel_PBA_BOOTING_FHD_DSI1_display: qcom,dsi-display@20 {
+		label = "ss_dsi_panel_PBA_BOOTING_FHD_DSI1";
+	};
+};
+
+&sde_dsi {
+	qcom,dsi-display-list =
+		<&ss_dsi_panel_PBA_BOOTING_FHD>;
+};
+
+/* override display-list / supply for samsung panel */
+&sde_dsi1 {
+	qcom,dsi-display-list =
+		<&ss_dsi_panel_PBA_BOOTING_FHD_DSI1>;
+};
+
+&ss_dsi_panel_PBA_BOOTING_FHD {
+	qcom,dsi-ctrl-num = <0>;
+	qcom,dsi-phy-num = <0>;
+	qcom,dsi-select-clocks = "mux_byte_clk0", "mux_pixel_clk0",
+				"src_byte_clk0", "src_pixel_clk0",
+				"shadow_byte_clk0", "shadow_pixel_clk0";
+
+
+	qcom,platform-reset-gpio = <&tlmm 82 0>;
+	qcom,platform-te-gpio = <&tlmm 66 0>;
+	qcom,dsi-panel = <&ss_dsi_panel_PBA_BOOTING_FHD>;
+};
+
+&ss_dsi_panel_PBA_BOOTING_FHD_DSI1 {
+	qcom,display-type = "secondary";
+	qcom,dsi-display-active;
+
+	qcom,dsi-ctrl-num = <1>;
+	qcom,dsi-phy-num = <1>;
+	qcom,dsi-select-clocks = "mux_byte_clk1", "mux_pixel_clk1",
+				"src_byte_clk1", "src_pixel_clk1",
+				"shadow_byte_clk1", "shadow_pixel_clk1";
+
+	qcom,dsi-panel = <&ss_dsi_panel_PBA_BOOTING_FHD_DSI1>;
+};

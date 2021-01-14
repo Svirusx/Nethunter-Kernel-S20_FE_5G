@@ -1,0 +1,101 @@
+/* Copyright (c) 2012, Samsung Electronics Corporation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&soc {
+	self_display_UM1_dtsi: self_display_UM1_dtsi {
+		label = "self_display_UM1_dtsi";
+#if 0
+		/*
+		 *************************************************************************************************************************
+		 * Self Display Operation (Enable/Disable)
+		 *************************************************************************************************************************
+		 */
+
+		samsung,self_dispaly_on = [ // AOD ENTER
+			29 01 00 00 00 00 03 F0 5A 5A	/* TEST KEY Enable */
+			29 01 00 00 00 00 03 75 00 01
+			29 01 00 00 00 00 03 F0 A5 A5	/* TEST KEY Disable */
+		];
+
+		samsung,self_dispaly_off = [ // AOD EXIT
+			29 01 00 00 00 00 03 F0 5A 5A	/* TEST KEY Enable */
+			29 01 00 00 00 00 03 75 00 00
+			29 01 00 00 00 00 02 85 00	/* Partial HLPM & Scan Off */
+			29 01 00 00 00 00 03 F0 A5 A5	/* TEST KEY Disable */
+		];
+
+		/*
+		 *************************************************************************************************************************
+		 * Self Display Operation (SELF MASK)
+		 *************************************************************************************************************************
+		//ss_send_cmd(vdd, TX_LEVEL1_KEY_ENABLE);
+		//ss_send_cmd(vdd, TX_SELF_MASK_SET_PRE);
+		//ss_send_cmd(vdd, TX_SELF_MASK_IMAGE);
+		//ss_send_cmd(vdd, TX_SELF_MASK_SET_POST);
+		//ss_send_cmd(vdd, TX_LEVEL1_KEY_DISABLE);
+		 */
+#endif
+
+		samsung,self_mask_setting_pre_revA = [
+			39 01 00 00 00 00 02 75 10	/* MA_SEL(1), IC_SEL, VI_SEL, DC_SEL, AC_SEL */
+			39 01 00 00 00 00 02 7A 00
+			/* image data (4C,5C) ... */
+		];
+
+		samsung,self_mask_setting_post_revA = [
+			39 01 00 00 00 00 02 75 00	/* MA_SEL(0), IC_SEL, VI_SEL, DC_SEL, AC_SEL */
+		];
+
+		samsung,self_mask_on_revA = [
+			/* enable samsung ip locates at init seq */
+			39 01 00 00 00 00 0C 7A
+					21 00 00 01 2B 05 AC 06 D7 09
+					04
+		];
+
+		samsung,self_mask_on_factory = [
+			39 01 00 00 00 00 03 B0 00 19
+			39 01 00 00 00 00 08 C5 01 01 01 01 01 01 01
+			39 01 00 00 00 00 0C 7A
+					21 06 D8 08 03 08 04 09 2F 09
+					04
+		];
+
+		samsung,self_mask_off = [
+			39 01 00 00 00 00 02 7A 00	/* SM_MASK_EN(0)  */
+		];
+
+#if 0
+		/*
+		 *************************************************************************************************************************
+		 * Self Display Operation (SELF PARTIAL HLPM/SCAN)
+		 *************************************************************************************************************************
+		 */
+
+		samsung,self_partial_hlpm_scan_set = [
+			29 01 00 00 00 00 03 F0 5A 5A	/* TEST KEY Enable */
+			29 01 00 00 00 00 11 85
+					03 1B 0F 0F 00 00 00 00
+					00 00 00 00 00 00 00 00
+
+			29 01 00 00 00 00 03 F0 A5 A5	/* TEST KEY Disable */
+		];
+#endif
+		/*
+		 *************************************************************************************************************************
+		 * Self Display Operation (DEBUGGING FEATURE)
+		 *************************************************************************************************************************
+		 */
+
+		samsung,self_disp_debug_rx_cmds = [ 06 01 00 00 00 00 01 7F 05 00];	/* read 7F 1st ~ 33th */
+	};
+};

@@ -1,0 +1,19 @@
+<README>
+
+Place driver related dtsi files here like audio, lcd, usb, fingerprint, mst, camera, etc.
+General rule for the file naming is as follows:
+
+  <device name>_<model name>[_<hw rev>].dtsi
+
+  Example)
+    audio_wcd934x.dtsi, fingerprint_qbt2000.dtsi, display_S6E3HA9-AMB644WF01-WQHD_r00.dtsi
+
+  NOTE)
+    describe hw revision in file name only if the contents of dtsi file are specific to the hw revision.
+
+CAUTION
+=======
+  Please do NOT modify dtsi file in qcom directory directly.
+  Modifying/deleting properties or nodes should be done with dtsi files in samsung directory.
+  Deleting property may not be available in dtbo based dtsi file.
+  In this case, re-define the node in samsung dtsi file with different name and then use it.

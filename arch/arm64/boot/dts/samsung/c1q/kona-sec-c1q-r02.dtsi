@@ -1,0 +1,168 @@
+/* Copyright (c) 2020, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "kona-sec-c1q-pinctrl-r02.dtsi"
+#include "kona-sec-c1q-pm-common.dtsi"
+
+#include "../drivers/battery-data-c1q-common.dtsi"
+#include "../drivers/battery-rx-data-c1q-idt.dtsi"
+#include "../drivers/audio_canvas_common.dtsi"
+#include "../drivers/displayport_c2q_r00.dtsi"
+#include "../drivers/nfc_c2q_r00.dtsi"
+#include "../drivers/input_canvas_common.dtsi"
+#include "../drivers/input_c1q_r00.dtsi"
+#include "../drivers/kona-sec-c1q-display-r00.dtsi"
+#include "../drivers/kona-sec-canvasq-mst-r01.dtsi"
+#include "../drivers/eif_picasso_common.dtsi"
+#include "../drivers/eif_c2q_common.dtsi"
+#include "../drivers/camera_sensor_c1q_r02.dtsi"
+#include "../drivers/optics_c1q_r02.dtsi"
+#include "../drivers/abc_c1_common.dtsi"
+#include "../drivers/connector_detection_c1_common.dtsi"
+
+&apps_rsc {
+	/* Grip sensor */
+	rpmh-regulator-ldoa10 {
+		L10A: pm8150_l10: regulator-pm8150-l10 {
+			regulator-min-microvolt = <2900000>;
+			regulator-max-microvolt = <2900000>;
+			qcom,init-voltage = <2900000>;
+			regulator-always-on;
+		};
+	};
+};
+
+&soc {
+	bcmdhd_wlan {
+		qcom,iommu-dma = "disabled";
+		compatible = "android,bcmdhd_wlan";
+		wlan-en-gpio = <&tlmm 90 0>;
+		wlan-host-wake-gpio = <&tlmm 128 0>;
+		wlan-smmu-iova-address = <0xa0000000 0x10000000>;
+		pinctrl-name = "bcmdhd_wlan_en","bcmdhd_default";
+		pinctrl-0 = <&bcmdhd_wlan_en>;
+		pinctrl-1 = <&bcmdhd_default>;
+		status = "ok";
+	};
+
+	i2c@17 { /* SW I2C */
+		status = "ok";
+		cell-index = <17>;
+		compatible = "i2c-gpio";
+		gpios = <&tlmm 112 0 /* sda */
+			 &tlmm 113 0 /* scl */
+		>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&grip_i2c_active>;
+
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		sx9360-i2c@28 {
+			compatible = "sx9360";
+			reg = <0x28>;
+			status = "okay";
+			pinctrl-names = "default";
+			pinctrl-0 = <&grip_int_active>;
+			interrupt-parent = <&tlmm>;
+			interrupts = <111 0>;
+
+			sx9360,nirq-gpio = <&tlmm 111 0>;
+			sx9360,refresolution_reg = <0x0f>; /* same as resolution_reg */
+			sx9360,refagainfreq_reg = <0x36>; /* same as againfreq_reg */
+			sx9360,resolution_reg = <0x0f>; /* resolution : 1024 */
+			sx9360,againfreq_reg = <0x24>; /* freq : 125 kHz, again : +/-3.75 pF */
+			sx9360,refgainrawfilt_reg = <0x22>; /* same as gainrawfilt_reg */
+			sx9360,gainrawfilt_reg = <0x0A>; /* rawfilter : 1-1/4, gain : x1 */
+			sx9360,hyst_reg = <0x15>; /* hysteresis : +/-6 %, debouncer : 2 samples */
+			sx9360,proxthresh_reg = <0x1A>; /* threshhold : 338 */
+			sx9360,hallic_cert_detect = <1>;
+		};
+	};
+
+	i2c@22 {
+		mfc-hal-charger@7f {
+			compatible = "sec,mfc-hal-charger";
+			reg = <0x7f>;
+			status = "okay";
+
+			battery,wpc_det = <&pm8150l_gpios 1 GPIO_ACTIVE_HIGH>; /* WPC_DET */
+			battery,charger_name = "max77705-charger";
+		};
+
+		mfc-s2miw04-charger@3b {
+			reg = <0x6f>;
+		};
+	};
+
+	bt_driver: bt_driver{
+		compatible = "bcm,btdriver";  //bt_en
+		pinctrl-names = "default";
+		pinctrl-0 = <&bt_en_default>;
+		bcm,bt-reset-gpio = <&tlmm 76 GPIO_ACTIVE_HIGH>;
+		status = "ok";
+	};
+	bt_bluesleep: bt_bluesleep {
+		compatible = "bcm,bluesleep";
+		bcm,bt-wake-gpio = <&tlmm 124 0>;
+		bcm,bt-host-wake-gpio = <&tlmm 27 0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&bt_wake_default &bt_hostwake_default>;
+		status = "ok";
+	};
+};
+
+&bluetooth {
+	status = "disabled";
+};
+
+&qupv3_se6_4uart {
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&qupv3_se6_ctsrx_active>, <&qupv3_se6_rts_active>,
+						<&qupv3_se6_tx_active>;
+	pinctrl-1 = <&qupv3_se6_ctsrx_sleep>, <&qupv3_se6_rts_sleep>,
+						<&qupv3_se6_tx_sleep>;
+	interrupts-extended = <&intc GIC_SPI 607 IRQ_TYPE_LEVEL_HIGH>;
+	status = "ok";
+};
+
+&ssc_sensors {
+	qcom,ssc_hw_rev = <2>;
+};
+
+&sdhc_2 {
+	status = "disabled";
+};
+
+&pcie0 {
+	wake-gpio = <>;
+	pinctrl-0 = <&pcie0_clkreq_default
+			&pcie0_perst_default>;
+	pinctrl-1 = <&pcie0_clkreq_sleep
+			&pcie0_perst_default>;
+};
+
+&pcie2 {
+	qcom,core-preset = <0x55555555>;
+};
+
+&mdm0 {
+	pinctrl-names = "default", "mdm_active", "mdm_suspend";
+	pinctrl-0 = <&ap2mdm_errfatal2_default>;
+	pinctrl-1 = <&ap2mdm_active &mdm2ap_active>;
+	pinctrl-2 = <&ap2mdm_sleep &mdm2ap_sleep>;
+	qcom,ap2mdm-errfatal2-gpio = <&pm8150l_gpios 7 0>;
+};
+
+&ufshc_mem {
+	hpb-enable = <1>;
+};

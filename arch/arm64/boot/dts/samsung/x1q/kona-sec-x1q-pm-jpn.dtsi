@@ -1,0 +1,76 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&soc {
+    sec_thermistor@3 {
+		compatible = "samsung,sec-thermistor";
+		status = "okay";
+		thermistor_name = "sec-cf-thermistor";
+		id = <3>;
+
+		io-channels = <&pm8150l_vadc ADC_GPIO4_PU2>;
+		io-channel-names = "cf_therm";
+		io-channel-ranges;
+		use_iio_processed;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&gpio10_adc_default>;
+
+		adc_array = <107309 111980 116652 121323 125995 130666 136453 142240 148028 153815
+				159602 166583 173564 180544 187525 194506 201811 209117 216422 223728
+				231033 240324 249615 258905 268196 277487 287556 297625 307695 317764
+				327833 339836 351838 363841 375843 387846 401847 415848 429848 443849
+				457850 473447 489044 504640 520237 535834 554208 572582 590955 609329
+				627703 646258 664814 683369 701925 720480 740839 761198 781557 801916
+				822275 844645 867015 889386 911756 934126 949982 965839 981695 997552
+				1013408 1036816 1060224 1083633 1107041 1130449 1151755 1173061 1194368 1215674
+				1236980 1256353 1275726 1295099 1314472 1333845 1348378 1362911 1377443 1391976
+				1406509
+				1425700 1444891 1464083 1483274 1502465 1516388 1530311 1544234 1558157 1572080
+				1585640 1599199 1612759 1626318 1639878 1650635 1661392 1672149 1682906 1693663>;
+
+		temp_array = <900 890 880 870 860 850 840 830 820 810
+				800 790 780 770 760 750 740 730 720 710
+				700 690 680 670 660 650 640 630 620 610
+				600 590 580 570 560 550 540 530 520 510
+				500 490 480 470 460 450 440 430 420 410
+				400 390 380 370 360 350 340 330 320 310
+				300 290 280 270 260 250 240 230 220 210
+				200 190 180 170 160 150 140 130 120 110
+				100 90 80 70 60 50 40 30 20 10
+				0
+				(-10) (-20) (-30) (-40) (-50) (-60) (-70) (-80) (-90) (-100)
+				(-110)(-120)(-130)(-140)(-150)(-160)(-170)(-180)(-190) (-200)>;
+	};
+};
+
+&pm8150l_vadc {
+	cf_therm {
+		reg = <ADC_GPIO4_PU2>;
+		label = "cf_therm";
+		qcom,ratiometric;
+		qcom,hw-settle-time = <200>;
+		qcom,pre-scaling = <1 1>;
+		qcom,decimation = <840>;
+		qcom,avg-samples = <8>;
+	};
+};
+
+&pm8150l_gpios {
+	gpio10_adc {
+		gpio10_adc_default: gpio10_adc_default {
+			pins = "gpio10";
+			function = "normal";
+			bias-high-impedance;
+		};
+	};
+};

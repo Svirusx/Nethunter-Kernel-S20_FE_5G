@@ -1,0 +1,25 @@
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&soc {
+	battery {
+		battery,battery_full_capacity = <FULL_CAPACITY>;
+	};
+	max77705-fuelgauge {
+		/* for 3200mAh battery */
+		fuelgauge,qrtable20 = <0x1780>;
+		fuelgauge,qrtable30 = <0x1600>;
+		fuelgauge,capacity = <0x0C51>; /*capacity = fullcapnom = DesignCap*/
+		fuelgauge,fg_reset_wa_data = <0x0C51 0x3200 0x0314 0x004A 0x191B>; /* fullcapnom(=capacity), dPacc, dQacc,  rcomp0, tempco */
+		fuelgauge,ttf_capacity = <2700>;
+	};
+};

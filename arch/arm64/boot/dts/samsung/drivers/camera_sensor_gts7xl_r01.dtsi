@@ -1,0 +1,29 @@
+#include "camera_sensor_gts7xl_common.dtsi"
+
+&sensor_res_mgr {
+	shared-gpios = <1137 1139>;
+};
+
+&sensor_rear_wide {
+	gpios = <&tlmm 94 0>,
+	<&tlmm 73 0>,
+	<&tlmm 39 0>,
+	<&tlmm 37 0>;
+};
+
+&sensor_ultra_wide {
+        gpios = <&tlmm 95 0>,
+	<&tlmm 78 0>,
+	<&tlmm 42 0>,
+	<&tlmm 37 0>;
+};
+
+&actuator0 {
+		gpios = <&tlmm 39 0>, /* AF */
+			<&tlmm 37 0>; /* CAM_IO_LDO_EN */
+};
+
+&eeprom0 {
+		gpios = <&tlmm 39 0>, /* AF */
+			<&tlmm 37 0>; /* CAM_IO_LDO_EN */
+};

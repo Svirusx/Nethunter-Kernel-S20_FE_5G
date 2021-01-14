@@ -1,0 +1,127 @@
+/* Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&soc {
+	argos {
+		compatible = "samsung,argos";
+		#address-cells = <1>;
+		/* The device number should be assigned for each device, e.g. "boot_device@1" and "boot_device@2".
+		 * Duplicated number is not allowed. Please refer the below example.
+		 */
+		/* Table Format should be
+		 * <Throughput(Mbps) ARM_min ARM_max Little_min Little_max BIMC1 BIMC1 Task IRQ SCHED_boost>
+		 * ARM_min : Big Core's minimum frequency lock. 0 means not set,
+		 * ARM_max : Big Core's maximum frequency lock. 0 means not set,
+		 * Little_min : Little Core's minimum frequency lock. 0 means not set,
+		 * Little_max : Little Core's maximum frequency lock. 0 means not set,
+		 * BIMC1 : Memory frequency lock. 0 means not set,(not used now)
+		 * BIMC2 : Memory frequency lock. 0 means not set, (not used now)
+		 * Task : 1 - Set task affinity lock.
+		 *	0 - Not set or unlock,
+		 *		Task affinity should be predefined driver's code.
+		 * IRQ : 1 - Set irq affinity lock.
+		 *       0 - Not set or unlock,
+		 *		Task affinity should be predefined driver's code.
+		 * SCHED_boost : 1 - Increase sched boosting count (not used now)
+		 *             0 - Decrease sched boosting count
+		 */
+		/*
+		 *boot_device@1 {
+		 *		net_boost,label="WIFI";
+		 *		net_boost,node="wlan0";
+		 *		net_boost,table_size = <3>;
+		 *		net_boost,table= <
+		 *			5  2016000 0 2016000 0 0 0 0 0 0
+		 *			10  2016000 0 2016000 0 0 0 0 0 0
+		 *			20  2016000 0 2016000 0 0 0 0 0 0
+		 *			30  2016000 0 2016000 0 0 0 0 0 0
+		 *			>;
+		 * };
+		 */
+		boot_device@1 {
+			net_boost,label="WIFI TX";
+			net_boost,node="wlan0";
+			net_boost,table_size = <5>;
+			net_boost,table= <
+				20 1420800 0 1420800 0 0 0 0 0 0
+				60 1708800 0 1708800 0 0 0 0 0 0
+				100 1958400 0 1958400 0 0 0 0 0 0
+				150 2246400 0 2246400 0 0 0 1 1 1
+				300 2419200 0 2419200 0 0 0 1 1 1
+				>;
+		};
+		boot_device@2 {
+			net_boost,label="WIFI RX";
+			net_boost,node="wlan0";
+			net_boost,table_size = <4>;
+			net_boost,table= <
+				60 1171200 0 1171200 0 0 0 0 0 0
+				100 1248000 0 1248000 0 0 0 0 0 0
+				200 1766400 0 1766400 0 0 0 1 1 1
+				300 2054400 0 2054400 0 0 0 1 1 1
+				>;
+		};
+		boot_device@3 {
+			net_boost,label="SWLAN";
+			net_boost,node="swlan0";
+			net_boost,table_size = <4>;
+			net_boost,table= <
+				2 1612800 0 1612800 0 0 0 0 0 0
+				5 1843200 0 1843200 0 0 0 0 0 0
+				20 2092800 0 2092800 0 0 0 1 1 1
+				50 2246400 0 2246400 0 0 0 1 1 1
+				>;
+		};
+		boot_device@4 {
+			net_boost,label="UFS";
+			net_boost,node="";
+			net_boost,sysnode="/sys/class/scsi_host/host0/transferred_cnt";
+			net_boost,table_size = <1>;
+			net_boost,table= <
+				800 0 0 806400 0 0 0 0 0 0
+				>;
+		};
+		boot_device@5 {
+			net_boost,label="P2P";
+			net_boost,node="p2p-wlan0-0";
+			net_boost,table_size = <3>;
+			net_boost,table= <
+				30 1420800 0 1420800 0 0 0 0 0 0
+				90 1958400 0 1958400 0 0 0 0 0 0
+				300 2208000 0 2208000 0 0 0 1 1 1
+				>;
+		};
+		boot_device@6 {
+			net_boost,label="NAN";
+			net_boost,node="aware_data0";
+			net_boost,table_size = <3>;
+			net_boost,table= <
+				30 1420800 0 1420800 0 0 0 0 0 0
+				90 1958400 0 1958400 0 0 0 0 0 0
+				300 2208000 0 2208000 0 0 0 1 1 1
+				>;
+		};
+		boot_device@7 {
+			net_boost,label="IPC";
+			net_boost,node="rmnet_mhi0";
+			net_boost,table_size = <6>;
+			net_boost,table= <
+				10 0 0 0 0 0 0 0 0 0
+				30 1420800 0 1420800 0 0 0 0 0 0
+				60 1420800 0 1420800 0 0 0 0 0 0
+				100 1958400 0 1958400 0 0 0 0 0 0
+				200 1958400 0 1958400 0 0 0 1 1 1
+				300 2208000 0 2208000 0 0 0 1 1 1
+				>;
+		};
+	};
+};

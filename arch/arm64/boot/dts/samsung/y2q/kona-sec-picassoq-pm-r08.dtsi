@@ -1,0 +1,44 @@
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include <dt-bindings/regulator/qcom,rpmh-regulator-levels.h>
+
+&s2mpb03_i2c_sda_default {
+	mux {
+		pins = "gpio142";
+		function = "gpio";
+	};
+	s2mpb03_i2c_sda {
+		pins = "gpio142";
+		drive-strength = <2>;
+		bias-disable;
+	};
+};
+
+&s2mpb03_i2c_scl_default {
+	mux {
+		pins = "gpio143";
+		function = "gpio";
+	};
+	s2mpb03_i2c_scl {
+		pins = "gpio143";
+		drive-strength = <2>;
+		bias-disable;
+	};
+};
+
+/* S2MPB03 Camera PMIC */
+&i2c2 {
+	gpios = <&tlmm 142 0 /* sda */
+		&tlmm 143 0 /* scl */
+	>;
+};

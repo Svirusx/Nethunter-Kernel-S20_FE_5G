@@ -1,0 +1,133 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&i2c21 {
+	/delete-node/ s2dos05@61;
+	/delete-node/ s2dos05@60;
+};
+
+&soc {
+	i2c@21 {
+		/* Main Display PMIC(S2DOS06), Slave Address:C0 */
+		s2dos06_60: s2dos06@60 {
+			compatible = "samsung,s2dos06pmic";
+			reg = <0x60>;
+			sec_disp_pmic_name = "disp_pmic";
+			adc_mode = <2>; /* 0 : disable, 1 : current meter, 2 : power meter */
+			adc_sync_mode = <2>; /* 1 : sync mode, 2 : async mode */
+
+			pinctrl-names = "default";
+			pinctrl-0 = <&s2dos06_irq_default>;
+			s2dos06,s2dos06_int = <&tlmm 93 0>;
+
+			regulators {
+				s2dos06_l1: s2dos06-ldo1 {
+					regulator-name = "s2dos06-ldo1";
+					regulator-min-microvolt = <1500000>;
+					regulator-max-microvolt = <2000000>;
+					regulator-active-discharge = <1>;
+				};
+
+				s2dos06_l2: s2dos06-ldo2 {
+					regulator-name = "s2dos06-ldo2";
+					regulator-min-microvolt = <1500000>;
+					regulator-max-microvolt = <2000000>;
+					regulator-active-discharge = <1>;
+				};
+
+				s2dos06_l3: s2dos06-ldo3 {
+					regulator-name = "s2dos06-ldo3";
+					regulator-min-microvolt = <2700000>;
+					regulator-max-microvolt = <3775000>;
+					regulator-active-discharge = <1>;
+				};
+
+				s2dos06_l4: s2dos06-ldo4 {
+					regulator-name = "s2dos06-ldo4";
+					regulator-min-microvolt = <2700000>;
+					regulator-max-microvolt = <3775000>;
+					regulator-active-discharge = <1>;
+				};
+
+				s2dos06_buck1: s2dos06-buck1 {
+					regulator-name = "s2dos06-buck1";
+					regulator-min-microvolt = <850000>;
+					regulator-max-microvolt = <2100000>;
+					regulator-active-discharge = <1>;
+				};
+
+				s2dos06_elvss: s2dos06-elvss {
+					regulator-name = "s2dos06-elvss";
+				};
+			};
+		};
+
+		/* Sub Display PMIC(S2DOS05 High-Z), Slave Address:C2 */
+		s2dos05_61: s2dos05@61 {
+			compatible = "samsung,s2dos05pmic";
+			reg = <0x61>;
+			sec_disp_pmic_name = "disp_pmic1";
+			adc_mode = <2>; /* 0 : disable, 1 : current meter, 2 : power meter */
+			adc_sync_mode = <2>; /* 1 : sync mode, 2 : async mode */
+
+			pinctrl-names = "default";
+			pinctrl-0 = <&s2dos05_irq_default>;
+			s2dos05,s2dos05_int = <&tlmm 39 0>;
+
+			regulators {
+				s2dos05_sub_l1: s2dos05-ldo1 {
+					regulator-name = "s2dos05_sub-ldo1";
+					regulator-min-microvolt = <1500000>;
+					regulator-max-microvolt = <2000000>;
+					regulator-active-discharge = <1>;
+				};
+
+				s2dos05_sub_l2: s2dos05-ldo2 {
+					regulator-name = "s2dos05_sub-ldo2";
+					regulator-min-microvolt = <1500000>;
+					regulator-max-microvolt = <2000000>;
+					regulator-active-discharge = <1>;
+				};
+
+				s2dos05_sub_l3: s2dos05-ldo3 {
+					regulator-name = "s2dos05_sub-ldo3";
+					regulator-min-microvolt = <2700000>;
+					regulator-max-microvolt = <3775000>;
+					regulator-active-discharge = <1>;
+				};
+
+				s2dos05_sub_l4: s2dos05-ldo4 {
+					regulator-name = "s2dos05_sub-ldo4";
+					regulator-min-microvolt = <2700000>;
+					regulator-max-microvolt = <3775000>;
+					regulator-active-discharge = <1>;
+				};
+
+				s2dos05_sub_buck1: s2dos05-buck1 {
+					regulator-name = "s2dos05_sub_buck1";
+					regulator-min-microvolt = <850000>;
+					regulator-max-microvolt = <2100000>;
+					regulator-active-discharge = <1>;
+				};
+
+				s2dos05_sub_elvss: s2dos05-elvss {
+					regulator-name = "s2dos05_sub-elvss";
+				};
+			};
+		};
+	};
+};
+
+&s2mpb02_l15 {
+	regulator-min-microvolt = <3300000>;
+	regulator-max-microvolt = <3300000>;
+};

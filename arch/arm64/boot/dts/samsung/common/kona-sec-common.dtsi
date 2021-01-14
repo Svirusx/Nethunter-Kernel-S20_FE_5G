@@ -1,0 +1,108 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include <dt-bindings/clock/qcom,gcc-kona.h>
+#include <dt-bindings/clock/qcom,camcc-kona.h>
+#include <dt-bindings/clock/qcom,rpmh.h>
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+
+#include "../../vendor/qcom/kona-mtp.dtsi"
+
+#include "kona-sec-memory-common.dtsi"
+#include "kona-sec-uart-common.dtsi"
+#include "kona-sec-pcie-common.dtsi"
+#include "kona-sec-dcc-common.dtsi"
+#include "kona-sec-pm-common.dtsi"
+#include "kona-sec-pm8150b-common.dtsi"
+#include "kona-sec-sensor-common.dtsi"
+#include "kona-sec-booster-common.dtsi"
+#include "kona-sec-argos-common.dtsi"
+
+&soc {
+	sec_smem@0 {
+		compatible = "samsung,sec-smem";
+		status = "okay";
+	};
+
+	samsung,sec_misc {
+		qfprom_jtag,reg = <0x00780198>;
+		msm_power_dou,reg = <0x007801A4>;
+	};
+
+	samsung,sec_slub_debug {
+		free_track,black_list-names = "kmalloc-128";
+		free_track,black_list-skips = <2>;
+	};
+
+	samsung,sec_hdm {
+		memory-region = <&hdm_region>;
+	};
+
+	samsung,ss_plog {
+		compatible = "samsung,ss_plog";
+		memory-region = <&ss_plog_region>;
+	};
+
+	samsung,subsystem-sleep-debug {
+		compatible = "samsung,subsystem-sleep-debug";
+		subsystem-debug,adsp-error-max = <10000>;
+		subsystem-debug,adsp-fatal-max = <10000>;
+		subsystem-debug,adsp-ssr-enable;
+/*
+ *		subsystem-debug,cdsp-error-max = <10>;
+ *		subsystem-debug,cdsp-fatal-max = <5>;
+ *		subsystem-debug,cdsp-ssr-disable;
+ */
+		subsystem-debug,slpi-error-max = <1000>;
+		subsystem-debug,slpi-fatal-max = <1000>;
+		subsystem-debug,slpi-ssr-disable;
+	};
+};
+
+&shared_meta {
+	status = "okay";
+	parts = "vbmeta,boot,system,vendor,product,odm,prism,optics,vbmeta_samsung,recovery,dtbo,abl,xbl,tz,hyp";
+};
+
+&android_q_fstab {
+	status = "disabled";
+};	
+
+/* Display: CONFIG_DISPLAY_SAMSUNG */
+&disp_rdump_memory {
+	/* default upload fb size: max 20 MB (WQXGA 2800x1752) */
+	reg = <0x0 0x9c000000 0x0 0x01388000>;
+};
+
+&mdm0 {
+	pinctrl-names = "mdm_active", "mdm_suspend";
+	pinctrl-0 = <&ap2mdm_active &mdm2ap_active>;
+	pinctrl-1 = <&ap2mdm_sleep &mdm2ap_sleep>;
+	qcom,ap2mdm-soft-reset-gpio ="";
+};
+
+&wil6210 {
+    status = "disabled";
+};
+
+&qupv3_se13_i2c {
+	status = "disabled";
+};
+
+&sdhc_2 {
+	qcom,clk-rates = <300000 400000 20000000 25000000
+		50000000 100000000 201500000>;
+};
+
+&ufshc_mem {
+	hpb-enable = <0>;
+};

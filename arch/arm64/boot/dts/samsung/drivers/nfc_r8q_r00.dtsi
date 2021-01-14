@@ -1,0 +1,122 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&aliases {
+	/*spi0 = &qupv3_se16_spi;*/
+	spi0 = "/soc/spi@888000";
+};
+
+&tlmm {
+	nfc_qupv3_se15_i2c_sleep: nfc_qupv3_se15_i2c_sleep {
+	      mux {
+			pins = "gpio44", "gpio45";
+			function = "gpio";
+	      };
+
+	      config {
+			pins = "gpio44", "gpio45";
+			drive-strength = <2>;
+			bias-disable;
+	      };
+	};
+
+	nfc_clk_req_gpio: nfc_clk_req_gpio {
+		mux {
+			pins = "gpio7";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio7";
+			drive-strength = <2>;
+			bias-pull-down;
+			input-enable;
+		};
+	};
+
+	nfc_irq_gpio: nfc_irq_gpio {
+		mux {
+			pins = "gpio31";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio31";
+			drive-strength = <2>;
+			bias-pull-down;
+			input-enable;
+		};
+	};
+
+	nfc_ven_gpio: nfc_ven_gpio {
+		mux {
+			pins = "gpio8";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio8";
+			drive-strength = <2>;
+			bias-disable;
+			output-high;
+		};
+	};
+
+	nfc_firm_gpio: nfc_firm_gpio {
+		mux {
+			pins = "gpio9";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio9";
+			drive-strength = <2>;
+			bias-disable;
+			output-low;
+		};
+	};
+};
+
+/* gpio 48~51 are used for ese spi */
+&qupv3_se16_spi {
+	status = "okay";
+/*	pinctrl-1 = <&qupv3_se6_spi_active>; */
+	ese_spi@0 {
+		compatible = "ese_p3";
+		reg = <0>;
+		spi-max-frequency = <6500000>;
+		/* p3-vdd-1p8= "VDD_ESE_SEN4"; */
+		p3-vdd-supply = <&pm8150_l15>;
+		/* ese_p3,cs-gpio = <&gpp7 3 0>; */
+	};
+};
+
+/* gpio44 and gpio45 are used for nfc i2c */
+&qupv3_se15_i2c {
+	status = "okay";
+	pinctrl-1 = <&nfc_qupv3_se15_i2c_sleep>;
+	qcom,clk-freq-out = <400000>;
+	sec-nfc@27 {
+		compatible = "sec-nfc";
+		reg = <0x27>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <31 0>;
+
+		sec-nfc,ven-gpio = <&tlmm 8 0>;
+		sec-nfc,irq-gpio = <&tlmm 31 0>;
+		sec-nfc,firm-gpio = <&tlmm 9 0>;
+		sec-nfc,clk_req-gpio = <&tlmm 7 0>;
+		sec-nfc,nfc_pvdd-supply = <&pm8150a_l1>;
+		sec-nfc,ldo_control;
+		sec-nfc,clk_req_wake;
+		sec-nfc,bootloader_ver = <6>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&nfc_clk_req_gpio &nfc_irq_gpio &nfc_ven_gpio &nfc_firm_gpio>;
+	};
+};

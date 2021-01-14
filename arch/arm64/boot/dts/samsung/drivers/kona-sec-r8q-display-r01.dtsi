@@ -1,0 +1,59 @@
+/* Copyright (c) 2016-2020, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "../../../../../../techpack/display/msm/samsung/EA8079B_AMS646YB01/dsi_panel_EA8079B_AMS646YB01_fhd_octa_cmd.dtsi"
+
+#define DEFAULT_FIXED_VAL	0
+
+&soc {
+	ss_dsi_panel_EA8079B_AMS646YB01_FHD_display: qcom,dsi-display@2 {
+		label = "ss_dsi_panel_EA8079B_AMS646YB01_FHD";
+	};
+};
+
+&sde_dsi {
+	qcom,dsi-default-panel = <&ss_dsi_panel_EA8079B_AMS646YB01_FHD>;
+};
+
+&ss_dsi_panel_EA8079B_AMS646YB01_FHD {
+	qcom,display-type = "primary";
+	qcom,dsi-display-active;
+
+	qcom,dsi-ctrl-num = <0>;
+	qcom,dsi-phy-num = <0>;
+	qcom,dsi-select-clocks = "mux_byte_clk0", "mux_pixel_clk0",
+				"src_byte_clk0", "src_pixel_clk0",
+				"shadow_byte_clk0", "shadow_pixel_clk0";
+
+	qcom,platform-reset-gpio = <&tlmm 82 0>;
+	qcom,platform-te-gpio = <&tlmm 66 0>;
+
+	samsung,ub-con-det = <&tlmm 46 0>; // UB_CON_DET
+	samsung,support-optical-fingerprint;
+
+	qcom,panel-supply-entries {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		/* use fixed regulator instead of samsung,panel-extra-power-gpio or qcom,platform-enable-gpio. */
+		qcom,panel-supply-entry@0 {
+			reg = <0>;
+			qcom,supply-name = "vdd3"; // VDD_DDI_3P0 & VDD_LCD_1P8
+			qcom,supply-min-voltage = <DEFAULT_FIXED_VAL>;
+			qcom,supply-max-voltage = <DEFAULT_FIXED_VAL>;
+			qcom,supply-enable-load = <DEFAULT_FIXED_VAL>;
+			qcom,supply-disable-load = <DEFAULT_FIXED_VAL>;
+			qcom,supply-pre-off-sleep = <11>;
+			qcom,supply-post-on-sleep = <1>;
+		};
+	};
+};

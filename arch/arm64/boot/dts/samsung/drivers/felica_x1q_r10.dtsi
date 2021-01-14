@@ -1,0 +1,53 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+&tlmm {
+/* qupv3_se16_spi is used for eSE module on other models.
+ * It should be set to NC(in/pd/low) on jpn model.
+ */
+	qupv3_se16_spi_nc: qupv3_se16_spi_nc {
+		mux {
+			pins = "gpio48", "gpio49", "gpio50", "gpio51";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio48", "gpio49", "gpio50", "gpio51";
+			drive-strength = <6>;
+			bias-pull-down; /* pull down */
+			input-enable;
+		};
+	};
+};
+
+/* eSE is not supported on jpn model. so, disabled spi bus driver */
+&qupv3_se16_spi {
+	status = "disabled";
+	/delete-node/ ese_spi@0;
+};
+
+&qupv3_se15_i2c {
+	status = "ok";
+	pinctrl-1 = <&nfc_qupv3_se15_i2c_sleep>;
+	/delete-node/ pn547@2B;
+	sec-nfc@27 {
+		compatible = "sec-nfc";
+		reg = <0x27>;
+		interrupt-parent = <&tlmm>;
+		interrupts= <31 0>;
+		sec-nfc,irq-gpio = <&tlmm 31 0>;
+		sec-nfc,ven-gpio = <&tlmm 8 0>;
+		sec-nfc,firm-gpio = <&tlmm 9 0>;
+		sec-nfc,nfc_pvdd-supply = <&pm8150a_l1>;
+		sec-nfc,ldo_control;
+		pinctrl-names = "default";
+		pinctrl-0 = <&qupv3_se16_spi_nc>;
+	};
+};

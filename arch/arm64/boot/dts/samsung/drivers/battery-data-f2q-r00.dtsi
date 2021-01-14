@@ -1,0 +1,39 @@
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "battery-data-f2q-common.dtsi"
+
+&soc {
+	sec-dual-battery {
+		battery,max_main_charging_current = <2000>;
+		battery,max_sub_charging_current = <2000>;
+	};
+
+	battery {
+		battery,temp_check_type = <3>;
+		battery,usb_temp_check_type = <3>;
+		battery,chg_temp_check_type = <3>;
+		battery,sub_bat_temp_check_type = <3>;
+		battery,dchg_temp_check_type = <3>;
+
+		battery,chg_float_voltage = <4350>;
+		battery,cisd_max_voltage_thr = <5000>; /* batttery ovp dettection voltage */
+
+		battery,age_data = <0 4350 4280 4250 93
+				300 4350 4260 4230 92
+				400 4340 4240 4210 91
+				700 4320 4220 4190 90
+				1000 4270 4170 4140 89>;
+
+		battery,dc_step_chg_val_vfloat = <4350 4350 4350>; /* <25w 3step> STEP_CHARGING_CONDITION_FLOAT_VOLTAGE */
+	};
+};

@@ -1,0 +1,129 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&pm8150_gpios {
+	/delete-node/ motor_int_default;
+	/delete-node/ fm_motor_sleep_clk_out_default;
+};
+
+&qupv3_se10_i2c {
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&qupv3_se10_i2c_active>;
+	pinctrl-1 = <&qupv3_se10_i2c_sleep>;
+
+	cs40l25a@40 {
+		status = "disabled";
+	};
+};
+
+&soc {
+	samsung,vibrator {
+		compatible = "samsung_vib";
+		pinctrl-names = "tlmm_motor_active","tlmm_motor_suspend";
+		pinctrl-0 = <&motor_pwm_active>;
+		pinctrl-1 = <&motor_pwm_suspend &vib_power_default>;
+		samsung,vib_pwm = <&tlmm 137 0>;
+		samsung,vib_power = <&tlmm 131 0>;
+		samsung,gp_clk = <0x00165000>;	// Address of GCC_GP2 clock
+		samsung,chip_model = <4>;	// using MD15 haptic driver
+
+		samsung,support_multi_freq = <1>;
+		samsung,freq_0 = <2 104>;	// m n
+		samsung,freq_low = <2 156>;
+		samsung,freq_mid = <2 125>;
+		samsung,freq_high = <3 140>;
+		samsung,freq_alert = <2 119>;
+		samsung,strength_od = <94>;
+		samsung,strength_default = <50>;
+		samsung,strength_high_temp = <28>;
+		samsung,high_temperature = <550>;
+		samsung,vib_type = "LINEAR_1040";	// MD15(PWM)+1040
+
+		status = "ok";
+
+	};
+};
+
+&tlmm {
+	/delete-node/ qupv3_se10_motor_i2c_pins;
+	qupv3_se10_i2c_pins: qupv3_se10_i2c_pins {
+		qupv3_se10_i2c_active: qupv3_se10_i2c_active {
+			mux {
+				pins = "gpio129", "gpio130";
+				function = "qup10";
+			};
+
+			config {
+				pins = "gpio129", "gpio130";
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+
+		qupv3_se10_i2c_sleep: qupv3_se10_i2c_sleep {
+			mux {
+				pins = "gpio129", "gpio130";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio129", "gpio130";
+				drive-strength = <2>;
+				bias-no-pull;
+			};
+		};
+	};
+
+	/delete-node/ motor_reset_default;
+
+	vib_power_default: vib_power_default {
+		mux {
+			pins = "gpio131";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio131";
+			drive-strength = <2>;
+			output-low;
+			bias-disable;
+		};
+	};
+
+	/* add pinctrl for motor  */
+	tlmm_motor_pwm {
+		motor_pwm_active: motor_pwm_active {
+			mux {
+				pins = "gpio137";
+				function = "gcc_gp2";
+			};
+			config {
+				pins = "gpio137";
+				drive-strength = <2>;   /* 16 mA */
+				bias-disable;
+				output-high;
+			};
+		};
+		motor_pwm_suspend: motor_pwm_suspend {
+			mux {
+				pins = "gpio137";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio137";
+				drive-strength = <2>;   /* 16 mA */
+				bias-disable;
+				output-low;
+			};
+		};
+	};
+
+};

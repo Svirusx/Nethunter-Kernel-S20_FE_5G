@@ -1,0 +1,55 @@
+/* Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#ifndef _SS_X1Q_DISPLAY_R01_DTSI_
+#define _SS_X1Q_DISPLAY_R01_DTSI_
+
+&tlmm {
+	pmx_sde_ub_det {
+		sde_ub_det_active: sde_ub_det_active {
+			mux {
+				pins = "gpio46";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio46";
+				drive-strength = <2>;   /* 2 mA */
+				bias-disable = <0>;   /* no pull */
+			};
+		};
+
+		sde_ub_det_suspend: sde_ub_det_suspend {
+			mux {
+				pins = "gpio46";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio46";
+				drive-strength = <2>;   /* 2 mA */
+				bias-disable = <0>;   /* no pull */
+			};
+		};
+	};
+};
+
+&ss_dsi_panel_S6E3HAB_AMB623TS01_WQHD {
+	samsung,ub-con-det = <&tlmm 46 0>;
+};
+
+&sde_dsi {
+	pinctrl-0 = <&sde_dsi_active &sde_te_active &sde_ub_det_active &sde_fg_err_default>;
+	pinctrl-1 = <&sde_dsi_suspend &sde_te_suspend &sde_ub_det_suspend &sde_fg_err_default>;
+};
+
+#endif

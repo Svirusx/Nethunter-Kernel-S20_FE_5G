@@ -1,0 +1,68 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&tlmm {
+	detect_conn {
+		detect_conn_setting: detect_conn_setting {
+			config {
+				pins = "gpio81";
+				drive-strength = <2>;
+				bias-disable; /* No PULL */
+				input-enable;
+			};
+		};
+	};
+};
+
+&tlmm {
+	wakeup-disabled-gpios = <
+		4	/* I2C : PM3003A_SDA_1P8 */
+		11	/* NC : NC */
+		14	/* NC : NC */
+		23	/* SPI : BTP_SPI_CS_N */
+		24	/* NC : NC */
+		27	/* NC : NC */
+		28	/* I2C : DIRECT_IF_PMIC_SDA_1P8 */
+		39	/* NC : NC */
+		40	/* I2C : AP_MCU_SDA_1P8 */
+		45	/* I2C : NFC_FLICKER_SCL_1P8 */
+		51	/* SPI : ESE_SPI_CS_N */
+		55	/* NC : NC */
+		59	/* NC : NC */
+		63	/* I2C : DISP_SCL_1P8 */
+		64	/* NC : NC */
+		83	/* NC : NC */
+		100	/* NC : NC */
+		103	/* I2C : VT10M_TELE_SDA_1P8 */
+		104	/* I2C : VT10M_TELE_SCL_1P8 */
+		108	/* I2C : CAM_AF_EEP_SCL_1P8 */
+		112	/* I2C : GRIP_SDA_1P8 */
+		113	/* I2C : GRIP_SCL_1P8 */
+		121	/* SPI : POC_SPI_CLK */
+		122	/* SPI : POC_SPI_CS_N */
+		128	/* NC : NC */
+		129	/* I2C : MOTOR_SDA_1P8 */
+		132	/* NC : (AP_USB_BOOT) NC */
+		136	/* PWM : FLASH_LED_TORCH_PWM */
+		138	/* I2S : AMP_I2S_BCLK */
+		142	/* I2C : SUB_PMIC2_TOFBB_SDA_1P8 */
+		143	/* I2C : SUB_PMIC2_TOFBB_SCL_1P8 */
+		160	/* I2C : 6AXIS_I3C_SDA_1P8 */
+		162	/* I2C : MAGNETIC_SDA_1P8 */
+		164	/* SPI : COPR_MISO */
+		166	/* SPI : COPR_SCLK */
+		167	/* SPI : COPR_SS */
+		175	/* NC : NC */
+		177	/* NC : NC */
+		179	/* NC : NC */
+	>;
+};

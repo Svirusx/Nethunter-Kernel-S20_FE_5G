@@ -1,0 +1,21 @@
+#include "battery-data-y2q-r04.dtsi"
+
+&soc {
+	i2c@22 {
+		mfc-charger@3b {
+			battery,wpc_en = <&tlmm 26 0>; /* WPC_EN */
+			battery,mst_pwr_en = <&tlmm 14 0>; /* MST_PWR_EN */
+		};
+	};
+
+	battery {
+		battery,temp_check_type = <3>; /* SEC_BATTERY_TEMP_CHECK_FAKE */
+		battery,usb_temp_check_type = <3>;
+		battery,chg_temp_check_type = <3>;
+		battery,wpc_temp_check_type = <3>;
+		battery,dchg_temp_check_type = <3>;
+
+		battery,wpc_en = <&tlmm 26 0>; /* WPC_EN */
+		battery,mst_pwr_en = <&tlmm 14 0>; /* MST_PWR_EN */
+	};
+};

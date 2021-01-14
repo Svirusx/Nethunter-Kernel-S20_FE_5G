@@ -1,0 +1,102 @@
+#include "kona-sec-c2q-camera-sensor-pinctrl-r00.dtsi"
+
+&mcu_active {
+	mux {
+		pins = "gpio132","gpio118","gpio14", "gpio144";
+	};
+
+	config {
+		pins = "gpio132","gpio118","gpio14", "gpio144";
+	};
+};
+
+&mcu_suspend {
+	mux {
+		pins = "gpio132","gpio118","gpio14", "gpio144";
+	};
+
+	config {
+		pins = "gpio132","gpio118","gpio14", "gpio144";
+	};
+};
+
+&cam_sensor_active_tof_int {
+	mux {
+		pins = "gpio24";
+	};
+
+	config {
+		pins = "gpio24";
+	};
+};
+
+&cam_sensor_suspend_tof_int {
+	mux {
+		pins = "gpio24";
+	};
+
+	config {
+		pins = "gpio24";
+	};
+};
+
+&cam_sensor_active_tof_reset {
+	mux {
+		pins = "gpio25";
+	};
+
+	config {
+		pins = "gpio25";
+	};
+};
+
+&cam_sensor_suspend_tof_reset  {
+	mux {
+		pins = "gpio25";
+	};
+
+	config {
+		pins = "gpio25";
+	};
+};
+
+&cam_sensor_active_tof_bb {
+	mux {
+		pins = "gpio26";
+	};
+
+	config {
+		pins = "gpio26";
+	};
+};
+
+&cam_sensor_suspend_tof_bb {
+	mux {
+		pins = "gpio26";
+	};
+
+	config {
+		pins = "gpio26";
+	};
+};
+
+&cam_sensor_active_tele {
+	mux {
+		pins = "gpio150";
+	};
+
+	config {
+		pins = "gpio150";
+	};
+};
+
+&cam_sensor_suspend_tele {
+	mux {
+		pins = "gpio150";
+	};
+
+	config {
+		pins = "gpio150";
+	};
+};
+

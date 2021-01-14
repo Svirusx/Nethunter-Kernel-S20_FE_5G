@@ -1,0 +1,24 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&apps_rsc {
+	/* LAA MUX PMIC Control*/
+	rpmh-regulator-ldoc7 {
+		L7C: pm8150a_l7: regulator-pm8150a-l7 {
+			regulator-name = "pm8150a_l7";
+			regulator-min-microvolt = <2050000>;
+			regulator-max-microvolt = <2050000>;
+			qcom,init-voltage = <2050000>;
+			regulator-always-on;
+		};
+	};
+};

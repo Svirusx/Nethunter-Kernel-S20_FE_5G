@@ -1,0 +1,137 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "kona-sec-z3q-pinctrl-r04.dtsi"
+#include "kona-sec-z3q-pm-common.dtsi"
+#include "../y2q/kona-sec-picassoq-pm-r03.dtsi"
+
+#include "../drivers/input_z3q_common.dtsi"
+#include "../drivers/eif_picasso_common.dtsi"
+#include "../drivers/eif_z3q_common.dtsi"
+#include "../drivers/battery-data-z3q-r04.dtsi"
+#include "../drivers/battery-rx-data-z3q-idt.dtsi"
+#include "../drivers/audio_picasso_common.dtsi"
+#include "../drivers/kona-sec-z3q-display-r00.dtsi"
+#include "../drivers/kona-sec-picassoq-common-mst-r04.dtsi"
+#include "../drivers/displayport_y2q_r04.dtsi"
+#include "../drivers/nfc_y2q_r04.dtsi"
+#include "../drivers/fingerprint-sensor_hubblez3_r00.dtsi"
+#include "../drivers/optics_z3q_r04.dtsi"
+#include "../drivers/abc_picassoq_common.dtsi"
+
+&apps_rsc {
+	rpmh-regulator-ldoa10 {
+		L10A: pm8150_l10: regulator-pm8150-l10 {
+			regulator-min-microvolt = <1600000>;
+			regulator-max-microvolt = <1600000>;
+			qcom,init-voltage = <1600000>;
+		};
+	};
+};
+
+&soc {
+	bt_driver: bt_driver{
+		compatible = "bcm,btdriver";  //bt_en
+		pinctrl-names = "default";
+		pinctrl-0 = <&bt_en_default>;
+		bcm,bt-reset-gpio = <&tlmm 76 GPIO_ACTIVE_HIGH>;
+		status = "ok";
+	};
+
+	bt_bluesleep: bt_bluesleep {
+		compatible = "bcm,bluesleep";
+		bcm,bt-wake-gpio = <&tlmm 133 0>;
+		bcm,bt-host-wake-gpio = <&tlmm 126 0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&bt_wake_default &bt_hostwake_default>;
+		status = "ok";
+	};
+
+	i2c@17 { /* SW I2C */
+		status = "ok";
+
+		cell-index = <17>;
+		compatible = "i2c-gpio";
+		gpios = <&tlmm 112 0 /* sda */
+			 &tlmm 113 0 /* scl */
+		>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&grip_i2c_active>;
+
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		a96t3x6@20 {
+			compatible = "a96t3x6";
+			pinctrl-names = "default";
+			pinctrl-0 = <&grip_int_active>;
+			reg = <0x20>;
+
+			interrupt-parent = <&tlmm>;
+			interrupts = <111 0>;
+
+			a96t3x6,irq_gpio = <&tlmm 111 0>;
+			a96t3x6,dvdd_vreg_name = "pm8150_l10";
+			a96t3x6,fw_path = "a96t365_z3_usa.bin";
+			a96t3x6,firmup_cmd = <0x60>;
+		};
+	};
+
+	sound {
+		mixer-paths = "mixer_paths_old.xml";
+	};
+};
+
+&ssc_sensors {
+	/delete-property/ qcom,ssc_hw_rev;
+	qcom,ssc_hw_rev = <4>;
+};
+
+&wlan {
+	status = "disabled";
+};
+
+&pcie1 {
+    status = "ok";
+};
+
+&qupv3_se5_i2c {
+	touchscreen@48 {
+		pinctrl-0 = <&attn_irq &tsp_id>;
+		pinctrl-1 = <&attn_irq &tsp_id>;
+		pinctrl-2 = <&attn_irq &tsp_id>;
+	};
+};
+
+&qupv3_se0_i2c {
+	max77705@66 {
+		max77705,extra_fw_enable = <1>;
+        };
+};
+
+&bluetooth {
+	status = "disabled";
+};
+
+&qupv3_se6_4uart {
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&qupv3_se6_ctsrx_active>, <&qupv3_se6_rts_active>,
+						<&qupv3_se6_tx_active>;
+	pinctrl-1 = <&qupv3_se6_ctsrx_sleep>, <&qupv3_se6_rts_sleep>,
+						<&qupv3_se6_tx_sleep>;
+	interrupts-extended = <&intc GIC_SPI 607 IRQ_TYPE_LEVEL_HIGH>;
+	status = "ok";
+};
+
+&ufshc_mem {
+	hpb-enable = <1>;
+};

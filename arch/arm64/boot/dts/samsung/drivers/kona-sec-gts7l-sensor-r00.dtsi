@@ -1,0 +1,29 @@
+/* Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+/* Because of gyro sensor noise caused by camera 100x zoom,
+ * source power of L8C is changed from VREG_S4A_1P8 to VREG_S5A_2P0.
+ * So need to change ldo8 to ldo mode with LPM.
+ */
+
+&soc {
+	qcom,ssc@5c00000 {
+		sensor_vdd-supply = <&pm8150a_l8>;
+		qcom,sensor_vdd-uV-uA = <1800000 0>;
+		qcom,active-reg-names = "sensor_vdd";
+		pinctrl-0 = <>;
+	};
+};
+
+&tlmm {
+	/delete-node/ proxy_int_default;
+};

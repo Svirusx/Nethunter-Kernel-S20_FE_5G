@@ -1,0 +1,81 @@
+/* Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&soc {
+    /* MAIN GRIP */
+	i2c_16: i2c@16 { /* SW I2C */
+		status = "ok";
+
+		cell-index = <17>;
+		compatible = "i2c-gpio";
+		gpios = <&tlmm 112 0 /* sda */
+			 &tlmm 113 0 /* scl */
+		>;
+		pinctrl-names = "default", "sleep";
+		pinctrl-0 = <&grip_ldo_active &grip_int_active &grip_i2c_active>;
+		pinctrl-1 = <&grip_ldo_suspend &grip_int_suspend &grip_i2c_suspend>;
+
+		#i2c-gpio,delay-us = <2>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		a96t3x6@20 {
+			compatible = "a96t3x6";
+			reg = <0x20>;
+
+			interrupt-parent = <&tlmm>;
+			interrupts = <111 0>;
+
+			a96t3x6,irq_gpio = <&tlmm 111 0>;
+			a96t3x6,ldo_en = <&tlmm 75 0>;
+			a96t3x6,fw_path = "abov/a96t356_gts7l_main1.bin";
+			a96t3x6,firmup_cmd = <0x3b>;
+		};
+	};
+
+	/* WIFI1 GRIP */
+	i2c_17: i2c@17 { /* SW I2C */
+		status = "ok";
+
+		cell-index = <17>;
+		compatible = "i2c-gpio";
+		gpios = <&tlmm 44 0 /* sda */
+			 &tlmm 45 0 /* scl */
+		>;
+		pinctrl-names = "default", "sleep";
+		pinctrl-0 = <&grip_ldo_active &wifi_grip_int_active &wifi_grip_i2c_active>;
+		pinctrl-1 = <&grip_ldo_suspend &wifi_grip_int_suspend &wifi_grip_i2c_suspend>;
+
+		#i2c-gpio,delay-us = <2>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		a96t3x6@20 {
+			compatible = "a96t3x6_wifi";
+			reg = <0x20>;
+
+			interrupt-parent = <&tlmm>;
+			interrupts = <51 0>;
+
+			a96t3x6,irq_gpio = <&tlmm 51 0>;
+			a96t3x6,ldo_en = <&tlmm 75 0>;
+			a96t3x6,fw_path = "abov/a96t356_gts7l_wifi1.bin";
+			a96t3x6,firmup_cmd = <0x3b>;
+		};
+	};
+};
+
+/* LIGHT SENSOR VDD */
+&pm8150_l10 {
+	regulator-min-microvolt = <2800000>;
+	regulator-max-microvolt = <2900000>;
+	qcom,init-voltage = <2900000>;
+	regulator-always-on;
+};

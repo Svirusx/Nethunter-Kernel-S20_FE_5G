@@ -1,0 +1,48 @@
+#
+# Sensor  drivers configuration
+#
+menuconfig SENSORS_FINGERPRINT
+	bool "Finger Print Sensor devices"
+	help
+	  Say Y here, and a list of sensors drivers will be displayed.
+	  Everything that didn't fit into the other categories is here. This option
+	  doesn't affect the kernel.
+
+if SENSORS_FINGERPRINT
+
+config SENSORS_ET7XX
+	tristate "ET7XX fingerprint sensor support"
+	default n
+	help
+	  If you say yes here you get support for Egistec's
+	  fingerprint sensor ET7XX.
+
+config SENSORS_ET5XX
+	tristate "ET5XX fingerprint sensor support"
+	default n
+	help
+	  If you say yes here you get support for Egistec's
+	  fingerprint sensor ET5XX.
+
+config SENSORS_QBT2000
+	tristate "QBT2000 fingerprint sensor support"
+	default n
+	help
+	  If you say yes here you get support for Qualcomm's
+	  fingerprint sensor QBT2000.
+
+config SENSORS_GW3X
+	tristate "generic goodix fingerprint driver"
+	default n
+	help
+	  If you say yes here you get support for Goodix's
+	  fingerprint sensor GW36X.
+
+config SENSORS_GW9558X
+	tristate "generic goodix fingerprint driver"
+	default n
+	help
+	  If you say yes here you get support for Goodix's
+	  fingerprint sensor GW9558X.
+
+endif # SENSORS_FINGERPRINT

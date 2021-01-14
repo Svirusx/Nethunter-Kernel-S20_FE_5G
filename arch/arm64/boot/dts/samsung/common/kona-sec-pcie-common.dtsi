@@ -1,0 +1,44 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&tlmm {
+	pcie0_wake_nc_default: pcie0_wake_nc_default {
+		mux {
+			pins = "gpio81";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio81";
+			drive-strength = <2>;
+			bias-pull-down;         /* PULL DOWN */
+		};
+	};
+};
+
+&pcie0 {
+    qcom,target-link-speed = <0x1>;
+	qcom,core-preset = <0x77777777>;
+};
+
+&pcie1 {
+    status = "disabled";
+};
+
+&pcie1_msi {
+    status = "disabled";
+};
+
+&pcie2 {
+	qcom,core-preset = <0x77777777>;
+	esoc-name="esoc0";
+};

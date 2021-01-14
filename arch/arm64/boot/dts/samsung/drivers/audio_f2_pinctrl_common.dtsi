@@ -1,0 +1,133 @@
+&lpi_tlmm {
+	cdc_dmic01_clk_active: dmic01_clk_active {
+		config {
+			drive-strength = <2>;
+		};
+	};
+
+	cdc_dmic01_data_active: dmic01_data_active {
+		config {
+			drive-strength = <2>;
+		};
+	};
+
+	cdc_dmic23_clk_active: dmic23_clk_active {
+		config {
+			drive-strength = <2>;
+		};
+	};
+
+	cdc_dmic23_data_active: dmic23_data_active {
+		config {
+			drive-strength = <2>;
+		};
+	};
+
+	cdc_dmic45_clk_active: dmic45_clk_active {
+		config {
+			drive-strength = <2>;
+		};
+	};
+
+	cdc_dmic45_data_active: dmic45_data_active {
+		config {
+			drive-strength = <2>;
+		};
+	};
+};
+
+&tlmm {
+	cs35l41_gpio_default: cs35l41_gpio_default {
+		mux {
+			pins = "gpio84";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio84";
+			drive-strength = <2>; /* 2 MA */
+			bias-disable; /* No PULL */
+		};
+	};
+
+	/delete-node/ qupv3_se11_i2c_pins;
+	qupv3_se11_i2c_pins: qupv3_se11_i2c_pins {
+		qupv3_se11_amp_i2c_active: qupv3_se11_amp_i2c_active {
+			mux {
+				pins = "gpio60", "gpio61";
+				function = "qup11";
+			};
+				config {
+				pins = "gpio60", "gpio61";
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+		qupv3_se11_amp_i2c_sleep: qupv3_se11_amp_i2c_sleep {
+			mux {
+				pins = "gpio60", "gpio61";
+				function = "gpio";
+			};
+				config {
+				pins = "gpio60", "gpio61";
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+	};
+
+	/delete-node/ pri_tdm_clk_active;
+	pri_tdm_clk_active: pri_tdm_clk_active {
+		mux {
+			pins = "gpio138";
+			function = "mi2s0_sck";
+		};
+
+		config {
+			pins = "gpio138";
+			drive-strength = <2>;	/* 2 mA */
+			bias-disable;			/* NO PULL */
+		};
+	};
+
+	/delete-node/ pri_tdm_sync_active;
+	pri_tdm_sync_active: pri_tdm_sync_active {
+		mux {
+			pins = "gpio141";
+			function = "mi2s0_ws";
+		};
+
+		config {
+			pins = "gpio141";
+			drive-strength = <2>;	/* 2 mA */
+			bias-disable;			/* NO PULL */
+		};
+	};
+
+	/delete-node/ pri_tdm_din_active;
+	pri_tdm_din_active: pri_tdm_din_active {
+		mux {
+			pins = "gpio139";
+			function = "mi2s0_data0";
+		};
+
+		config {
+			pins = "gpio139";
+			drive-strength = <2>;	/* 2 mA */
+			bias-disable;			/* NO PULL */
+		};
+	};
+
+	/delete-node/ pri_tdm_dout_active;
+	pri_tdm_dout_active: pri_tdm_dout_active {
+		mux {
+			pins = "gpio140";
+			function = "mi2s0_data1";
+		};
+
+		config {
+			pins = "gpio140";
+			drive-strength = <2>;	/* 2 mA */
+			bias-disable;			/* NO PULL */
+		};
+	};
+};

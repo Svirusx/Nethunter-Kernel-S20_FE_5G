@@ -1,0 +1,63 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "kona-sec-y2q-r00-b.dtsi"
+#include "kona-sec-y2q-pinctrl-r01-b.dtsi"
+#include "../drivers/kona-sec-picassoq-common-mst-r01.dtsi"
+
+&wlan {
+	wlan-en-gpio = <&tlmm 90 0>;
+	vdd-wlan-dig-supply = <&pm8150_s6>;
+	wlan-ant-switch-supply = <0x0>; 
+	status = "ok";
+	pinctrl-0 = <&qca6390_wlan_en_active>;
+	pinctrl-1 = <&qca6390_wlan_en_sleep>;
+};
+
+&bluetooth {
+	qca,bt-reset-gpio = <&tlmm 76 0>; /* BT_EN */
+	qca,bt-vdd-rfa1-voltage-level = <2040000 2040000>; 
+	qca,bt-vdd-dig-supply = <&pm8150_s6>; 
+	status = "ok";
+};
+
+&bt_driver {
+	status = "disabled";
+};
+
+&bt_bluesleep {
+	status = "disabled";
+};
+
+&qupv3_se1_i2c {
+	status = "disabled";
+};
+
+&qupv3_se1_4uart { 
+	qcom,wakeup-byte = <0xFD>; 
+	interrupts-extended = <&intc GIC_SPI 602 IRQ_TYPE_LEVEL_HIGH>, <&tlmm 7 0>; 
+	pinctrl-0 = <&qupv3_se1_ctsrx>, <&qupv3_se1_rts>, 
+				<&qupv3_se1_tx>; 
+	pinctrl-1 = <&qupv3_se1_ctsrx>, <&qupv3_se1_rts>, 
+				<&qupv3_se1_tx>; 
+	status = "ok"; 
+};
+&cs35l41_r {
+	reset-gpios = <&tlmm 135 0>;
+};
+&kona_snd {
+	qcom,wcn-bt = <1>;
+};
+
+&pcie0 {
+	ignore_pcie_error;
+};

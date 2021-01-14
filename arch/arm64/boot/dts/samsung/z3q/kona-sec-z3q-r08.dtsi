@@ -1,0 +1,114 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "kona-sec-z3q-r07.dtsi"
+#include "kona-sec-z3q-pinctrl-r08.dtsi"
+#include "../y2q/kona-sec-picassoq-pm-r08.dtsi"
+
+&soc {
+	sound {
+		mixer-paths = "mixer_paths.xml";
+	};
+};
+
+&dai_mi2s1 {
+	pinctrl-0 = <>;
+	pinctrl-1 = <>;
+};
+
+&dai_mi2s3 {
+	qcom,msm-mi2s-rx-lines = <2>;
+	qcom,msm-mi2s-tx-lines = <1>;
+};
+
+&q6core {
+	quat_mi2s_gpios: quat_mi2s_pinctrl {
+		compatible = "qcom,msm-cdc-pinctrl";
+		pinctrl-names = "aud_active", "aud_sleep";
+		pinctrl-0 = <&quat_mi2s_sck_active &quat_mi2s_ws_active
+				&quat_mi2s_sd0_active &quat_mi2s_sd1_active>;
+		pinctrl-1 = <&quat_mi2s_sck_sleep &quat_mi2s_ws_sleep
+				&quat_mi2s_sd0_sleep &quat_mi2s_sd1_sleep>;
+		qcom,lpi-gpios;
+		qcom,tlmm-gpio = <147>;
+	};
+};
+
+&kona_snd {
+	qcom,quat-mi2s-gpios = <&quat_mi2s_gpios>;
+};
+
+&ssc_sensors {
+	/delete-property/ qcom,ssc_hw_rev;
+	qcom,ssc_hw_rev = <8>;
+};
+
+&sensor_rear_tof {
+	gpios = <&tlmm 97 0>,
+		<&tlmm 144 0>,
+		<&tlmm 145 0>,
+		<&tlmm 118 0>;
+};
+
+&cam_sensor_active_tof_reset {
+	mux {
+		pins = "gpio144";
+		function = "gpio";
+	};
+
+	config {
+		pins = "gpio144";
+		bias-disable; /* No PULL */
+		drive-strength = <2>; /* 2 MA */
+	};
+};
+
+&cam_sensor_suspend_tof_reset {
+	mux {
+		pins = "gpio144";
+		function = "gpio";
+	};
+
+	config {
+		pins = "gpio144";
+		bias-pull-down; /* PULL DOWN */
+		drive-strength = <2>; /* 2 MA */
+		output-low;
+	};
+};
+
+&cam_sensor_active_tof_bb {
+	mux {
+		pins = "gpio145";
+		function = "gpio";
+	};
+
+	config {
+		pins = "gpio145";
+		bias-disable; /* No PULL */
+		drive-strength = <2>; /* 2 MA */
+	};
+};
+
+&cam_sensor_suspend_tof_bb {
+	mux {
+		pins = "gpio145";
+		function = "gpio";
+	};
+
+	config {
+		pins = "gpio145";
+		bias-pull-down; /* PULL DOWN */
+		drive-strength = <2>; /* 2 MA */
+		output-low;
+	};
+};

@@ -1,0 +1,66 @@
+/* Copyright (c) 2020, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "kona-sec-x1q-r14.dtsi"
+#include "kona-sec-x1q-pinctrl-r17.dtsi"
+
+&soc {
+	i2c@17 { /* SW I2C */
+		status = "ok";
+		sx9360-i2c@28 {
+			sx9360,proxthresh_reg = <0x16>; /* threshold : 242 */
+		};
+	};
+
+	i2c@22 {
+		mfc-charger@3b {
+			fod_list {
+				pad_0x00 { /* DEFAULT */
+					cc = <150 64 142 53 150 37 150 34 155 19 156 21>;
+					cv = <150 94 142 83 150 67 150 64 155 49 156 51>;
+				};
+			};
+		};
+	};
+
+	battery {
+		battery,temp_table_adc = <128957 159212 189856 220998 258325
+						299870 350886 402249 476146 543857
+						624307 717451 828092 933195 1044052
+						1155103 1262997 1364359 1456509 1539597
+						1610791 1670717 1717559>;
+
+		battery,wpc_temp_table_adc = <128957 159212 189856 220998 258325
+						299870 350886 402249 476146 543857
+						624307 717451 828092 933195 1044052
+						1155103 1262997 1364359 1456509 1539597
+						1610791 1670717 1717559>;
+	};
+};
+
+&hall {
+	status = "disabled";
+};
+
+&certify_hall {
+	status = "disabled";
+};
+
+&sdhc_2 {
+	status = "disabled";
+};
+
+&qupv3_se0_i2c {
+	pca9468@57 {
+		pca9468,input-itopoff = <200000>; /* 200mA */
+	};
+};

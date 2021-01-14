@@ -1,0 +1,16 @@
+#include "camera_sensor_y2q_r02.dtsi"
+
+&sensor_rear_tele {
+	gpios = <&tlmm 94 0>,
+		<&tlmm 125 0>;
+};
+
+&sensor_rear_binning_tele {
+	gpios = <&tlmm 94 0>,
+		<&tlmm 125 0>;
+};
+
+&ois_rear  {
+	gpios = <&tlmm 174 0>, // RESET
+		<&tlmm 145 0>; // BOOT0
+};

@@ -1,0 +1,282 @@
+# When adding new entries keep the list in alphabetical order
+
+comment "Samsung Debugging Feature"
+menuconfig SEC_DEBUG
+	bool "Samsung TN Ramdump Feature"
+	default n
+	help
+	  Samsung TN Ramdump Feature.
+	  Enables collection of ram dump.
+	  Enables task history, debug level etc.
+	  This feature is enabled in defconfig.
+
+if SEC_DEBUG
+
+config SEC_LOG_BUF
+	bool "Samsung non-cached kernel printk"
+	default y
+	help
+	  Samsung non-cached kernel printk
+	  This ensures that printk is never stale
+	  which is a good feature when debugging without
+	  hardware debuggers. If unsure, keep it turned on.
+
+if SEC_LOG_BUF
+choice
+	bool "Select sec_log_buf type"
+
+config SEC_LOG_BUF_NO_CONSOLE
+	bool "Direct copying form __log_buf"
+	default y
+	help
+	  Kernel log will be copied directly from __log_buf.
+
+config SEC_LOG_BUF_CONSOLE
+	bool "Console based implementaion (EXPERIMENTAL)"
+	default n
+	help
+	  sec_log_buf will be registered as a console.
+
+endchoice
+endif
+
+config SEC_LOG_LAST_KMSG
+	bool "Enable /proc/last_kmsg support: if EMBEDDED"
+	default n
+	depends on SEC_LOG_BUF
+	help
+	  This option enables /proc/last_kmsg support.
+
+config SEC_LOG_STORE_LAST_KMSG
+	bool "store sec log when power off or reboot"
+	default n
+	depends on SEC_LOG_LAST_KMSG
+	help
+	  store sec log when power off or reboot.
+
+config SEC_LOG_STORE_LPM_KMSG
+	bool "store sec log when LPM Mode boot"
+	default n
+	depends on SEC_LOG_LAST_KMSG
+	help
+	  store sec log when LPM Mode boot
+
+config SEC_DEBUG_SCHED_LOG
+	bool "Samsung Scheduler Logging Feature"
+	default n
+	help
+	  Samsung Scheduler Logging Feature for Debug use.
+	  Enables task scheduling history.
+	  Enables IRQ scheduling history.
+	  This feature is enabled in defconfig.
+
+config SEC_DEBUG_MSG_LOG
+	bool "Message Log for ram dump debug (DEPRECATED)"
+	default n
+	depends on SEC_DEBUG_SCHED_LOG
+	help
+	  Verbose Logging for ram dump analysis.
+	  Collects kernel debug log.
+	  Log is collected in the no-cache area.
+	  This feature is enabled in defconfig.
+
+config SEC_DEBUG_DCVS_LOG
+	bool "Temporary Logging for DCVS"
+	default n
+        depends on SEC_DEBUG_SCHED_LOG
+	help
+	  DCVS Logging Feature for Debug use.
+	  The ACPU clock rate changes will be logged as a part
+	  of secdbg_log structure along with the CPU time stamp.
+	  The previous frequency and the new frequency for both the CPU along
+	  with the CPU time stamp will be logged.
+
+config SEC_DEBUG_POWER_LOG
+	bool "Temporary Logging for MSM POWER"
+	default n
+        depends on SEC_DEBUG_SCHED_LOG
+	help
+	  POWER Logging Feature for Debug use.
+	  The power and clock gating will be logged as a part
+	  of secdbg_log structure along with the CPU time stamp.
+
+config SEC_DEBUG_FUELGAUGE_LOG
+	bool "Temporary Logging for FuelGauge"
+	default n
+        depends on SEC_DEBUG_SCHED_LOG
+	help
+	 FuelGauge Logging Feature for Debug use.
+	 The FuelGauge values are logged as a part
+	 of secdbg_log structure along with the CPU time stamp.
+	 The voltage and soc values along with the CPU time will be logged.
+
+config SEC_DEBUG_SUMMARY
+	bool "Debug Summary"
+	default n
+        depends on SEC_DEBUG_SCHED_LOG
+	help
+	  Subsystems debug summary feature.
+	  When enabled provides kernel logs, modem logs, RPM registers,
+	  Schedule and IRQ logs at the time of crash along with the
+	  reason for crash, which can be extracted as a html in RAM dump mode.
+
+config SEC_DEBUG_SUMMARY_DRIVER
+	bool "Debug Summary Module"
+	default n
+        depends on SEC_DEBUG_SUMMARY
+	help
+	  register sec_debug_summary as platform_driver
+	  This config invoke sec_debug_summary_probe with auto_probe
+	  And of_dt of sec_debug_summary should be in devicetree with
+	  compatible = "samsung,sec-debug-summary"
+
+config SEC_DEBUG_LOW_LOG
+	bool "Kernel Message Logging for Debug Level Low"
+	default n
+	help
+	 Kernel Message Logging Feature for Debug use.
+	 The Kernel Messages are logged using file I/O
+	 when an exception occurs, when the debug level is low.
+	 The file I/O is added in kernel driver level
+	 so that kernel messages are logged on next reboot.
+
+config SEC_DEBUG_FORCE_ERROR
+	bool "enable force error"
+	default n
+	help
+	  This option enable to force error by sysfs
+
+config SEC_DEBUG_SEC_WDOG_BITE
+	bool "Samsung fore secure bite simulation"
+	default n
+	depends on QCOM_SCM && SEC_DEBUG_FORCE_ERROR
+	help
+	  simulation for secure bite.
+	  This feature is enabled in defconfig.
+
+config SEC_USER_RESET_DEBUG
+	bool "reset reason debug feature in user version"
+	default n
+	help
+	  This option provides reset history log in user version.
+	  This option enable proc/reset_reason support
+
+config SEC_USER_RESET_DEBUG_TEST
+	bool "reset reason debug test feature in eng version"
+	depends on SEC_USER_RESET_DEBUG
+	default n
+	help
+	  This option enable for test in eng version(KP, DP, TP, WP)
+
+config SEC_PERIPHERAL_SECURE_CHK
+	bool "PERIPHERAL SECURE check"
+	default n
+	depends on MSM_PIL
+	help
+	  This option enables checking the authentication of peripheral image.
+
+config SEC_SSR_DEBUG_LEVEL_CHK
+	bool "PERIPHERAL SECURE check"
+	default n
+	help
+	  To check the authentication of peripheral image.
+
+config SEC_DEBUG_PWDT
+	bool "Platform Watchdog check"
+	depends on QCOM_WATCHDOG_V2
+	default n
+	help
+	  To check Platform Watchdog thread status
+
+config SEC_DEBUG_DUMP_TASK_STACK
+	bool "Dump the current stack if a kernel panic occurs"
+	default n
+	help
+	  This feature enable '__die()'s stack dump' feature which disabled in
+	  commit c5bc503cbeee8586395aa541d2b53c69c3dd6930.
+	  This feature provides context information to load in the simulator
+	  insteadh of kernel core dump.
+
+config SEC_DEBUG_MDM_FILE_INFO
+	bool "MDM filename and line number in UPLOAD mode (DEPRECATED)"
+	default n
+	help
+	 This feature enables display of MDM info in upload mode.
+	 This feature enabled SSR in debug level low.
+	 Collects MDM ram dump and then calls panic.
+	 UPLOAD mode has MDM dump info to show it on LCD.
+
+config SEC_DEBUG_DOUBLE_FREE
+	bool "Enable double free detection (DEPRECATED)"
+	default n
+	help
+	 Detect erraneous codes that frees a kmalloced node
+	 twice. When kfree(p) is called, p is not freed right away.
+	 Instead, it is pushed into a circular buffer. What it frees
+	 is the oldest pointer that was pushed into the buffer.
+	 If someone tries to free the same pointer p, *p
+	 is read and checked for a magic code that is written
+	 when it was first freed. If it matches, the whole
+	 circular buffer is searched. Panic is be called when
+	 the match is found.
+
+config SEC_FILE_LEAK_DEBUG
+	bool "Samsung File Leak Debugging Feature (DEPRECATED)"
+	default n
+	help
+	  Samsung File Leak Debugging Feature for Debug use.
+	  Enables the forced panic mode when EMFILE Eror occurs.
+	  This feature is enabled in defconfig.
+
+config KERNEL_MODE_NEON_DEBUG
+	bool "Check the wrong usage of SIMD registers"
+	default n
+	depends on ARM64
+	help
+	  This feature generates BUG() if the wrong usage of SIMD registers
+	  in the kernel mode.
+
+config SEC_SLUB_DEBUG
+	bool "Keep freeing stack traces on the slub object"
+	default n
+	depends on SLUB && !SLUB_DEBUG
+	help
+	  This feature enabled 'freeing stack trace on slub object'
+	  to find UAF issues like a memory corruption issues
+	  in kmem_cache_cpu->freelist.
+
+config SEC_CP_SEPARATE_DEBUG
+	bool "Separate CP debug level from AP's"
+	default n
+	help
+	  CP SSR works according to CP debug level instead of AP debug level
+
+endif
+
+config SEC_BOOTSTAT
+	bool "Samsung Bootstat Logging Feature"
+	default n
+	select MSM_BOOT_STATS
+	help
+	  This feature creates a '/proc/bootstat' node and it provides
+	  timestamp info for debugging booting time.
+
+config SEC_NOEYEINFO
+	bool "No Store DDR Eye Info Feature"
+	default n
+	help
+	  This feature enable for no store ddr eye info to ddr eye node
+
+config SEC_QPNP_PON_SPARE_BITS
+	int "The number of available bits in QPNP_PON_SOFT_RB_SPARE register"
+	range 6 7
+	default 7
+	help
+	  The number of available bits in QPNP_PON_SOFT_RB_SPARE register
+
+config SEC_DEBUG_TEST
+	bool "KUnit test for sec_debug_test"
+	depends on KUNIT
+	help
+	  TODO: Describe config fully.
+

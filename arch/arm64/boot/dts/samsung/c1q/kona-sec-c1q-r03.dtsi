@@ -1,0 +1,38 @@
+/* Copyright (c) 2020, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "kona-sec-c1q-r02.dtsi"
+#include "kona-sec-c1q-pinctrl-r03.dtsi"
+#include "../drivers/uwb_c2q_r01.dtsi"
+
+&soc {
+	bcmdhd_wlan {
+		qcom,iommu-dma = "disabled";
+		compatible = "android,bcmdhd_wlan";
+		wlan-en-gpio = <&tlmm 90 0>;
+		wlan-host-wake-gpio = <&tlmm 143 0>;
+		wlan-smmu-iova-address = <0xa0000000 0x10000000>;
+		pinctrl-name = "bcmdhd_wlan_en","bcmdhd_default";
+		pinctrl-0 = <&bcmdhd_wlan_en>;
+		pinctrl-1 = <&bcmdhd_default>;
+		status = "ok";
+	};
+};
+
+&bt_bluesleep {
+	compatible = "bcm,bluesleep";
+	bcm,bt-wake-gpio = <&tlmm 124 0>;
+	bcm,bt-host-wake-gpio = <&tlmm 142 0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&bt_wake_default &bt_hostwake_default>;
+	status = "ok";
+};

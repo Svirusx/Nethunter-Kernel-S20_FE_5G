@@ -1,0 +1,86 @@
+config SAMSUNG_PRODUCT_SHIP
+	bool "set up for product shipping"
+	default n
+
+config SAMSUNG_USER_TRIAL
+	bool "set up for user trial"
+	default n
+
+config SEC_BSP
+	bool "Samsung BSP Feature"
+	default n
+	help
+	  Samsung BSP Feature.
+
+config DRV_SAMSUNG
+	tristate "Samsung sec class/sysfs Feature"
+	default n
+	help
+	  Samsung sysfs name 'sec' directory create
+
+config SEC_DEBUG
+	tristate "Enable Samsung Debugging features"
+	default n
+
+config SEC_PARAM
+	bool "Enable Param modification"
+	default n
+	help
+	  Samsung TN Param Feature.
+
+config SEC_MPARAM
+	tristate "Enable Module Param modification"
+	default n
+	help
+	  Samsung TN Param Feature.
+	  
+config SEC_PARAM_SIZE
+	hex "Param Partition Size default 10MB"
+	default 0xA00000
+	help
+	  Samsung Param Partition Size.
+
+config SEC_VTS_TEST
+	bool "VTS TEST"
+	default n
+	help
+	  This option notices this binary for VTS test.
+
+config SEC_SYSUP
+	bool "Samsung System Update"
+	default n
+	help
+	  Samsung system update Feature.
+
+config SEC_FACTORY_INTERPOSER
+	bool "Samsung Factory interposer binary"
+	default n
+	help
+	  Samsung Factory interposer binary.
+
+config SEC_EXT
+	bool "Samsung TN extension Feature"
+	default y
+
+menu "Samsung Factory Feature"
+config SEC_FACTORY
+	bool "when it comes to sec factory mode"
+	default n
+	select SEC_DEBUG_FORCE_ERROR
+	select SEC_PANIC_PCIE_ERR
+	select SEC_GPIO_DVS
+	select EDAC_KRYO_ARM64_PANIC_ON_CE
+	help
+	  It will support a sec factory mode
+endmenu
+
+source "drivers/samsung/debug/Kconfig"
+source "drivers/samsung/misc/Kconfig"
+source "drivers/samsung/quest/Kconfig"
+
+config SEC_CLASS_TEST
+	bool "KUnit test for sec_class_test"
+	depends on KUNIT
+	help
+	  TODO: Describe config fully.
+

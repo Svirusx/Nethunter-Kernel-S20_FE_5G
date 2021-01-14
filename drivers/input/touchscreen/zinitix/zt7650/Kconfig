@@ -1,0 +1,11 @@
+#
+# Zinitix Touchscreen driver configuration
+#
+
+config TOUCHSCREEN_ZINITIX_ZT7650
+	bool "ZINITIX ZT7650 touchscreen driver"
+	depends on I2C
+	default n
+	help
+	  Say Y here if you have a ZINITIX ZT7650 touchscreen.
+	  If unsure, say N.

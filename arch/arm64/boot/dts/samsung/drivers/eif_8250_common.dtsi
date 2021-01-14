@@ -1,0 +1,95 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+/* MUIC */
+&pm8150l_gpios {
+	chg_int {
+		chg_int_default: chg_int_default {
+			pins = "gpio11";
+			function = "normal";
+			input-enable;
+			bias-pull-up;
+			power-source = <1>;
+		};
+	};
+};
+
+&soc {
+	muic {
+		status = "okay";
+		muic,support-list = "+OTG:GND",
+				"-MHL:1K",
+				"-VZW Accessory:28.7K",
+				"-VZW Incompatible:34K",
+				"+RDU TA:40.2K",
+				"+HMT:49.9K",
+				"-Audiodock:64.9K",
+				"-USB LANHUB:80.07K",
+				"-Charging Cable:102K",
+				"+Game Pad:121K",
+				"+Jig USB Off:255K",
+				"+Jig USB On:301K",
+				"+Deskdock:365K",
+				"-TYPE2 Charger:442K",
+				"+Jig UART Off:523K",
+				"+Jig UART On:619K",
+				"+TA:OPEN",
+				"+USB:OPEN",
+				"+CDP:OPEN",
+				"+Undefined Charging:XXX";
+		muic,afcmode-tx = /bits/ 8 <0x46>;
+		muic,qc-hv = /bits/ 8 <0x9>;
+	};
+
+	usb_noti: usb-notifier {
+		compatible = "samsung,usb-notifier";
+		qcom,disable_control_en = <1>;
+		qcom,unsupport_host_en = <0>;
+	};
+};
+
+&qupv3_se0_i2c {
+	status = "ok";
+
+	pinctrl-0 = <&qupv3_se0_i2c_active &chg_int_default>;
+	pinctrl-1 = <&qupv3_se0_i2c_sleep &chg_int_default>;
+
+	max77705: max77705@66 {
+		compatible = "maxim,max77705";
+		reg = <0x66>;
+		interrupt-parent = <&spmi_bus>;
+		interrupts = <0x4 0xca 0 IRQ_TYPE_LEVEL_LOW>;
+		interrupt-names = "max77705_irq";
+		interrupt-controller;
+		max77705,irq-gpio = <&pm8150l_gpios 11 0x01>;
+		max77705,wakeup;
+		support_pd_role_swap;
+		muic-universal,irq-gpio = <&pm8150l_gpios 11 0x01>;
+		muic-universal,chip_name = "maxim,max77705";
+		muic,undefined_range;
+		haptic,mode = <1>;
+		haptic,divisor = <128>;
+		max77705,detect-alalog-audio;
+	};
+};
+
+/* USB */
+&usb0 {
+	samsung,cc_dir = <&tlmm 65 0>;
+};
+
+
+&usb0 {
+	dwc3@a600000 {
+		maximum-speed = "super-speed";
+	};
+};

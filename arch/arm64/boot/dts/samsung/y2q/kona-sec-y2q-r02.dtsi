@@ -1,0 +1,143 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+/*
+ * CAUTION:
+ * Do NOT inherit from previous revision of dtsi files
+ * since it is only used for bring-up
+ */
+#include "kona-sec-y2q-pinctrl-r02.dtsi"
+#include "kona-sec-picassoq-pm-common.dtsi"
+
+#include "../drivers/input_y2q_common.dtsi"
+#include "../drivers/eif_picasso_common.dtsi"
+#include "../drivers/eif_y2q_common.dtsi"
+#include "../drivers/battery-data-y2q-r02.dtsi"
+#include "../drivers/audio_qca_picasso_common.dtsi"
+#include "../drivers/kona-sec-y2q-display-r00.dtsi"
+#include "../drivers/displayport_y2q_r00.dtsi"
+#include "../drivers/nfc_y2q_r02.dtsi"
+#include "../drivers/camera_sensor_y2q_r02.dtsi"
+#include "../drivers/fingerprint-sensor_hubbley2_r00.dtsi"
+#include "../drivers/kona-sec-picassoq-common-mst-r02.dtsi"
+#include "../drivers/optics_y2q_r02.dtsi"
+
+&apps_rsc {
+	rpmh-regulator-ldoa10 {
+		L10A: pm8150_l10: regulator-pm8150-l10 {
+			regulator-min-microvolt = <2900000>;
+			regulator-max-microvolt = <2900000>;
+			qcom,init-voltage = <2900000>;
+			regulator-always-on;
+		};
+	};
+};
+
+&soc {
+	i2c_17: i2c@17 { /* SW I2C */
+		status = "ok";
+
+		cell-index = <17>;
+		compatible = "i2c-gpio";
+		gpios = <&tlmm 112 0 /* sda */
+			 &tlmm 113 0 /* scl */
+		>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&grip_i2c_active>;
+
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		sx9360-i2c@28 {
+			compatible = "sx9360";
+			reg = <0x28>;
+			status = "okay";
+			pinctrl-names = "default";
+			pinctrl-0 = <&grip_int_active>;
+			interrupt-parent = <&tlmm>;
+			interrupts = <111 0>;
+
+			sx9360,nirq-gpio = <&tlmm 111 0>;
+			sx9360,refresolution_reg = <0x0f>; /* same as resolution_reg */
+			sx9360,refagainfreq_reg = <0x36>; /* same as againfreq_reg */
+			sx9360,resolution_reg = <0x0f>; /* resolution : 1024 */
+			sx9360,againfreq_reg = <0x36>; /* freq : 83.33 kHz, again : +/-5.25 pF */
+			sx9360,refgainrawfilt_reg = <0x22>; /* same as gainrawfilt_reg */
+			sx9360,gainrawfilt_reg = <0x22>; /* rawfilter : 1-1/4, gain : x8 */
+			sx9360,hyst_reg = <0x15>; /* hysteresis : +/-6 %, debouncer : 2 samples */
+			sx9360,proxthresh_reg = <0x3f>; /* threshhold : 1324 */
+		};
+	};
+};
+
+&aliases {
+	hsuart0 = "/soc/qcom,qup_uart@998000";
+};
+
+&ssc_sensors {
+	qcom,ssc_hw_rev = <2>;
+};
+
+&wlan {
+	wlan-en-gpio = <&tlmm 90 0>;
+	vdd-wlan-dig-supply = <&pm8150_s6>;
+	wlan-ant-switch-supply = <0x0>;
+	status = "ok";
+	pinctrl-0 = <&qca6390_wlan_en_active>;
+	pinctrl-1 = <&qca6390_wlan_en_sleep>;
+};
+
+&bluetooth {
+	qca,bt-reset-gpio = <&tlmm 76 0>; /* BT_EN */
+	qca,bt-vdd-rfa1-voltage-level = <2040000 2040000>; 
+	qca,bt-vdd-dig-supply = <&pm8150_s6>; 
+	status = "ok";
+};
+
+&qupv3_se6_4uart {
+	pinctrl-0 = <&qupv3_se6_ctsrx_active>, <&qupv3_se6_rts_active>,
+						<&qupv3_se6_tx_active>;
+	pinctrl-1 = <&qupv3_se6_ctsrx_sleep>, <&qupv3_se6_rts_sleep>,
+						<&qupv3_se6_tx_sleep>;
+	status = "ok";
+};
+
+&qupv3_se9_i2c {
+	status = "ok";
+	fsr@49 {
+		status = "ok";
+	};
+};
+
+&qupv3_se5_i2c {
+	touchscreen@48 {
+		sec,firmware_name = "tsp_sec/y771_y2_ub.bin";
+	};
+};
+
+&cs35l41_r {
+	reset-gpios = <&tlmm 11 0>;
+};
+
+&pcie0 {
+	ignore_pcie_error;
+};
+
+&qupv3_se0_i2c {
+	max77705@66 {
+		max77705,extra_fw_enable = <1>;
+        };
+};
+
+&ufshc_mem {
+	hpb-enable = <1>;
+};

@@ -1,0 +1,294 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+#include "../drivers/audio_f2_pinctrl_common.dtsi"
+#include "../drivers/kona-sec-f2q-tsp-pinctrl.dtsi"
+#include "../drivers/bluetooth_f2_pinctrl_common.dtsi"
+#include "../drivers/wifi_f2_pinctrl_common.dtsi"
+#include "../drivers/kona-sec-f2q-camera-sensor-pinctrl-r00.dtsi"
+#include "../drivers/battery_pinctrl_f2q_common.dtsi"
+#include "../drivers/connector_detection_f2_pinctrl_common.dtsi"
+
+&tlmm {
+	s2dos05_i2c_sda_default: s2dos05_i2c_sda_default {
+		mux {
+			pins = "gpio62";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio62";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+	s2dos05_i2c_scl_default: s2dos05_i2c_scl_default {
+		mux {
+			pins = "gpio63";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio63";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+	s2dos05_irq_default: s2dos05_irq_default {
+		mux {
+			pins = "gpio93";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio93";
+			drive-strength = <2>;
+			bias-disable;
+			input-enable;
+		};
+	};
+	s2dos05_sub_irq_default: s2dos05_sub_irq_default {
+		mux {
+			pins = "gpio39";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio39";
+			drive-strength = <2>;
+			bias-disable;
+			input-enable;
+		};
+	};
+
+	s2mpb02_i2c_sda_default: s2mpb02_i2c_sda_default {
+		mux {
+			pins = "gpio98";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio98";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+	s2mpb02_i2c_scl_default: s2mpb02_i2c_scl_default {
+		mux {
+			pins = "gpio99";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio99";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+	s2mpb02_irq_default: s2mpb02_irq_default {
+		mux {
+			pins = "gpio109";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio109";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+
+	s2mpb03_i2c_sda_default: s2mpb03_i2c_sda_default {
+		mux {
+			pins = "gpio142";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio142";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+	s2mpb03_i2c_scl_default: s2mpb03_i2c_scl_default {
+		mux {
+			pins = "gpio143";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio143";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+
+	/* GPIO EXPANDER */
+	i2c_23_pinctrl: i2c_23_pinctrl {
+		mux {
+			pins = "gpio32",	/* EXPANDER_I2C_SDA_1P8 */
+			       "gpio33";	/* EXPANDER_I2C_SCL_1P8 */
+			function = "gpio";
+		};
+		config {
+			pins = "gpio32",	/* EXPANDER_I2C_SDA_1P8 */
+			       "gpio33";	/* EXPANDER_I2C_SCL_1P8 */
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+
+	expander_reset_active: expander_reset_active {
+		mux {
+			pins = "gpio69";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio69";
+			drive-strength = <2>;   /* 16 mA */
+			bias-disable;
+			output-high;
+		};
+	};
+
+	grip_i2c {
+		grip_i2c_active: grip_i2c_active {
+			grip_i2c_active {
+				pins = "gpio144", "gpio145";
+				bias-disable;
+			};
+		};
+		grip_i2c_suspend: grip_i2c_suspend {
+			grip_i2c_suspend {
+				pins = "gpio144", "gpio145";
+				bias-disable;
+			};
+		};
+	};
+
+	grip2_i2c {
+		grip2_i2c_active: grip2_i2c_active {
+			grip2_i2c_active {
+				pins = "gpio119", "gpio120";
+				bias-disable;
+			};
+		};
+		grip2_i2c_suspend: grip2_i2c_suspend {
+			grip2_i2c_suspend {
+				pins = "gpio119", "gpio120";
+				bias-disable;
+			};
+		};
+	};
+
+
+	grip_int {
+		grip_int_active: grip_int_active {
+			grip_int_active {
+				pins = "gpio55";
+				bias-disable;
+				input-enable;
+			};
+		};
+
+		grip_int_suspend: grip_int_suspend {
+			grip_int_suspend {
+				pins = "gpio55";
+				bias-disable;
+				input-enable;
+			};
+		};
+	};
+
+	grip2_int {
+		grip2_int_active: grip2_int_active {
+			grip2_int_active {
+				pins = "gpio113";
+				bias-disable;
+				input-enable;
+			};
+		};
+
+		grip2_int_suspend: grip2_int_suspend {
+			grip2_int_suspend {
+				pins = "gpio113";
+				bias-disable;
+				input-enable;
+			};
+		};
+	};
+
+	hall_default: hall_default {
+		mux {
+			pins = "gpio110";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio110";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+
+	flip_hall_default: flip_hall_default {
+		mux {
+			pins = "gpio59";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio59";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+};
+
+&tlmm {
+	wakeup-disabled-gpios = <
+		0	/* DEBUG : AP_CTI_IN */
+		2	/* DEBUG : AP_CTI_OUT */
+		4	/* I2C : PM3003A_SDA_1P8 */
+		11	/* OUTPUT : RTC_SYNC */
+		23	/* SPI : BTP_SPI_CS_N */
+		24	/* SPI : UWB_SPI_MISO */
+		27	/* SPI : UWB_SPI_CS_N */
+		28	/* I2C : DIRECT_IF_PMIC_SDA_1P8 */
+		35	/* NO_WAKEUP : AP_UART_RXD */
+		40	/* I2C : AP_MCU_SDA_1P8 */
+		43	/* OUTPUT : MST_DATA_A */
+		45	/* I2C : NFC_FLICKER_SCL_1P8 */
+		47	/* NC : NC */
+		51	/* SPI : ESE_SPI_CS_N */
+		63	/* I2C : SUB_DISP_PMIC_SCL_1P8 */
+		65	/* NO_WAKEUP : CC_DIR */
+		77	/* NC : NC */
+		103	/* I2C : VT10M_TELE_SDA_1P8 */
+		104	/* I2C : VT10M_TELE_SCL_1P8 */
+		108	/* I2C : CAM_AF_EEP_SCL_1P8 */
+		126	/* I2C : BATT_SCL_1P8 */
+		128	/* NC : NC */
+		129	/* I2C : MOTOR_SDA_1P8 */
+		132	/* NC : (AP_USB_BOOT) */
+		136	/* OUTPUT : FLASH_LED_TORCH_PWM */
+		138	/* OUTPUT : AMP_I2S_BCLK */
+		142	/* I2C : SUB_PMIC2_SDA_1P8 */
+		143	/* I2C : SUB_PMIC2_SCL_1P8 */
+		160	/* I2C : 6AXIS_I3C_SDA_1P8 */
+		162	/* I2C : MAGNETIC_SDA_1P8 */
+		164	/* SPI : SUB_MAIN_COPR_MISO */
+		166	/* SPI : SUB_MAIN_COPR_SCLK */
+		167	/* SPI : SUB_MAIN_COPR_SS */
+		175	/* I2C : BLE_UWB_SCL_1P8 */
+	>;
+};
+
+&pm8150l_gpios {
+	ap2mdm_errfatal2 {
+		ap2mdm_errfatal2_default: ap2mdm_errfatal2_default {
+	        pins = "gpio4";
+	        function = "normal";
+	        bias-disable;
+	        output-low;
+	        input-disable;
+	    };
+	};
+};

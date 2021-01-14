@@ -1,0 +1,248 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+/* MUIC */
+&pm8150l_gpios {
+	chg_int {
+		chg_int_default: chg_int_default {
+			pins = "gpio11";
+			function = "normal";
+			input-enable;
+			bias-pull-up;
+			power-source = <1>;
+		};
+	};
+};
+
+&pm8150_gpios {
+	hall {
+		hall_default: hall_default {
+			pins = "gpio9";
+			function = "normal";
+			output-disable;
+			input-enable;
+			bias-disable;
+			power-source = <1>;
+		};
+	};
+};
+
+&soc {
+	muic {
+		status = "okay";
+		muic,support-list = "+OTG:GND",
+				"-MHL:1K",
+				"-VZW Accessory:28.7K",
+				"-VZW Incompatible:34K",
+				"+RDU TA:40.2K",
+				"+HMT:49.9K",
+				"-Audiodock:64.9K",
+				"-USB LANHUB:80.07K",
+				"-Charging Cable:102K",
+				"+Game Pad:121K",
+				"+Jig USB Off:255K",
+				"+Jig USB On:301K",
+				"+Deskdock:365K",
+				"-TYPE2 Charger:442K",
+				"+Jig UART Off:523K",
+				"+Jig UART On:619K",
+				"+TA:OPEN",
+				"+USB:OPEN",
+				"+CDP:OPEN",
+				"+Undefined Charging:XXX";
+		muic,afcmode-tx = /bits/ 8 <0x46>;
+		muic,qc-hv = /bits/ 8 <0x9>;
+	};
+
+	usb_noti: usb-notifier {
+		compatible = "samsung,usb-notifier";
+		qcom,disable_control_en = <1>;
+		qcom,unsupport_host_en = <0>;
+	};
+
+	hall: hall {
+                status = "okay";
+                compatible = "hall";
+                linux,input-type = <1>;
+                linux,code = <21>;
+                hall,gpio_flip_cover = <&pm8150_gpios 9 0x1>;
+                debounce-interval = <15>;
+		pinctrl-names = "default";
+	        pinctrl-0 = <&hall_default>;
+        };
+
+	certify_hall: certify_hall {
+		status = "okay";
+                compatible = "certify_hall";
+                linux,input-type = <1>;
+                linux,code = <27>;
+                certify_hall,gpio_certify_cover = <&tlmm 110 0x1>;
+                debounce-interval = <15>;
+		pinctrl-names = "default";
+	        pinctrl-0 = <&certify_hall_default>;
+        };
+};
+
+&qupv3_se0_i2c {
+	status = "ok";
+
+	pinctrl-0 = <&qupv3_se0_i2c_active &chg_int_default>;
+	pinctrl-1 = <&qupv3_se0_i2c_sleep &chg_int_default>;
+
+	max77705: max77705@66 {
+		compatible = "maxim,max77705";
+		reg = <0x66>;
+		interrupt-parent = <&spmi_bus>;
+		interrupts = <0x4 0xca 0 IRQ_TYPE_LEVEL_LOW>;
+		interrupt-names = "max77705_irq";
+		interrupt-controller;
+		max77705,irq-gpio = <&pm8150l_gpios 11 0x01>;
+		max77705,wakeup;
+		support_pd_role_swap;
+		muic-universal,irq-gpio = <&pm8150l_gpios 11 0x01>;
+		muic-universal,chip_name = "maxim,max77705";
+		muic,undefined_range;
+		haptic,mode = <1>;
+		haptic,divisor = <128>;
+		max77705,detect-alalog-audio;
+	};
+};
+
+/* USB */
+&usb0 {
+	samsung,cc_dir = <&tlmm 65 0>;
+};
+
+/* VIBRATOR */
+
+/*disable extcon_usb1 because of pm8150_gpio 10 conflict*/
+&extcon_usb1 {
+	status = "disabled";
+};
+
+&pm8150_gpios {
+	motor_int {
+		motor_int_default: motor_int_default {
+			pins = "gpio10";
+			function = "normal";
+			input-enable;
+			bias-pull-up;
+			enable-active-low;
+			power-source = <1>;
+		};
+	};
+
+	fm_motor_sleep_clk {
+		fm_motor_sleep_clk_out_default: fm_motor_sleep_clk_out_default {
+			pins = "gpio3";
+			function = "func1";
+			bias-disable;
+			power-source = <0>;
+			output-low;
+			input-disable;
+		};
+	};
+};
+
+&qupv3_se10_i2c {
+	status = "okay";
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&qupv3_se10_motor_i2c_active &motor_int_default &motor_reset_default &fm_motor_sleep_clk_out_default>;
+	pinctrl-1 = <&qupv3_se10_motor_i2c_sleep &motor_int_default &motor_reset_default &fm_motor_sleep_clk_out_default>;
+
+	cs40l25a: cs40l25a@40 {
+		status = "okay";
+		compatible = "cirrus,cs40l25a";
+		reg = <0x40>;
+		reset-gpios = <&tlmm 131 0>; // MOTOR_RST
+		interrupt-parent = <&spmi_bus>;
+		interrupts = <0x0 0xc9 0 IRQ_TYPE_LEVEL_LOW>; // MOTOR_INT
+		interrupt-names = "default";
+		interrupt-controller;
+		cirrus,boost-ind-nanohenry = <1000>;
+		cirrus,boost-cap-microfarad = <4>;
+		cirrus,boost-ipk-milliamp = <4000>;
+		cirrus,refclk-gpio2;
+		cirrus,auto-recovery;
+		cirrus,amp-gnd-stby;
+		cirrus,hiber-enable;
+		cirrus,gpio-indv-enable = <0x4>;
+		cirrus,gpio1-mode = <1>;
+		samsung,vib_type = "LINEAR_INDEX";	// using cirrus motor IC and 1040 motor
+
+		samsung,dig_scale_default = <0>;
+	};
+};
+
+&tlmm {
+	/delete-node/ qupv3_se10_i2c_pins;
+
+	qupv3_se10_motor_i2c_pins: qupv3_se10_motor_i2c_pins {
+		qupv3_se10_motor_i2c_active: qupv3_se10_motor_i2c_active {
+			mux {
+				pins = "gpio129", "gpio130";
+				function = "qup10";
+			};
+
+			config {
+				pins = "gpio129", "gpio130";
+				drive-strength = <16>;
+				output-high;
+				bias-disable; /* No PULL */
+			};
+		};
+
+		qupv3_se10_motor_i2c_sleep: qupv3_se10_motor_i2c_sleep {
+			mux {
+				pins = "gpio129", "gpio130";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio129", "gpio130";
+				drive-strength = <16>;
+				bias-disable; /* No PULL */
+			};
+		};
+	};
+
+	motor_reset_default: motor_reset_default {
+		mux {
+			pins = "gpio131";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio131";
+			drive-strength = <2>;
+			output-high;
+			bias-disable;
+		};
+	};
+
+	certify_hall_default: certify_hall_default {
+		mux {
+			pins = "gpio110";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio110";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+};
+
+&usb0 {
+	dwc3@a600000 {
+		maximum-speed = "super-speed";
+	};
+};

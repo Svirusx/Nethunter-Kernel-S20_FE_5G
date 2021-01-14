@@ -1,0 +1,109 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+#include "../gts7l/kona-sec-gts7-pm-common.dtsi"
+#include "kona-sec-gts7xl-pm-r01.dtsi"
+#include "../drivers/audio_gts7xl_common.dtsi"
+#include "../drivers/input_gts7xl_common.dtsi"
+#include "../drivers/displayport_gts7xl_r01.dtsi"
+#include "../drivers/eif_gts7xl_common.dtsi"
+#include "../drivers/battery-data-gts7xl-common.dtsi"
+#include "../drivers/camera_sensor_gts7xl_r01.dtsi"
+#include "../drivers/fingerprint-sensor_gts7xl_r00.dtsi"
+#include "kona-sec-gts7xl-pinctrl-r01.dtsi"
+#include "../drivers/bluetooth_gts7xl_common.dtsi"
+#include "../drivers/kona-sec-gts7xl-grip-r00.dtsi"
+#include "../drivers/kona-sec-gts7xl-display-r01.dtsi"
+
+&soc {
+};
+&wlan {
+	wlan-en-gpio = <&tlmm 90 0>;
+	vdd-wlan-dig-supply = <&pm8150_s6>;
+	pinctrl-0 = <&qca6390_wlan_en_active>;
+	pinctrl-1 = <&qca6390_wlan_en_sleep>;	
+	status = "ok";
+};
+
+&pcie0 {
+	qcom,target-link-speed = <0x2>; /* limit to gen2 */
+	esoc-name = "wlan";
+	oops-after-ready;
+};
+
+&pcie2 {
+	qcom,core-preset = <0x55555555>;
+};
+
+&qupv3_se14_i2c {
+	status = "ok";
+
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&qupv3_se14_i2c_active>;
+	pinctrl-1 = <&qupv3_se14_i2c_sleep>;
+
+	ps5169@28 {
+		compatible = "ps5169_driver";
+		reg = <0x28>;
+		combo,con_sel = <&tlmm 65 0>;
+		combo,redriver_en = <&tlmm 8 0>;
+		combo,enable_control = <1>;
+	};
+};
+
+&s2dos06_l2 {	/* tsp_io */
+	regulator-min-microvolt = <1800000>;
+	regulator-max-microvolt = <1800000>;
+	regulator-boot-on;
+};
+
+&s2dos06_l3 {	/* tsp_avdd */
+	regulator-min-microvolt = <3300000>;
+	regulator-max-microvolt = <3300000>;
+	regulator-boot-on;
+};
+
+&s2dos06_l4 {	/* wacom_avdd */
+	regulator-min-microvolt = <3300000>;
+	regulator-max-microvolt = <3300000>;
+	regulator-boot-on;
+};
+
+&fts_touch {
+	stm,regulator_dvdd = "s2dos06-ldo2";
+	stm,regulator_avdd = "s2dos06-ldo3";
+	stm,disable_vsync_scan;
+};
+
+&qupv3_se17_i2c {
+	wacom@56 {
+		wacom,regulator_avdd = "s2dos06-ldo4";
+	};
+};
+
+/* TZapp region */
+&removed_mem {
+	reg = <0x0 0x80B00000 0x0 0x7900000>;
+};
+
+&camera_mem {
+	rbin_size = <0x14000000>;
+};
+
+&sdhc_2 {
+	qcom,clk-rates = <300000 400000 20000000 25000000
+		50000000 85714285 201500000>;
+};
+
+&mdm0 {
+	pinctrl-0 = <&ap2mdm_active &mdm2ap_active &ap2mdm_errfatal2_default>;
+	qcom,ap2mdm-errfatal2-gpio = <&pm8150l_gpios 7 0>;
+};

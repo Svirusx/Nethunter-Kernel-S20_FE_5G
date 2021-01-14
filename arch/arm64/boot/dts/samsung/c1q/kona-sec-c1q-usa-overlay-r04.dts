@@ -1,0 +1,26 @@
+/* Copyright (c) 2020, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+/dts-v1/;
+/plugin/;
+
+#include "../common/kona-sec-common.dtsi"
+#include "kona-sec-c1q-r04.dtsi"
+#include "../common/kona-sec-laa-usa.dtsi"
+#include "../drivers/fingerprint-sensor_c1q_r04.dtsi"
+
+/ {
+	model = "Samsung C1Q PROJECT - C1_NA_REV0.2 (board-id,4)";
+	compatible = "qcom,kona-mtp", "qcom,kona", "qcom,mtp";
+	qcom,board-id = <8 4>;
+	dtbo-version = <0>;
+};

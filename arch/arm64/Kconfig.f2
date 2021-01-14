@@ -1,0 +1,54 @@
+#
+# Samsung F2 Projects
+#
+config MACH_F2Q_EUR_OPEN
+	default n
+	bool "Samsung F2Q EUR OPEN"
+	help
+	  Support for Samsung F2Q EUR OPEN device.
+
+config MACH_F2Q_USA_SINGLE
+	default n
+	bool "Samsung F2Q USA SINGLE"
+	help
+	  Support for Samsung F2Q USA SINGLE device.
+
+config MACH_F2Q_KOR_SINGLE
+	default n
+	bool "Samsung F2Q KOR SINGLE"
+	help
+	  Support for Samsung F2Q KOR SINGLE device.
+
+config MACH_F2Q_USA_OPEN
+	select MACH_F2Q_USA_SINGLE
+	default n
+	bool "Samsung F2Q USA OPEN"
+	help
+	  Support for Samsung F2Q USA OPEN device.
+
+config MACH_F2Q_CAN_SINGLE
+	select MACH_F2Q_USA_SINGLE
+	default n
+	bool "Samsung F2Q CAN SINGLE"
+	help
+	  Support for Samsung F2Q CAN SINGLE device.
+
+config MACH_F2Q_CHN_OPEN
+	select MACH_F2Q_USA_SINGLE
+	default n
+	bool "Samsung F2Q CHN OPEN"
+	help
+	  Support for Samsung F2Q CHN OPEN device.
+
+config MACH_F2Q_CHN_HKX
+	select MACH_F2Q_CHN_OPEN
+	default n
+	bool "Samsung F2Q CHN HKX"
+	help
+	  Support for Samsung F2Q CHN HKX device.
+
+config MACH_F2Q_JPN_SINGLE
+	default n
+	bool "Samsung F2Q JPN SINGLE"
+	help
+	  Support for Samsung F2Q JPN SINGLE device.

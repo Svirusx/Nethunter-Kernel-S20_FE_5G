@@ -1,0 +1,37 @@
+config SEC_DISPLAYPORT
+	bool "SEC DISPLAYPORT feature"
+	default n
+	help
+          Samsung specific displayport changes.
+
+config SEC_DISPLAYPORT_MST
+	bool "SEC DISPLAYPORT MST feature"
+	default n
+	help
+          Samsung specific displayport MST changes.
+
+config SEC_DISPLAYPORT_BIGDATA
+	bool "DISPLAYPORT bigdata"
+	depends on !SEC_FACTORY
+	default n
+	help
+          Enable DISPLAYPORT bigdata.
+
+config SEC_DISPLAYPORT_LOGGER
+	bool "SEC DISPLAYPORT LOGGER feature"
+	depends on SEC_DISPLAYPORT
+	help
+          Samsung specific displayport log changes.
+
+config SEC_DISPLAYPORT_ENG
+	bool "SEC DISPLAYPORT ENG feature"
+	depends on SEC_DISPLAYPORT
+	help
+          Samsung specific eng test code for displayport.
+
+config SEC_DISPLAYPORT_AUX_CONTROL
+	bool "SEC DISPLAYPORT Aux Control feature"
+	depends on SEC_DISPLAYPORT
+	default n
+	help
+          Support for AUX dongle control.

@@ -1,0 +1,102 @@
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+
+/* This dtsi is for hw rev from 03 to 05 */
+#include "battery-data-y2q-common.dtsi"
+
+&soc {
+	battery {
+		battery,chg_charging_limit_current = <1400>;
+		battery,charging_limit_current_by_tx = <1000>;
+		battery,wpc_charging_limit_current = <1000>;
+		battery,recharge_condition_vcell = <4280>;
+		battery,chg_float_voltage = <4350>;
+		battery,chg_ocp_current = <5600>;
+
+		battery,swelling_low_temp_current = <750>;	/* 0.24C */
+		battery,swelling_low_temp_current_2nd = <330>;	/* 0.1C */
+		battery,swelling_low_temp_current_3rd = <2400>;	/* 0.72C */
+		battery,swelling_low_temp_topoff = <200>;	/* 0.05C */
+		battery,swelling_high_temp_current = <1150>;	/* 0.36C */
+		battery,swelling_high_temp_topoff = <200>;	/* 0.05C */
+		battery,swelling_wc_high_temp_current = <750>;	/* 0.24C */
+		battery,swelling_wc_low_temp_current = <750>;	/* 0.24C */
+		battery,swelling_wc_low_temp_current_2nd = <330>;	/* 0.1C */
+		battery,swelling_wc_low_temp_current_3rd = <2400>;	/* 0.72C */
+		battery,swelling_low_rechg_thr = <150>;
+
+		battery,siop_charging_limit_current = <1000>;
+		battery,siop_apdo_input_limit_current = <1200>;
+		battery,siop_wireless_input_limit_current = <600>;
+		battery,siop_hv_wireless_input_limit_current = <600>;
+
+		battery,ttf_dc25_charge_current = <5200>;
+		battery,ttf_dc45_charge_current = <7000>;
+
+		battery,max_charging_current = <2400>;
+		battery,max_charging_charge_power = <45000>; /* 45W */
+
+		/* cycle, chg_float_voltage, recharge_condition_vcell, full_condition_vcell, full_condition_soc, step charging condition */
+		battery,age_data = <0 4350 4280 4250 93 45
+				300 4330 4260 4230 92 45
+				400 4310 4240 4210 91 45
+				700 4290 4220 4190 90 45
+				1000 4240 4170 4140 89 45>;
+
+		battery,dc_step_chg_cond_vol = <4130 4310 4350>; /*<45w 3step> STEP_CHARGING_CONDITION_VOLTAGE */ 
+		battery,dc_step_chg_cond_iin = <1530 1220 0>; /* <45w 3step> STEP_CHARGING_CONDITION_INPUT_CURRENT */
+		battery,dc_step_chg_cond_soc = <30 65 100>; /* <45w 3step> STEP_CHARGING_CONDITION_SOC */
+		battery,dc_step_chg_val_vfloat = <4130 4310 4350>; /* <45w 3step> STEP_CHARGING_CONDITION_FLOAT_VOLTAGE */
+		battery,dc_step_chg_val_iout = <3960 3060 2440>; /* <45w 3step> */
+
+		battery,standard_curr = <2400>;
+		battery,battery_full_capacity = <3000>;
+	};
+
+	max77705-fuelgauge {
+		/* for 3000mAh battery */
+		fuelgauge,v_empty = <0xA7E2>; /* Empty: 3350mV, Recover: 3920mV */
+		fuelgauge,qrtable20 = <0x1500>;
+		fuelgauge,qrtable30 = <0x1280>;
+		fuelgauge,capacity = <0x0B68>; /* capacity = fullcapnom = DesignCap */
+		fuelgauge,fg_reset_wa_data = <0x0B68 0x3200 0x02DA 0x0040 0x3334>; /* fullcapnom(=capacity), dPacc, dQacc,  rcomp0, tempco */
+		fuelgauge,ttf_capacity = <3000>;
+	};
+
+	cable-info {
+		full_check_current_1st = <300>;
+		full_check_current_2nd = <150>;
+
+		current_group_4 {
+			charging_current = <2400>;
+		};
+		current_group_5 {
+			charging_current = <2400>;
+		};
+		current_group_6 {
+			charging_current = <2400>;
+		};
+		current_group_7 {
+			input_current = <650>;
+			charging_current = <2400>;
+		};
+		current_group_10 {
+			input_current = <650>;
+			charging_current = <2400>;
+		};
+		current_group_13 {
+			input_current = <500>;
+			charging_current = <2400>;
+		};
+	};
+};

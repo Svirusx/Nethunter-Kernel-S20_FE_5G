@@ -1,0 +1,391 @@
+/* Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include <dt-bindings/input/input.h>
+
+/delete-node/ &gpio_keys;
+&soc {
+	gpio_keys: gpio_keys {
+		status = "ok";
+		compatible = "gpio-keys";
+		input-name = "gpio-keys";
+		gpio-key,wakeup_enable;
+		label = "gpio_keys";
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&key_vol_up_default>;
+
+		vol_up {
+			label = "volume_up";
+			gpios = <&pm8150l_gpios 3 GPIO_ACTIVE_LOW>;
+			linux,input-type = <1>;
+			linux,code = <KEY_VOLUMEUP>;
+			debounce-interval = <15>;
+			linux,can-disable;
+		};
+	};
+
+	pogo_touchpad {
+		compatible = "stm,touchpad";
+		touchpad,max_coords = <2560 1600>;	/* x y */
+		touchpad,invert = <0 1 1>; /* x invert, y invert, xy switch */
+	};
+
+	pogo_kpd {
+		compatible = "stm,keypad";
+		keypad,input_name = "Tab S7+ Book Cover Keyboard";
+		keypad,num-rows = <8>;
+		keypad,num-columns = <24>;	//  row   colume   keycode		key map		keyvalue
+		linux,keymap = <0x00000000	//   0       0     KEY_RESERVED		0
+				0x00010000	//   0       1     KEY_RESERVED		0
+				0x00020000	//   0       2     KEY_RESERVED		0
+				0x00030000	//   0       3     KEY_RESERVED		0
+				0x0004002C	//   0       4     KEY_Z		46		44
+				0x00050056	//   0       5     KEY_BACKSLASH	45		86
+				0x00060000	//   0       6     KEY_RESERVED		0
+				0x0007002F	//   0       7     KEY_V		49		47
+				0x00080032	//   0       8     KEY_M		52		50
+				0x0009006C	//   0       9     KEY_DOWN		84		108
+				0x000A0000	//   0       10    KEY_RESERVED		0
+				0x000B0039	//   0       11    KEY_SPACE		61		57
+				0x000C0067	//   0       12    KEY_UP		83		103
+				0x000D0000	//   0       13    KEY_RESERVED		0
+				0x000E0000	//   0       14    KEY_RESERVED		0
+				0x000F0000	//   0       15    KEY_RESERVED		0
+				0x00100001	//   0       16    KEY_ESC		0
+				0x00110072	//   0       17    KEY_VOLUMEDOWN	0		114
+				0x00120000	//   0       18    KEY_RESERVED		0
+				0x00130000	//   0       19    KEY_RESERVED		0
+				0x00140000	//   0       20    KEY_RESERVED		0
+				0x00150000	//   0       21    KEY_RESERVED		0
+				0x001602C2	//   0       22    706(virtual keypad)	706
+				0x00170000	//   0       23    KEY_RESERVED		0
+
+				0x01000000	//   1       0     KEY_RESERVED		0
+				0x01010000	//   1       1     KEY_RESERVED		0
+				0x010201d0	//   1       2     KEY_FN		59
+				0x0103007D	//   1       3     KEY_LEFTMETA		meta_left	125
+				0x0104001E	//   1       4     KEY_A		31		30
+				0x0105002D	//   1       5     KEY_X		47		45
+				0x01060020	//   1       6     KEY_D		33		32
+				0x01070030	//   1       7     KEY_B		50		48
+				0x01080000	//   1       8     KEY_RESERVED		0
+				0x01090033	//   1       9     KEY_COMMA		53	51
+				0x010A0034	//   1       10    KEY_DOT		54	52
+				0x010B0035	//   1       11    KEY_SLASH		55	53
+				0x010C0000	//   1       12    KEY_RESERVED		0
+				0x010D0000	//   1	     13    KEY_RESERVED 	0
+				0x010E0000	//   1	     14    KEY_RESERVED 	0
+				0x010F0000	//   1	     15    KEY_RESERVED 	0
+				0x011002C1	//   0	     16    KEY_APPS	 	0	705
+				0x01110073	//   0	     17    KEY_VOLUMEUP	 	0	115
+				0x01120000	//   0	     18    KEY_RESERVED 	0
+				0x01130000	//   0	     19    KEY_RESERVED 	0
+				0x01140000	//   0	     20    KEY_RESERVED 	0
+				0x01150000	//   0	     21    KEY_RESERVED 	0
+				0x01160066	//   0	     22    KEY_HOME 		0
+				0x01170000	//   0	     23    KEY_RESERVED 	0
+
+				0x02000000	//   2       0     KEY_RESERVED		0
+				0x02010000	//   2       1     KEY_RESERVED		0
+				0x0202007A	//   2       2     KEY_HANGEUL		lang	122
+				0x02030000	//   2       3     KEY_RESERVED		0
+				0x02040010	//   2       4     KEY_Q		17	16
+				0x02050000	//   2       5     KEY_RESERVED		0
+				0x0206002E	//   2       6     KEY_C		48	46
+				0x02070021	//   2       7     KEY_F		34	33
+				0x02080024	//   2       8     KEY_J		37	36
+				0x02090025	//   2       9     KEY_K		38	37
+				0x020A0026	//   2       10    KEY_L		39	38
+				0x020B0027	//   2       11    KEY_SEMICOLON	40	39
+				0x020C0000	//   2       12    KEY_RESERVED		0
+				0x020D001C	//   2       13    KEY_ENTER		43	28
+				0x020E0000	//   2       14    KEY_RESERVED		0
+				0x020F0000	//   2       15    KEY_RESERVED		0				
+				0x021000FE	//   0	     16    KEY_RECENT		0	254
+				0x021100A5	//   0	     17    KEY_PREVIOUSSONG	0	165
+				0x02120000	//   0	     18    KEY_RESERVED 	0
+				0x02130000	//   0	     19    KEY_RESERVED 	0
+				0x02140000	//   0	     20    KEY_RESERVED 	0
+				0x02150000	//   0	     21    KEY_RESERVED 	0
+				0x02160068	//   0	     22    KEY_PAGEUP	 	104
+				0x02170000	//   0	     23    KEY_RESERVED 	0
+
+				0x03000000	//   3       0     KEY_RESERVED		0
+				0x03010000	//   3       1     KEY_RESERVED		0
+				0x03020038	//   3       2     KEY_LEFTALT		60	56
+				0x03030000	//   3       3     KEY_RESERVED		0
+				0x0304000F	//   3       4     KEY_TAB		16	15
+				0x03050011	//   3       5     KEY_W		18	17
+				0x03060012	//   3       6     KEY_E		19	18
+				0x03070022	//   3       7     KEY_G		35	34
+				0x03080023	//   3       8     KEY_H		36	35
+				0x03090017	//   3       9     KEY_I		24	23
+				0x030A0028	//   3       10    KEY_APOSTROPHE	41	40
+				0x030B0019	//   3       11    KEY_P		26	25
+				0x030C0000	//   3       12    KEY_RESERVED		0
+				0x030D0000	//   3       13    KEY_RESERVED		0
+				0x030E0000	//   3       14    KEY_RESERVED		0
+				0x030F0000	//   3       15    KEY_RESERVED		0
+				0x031000AC	//   0	     16    KEY_HOMEPAGE	 	0	172
+				0x031100A4	//   0	     17    KEY_PLAYPAUSE	0	164
+				0x03120000	//   0	     18    KEY_RESERVED 	0
+				0x03130000	//   0	     19    KEY_RESERVED 	0
+				0x03140000	//   0	     20    KEY_RESERVED 	0
+				0x03150000	//   0	     21    KEY_RESERVED 	0
+				0x0316006D	//   0	     22    KEY_PAGEDOWN 	109
+				0x03170000	//   0	     23    KEY_RESERVED 	0
+
+				0x0400003A	//   4       0     KEY_CAPSLOCK		30	58
+				0x04010064	//   4       1     KEY_RIGHTALT		62	100
+				0x04020000	//   4       2     KEY_RESERVED		0
+				0x04030000	//   4       3     KEY_RESERVED		0
+				0x04040002	//   4       4     KEY_1		2	2
+				0x04050003	//   4       5     KEY_2		3	3
+				0x04060004	//   4       6     KEY_3		4	4
+				0x04070013	//   4       7     KEY_R		20	19
+				0x04080016	//   4       8     KEY_U		23	22
+				0x04090009	//   4       9     KEY_8		9	9
+				0x040A0018	//   4       10    KEY_O		25	24
+				0x040B000B	//   4       11    KEY_0		11	11
+				0x040C0000	//   4       12    KEY_RESERVED		0
+				0x040D0000	//   4       13    KEY_RESERVED		0
+				0x040E0000	//   4       14    KEY_RESERVED		0
+				0x040F002B	//   4       15    KEY_APOSTROPHE	29/42	43
+				0x041000E0	//   0	     16    KEY_BRIGHTNESSDOWN 	0	224
+				0x041100A3	//   0	     17    KEY_NEXTSONG 	0	163
+				0x04120000	//   0	     18    KEY_RESERVED 	0
+				0x04130000	//   0	     19    KEY_RESERVED 	0
+				0x04140000	//   0	     20    KEY_RESERVED 	0
+				0x04150000	//   0	     21    KEY_RESERVED 	0
+				0x0416006B	//   0	     22    KEY_END 		107
+				0x04170000	//   0	     23    KEY_RESERVED 	0
+
+				0x05000000	//   5       0     KEY_RESERVED		0
+				0x0501001D	//   5       1     KEY_LEFTCTRL		58	29
+				0x05020000	//   5       2     KEY_RESERVED		0
+				0x0503006A	//   5       3     KEY_RIGHT		89	106
+				0x05040029	//   5       4     KEY_GRAVE		1	41
+				0x0505003E	//   5       5     KEY_F4		115	62
+				0x05060041	//   5       6     KEY_F7		118	65
+				0x05070014	//   5       7     KEY_T		21	20
+				0x05080015	//   5       8     KEY_Y		22	21
+				0x05090044	//   5       9     KEY_F10		121	68
+				0x050A001A	//   5       10    KEY_LEFTBRACE	27	26
+				0x050B000E	//   5       11    KEY_BACKSPACE	15	14
+				0x050C0000	//   5       12    KEY_RESERVED		0
+				0x050D000C	//   5       13    KEY_MINUS		12	12
+				0x050E0000	//   5       14    KEY_RESERVED		0
+				0x050F001B	//   5       15    KEY_RIGHTBRACE	28	27
+				0x051000E1	//   0	     16    KEY_BRIGHTNESSUP 	0	225
+				0x051102C5	//   0	     17    709(setting) 	0	709
+				0x05120000	//   0	     18    KEY_RESERVED 	0
+				0x05130000	//   0	     19    KEY_RESERVED 	0
+				0x05140000	//   0	     20    KEY_RESERVED 	0
+				0x051502BD	//   0	     21    KEY_DEX_ON		0
+				0x05160000	//   0	     22    KEY_RESERVED 	0
+				0x05170000	//   0	     23    KEY_RESERVED 	0
+
+				0x06000036	//   6       0     KEY_RIGHTSHIFT	57	54
+				0x06010069	//   6       1     KEY_LEFT		79	105
+				0x06020000	//   6       2     KEY_RESERVED		0
+				0x06030000	//   6       3     KEY_RESERVED		0
+				0x0604003B	//   6       4     KEY_F1		112	59
+				0x0605003D	//   6       5     KEY_F3		114	61
+				0x06060040	//   6       6     KEY_F6		117	64
+				0x06070005	//   6       7     KEY_4		5	5
+				0x06080008	//   6       8     KEY_7		8	8
+				0x06090043	//   6       9     KEY_F9		120	67
+				0x060A000A	//   6       10    KEY_9		10	10
+				0x060B0058	//   6       11    KEY_F12		123	88
+				0x060C0031	//   6       12    KEY_N		51	49
+				0x060D0000	//   6       13    KEY_RESERVED		0
+				0x060E0000	//   6       14    KEY_RESERVED		0
+				0x060F0000	//   6       15    KEY_RESERVED		0
+				0x0610007D	//   0	     16    KEY_LEFTMETA		0	125
+				0x0611006F	//   0	     17    KEY_DELETE 		0
+				0x06120000	//   0	     18    KEY_RESERVED 	0
+				0x06130000	//   0	     19    KEY_RESERVED 	0
+				0x06140000	//   0	     20    KEY_RESERVED 	0
+				0x06150000	//   0	     21    KEY_RESERVED 	0
+				0x06160000	//   0	     22    KEY_RESERVED 	0
+				0x06170000	//   0	     23    KEY_RESERVED 	0
+
+				0x0700002A	//   7       0     KEY_LEFTSHIFT	44	42
+				0x070102C6	//   7       1     710			s-finder710
+				0x07020000	//   7       2     KEY_RESERVED		0
+				0x0703001F	//   7       3     KEY_S		32	31
+				0x07040001	//   7       4     KEY_ESC		110	1
+				0x0705003C	//   7       5     KEY_F2		113	60
+				0x0706003F	//   7       6     KEY_F5		116	63
+				0x07070006	//   7       7     KEY_5		6	6
+				0x07080007	//   7       8     KEY_6		7	7
+				0x07090042	//   7       9     KEY_F8		119	66
+				0x070A000D	//   7       10    KEY_EQUAL		13	13
+				0x070B0057	//   7       11    KEY_F11		122	87
+				0x070C0000	//   7       12    KEY_RESERVED		0
+				0x070D0063	//   7       13    KEY_SYSRQ	 	75/nrdex 99
+				0x070E006F	//   7       14    KEY_DELETE		76	111
+				0x070F0000	//   7       15    KEY_RESERVED		0
+				0x07100071	//   0	     16    KEY_MUTE	 	0	113
+				0x07110214	//   0	     17    KEY_TOUCHPAD_OFF 	0 
+				0x07120213	//   0	     18    KEY_TOUCHPAD_ON 	0
+				0x07130000	//   0	     19    KEY_RESERVED 	0
+				0x07140000	//   0	     20    KEY_RESERVED 	0
+				0x07150000	//   0	     21    KEY_RESERVED 	0
+				0x07160000	//   0	     22    KEY_RESERVED 	0
+				0x07170000>;	//   0	     23    KEY_RESERVED 	0
+	};
+
+	pogo_kbd_ldo_en: pogo_kbd_ldo_en {
+		compatible = "regulator-fixed";
+		regulator-name = "pogo_kbd_ldo_en_3.3v";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpio = <&tlmm 70 0>;
+		enable-active-high;
+	};
+};
+
+/delete-node/ &key_vol_up_default;
+
+&pm8150l_gpios {
+	key_vol_up {
+		key_vol_up_default: key_vol_up_default {
+			pins = "gpio3";
+			function = "normal";
+			input-enable;
+			bias-pull-up;
+			power-source = <0>;
+		};
+	};
+};
+
+&apps_rsc {
+	rpmh-regulator-ldoa14 {
+		/delete-property/ proxy-supply;
+		L14A: pm8150_l14: regulator-pm8150-l14 {
+			/delete-property/ qcom,proxy-consumer-enable;
+			/delete-property/ qcom,proxy-consumer-current;
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1800000>;
+			qcom,init-voltage = <1800000>;
+			regulator-boot-on;
+			qcom,init-mode = <RPMH_REGULATOR_MODE_HPM>;
+		};
+	};
+};
+
+&pm8150_l13 {
+	regulator-min-microvolt = <3300000>;
+	regulator-max-microvolt = <3300000>;
+	qcom,init-voltage = <3300000>;
+	regulator-boot-on;
+	qcom,init-mode = <RPMH_REGULATOR_MODE_HPM>;
+};
+
+&qupv3_se5_i2c {
+	pinctrl-0 = <&qupv3_se5_tsp_i2c_active>;
+	pinctrl-1 = <&qupv3_se5_tsp_i2c_sleep>;
+	status = "ok";
+
+	fts_touch: touchscreen@49 {
+		status = "okay";
+		compatible = "stm,fts_touch";
+		reg = <0x49>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <15 0>;
+		pinctrl-names = "on_state", "off_state";
+		pinctrl-0 = <&attn_irq>;
+		pinctrl-1 = <&attn_irq>;
+		stm,irq_gpio = <&tlmm 15 0x2008>;
+		stm,irq_type = <8200>;
+		stm,max_coords = <1751 2799>;	/* x y */
+		stm,regulator_dvdd = "pm8150_l14";
+		stm,regulator_avdd = "pm8150_l13";
+		stm,firmware_name = "tsp_stm/fts1ba90a_gts7xl.bin";
+		stm,tclm_level = <2>;
+		stm,afe_base = <0x0010>;
+		stm,enable_settings_aot;
+		support_dex_mode;
+		stm,enable_vbus_noti;
+		stm,support_fod;
+		sync-reportrate-120 = "Y";
+	};
+
+};
+
+&qupv3_se13_i2c {
+	st_fts@49 {
+		status = "disabled";
+	};
+};
+
+&qupv3_se17_i2c {
+	status = "ok";
+	wacom@56 {
+		compatible = "wacom,w90xx";
+		reg = <0x56>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&epen_int_active &epen_pdct_active>;
+		interrupts = <136 0>;
+		interrupt-parent = <&tlmm>;
+		wacom,regulator_avdd = "wacom_avdd";
+		wacom,regulator_boot_on;
+		/* gpios */
+		wacom,irq-gpio = <&tlmm 136 0>;
+		wacom,pdct-gpio = <&tlmm 7 0>;
+		wacom,fwe-gpio = <&tlmm 6 0>;
+		/* features */
+		wacom,boot_addr = <0x09>;
+		wacom,origin = <0 0>; /* x y */
+		wacom,max_coords = <22656 14160>; /* x y */
+		wacom,max_pressure = <4095>;
+		wacom,max_tilt = <63 63>;
+		wacom,max_height = <255>;
+		wacom,invert = <0 1 1>; /* x y switch */
+		wacom,ic_type = <9021>;
+		wacom,fw_path = "epen/w9021_gts7xl.bin";
+		wacom,module_ver = <0x2>; /* this value use to distinguish open/short test (0x1 : only open test, 0x2: open/short test) */
+		wacom,support_aop_mode = "1"; /* S-note want to check to use aop */
+		wacom,use_garage;
+		wacom,table_swap = <0x2>; /* bit set: 0 ~ 1(kbd) 1(dex station)*/
+		wacom,support_cover_noti;
+	};
+};
+
+&qupv3_se9_i2c {
+	status = "ok";
+	pinctrl-1 = <&qupv3_se9_keypad_i2c_sleep>;
+
+	/* pogo i2c */
+	stm32@2a {
+		status = "ok";
+		compatible = "stm,stm32_pogo";
+		reg = <0x2a>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <31>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&keypad_int_active &pogo_kbd_ldo_en_active &keypad_conn_active &kbd_mcu_swclk_active &kbd_mcu_nrst_active>;
+		stm32_vddo-supply = <&pogo_kbd_ldo_en>;
+		stm32,irq_gpio = <&tlmm 31 0x00>;
+		stm32,irq_conn = <&tlmm 43 0x00>;
+		stm32,irq_type = <8200>;
+		stm32,irq_conn_type = <0x2003>;
+		stm32,mcu_swclk = <&tlmm 172 0x00>;
+		stm32,mcu_nrst = <&tlmm 174 0x00>;
+		stm32,sda_gpio = <&tlmm 125 0x00>;
+		stm32,scl_gpio = <&tlmm 126 0x00>;
+		stm32,fw_name = "keyboard_stm/stm32_gts7l.bin";
+		stm32,model_name = "EF-DT970";
+	};
+};

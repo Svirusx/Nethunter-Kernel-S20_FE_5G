@@ -1,0 +1,5 @@
+config SEC_UWB_LOGGER
+	bool "UWB logger"
+	default n
+	help
+	  Enable UWB logger. 

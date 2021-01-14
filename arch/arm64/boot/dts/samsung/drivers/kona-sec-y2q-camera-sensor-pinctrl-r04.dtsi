@@ -1,0 +1,41 @@
+#include "kona-sec-y2q-camera-sensor-pinctrl-r02.dtsi"
+
+&mcu_active {
+	mux {
+		pins = "gpio145","gpio174";
+	};
+
+	config {
+		pins = "gpio145","gpio174";
+	};
+};
+
+&mcu_suspend {
+	mux {
+		pins = "gpio145","gpio174";
+	};
+
+	config {
+		pins = "gpio145","gpio174";
+	};
+};
+
+&cam_sensor_active_tele {
+	mux {
+		pins = "gpio125";
+	};
+
+	config {
+		pins = "gpio125";
+	};
+};
+
+&cam_sensor_suspend_tele {
+	mux {
+		pins = "gpio125";
+	};
+
+	config {
+		pins = "gpio125";
+	};
+};

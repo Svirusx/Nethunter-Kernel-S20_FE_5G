@@ -1,0 +1,119 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&tlmm {
+	attn_irq: attn_irq {
+		mux {
+			pins = "gpio15";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio15";
+			input-enable;
+			bias-disable;
+		};
+	};
+
+	/* SE 5 pin mappings */
+	qupv3_se5_tsp_i2c_pins: qupv3_se5_tsp_i2c_pins {
+		qupv3_se5_tsp_i2c_active: qupv3_se5_tsp_i2c_active {
+			mux {
+				pins = "gpio12", "gpio13";
+				function = "qup5";
+			};
+
+			config {
+				pins = "gpio12", "gpio13";
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+
+		qupv3_se5_tsp_i2c_sleep: qupv3_se5_tsp_i2c_sleep {
+			mux {
+				pins = "gpio12", "gpio13";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio12", "gpio13";
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+	};
+
+	tsp_id: tsp_id {
+		mux {
+			pins = "gpio46";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio46";
+			input-enable;
+			bias-disable;
+		};
+	};
+
+	keyless_reset_active: keyless_reset_active {
+		mux {
+			pins = "gpio127";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio127";
+			drive-strength = <2>;   /* 16 mA */
+			bias-disable;
+			output-low;
+		};
+	};
+
+	keyless_int_default: keyless_int_default {
+		mux {
+			pins = "gpio150";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio150";
+			input-enable;
+			bias-disable;
+		};
+	};
+
+	qupv3_se9_i2c_pins_keyless: qupv3_se9_i2c_pins_keyless {
+		qupv3_se9_i2c_active_keyless: qupv3_se9_i2c_active_keyless {
+			mux {
+				pins = "gpio125", "gpio126";
+				function = "qup9";
+			};
+
+			config {
+				pins = "gpio125", "gpio126";
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+
+		qupv3_se9_i2c_sleep_keyless: qupv3_se9i2c_sleep_keyless {
+			mux {
+				pins = "gpio125", "gpio126";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio125", "gpio126";
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+	};
+};

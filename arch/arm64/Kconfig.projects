@@ -1,0 +1,116 @@
+config SEC_X1Q_PROJECT
+	depends on ARCH_KONA
+	default n
+	bool "Samsung X1Q Project"
+	help
+	  Support for Samsung X1Q Project
+
+config SEC_Y2Q_PROJECT
+	depends on ARCH_KONA
+	default n
+	bool "Samsung Y2Q Project"
+	help
+	  Support for Samsung Y2Q Project
+
+config SEC_Z3Q_PROJECT
+	depends on ARCH_KONA
+	default n
+	bool "Samsung Z3Q Project"
+	help
+	  Support for Samsung Z3Q Project
+
+config SEC_C1Q_PROJECT
+	depends on ARCH_KONA
+	default n
+	bool "Samsung C1Q Project"
+	help
+	  Support for Samsung C1Q Project
+
+config SEC_C2Q_PROJECT
+	depends on ARCH_KONA
+	default n
+	bool "Samsung C2Q Project"
+	help
+	  Support for Samsung C2Q Project
+
+config SEC_F2Q_PROJECT
+	depends on ARCH_KONA
+	default n
+	bool "Samsung F2Q Project"
+	help
+	  Support for Samsung F2Q Project
+
+config SEC_GTS7XL_PROJECT
+	depends on ARCH_KONA
+	default n
+	bool "Samsung GTS7XL Project"
+	help
+	  Support for Samsung GTS7XL Project
+
+config SEC_GTS7L_PROJECT
+	depends on ARCH_KONA
+	default n
+	bool "Samsung GTS7L Project"
+	help
+	  Support for Samsung GTS7L Project
+	  
+config SEC_BLOOMXQ_PROJECT
+	depends on ARCH_KONA
+	default n
+	bool "Samsung BLOOMXQ Project"
+	help
+	  Support for Samsung BLOOMXQ Project
+
+config SEC_VICTORY_PROJECT
+	depends on ARCH_KONA
+	default n
+	bool "Samsung VICTORY Project"
+	help
+	  Support for Samsung VICTORY Project
+
+config SEC_R8Q_PROJECT
+	depends on ARCH_KONA
+	default n
+	bool "Samsung R8Q Project"
+	help
+	  Support for Samsung R8Q Project
+
+menu "Samsung X/Y/Z"
+depends on SEC_X1Q_PROJECT || SEC_Y2Q_PROJECT || SEC_Z3Q_PROJECT
+source "arch/arm64/Kconfig.xyz"
+endmenu
+
+menu "Samsung Canvas"
+depends on SEC_C1Q_PROJECT || SEC_C2Q_PROJECT
+source "arch/arm64/Kconfig.canvas"
+endmenu
+
+menu "Samsung F2"
+depends on SEC_F2Q_PROJECT
+source "arch/arm64/Kconfig.f2"
+endmenu
+
+menu "Samsung Tabs7xl"
+depends on SEC_GTS7XL_PROJECT
+source "arch/arm64/Kconfig.tabs7xl"
+endmenu
+
+menu "Samsung Tabs7l"
+depends on SEC_GTS7L_PROJECT
+source "arch/arm64/Kconfig.tabs7l"
+endmenu
+
+menu "Samsung Bloom"
+depends on SEC_BLOOMXQ_PROJECT
+source "arch/arm64/Kconfig.bloom"
+endmenu
+
+menu "Samsung R8"
+depends on SEC_R8Q_PROJECT
+source "arch/arm64/Kconfig.r8"
+endmenu
+
+menu "Samsung Victory"
+depends on SEC_VICTORY_PROJECT
+source "arch/arm64/Kconfig.victory"
+endmenu

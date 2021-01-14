@@ -1,0 +1,29 @@
+#include "camera_sensor_y2q_r04.dtsi"
+
+&sensor_rear_wide {
+	cam_vana-supply = <&s2mpb03_l5>;
+};
+
+&sensor_rear_tele {
+	cam_vana-supply = <&s2mpb03_l6>;
+};
+
+&sensor_rear_binning_tele {
+	cam_vana-supply = <&s2mpb03_l6>;
+};
+
+&actuator_rear_tele {
+	cam_vaf-supply = <&s2mpb02_l13>;
+};
+
+&sensor_rear_tof {
+	gpios = <&tlmm 97 0>,
+		<&tlmm 148 0>,
+		<&tlmm 149 0>,
+		<&tlmm 118 0>;
+};
+
+&ois_rear {
+	gpios = <&tlmm 174 0>, // RESET
+		<&tlmm 178 0>; // BOOT0
+};

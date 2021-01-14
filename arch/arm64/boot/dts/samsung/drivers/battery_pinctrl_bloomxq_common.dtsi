@@ -1,0 +1,138 @@
+&tlmm {
+	/* MFC */
+	mfc_irq {
+		mfc_irq_default: mfc_irq_default {
+			config {
+				pins = "gpio70";
+				drive-strength = <2>;
+				bias-disable;
+				input-enable;
+			};
+		};
+	};
+
+	wpc_en_default: wpc_en_default {
+		mux {
+			pins = "gpio127";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio127";
+			drive-strength = <2>; /* 2 MA */
+			output-low;
+		};
+	};
+
+	mfc_i2c {
+		mfc_i2c_active: mfc_i2c_active {
+			mfc_i2c_active {
+				pins = "gpio71", "gpio72";
+				bias-disable;
+			};
+		};
+		mfc_i2c_suspend: mfc_i2c_suspend {
+			mfc_i2c_suspend {
+				pins = "gpio71", "gpio72";
+				bias-disable;
+			};
+		};
+	};
+
+	/* LIMITER */
+	main_bat_enb_gpio: main_bat_enb_gpio {
+		mux {
+			pins = "gpio58";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio58";
+			bias-disable;
+			output-low;
+		};
+	};
+
+	sub_bat_enb_gpio: sub_bat_enb_gpio {
+		mux {
+			pins = "gpio46";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio46";
+			bias-disable;
+			output-low;
+		};
+	};
+
+	main_bat_con_det_gpio: main_bat_con_det_gpio {
+		mux {
+			pins = "gpio9";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio9";
+			bias-disable;
+		};
+	};
+
+	sub_bat_con_det_gpio: sub_bat_con_det_gpio {
+		mux {
+			pins = "gpio77";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio77";
+			bias-disable;
+		};
+	};
+
+	/* SE 9 pin mappings */
+	qupv3_se9_i2c_pins: qupv3_se9_i2c_pins {
+		qupv3_se9_i2c_active_limiter: qupv3_se9_i2c_active_limiter {
+			mux {
+				pins = "gpio125", "gpio126";
+				function = "qup9";
+			};
+
+			config {
+				pins = "gpio125", "gpio126";
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+
+		qupv3_se9_i2c_sleep_limiter: qupv3_se9_i2c_sleep_limiter {
+			mux {
+				pins = "gpio125", "gpio126";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio125", "gpio126";
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+	};
+
+	ovp_slg_flag {
+		ovp_slg_flag_default: ovp_slg_flag_default {
+			config {
+				pins = "gpio113";
+				drive-strength = <2>;
+				bias-disable;
+				input-enable;
+			};
+		};
+	};
+	ovp_pwr_flagb {
+		ovp_pwr_flagb_default: ovp_pwr_flagb_default {
+			config {
+				pins = "gpio118";
+				drive-strength = <2>;
+				bias-disable;
+				input-enable;
+			};
+		};
+	};
+};

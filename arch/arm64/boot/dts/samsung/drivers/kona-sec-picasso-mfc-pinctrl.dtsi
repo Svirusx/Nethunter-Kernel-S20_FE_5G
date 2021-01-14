@@ -1,0 +1,50 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&tlmm {
+	mfc_irq {
+		mfc_irq_default: mfc_irq_default {
+			config {
+				pins = "gpio70";
+				drive-strength = <2>;
+				bias-disable;
+				input-enable;
+			};
+		};
+	};
+
+	dc_irq {
+		dc_irq_default: dc_irq_default {
+			config {
+				pins = "gpio134";
+				drive-strength = <2>;
+				bias-disable;
+				input-enable;
+			};
+		};
+	};
+
+	mfc_i2c {
+		mfc_i2c_active: mfc_i2c_active {
+			mfc_i2c_active {
+				pins = "gpio71", "gpio72";
+				bias-disable;
+			};
+		};
+		mfc_i2c_suspend: mfc_i2c_suspend {
+			mfc_i2c_suspend {
+				pins = "gpio71", "gpio72";
+				bias-disable;
+			};
+		};
+	};
+};

@@ -1,0 +1,65 @@
+/* Copyright (c) 2020, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "kona-sec-gts7xl-r01.dtsi"
+#include "kona-sec-gts7xl-pinctrl-r02.dtsi"
+#include "kona-sec-gts7xl-pm-r02.dtsi"
+
+&soc {
+	vdd_spen_3p3: vdd_spen_3p3 {
+		compatible = "regulator-fixed";
+		regulator-name = "wacom_avdd";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpio = <&tlmm 93 0>;
+		enable-active-high;
+		regulator-boot-on;
+	};
+};
+
+&fts_touch {
+	stm,regulator_dvdd = "pm8150_l14";
+	stm,regulator_avdd = "pm8150_l13";
+};
+
+&qupv3_se17_i2c {
+	wacom@56 {
+		pinctrl-0 = <&epen_int_active &epen_pdct_active &epen_ldo_active>;
+		wacom,regulator_avdd = "wacom_avdd";
+	};
+};
+
+/* remove WIFI GRIP since hw_rev02 device */
+/delete-node/ &i2c_17;
+
+/* MAIN GRIP */
+&i2c_16 { /* SW I2C */
+	pinctrl-0 = <&main_grip_ldo_active &wifi_grip_int_active &grip_i2c_active>;
+	pinctrl-1 = <&main_grip_ldo_suspend &wifi_grip_int_active &grip_i2c_suspend>;
+	a96t3x6@20 {
+		interrupts = <67 0>;
+		a96t3x6,irq_gpio = <&tlmm 67 0>;
+		a96t3x6,ldo_en = <&tlmm 64 0>;
+	};
+};
+
+/* change MAIN3/WIFI2 GRIP sensor to WIFI_GRIP since hw_rev02 device */
+/* WIFI GRIP */
+&i2c_18 { /* SW I2C */
+    gpios = <&tlmm 44 0 /* sda */
+         &tlmm 45 0 /* scl */
+    >;
+    a96t3x6@20 {
+        compatible = "a96t3x6_wifi";
+        a96t3x6,fw_path = "abov/a96t356_gts7xl_wifi1.bin";	
+    };
+};

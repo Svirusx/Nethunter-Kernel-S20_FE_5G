@@ -1,0 +1,36 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+/dts-v1/;
+/plugin/;
+
+#include "../common/kona-sec-common.dtsi"
+#include "kona-sec-y2q-r07.dtsi"
+
+/* CAUTION:
+    DO NOT CHANGE r07-sub files.
+    This file is for hwid06 device but doesn't intended to be modified.
+    So, this file includes a r07 dtsi file irregularity since we want to
+    make hwid07 as a base dtb file instead of r06 which does not exists for X1, Z3.
+
+                     AP(SM8250)      CP(SDX55M)     TRCV(SDR865)
+        hw_id04         v1.0         v1.0, v1.1         v1.0
+        hw_id05         v2.0            v2.0            v3.0
+        hw_id06         v1.0            v1.1            v1.0
+ */
+
+/ {
+	model = "Samsung Y2Q PROJECT - SM8250 v1.0 + SDX55M v1.1 + SDR865 v1.0, Rev0.0 (board-id,06)";
+	compatible = "qcom,kona-mtp", "qcom,kona", "qcom,mtp";
+	qcom,board-id = <8 6>;
+	dtbo-version = <0>;
+};

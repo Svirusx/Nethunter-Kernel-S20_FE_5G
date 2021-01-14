@@ -1,0 +1,104 @@
+/* Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&tlmm {
+	wifi_grip_ldo {
+		wifi_grip_ldo_active: wifi_grip_ldo_active {
+			main_grip_ldo_active {
+				pins = "gpio64";
+				bias-disable;         /* No PULL */
+				output-high;
+			};
+		};
+		wifi_grip_ldo_suspend: wifi_grip_ldo_suspend {
+			wifi_grip_ldo_suspend {
+				pins = "gpio64";
+				bias-disable;         /* No PULL */
+				output-high;
+			};
+		};
+	};
+	
+	grip_ldo {
+		grip_ldo_active: grip_ldo_active {
+			grip_ldo_active {
+				pins = "gpio75";
+				bias-disable;         /* No PULL */
+				output-high;
+			};
+		};
+		grip_ldo_suspend: grip_ldo_suspend {
+			grip_ldo_suspend {
+				pins = "gpio75";
+				bias-disable;         /* No PULL */
+				output-high;
+			};
+		};
+	};
+	grip_i2c {
+		grip_i2c_active: grip_i2c_active {
+			grip_i2c_active {
+				pins = "gpio112", "gpio113";
+				bias-disable;
+			};
+		};
+		grip_i2c_suspend: grip_i2c_suspend {
+			grip_i2c_suspend {
+				pins = "gpio112", "gpio113";
+				bias-disable;
+			};
+		};
+	};
+	grip_int {
+		grip_int_active: grip_int_active {
+			grip_int_active {
+				pins = "gpio111";
+				bias-disable;
+			};
+		};
+		grip_int_suspend: grip_int_suspend {
+			grip_int_suspend {
+				pins = "gpio111";
+				bias-disable;
+			};
+		};
+	};
+
+	wifi_grip_i2c {
+		wifi_grip_i2c_active: wifi_grip_i2c_active {
+			wifi_grip_i2c_active {
+				pins = "gpio44", "gpio45";
+				bias-disable;
+			};
+		};
+		wifi_grip_i2c_suspend: wifi_grip_i2c_suspend {
+			wifi_grip_i2c_suspend {
+				pins = "gpio44", "gpio45";
+				bias-disable;
+			};
+		};
+	};
+	wifi_grip_int {
+		wifi_grip_int_active: wifi_grip_int_active {
+			wifi_grip_int_active {
+				pins = "gpio51";
+				bias-disable;
+			};
+		};
+		wifi_grip_int_suspend: wifi_grip_int_suspend {
+			wifi_grip_int_suspend {
+				pins = "gpio51";
+				bias-disable;
+			};
+		};
+	};
+};

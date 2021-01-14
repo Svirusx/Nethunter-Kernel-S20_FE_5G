@@ -1,0 +1,61 @@
+/* Copyright (c) 2020, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "kona-sec-f2q-r03.dtsi"
+#include "kona-sec-f2q-pinctrl-r04.dtsi"
+#include "../drivers/kona-sec-sensor-vdd-lpm.dtsi"
+#include "kona-sec-f2q-pm-r04.dtsi"
+#include "../drivers/kona-sec-f2q-display-r04.dtsi"
+#include "../drivers/fingerprint-sensor_f2q-r04.dtsi"
+
+&soc {
+
+};
+/*
+ * L1C source power is changed from VREG_S4A_1P8 to VREG_S5A_2P0.
+ * so, Need to be changed to LDO mode(HPM) for NFC.
+ */
+&apps_rsc {
+	rpmh-regulator-ldoc1 {
+		qcom,supported-modes =
+			<RPMH_REGULATOR_MODE_LPM
+			RPMH_REGULATOR_MODE_HPM>;
+		qcom,mode-threshold-currents = <0 10000>;
+		L1C: pm8150a_l1: regulator-pm8150a-l1 {
+			qcom,init-mode = <RPMH_REGULATOR_MODE_HPM>;
+		};
+	};
+};
+
+&s2dos05_l2 {	/* tsp_io */
+	regulator-min-microvolt = <1800000>;
+	regulator-max-microvolt = <1800000>;
+	regulator-boot-on;
+};
+
+&s2dos05_l3 {	/* tsp_avdd */
+	regulator-min-microvolt = <3000000>;
+	regulator-max-microvolt = <3000000>;
+	regulator-boot-on;
+};
+
+&s2mpb02_sub_l6 {	/* sub_tsp_io */
+	regulator-min-microvolt = <1800000>;
+	regulator-max-microvolt = <1800000>;
+	regulator-boot-on;
+};
+
+&s2mpb02_sub_l14 {	/* sub_tsp_avdd */
+	regulator-min-microvolt = <3000000>;
+	regulator-max-microvolt = <3000000>;
+	regulator-boot-on;
+};

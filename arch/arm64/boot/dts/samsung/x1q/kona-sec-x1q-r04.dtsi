@@ -1,0 +1,163 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "kona-sec-x1q-pinctrl-r04.dtsi"
+#include "../y2q/kona-sec-picassoq-pm-common.dtsi"
+#include "../y2q/kona-sec-picassoq-pm-r03.dtsi"
+
+#include "../drivers/input_x1q_common.dtsi"
+#include "../drivers/eif_picasso_common.dtsi"
+#include "../drivers/eif_x1q_common.dtsi"
+#include "../drivers/battery-data-x1q-common.dtsi"
+#include "../drivers/audio_picasso_common.dtsi"
+#include "../drivers/kona-sec-x1q-display-r00.dtsi"
+#include "../drivers/kona-sec-picassoq-common-mst-r04.dtsi"
+#include "../drivers/displayport_y2q_r04.dtsi"
+#include "../drivers/nfc_y2q_r04.dtsi"
+#include "../drivers/fingerprint-sensor_hubblex1_r00.dtsi"
+#include "../drivers/optics_x1q_r04.dtsi"
+#include "../drivers/camera_sensor_x1q_r04.dtsi"
+#include "../drivers/abc_picassoq_common.dtsi"
+
+&apps_rsc {
+	rpmh-regulator-ldoa10 {
+		L10A: pm8150_l10: regulator-pm8150-l10 {
+			regulator-min-microvolt = <2900000>;
+			regulator-max-microvolt = <2900000>;
+			qcom,init-voltage = <2900000>;
+			regulator-always-on;
+		};
+	};
+};
+
+&soc {
+
+	bcmdhd_wlan {
+		qcom,iommu-dma = "disabled";
+		compatible = "android,bcmdhd_wlan";
+		wlan-en-gpio = <&tlmm 90 0>;
+		wlan-host-wake-gpio = <&tlmm 128 0>;
+		wlan-smmu-iova-address = <0xa0000000 0x10000000>;
+		pinctrl-name = "bcmdhd_wlan_en","bcmdhd_default";
+		pinctrl-0 = <&bcmdhd_wlan_en>;
+		pinctrl-1 = <&bcmdhd_default>;
+		status = "ok";
+	}; 
+
+	bt_driver {
+		compatible = "bcm,btdriver";  //bt_en
+		pinctrl-names = "default";
+		pinctrl-0 = <&bt_en_default>;
+		bcm,bt-reset-gpio = <&tlmm 76 GPIO_ACTIVE_HIGH>;
+		status = "ok";
+	};
+
+	bt_bluesleep {
+		compatible = "bcm,bluesleep";
+		bcm,bt-wake-gpio = <&tlmm 133 0>;
+		bcm,bt-host-wake-gpio = <&tlmm 126 0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&bt_wake_default &bt_hostwake_default>;
+		status = "ok";
+	};
+
+	i2c@17 { /* SW I2C */
+		status = "ok";
+
+		cell-index = <17>;
+		compatible = "i2c-gpio";
+		gpios = <&tlmm 112 0 /* sda */
+			 &tlmm 113 0 /* scl */
+		>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&grip_i2c_active>;
+
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		sx9360-i2c@28 {
+			compatible = "sx9360";
+			reg = <0x28>;
+			status = "okay";
+			pinctrl-names = "default";
+			pinctrl-0 = <&grip_int_active>;
+			interrupt-parent = <&tlmm>;
+			interrupts = <111 0>;
+
+			sx9360,nirq-gpio = <&tlmm 111 0>;
+			sx9360,refresolution_reg = <0x0f>; /* same as resolution_reg */
+			sx9360,refagainfreq_reg = <0x36>; /* same as againfreq_reg */
+			sx9360,resolution_reg = <0x0f>; /* resolution : 1024 */
+			sx9360,againfreq_reg = <0x24>; /* freq : 125 kHz, again : +/-3.75 pF */
+			sx9360,refgainrawfilt_reg = <0x22>; /* same as gainrawfilt_reg */
+			sx9360,gainrawfilt_reg = <0x0A>; /* rawfilter : 1-1/4, gain : x1 */
+			sx9360,avgfilt_reg = <0x0A>; /* avgnegfilt : 1-1/2, avgposfilt : 1-1/64 */
+			sx9360,hyst_reg = <0x15>; /* hysteresis : +/-6 %, debouncer : 2 samples */
+			sx9360,proxthresh_reg = <0x1A>; /* threshhold : 338 */
+			sx9360,hallic_cert_detect = <1>;
+		};
+	};
+
+	sound {
+		mixer-paths = "mixer_paths_old.xml";
+	};
+};
+
+&aliases {
+	hsuart0 = "/soc/qcom,qup_uart@998000";
+};
+
+&ssc_sensors {
+	/delete-property/ qcom,ssc_hw_rev;
+	qcom,ssc_hw_rev = <4>;
+};
+
+&cnss_pci {
+	status = "disabled";
+};
+&bluetooth {
+	status = "disabled";
+};
+
+&qupv3_se6_4uart {
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&qupv3_se6_ctsrx_active>, <&qupv3_se6_rts_active>,
+						<&qupv3_se6_tx_active>;
+	pinctrl-1 = <&qupv3_se6_ctsrx_sleep>, <&qupv3_se6_rts_sleep>,
+						<&qupv3_se6_tx_sleep>;
+	interrupts-extended = <&intc GIC_SPI 607 IRQ_TYPE_LEVEL_HIGH>;
+	status = "ok";
+};
+
+&pcie2 {
+    qcom,core-preset = <0x55555555>;
+};
+
+&qupv3_se5_i2c {
+	touchscreen@48 {
+		pinctrl-0 = <&attn_irq &tsp_id>;
+		pinctrl-1 = <&attn_irq &tsp_id>;
+		pinctrl-2 = <&attn_irq &tsp_id>;
+		sec,tsp-id_gpio = <&tlmm 46 0>;
+		sec,firmware_name = "tsp_sec/y771_y2_ub.bin", "tsp_sec/y79a_x1_ub.bin";
+	};
+};
+
+&qupv3_se0_i2c {
+	max77705@66 {
+		max77705,extra_fw_enable = <1>;
+        };
+};
+
+&ufshc_mem {
+	hpb-enable = <1>;
+};

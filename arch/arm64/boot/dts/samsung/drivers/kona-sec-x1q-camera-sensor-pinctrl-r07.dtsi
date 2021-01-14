@@ -1,0 +1,41 @@
+#include "kona-sec-x1q-camera-sensor-pinctrl-common.dtsi"
+
+&flash_led_active {
+	mux {
+		pins = "gpio117","gpio136";
+	};
+
+	config {
+		pins = "gpio117","gpio136";
+	};
+};
+
+&flash_led_suspend {
+	mux {
+		pins = "gpio117","gpio136";
+	};
+
+	config {
+		pins = "gpio117","gpio136";
+	};
+};
+
+&mcu_active {
+	mux {
+		pins = "gpio174","gpio178";
+	};
+
+	config {
+		pins = "gpio174","gpio178";
+	};
+};
+
+&mcu_suspend {
+	mux {
+		pins = "gpio174","gpio178";
+	};
+
+	config {
+		pins = "gpio174","gpio178";
+	};
+};

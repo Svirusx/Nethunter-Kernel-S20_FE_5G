@@ -1,0 +1,93 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&aliases {
+	/*spi0 = &qupv3_se16_spi;*/
+	spi0 = "/soc/spi@888000";
+};
+
+&tlmm {
+	qupv3_se16_spi_sleep_out: qupv3_se16_spi_sleep_out {
+		mux {
+			pins = "gpio48", "gpio49", "gpio50",
+				"gpio51";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio48", "gpio49", "gpio50",
+				"gpio51";
+			drive-strength = <6>;
+			bias-pull-down; /* pull down */
+			output-low;
+		};
+	};
+
+	nfc_qupv3_se15_i2c_sleep: nfc_qupv3_se15_i2c_sleep {
+	      mux {
+		      pins = "gpio44", "gpio45";
+		      function = "gpio";
+	      };
+
+	      config {
+		      pins = "gpio44", "gpio45";
+		      drive-strength = <2>;
+		      bias-disable;
+	      };
+	};
+};
+
+&qupv3_se16_spi {
+	status = "ok";
+	/* /delete-property/ pinctrl-1; */
+	pinctrl-1 = <&qupv3_se16_spi_sleep_out>;
+	ese_spi@0 {
+		compatible = "p61";
+		reg = <0>;
+		spi-max-frequency = <16000000>;
+		p61-ap_vendor = "qualcomm";
+		p61-spi_node = <&qupv3_se16_spi>;
+		/*clock-names = "pclk", "sclk";
+		 */
+		/*clocks = <&clock_gcc clk_gcc_blsp1_ahb_clk>,
+		 *	<&clock_gcc clk_gcc_blsp1_qup1_spi_apps_clk>;
+		 */
+		/* clock-names = "se-clk", "m-ahb", "s-ahb"; */
+		/* clocks = <&clock_gcc GCC_QUPV3_WRAP2_S1_CLK>, */
+		/* <&clock_gcc GCC_QUPV3_WRAP_2_M_AHB_CLK>, */
+		/* <&clock_gcc GCC_QUPV3_WRAP_2_S_AHB_CLK>; */
+	};
+};
+
+&qupv3_se15_i2c {
+	status = "ok";
+	pinctrl-1 = <&nfc_qupv3_se15_i2c_sleep>;
+	pn547@2B {
+		compatible = "pn547";
+		reg = <0x2B>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <31 0>;
+		pn547,irq-gpio = <&tlmm 31 0>;
+		pn547,ven-gpio = <&tlmm 72 0>;
+		pn547,firm-gpio = <&tlmm 9 0>;
+		pn547,clk_req-gpio = <&tlmm 100 0>;
+		pn547,pwr_req =  <&tlmm 8 0>;
+		pn547,nfc_pvdd-supply = <&pm8150a_l1>;
+		pn547,ldo_control;
+		pn547,clk_req_wake;
+/*		pn547,nfc_pm_clk; */ /* don't need to control bbclk3 by driver code, if MGPI is enabled */
+/*		clocks = <&clock_rpmh RPMH_LN_BB_CLK3>; */
+/*		clock-names = "rf_clk"; */
+/*		qcom,clk-src = "BBCLK3"; */
+/*		pinctrl-names = "default"; */
+/*		pinctrl-0 = <&nfc_clk_default>; */
+	};
+};

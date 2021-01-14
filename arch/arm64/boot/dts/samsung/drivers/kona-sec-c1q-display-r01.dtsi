@@ -1,0 +1,156 @@
+/* Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "../../../../../../techpack/display/msm/samsung/SELF_DISPLAY/self_display_cmd_FA9.dtsi"
+#include "../../../../../../techpack/display/msm/samsung/S6E3FA9_AMB667UM01/dsi_panel_S6E3FA9_AMB667UM01_fhd_octa_cmd.dtsi"
+
+#define DEFAULT_FIXED_VAL	0
+
+&tlmm {
+	pmx_sde_ldo_enable {
+		sde_ldo_enable_active: sde_ldo_enable_active {
+			mux {
+				pins = "gpio172", "gpio173";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio172", "gpio173";
+				drive-strength = <2>;
+				bias-pull-down;         /* PULL DOWN */
+			};
+		};
+
+		sde_ldo_enable_suspend: sde_ldo_enable_suspend {
+			mux {
+				pins = "gpio172", "gpio173";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio172", "gpio173";
+				drive-strength = <2>;   /* 2 mA */
+				bias-pull-down;         /* PULL DOWN */
+			};
+		};
+	};
+};
+
+&soc {
+	/* VDD_DDI_1P8 */
+	fixed_reg_vdd3: fixed_reg_vdd3 {
+		compatible = "regulator-fixed";
+		status = "okay";
+		regulator-name = "ub-vdd3";
+		gpio = <&tlmm 172 0>; /* UB_DDI_1P8_EN	GPIO_172 */
+		enable-active-high;
+		regulator-boot-on;
+	};
+
+	/* VDD_DDR_1P5 */
+	fixed_reg_vddr: fixed_reg_vddr {
+		compatible = "regulator-fixed";
+		status = "okay";
+		regulator-name = "ub-vddr";
+		gpio = <&tlmm 173 0>; /* UB_DDR_1P5_EN	GPIO_173 */
+		enable-active-high;
+		regulator-boot-on;
+	};
+
+
+	/* C1 2340 panel (hwid06: A91 panel... ) */
+	ss_dsi_panel_S6E3FA9_AMB667UM01_FHD_display: qcom,dsi-display@3 {
+		label = "ss_dsi_panel_S6E3FA9_AMB667UM01_FHD";
+	};
+};
+
+&pm8150a_l7 {
+	regulator-min-microvolt = <3000000>;
+	regulator-max-microvolt = <3000000>;
+	qcom,init-voltage = <3000000>;
+	regulator-boot-on;	/* keep ldo on while kernel booting for continuous splash mode */
+	/delete-property/ regulator-always-on;
+};
+
+/* override display-list / supply for samsung panel */
+&sde_dsi {
+	vci-supply = <&pm8150a_l7>; /* 3.0V, S2DOS05 LDO4 -> PM8150C VREG_L7C */
+	vdd3-supply = <&fixed_reg_vdd3>; /* 1.8V, S2DOS05 LDO1 -> UB_DDI_1P8_EN	GPIO_172 */
+	vddr-supply = <&fixed_reg_vddr>; /* 1.5V, S2DOS05 buck -> UB_DDR_1P5_EN	GPIO_173 */
+
+	pinctrl-0 = <&sde_dsi_active &sde_te_active &sde_ub_det_active &sde_fg_err_default &sde_disp_det_default &sde_ldo_enable_active>;
+	pinctrl-1 = <&sde_dsi_suspend &sde_te_suspend &sde_ub_det_suspend &sde_fg_err_default &sde_disp_det_default &sde_ldo_enable_suspend>;
+
+	qcom,dsi-default-panel = <&ss_dsi_panel_S6E3FA9_AMB667UM01_FHD>;
+};
+
+&ss_dsi_panel_S6E3FA9_AMB667UM01_FHD {
+	qcom,dsi-ctrl-num = <0>;
+	qcom,dsi-phy-num = <0>;
+	qcom,dsi-select-clocks = "mux_byte_clk0", "mux_pixel_clk0",
+				"src_byte_clk0", "src_pixel_clk0",
+				"shadow_byte_clk0", "shadow_pixel_clk0";
+
+	qcom,platform-reset-gpio = <&tlmm 82 0>;
+	qcom,platform-te-gpio = <&tlmm 66 0>;
+
+	/delete-property/ qcom,panel-mode-gpio;
+
+	qcom,panel-supply-entries {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		qcom,panel-supply-entry@0 {
+		    reg = <0>;
+		    qcom,supply-name = "vdd3"; /* 1.8 V */
+		    qcom,supply-min-voltage = <DEFAULT_FIXED_VAL>;
+		    qcom,supply-max-voltage = <DEFAULT_FIXED_VAL>;
+		    qcom,supply-enable-load = <DEFAULT_FIXED_VAL>;
+		    qcom,supply-disable-load = <DEFAULT_FIXED_VAL>;
+		    qcom,supply-pre-on-sleep = <0>; /* unit is ms*/
+		    qcom,supply-post-on-sleep = <0>;
+		};
+
+		qcom,panel-supply-entry@1 {
+		    reg = <1>;
+		    qcom,supply-name = "vddr"; /* 1.5V */
+		    qcom,supply-min-voltage = <DEFAULT_FIXED_VAL>;
+		    qcom,supply-max-voltage = <DEFAULT_FIXED_VAL>;
+		    qcom,supply-enable-load = <DEFAULT_FIXED_VAL>;
+		    qcom,supply-disable-load = <DEFAULT_FIXED_VAL>;
+		    qcom,supply-pre-on-sleep = <1>; /* unit is ms*/
+		    qcom,supply-post-on-sleep = <0>;
+		};
+
+		qcom,panel-supply-entry@2 {
+		    reg = <2>;
+		    qcom,supply-name = "vci";
+		    qcom,supply-min-voltage = <3000000>;
+		    qcom,supply-max-voltage = <3000000>;
+		    qcom,supply-enable-load = <100000>;
+		    qcom,supply-disable-load = <100>;
+		    qcom,supply-pre-on-sleep = <0>; /* unit is ms*/
+		    qcom,supply-post-on-sleep = <10>;
+		};
+	};
+};
+
+&ss_dsi_panel_S6E3FA9_AMB667UM01_FHD {
+	samsung,esd-irq-gpio1 = <&pm8150_gpios 1 0>; /* DISP_DET, PM8250 */
+	/* SW W/A: support panel recovery by FG_ERR interrupt under panel revision D (ID3=0x42)
+	 * TODO: check this in canvas...
+	 */
+	//samsung,esd-irq-gpio2 = <&pm8150l_gpios 8 0>; /* FG_ERR, PM8150C */
+	samsung,delayed-display-on = <1>;
+
+	samsung,ub-con-det = <&tlmm 46 0>;
+};

@@ -1,0 +1,25 @@
+/* Copyright (c) 2020, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "kona-sec-c1q-r10.dtsi"
+#include "kona-sec-c1q-pinctrl-r11.dtsi"
+
+&soc {
+	sec-cisd {
+		ovp_power = <&tlmm 83 0>;
+		ovp_signal = <&pm8150l_gpios 4 0>;
+	};
+
+	battery {
+		pinctrl-0 = <&wpc_det_default &wpc_thm_default &ovp_sig_flagb_default &ovp_pwr_flagb_default>;
+	};
+};
