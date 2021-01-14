@@ -66,7 +66,7 @@ static const char *nfs_get_link(struct dentry *dentry,
 		err = ERR_PTR(nfs_revalidate_mapping(inode, inode->i_mapping));
 		if (err)
 			return err;
-		page = read_cache_page(&inode->i_data, 0, nfs_symlink_filler,
+		page = read_cache_page(&inode->i_data, 0, (filler_t)nfs_symlink_filler,
 				inode);
 		if (IS_ERR(page))
 			return ERR_CAST(page);

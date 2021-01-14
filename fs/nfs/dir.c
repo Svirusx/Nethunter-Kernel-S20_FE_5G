@@ -710,7 +710,7 @@ static
 struct page *get_cache_page(nfs_readdir_descriptor_t *desc)
 {
 	return read_cache_page(desc->file->f_mapping, desc->page_index,
-			nfs_readdir_filler, desc);
+			(filler_t)nfs_readdir_filler, desc);
 }
 
 /*

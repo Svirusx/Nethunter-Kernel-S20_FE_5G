@@ -685,7 +685,7 @@ int secdp_store_hmd_dev(char *str, size_t len, int num_hmd)
 {
 	struct dp_display_private *dp = g_secdp_priv;
 	struct secdp_sink_dev *hmd_list;
-	struct secdp_sink_dev hmd_bak[MAX_NUM_HMD] = {0,};
+	struct secdp_sink_dev hmd_bak[MAX_NUM_HMD] = {{0,}};
 	bool backup = false;
 	char *tok;
 	int  i, j, ret = 0, rmdr;

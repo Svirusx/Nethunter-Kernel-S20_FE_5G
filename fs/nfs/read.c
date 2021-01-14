@@ -424,7 +424,7 @@ int nfs_readpages(struct file *filp, struct address_space *mapping,
 	nfs_pageio_init_read(&pgio, inode, false,
 			     &nfs_async_read_completion_ops);
 
-	ret = read_cache_pages(mapping, pages, readpage_async_filler, &desc);
+	ret = read_cache_pages(mapping, pages, (filler_t)readpage_async_filler, &desc);
 	nfs_pageio_complete(&pgio);
 
 	/* It doesn't make sense to do mirrored reads! */
