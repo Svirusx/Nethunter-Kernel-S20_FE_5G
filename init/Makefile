@@ -3,6 +3,8 @@
 # Makefile for the linux kernel.
 #
 
+EXTRA_CFLAGS += -Wno-ignored-attributes
+
 ccflags-y := -fno-function-sections -fno-data-sections
 
 obj-y                          := main.o version.o mounts.o
