@@ -1,0 +1,33 @@
+/* Copyright (c) 2020, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+/dts-v1/;
+/plugin/;
+
+#include "../common/kona-sec-common.dtsi"
+#include "kona-sec-f2q-r10.dtsi"
+#include "../drivers/battery-data-f2q-common.dtsi"
+
+/ {
+	model = "Samsung F2Q PROJECT - SM-F916N Rev0.7 (board-id,10)";
+	compatible = "qcom,kona-mtp", "qcom,kona", "qcom,mtp";
+	qcom,board-id = <8 10>;
+	dtbo-version = <0>;
+};
+
+&soc {
+	i2c@17 { /* SW I2C */
+		sx9360_sub3-i2c@28 { /* grip 3 */
+			sx9360_sub3,proxthresh_reg = <0x1E>; /* threshold : 477 */
+		};
+	};
+};

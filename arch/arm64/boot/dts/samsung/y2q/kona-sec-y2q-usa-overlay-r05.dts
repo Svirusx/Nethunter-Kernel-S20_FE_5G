@@ -1,0 +1,34 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+/dts-v1/;
+/plugin/;
+
+#include "../common/kona-sec-common.dtsi"
+#include "kona-sec-y2q-r04.dtsi"
+
+/* TODO:
+    The only difference between hwid04 and hwid05 is chipset revision.
+    There is no change for hwid05 device in terms of software.
+    Thus, we just included a r04 dtsi file instead of create a new dtsi file.
+
+                     AP(SM8250)      CP(SDX55M)     TRCV(SDR865)
+        hw_id04         v1.0         v1.0, v1.1         v1.0
+        hw_id05         v2.0            v2.0            v3.0
+ */
+
+/ {
+	model = "Samsung Y2Q PROJECT - SM8250 v2.0 + SDX55M v2.0 + SDR865 v3.0, Rev0.1 (board-id,05)";
+	compatible = "qcom,kona-mtp", "qcom,kona", "qcom,mtp";
+	qcom,board-id = <8 5>;
+	dtbo-version = <0>;
+};

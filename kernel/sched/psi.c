@@ -181,8 +181,7 @@ __setup("psi=", setup_psi);
 #define AVG60			1
 #define AVG300			2
 
-static int lmkd_count;
-static int lmkd_cricount;
+u64 psi_full_max;
 
 /* Sampling frequency in nanoseconds */
 static u64 psi_period __read_mostly;
@@ -201,7 +200,8 @@ static void group_init(struct psi_group *group)
 
 	for_each_possible_cpu(cpu)
 		seqcount_init(&per_cpu_ptr(group->pcpu, cpu)->seq);
-	group->avg_next_update = sched_clock() + psi_period;
+	group->avg_last_update = sched_clock();
+	group->avg_next_update = group->avg_last_update + psi_period;
 	INIT_DEFERRABLE_WORK(&group->avgs_work, psi_avgs_work);
 	mutex_init(&group->avgs_lock);
 	/* Init trigger-related members */
@@ -555,7 +555,7 @@ static u64 window_update(struct psi_window *win, u64 now, u64 value)
 		u32 remaining;
 
 		remaining = win->size - elapsed;
-		growth += div_u64(win->prev_growth * remaining, win->size);
+		growth += div64_u64(win->prev_growth * remaining, win->size);
 	}
 
 	return growth;
@@ -600,6 +600,15 @@ static u64 update_triggers(struct psi_group *group, u64 now)
 
 		/* Calculate growth since last update */
 		growth = window_update(&t->win, now, total[t->state]);
+
+		if ((t->win.size >= MONITOR_WINDOW_MIN_NS)){
+			if (t->state==3) { //FULL
+				if(growth < 5000000000 && growth > psi_full_max) {
+					psi_full_max = growth;
+				}
+			}
+		}
+
 		if (growth < t->threshold)
 			continue;
 
@@ -1157,68 +1166,6 @@ static int psi_cpu_open(struct inode *inode, struct file *file)
 	return single_open(file, psi_cpu_show, NULL);
 }
 
-static ssize_t psi_lmkd_count_read(struct file *file, char __user *buf,
-			    size_t count, loff_t *ppos)
-{
-	size_t len;
-	char buffer[32];
-	len = snprintf(buffer, sizeof(buffer), "%d\n", lmkd_count);
-
-	return simple_read_from_buffer(buf, count, ppos, buffer, len);
-}
-
-static ssize_t psi_lmkd_cricount_read(struct file *file, char __user *buf,
-			    size_t count, loff_t *ppos)
-{
-	size_t len;
-	char buffer[32];
-	len = snprintf(buffer, sizeof(buffer), "%d\n", lmkd_cricount);
-
-	return simple_read_from_buffer(buf, count, ppos, buffer, len);
-}
-
-static ssize_t psi_lmkd_count_write(struct file *file, const char __user *user_buf,
-			    size_t count, loff_t *ppos)
-{
-	char buffer[32];
-	int err;
-	memset(buffer, 0, sizeof(buffer));
-
-	if (count > sizeof(buffer) - 1)
-		count = sizeof(buffer) - 1;
-	if (copy_from_user(buffer, user_buf, count)) {
-		err = -EFAULT;
-		return err;
-	}
-
-	err = kstrtoint(strstrip(buffer), 0, &lmkd_count);
-	if(err)
-		return err;
-
-	return count;
-}
-
-static ssize_t psi_lmkd_cricount_write(struct file *file, const char __user *user_buf,
-			    size_t count, loff_t *ppos)
-{
-	char buffer[32];
-	int err;
-	memset(buffer, 0, sizeof(buffer));
-
-	if (count > sizeof(buffer) - 1)
-		count = sizeof(buffer) - 1;
-	if (copy_from_user(buffer, user_buf, count)) {
-		err = -EFAULT;
-		return err;
-	}
-
-	err = kstrtoint(strstrip(buffer), 0, &lmkd_cricount);
-	if(err)
-		return err;
-
-	return count;
-}
-
 struct psi_trigger *psi_trigger_create(struct psi_group *group,
 			char *buf, size_t nbytes, enum psi_res res)
 {
@@ -1269,7 +1216,7 @@ struct psi_trigger *psi_trigger_create(struct psi_group *group,
 
 	if (!rcu_access_pointer(group->poll_kworker)) {
 		struct sched_param param = {
-			.sched_priority = MAX_RT_PRIO - 1,
+			.sched_priority = 1,
 		};
 		struct kthread_worker *kworker;
 
@@ -1279,7 +1226,7 @@ struct psi_trigger *psi_trigger_create(struct psi_group *group,
 			mutex_unlock(&group->trigger_lock);
 			return ERR_CAST(kworker);
 		}
-		sched_setscheduler(kworker->task, SCHED_FIFO, &param);
+		sched_setscheduler_nocheck(kworker->task, SCHED_FIFO, &param);
 		kthread_init_delayed_work(&group->poll_work,
 				psi_poll_work);
 		rcu_assign_pointer(group->poll_kworker, kworker);
@@ -1350,7 +1297,15 @@ static void psi_trigger_destroy(struct kref *ref)
 	 * deadlock while waiting for psi_poll_work to acquire trigger_lock
 	 */
 	if (kworker_to_destroy) {
+		/*
+		 * After the RCU grace period has expired, the worker
+		 * can no longer be found through group->poll_kworker.
+		 * But it might have been already scheduled before
+		 * that - deschedule it cleanly before destroying it.
+		 */
 		kthread_cancel_delayed_work_sync(&group->poll_work);
+		atomic_set(&group->poll_scheduled, 0);
+
 		kthread_destroy_worker(kworker_to_destroy);
 	}
 	kfree(t);
@@ -1415,7 +1370,7 @@ static ssize_t psi_write(struct file *file, const char __user *user_buf,
 	if (!nbytes)
 		return -EINVAL;
 
-	buf_size = min(nbytes, (sizeof(buf) - 1));
+	buf_size = min(nbytes, sizeof(buf));
 	if (copy_from_user(buf, user_buf, buf_size))
 		return -EFAULT;
 
@@ -1494,26 +1449,20 @@ static const struct file_operations psi_cpu_fops = {
 	.release        = psi_fop_release,
 };
 
-static const struct file_operations psi_lmkd_count_fops = {
-	.read           = psi_lmkd_count_read,
-	.write          = psi_lmkd_count_write,
-	.llseek         = default_llseek,
-};
-
-static const struct file_operations psi_lmkd_cricount_fops = {
-	.read           = psi_lmkd_cricount_read,
-	.write          = psi_lmkd_cricount_write,
-	.llseek         = default_llseek,
-};
-
 static int __init psi_proc_init(void)
 {
 	proc_mkdir("pressure", NULL);
 	proc_create("pressure/io", 0, NULL, &psi_io_fops);
 	proc_create("pressure/memory", 0, NULL, &psi_memory_fops);
 	proc_create("pressure/cpu", 0, NULL, &psi_cpu_fops);
-	proc_create("pressure/lmkd_count", 0644, NULL, &psi_lmkd_count_fops);
-	proc_create("pressure/lmkd_cricount", 0644, NULL, &psi_lmkd_cricount_fops);
+
+	#ifdef CONFIG_SAMSUNG_LMKD_DEBUG
+	if (!proc_symlink("pressure/lmkd_count", NULL, "/proc/lmkd_debug/lmkd_count"))
+		pr_err("Failed to create link /proc/pressure/lmkd_count -> /proc/lmkd_debug/lmkd_count\n");
+	if (!proc_symlink("pressure/lmkd_cricount", NULL, "/proc/lmkd_debug/lmkd_cricount"))
+		pr_err("Failed to create link /proc/pressure/lmkd_cricount -> /proc/lmkd_debug/lmkd_cricount\n");
+	#endif
+
 	return 0;
 }
 module_init(psi_proc_init);

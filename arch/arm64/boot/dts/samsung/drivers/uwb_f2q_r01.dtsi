@@ -1,0 +1,164 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&apps_rsc {
+	rpmh-regulator-ldoc11 {
+		qcom,mode-threshold-currents = <0 1>;
+		L11C: pm8150a_l11: regulator-pm8150a-l11 {
+			/delete-property/ qcom,proxy-consumer-enable;
+			/delete-property/ qcom,proxy-consumer-current;
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1800000>;
+			qcom,init-voltage = <1800000>;
+			regulator-always-on;
+		};
+	};
+	rpmh-regulator-ldoa15 {
+		qcom,mode-threshold-currents = <0 1>;
+		L15A: pm8150_l15: regulator-pm8150-l15 {
+			regulator-min-microvolt = <1900000>;
+			regulator-max-microvolt = <1900000>;
+			qcom,init-voltage = <1900000>;
+			regulator-always-on;
+		};
+	};
+};
+
+&tlmm {
+	uwb_int: uwb_int {
+		mux {
+			pins = "gpio100";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio100";
+			drive-strength = <2>;
+			bias-pull-down;
+			input-enable;
+		};
+	};
+	uwb_ri: uwb_ri {
+		mux {
+			pins = "gpio54";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio54";
+			drive-strength = <2>;
+			bias-pull-down;
+			output-low;
+		};
+	};
+	uwb_rtc_sync: uwb_rtc_sync {
+		mux {
+			pins = "gpio11";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio11";
+			drive-strength = <2>;
+			bias-disable;
+			output-low;
+		};
+	};
+
+	uwb_en: uwb_en {
+		mux {
+			pins = "gpio74";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio74";
+			drive-strength = <2>;
+			bias-disable;
+			output-low;
+		};
+	};
+	qupv3_se8_spi_active: qupv3_se8_spi_active {
+		mux {
+			pins = "gpio24", "gpio25", "gpio26";
+			function = "qup8";
+		};
+
+		config {
+			pins = "gpio24", "gpio25", "gpio26";
+			drive-strength = <6>;
+			bias-disable;
+		};
+	};
+
+	qupv3_se8_spi_sleep: qupv3_se8_spi_sleep {
+		mux {
+			pins = "gpio24", "gpio25", "gpio26";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio24", "gpio25", "gpio26";
+			drive-strength = <6>;
+			bias-pull-down;
+			input-enable;
+		};
+	};
+	qupv3_se8_spi_cs_active: qupv3_se8_spi_cs_active {
+		mux {
+			pins = "gpio27";
+			function = "qup8";
+		};
+
+		config {
+			pins = "gpio27";
+			drive-strength = <6>;
+			bias-pull-up;
+		};
+	};
+
+	qupv3_se8_spi_cs_sleep: qupv3_se8_spi_cs_sleep {
+		mux {
+			pins = "gpio27";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio27";
+			drive-strength = <6>;
+			bias-pull-up;
+			input-enable;
+		};
+	};
+};
+
+&qupv3_se8_spi {
+	status = "ok";
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&qupv3_se8_spi_active &qupv3_se8_spi_cs_active>;
+	pinctrl-1 = <&qupv3_se8_spi_sleep &qupv3_se8_spi_cs_sleep>;
+
+	uwb_spi@0 {
+		compatible = "nxp,sr100";
+		reg = <0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&uwb_ri &uwb_rtc_sync &uwb_int &uwb_en>;
+		spi-max-frequency = <16000000>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <100 0>;
+		nxp,sr100-irq = <&tlmm 100 0>;
+		nxp,sr100-ce = <&tlmm 74 0>;
+		nxp,sr100-ri = <&tlmm 54 0>;
+		nxp,sr100-rtc-sync = <&tlmm 11 0>;
+		nxp,vdd-rf  = "pm8150a_l11";
+		nxp,vdd  = "pm8150_l15";
+	};
+};

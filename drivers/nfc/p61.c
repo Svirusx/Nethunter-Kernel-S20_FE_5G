@@ -105,7 +105,7 @@ struct p61_device {
 	bool tz_mode;
 	spinlock_t ese_spi_lock;
 	bool isGpio_cfgDone;
-	struct wakeup_source ws;
+	struct wakeup_source *ws;
 	bool device_opened;
 
 #ifdef ESE_PINCTRL
@@ -368,7 +368,7 @@ static int p61_dev_open(struct inode *inode, struct file *filp)
 	struct p61_device *p61_dev = container_of(filp->private_data,
 				struct p61_device, miscdev);
 	struct spi_device *spidev = NULL;
-	struct wakeup_source *ws = &p61_dev->ws;
+	struct wakeup_source *ws = p61_dev->ws;
 
 	spidev = spi_dev_get(p61_dev->spi);
 
@@ -533,7 +533,7 @@ long p61_cold_reset(void)
 static int p61_dev_release(struct inode *inode, struct file *file)
 {
 	struct p61_device *p61_dev = file->private_data;
-	struct wakeup_source *ws = &p61_dev->ws;
+	struct wakeup_source *ws = p61_dev->ws;
 #ifdef CONFIG_NFC_FEATURE_SN100U
 	int pid;
 #endif
@@ -903,7 +903,7 @@ static int p61_probe(struct spi_device *spi)
 	mutex_init(&p61_dev->write_mutex);
 	spin_lock_init(&p61_dev->ese_spi_lock);
 
-	wakeup_source_init(&p61_dev->ws, "ese_ws");
+	p61_dev->ws = wakeup_source_register(&spi->dev, "ese_ws");
 	p61_dev->device_opened = false;
 
 	if (!lpcharge) {
@@ -932,7 +932,7 @@ static int p61_probe(struct spi_device *spi)
 err_exit0:
 	mutex_destroy(&p61_dev->read_mutex);
 	mutex_destroy(&p61_dev->write_mutex);
-	wakeup_source_trash(&p61_dev->ws);
+	wakeup_source_remove(p61_dev->ws);
 
 #ifndef CONFIG_ESE_SECURE
 p61_spi_setup_failed:
@@ -958,7 +958,7 @@ static int p61_remove(struct spi_device *spi)
 	P61_DBG_MSG("Entry : %s\n", __func__);
 	mutex_destroy(&p61_dev->read_mutex);
 	misc_deregister(&p61_dev->miscdev);
-	wakeup_source_trash(&p61_dev->ws);
+	wakeup_source_remove(p61_dev->ws);
 	kfree(p61_dev->buf);
 	kfree(p61_dev);
 

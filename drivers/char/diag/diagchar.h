@@ -59,6 +59,8 @@
 #define DIAG_CTRL_MSG_LOG_MS_MASK	37
 #define DIAG_CTRL_MSG_EVENT_MS_MASK	38
 
+#define NON_HDLC_VERSION	1
+#define NON_HDLC_HEADER_SIZE	4
 #define CONTROL_CHAR	0x7E
 
 #define DIAG_ID_ROOT_STRING "root"
@@ -797,6 +799,7 @@ struct diagchar_dev {
 	struct mutex diag_id_mutex;
 	struct mutex diagid_v2_mutex;
 	struct mutex cmd_reg_mutex;
+	spinlock_t dci_mempool_lock;
 	uint32_t cmd_reg_count;
 	struct mutex diagfwd_channel_mutex[NUM_PERIPHERALS];
 	/* Sizes that reflect memory pool sizes */
@@ -833,6 +836,7 @@ struct diagchar_dev {
 	unsigned char *buf_feature_mask_update;
 	uint8_t hdlc_disabled;
 	uint8_t p_hdlc_disabled[NUM_MD_SESSIONS];
+	uint8_t proc_hdlc_disabled[NUM_DIAG_MD_DEV];
 	struct mutex hdlc_disable_mutex;
 	struct mutex hdlc_recovery_mutex;
 	struct timer_list hdlc_reset_timer;

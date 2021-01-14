@@ -5375,6 +5375,9 @@ sme_handle_generic_change_country_code(struct mac_context *mac_ctx,
 		return status;
 	}
 
+	sme_disconnect_connected_sessions(mac_ctx,
+					  eSIR_MAC_UNSPEC_FAILURE_REASON);
+
 	/* reset info based on new cc, and we are done */
 	csr_apply_channel_power_info_wrapper(mac_ctx);
 
@@ -5386,9 +5389,6 @@ sme_handle_generic_change_country_code(struct mac_context *mac_ctx,
 	mac_ctx->scan.curScanType = eSIR_ACTIVE_SCAN;
 
 	mac_ctx->reg_hint_src = SOURCE_UNKNOWN;
-
-	sme_disconnect_connected_sessions(mac_ctx,
-					  eSIR_MAC_UNSPEC_FAILURE_REASON);
 
 	return QDF_STATUS_SUCCESS;
 }
@@ -6332,6 +6332,7 @@ QDF_STATUS sme_config_fast_roaming(mac_handle_t mac_handle, uint8_t session_id,
 	struct mac_context *mac_ctx = MAC_CONTEXT(mac_handle);
 	enum roam_offload_state state;
 	QDF_STATUS status;
+	bool supplicant_disabled_roaming;
 
 	/*
 	 * supplicant_disabled_roaming flag is altered when supplicant sends
@@ -6350,6 +6351,13 @@ QDF_STATUS sme_config_fast_roaming(mac_handle_t mac_handle, uint8_t session_id,
 		return  QDF_STATUS_E_FAILURE;
 	}
 
+	supplicant_disabled_roaming =
+		mlme_get_supplicant_disabled_roaming(mac_ctx->psoc,
+						     session_id);
+	if (!is_fast_roam_enabled && supplicant_disabled_roaming) {
+		sme_debug("ROAM: RSO disabled by wpa supplicant already");
+		return QDF_STATUS_E_ALREADY;
+	}
 	mlme_set_supplicant_disabled_roaming(mac_ctx->psoc, session_id,
 					     !is_fast_roam_enabled);
 
@@ -13295,27 +13303,28 @@ void sme_set_chan_info_callback(mac_handle_t mac_handle,
 	mac->chan_info_cb = callback;
 }
 
-/**
- * sme_set_vdev_ies_per_band() - sends the per band IEs to vdev
- * @mac_handle: Opaque handle to the global MAC context
- * @vdev_id: vdev_id for which IE is targeted
- *
- * Return: None
- */
-void sme_set_vdev_ies_per_band(mac_handle_t mac_handle, uint8_t vdev_id)
+void sme_set_vdev_ies_per_band(mac_handle_t mac_handle, uint8_t vdev_id,
+			       enum QDF_OPMODE device_mode)
 {
 	struct sir_set_vdev_ies_per_band *p_msg;
 	QDF_STATUS status = QDF_STATUS_E_FAILURE;
+	struct mac_context *mac_ctx = MAC_CONTEXT(mac_handle);
+	enum csr_cfgdot11mode curr_dot11_mode =
+				mac_ctx->roam.configParam.uCfgDot11Mode;
 
 	p_msg = qdf_mem_malloc(sizeof(*p_msg));
 	if (!p_msg)
 		return;
 
+
 	p_msg->vdev_id = vdev_id;
+	p_msg->device_mode = device_mode;
+	p_msg->dot11_mode = csr_get_vdev_dot11_mode(mac_ctx, device_mode,
+						    curr_dot11_mode);
 	p_msg->msg_type = eWNI_SME_SET_VDEV_IES_PER_BAND;
 	p_msg->len = sizeof(*p_msg);
-	sme_debug("sending eWNI_SME_SET_VDEV_IES_PER_BAND: vdev_id: %d",
-		vdev_id);
+	sme_debug("SET_VDEV_IES_PER_BAND: vdev_id %d dot11mode %d dev_mode %d",
+		  vdev_id, p_msg->dot11_mode, device_mode);
 	status = umac_send_mb_message_to_mac(p_msg);
 	if (QDF_STATUS_SUCCESS != status)
 		sme_err("Send eWNI_SME_SET_VDEV_IES_PER_BAND fail");

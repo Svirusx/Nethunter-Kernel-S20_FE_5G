@@ -1,0 +1,157 @@
+/* Copyright (c) 2020, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "kona-sec-bloomxq-pinctrl-r00.dtsi"
+#include "kona-sec-bloomxq-pm-common.dtsi"
+#include "../drivers/audio_bloomx_common.dtsi"
+#include "../drivers/kona-sec-bloomxq-display-r00.dtsi"
+#include "../drivers/nfc_bloomxq_r00.dtsi"
+#include "../drivers/bluetooth_bloomxq_common.dtsi"
+#include "../drivers/kona-sec-bloomxq-sensor-r00.dtsi"
+#include "../drivers/kona-sec-bloomxq-mst-r00.dtsi"
+#include "../drivers/eif_bloomxq_common.dtsi"
+#include "../drivers/battery-data-bloomxq-common.dtsi"
+#include "../drivers/input_bloomxq_common.dtsi"
+#include "../drivers/camera_sensor_bloomxq_r00.dtsi"
+#include "../drivers/optics_bloomxq_r00.dtsi"
+#include "../drivers/abc_bloomxq_common.dtsi"
+#include "../drivers/connector_detection_bloomxq_common.dtsi"
+
+&apps_rsc {
+	/* Proximity LEDA */
+	rpmh-regulator-ldoc7 {
+		L7C: pm8150a_l7: regulator-pm8150a-l7 {
+			regulator-name = "pm8150a_l7";
+			regulator-min-microvolt = <3400000>;
+			regulator-max-microvolt = <3400000>;
+			qcom,init-voltage = <3400000>;
+			regulator-always-on;
+		};
+	};
+
+	rpmh-regulator-ldoa10 {
+		L10A: pm8150_l10: regulator-pm8150-l10 {
+			regulator-min-microvolt = <1600000>;
+			regulator-max-microvolt = <1600000>;
+			qcom,init-voltage = <1600000>;
+		};
+	};
+};
+
+&soc {
+	i2c_17: i2c@17 { /* SW I2C */
+		status = "ok";
+
+		cell-index = <17>;
+		compatible = "i2c-gpio";
+		gpios = <&tlmm 144 0 /* sda */
+			 &tlmm 145 0 /* scl */
+		>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&grip_i2c_active>;
+
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		a96t3x6@20 {
+			compatible = "a96t3x6";
+			pinctrl-names = "default";
+			pinctrl-0 = <&grip_int_active>;
+			reg = <0x20>;
+
+			interrupt-parent = <&tlmm>;
+			interrupts = <111 0>;
+
+			a96t3x6,irq_gpio = <&tlmm 111 0>;
+			a96t3x6,dvdd_vreg_name = "pm8150_l10";
+			a96t3x6,fw_path = "abov/a96t365_bloomxq_eur.bin";
+			a96t3x6,firmup_cmd = <0x60>;
+		};
+	};
+	i2c_18: i2c@18 { /* SW I2C */
+		status = "ok";
+
+		cell-index = <18>;
+		compatible = "i2c-gpio";
+		gpios = <&tlmm 40 0 /* sda */
+			 &tlmm 41 0 /* scl */
+		>;
+		i2c-gpio,delay-us = <2>;
+		address-cells = <1>;
+		size-cells = <0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&grip_sub_i2c_active>;
+
+		a96t3x6_sub@20 {
+			compatible = "a96t3x6_sub";
+			reg = <0x20>;
+			status = "okay";
+			pinctrl-names = "default";
+			pinctrl-0 = <&grip_sub_int_active>;
+			interrupt-parent = <&tlmm>;
+			interrupts = <112 0>;
+
+			a96t3x6,irq_gpio = <&tlmm 112 0>;
+			a96t3x6,dvdd_vreg_name = "pm8150_l10";
+			a96t3x6,fw_path = "abov/a96t365_bloomxq_sub_eur.bin";
+			a96t3x6,firmup_cmd = <0x60>;
+		};
+	};
+	sec_detect_conn {
+		compatible = "samsung,sec_detect_conn";
+		sec,det_conn_gpios = <&tlmm 9 0 /* MAIN_BAT_DETECT */
+					&tlmm 77 0 /* SUB_BAT_DETECT */
+					&tlmm 38 0 /* UPPER_C2C_DETECT */
+					&tlmm 151 0>; /* LOWER_C2C_DETECT */
+
+		sec,det_conn_name = "MAIN_BAT_DETECT", "SUB_BAT_DETECT", "UPPER_C2C_DETECT", "LOWER_C2C_DETECT";
+
+		sec,det_conn_irq_type = <3>, /* MAIN_BAT_DETECT FALLING, RIGING EDGE*/
+					<3>, /* SUB_BAT_DETECT FALLING, RIGING EDGE*/
+					<3>, /* UPPER_C2C_DETECT FALLING, RIGING EDGE*/
+					<3>; /* LOWER_C2C_DETECT FALLING, RIGING EDGE*/
+
+		pinctrl-names = "det_ap_connect";
+		pinctrl-0 = <&detect_conn_setting>;
+	};
+};
+
+&wlan {
+	wlan-en-gpio = <&tlmm 90 0>;
+	vdd-wlan-dig-supply = <&pm8150_s6>;
+	pinctrl-0 = <&qca6390_wlan_en_active>;
+	pinctrl-1 = <&qca6390_wlan_en_sleep>;
+	status = "ok";
+};
+
+&pcie0 {
+	qcom,target-link-speed = <0x2>; /* limit to gen2 */
+	esoc-name = "wlan";
+	oops-after-ready;
+};
+
+&pcie2 {
+	qcom,core-preset = <0x55555555>;
+};
+
+&sdhc_2 {
+	status = "disabled";
+};
+
+&mdm0 {
+	pinctrl-0 = <&ap2mdm_active &mdm2ap_active &ap2mdm_errfatal2_default>;
+	qcom,ap2mdm-errfatal2-gpio = <&pm8150l_gpios 4 0>;
+};
+
+&sub_zinitix {
+	zinitix,use_deep_sleep;
+};

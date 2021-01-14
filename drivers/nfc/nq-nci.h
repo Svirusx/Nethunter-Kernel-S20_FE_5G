@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * Copyright (c) 2015-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2015-2020, The Linux Foundation. All rights reserved.
  */
 
 #ifndef __NQ_NCI_H
@@ -27,7 +27,12 @@
 #define DEV_COUNT			1
 #define DEVICE_NAME			"nq-nci"
 #define CLASS_NAME			"nqx"
-#define MAX_BUFFER_SIZE			(320)
+/*
+ * From MW 11.04 buffer size increased to support
+ * frame size of 554 in FW download mode
+ * Frame len(2) + Frame Header(6) + DATA(512) + HASH(32) + CRC(2) + RFU(4)
+ */
+#define MAX_BUFFER_SIZE			(558)
 #define WAKEUP_SRC_TIMEOUT		(2000)
 #define NCI_HEADER_LEN			3
 #define NCI_PAYLOAD_IDX			3
@@ -50,6 +55,15 @@
 #define PAYLOAD_LENGTH_MAX		(256)
 #define BYTE				(0x8)
 #define NCI_IDENTIFIER			(0x10)
+#define NFC_LDO_SUPPLY_DT_NAME		"qcom,nq-vdd-1p8"
+#define NFC_LDO_SUPPLY_NAME		"qcom,nq-vdd-1p8-supply"
+#define NFC_LDO_VOL_DT_NAME		"qcom,nq-vdd-1p8-voltage"
+#define NFC_LDO_CUR_DT_NAME		"qcom,nq-vdd-1p8-current"
+
+//as per SN1x0 datasheet
+#define NFC_VDDIO_MIN			1650000 //in uV
+#define NFC_VDDIO_MAX			1950000 //in uV
+#define NFC_CURRENT_MAX			157000 //in uA
 
 enum ese_ioctl_request {
 	/* eSE POWER ON */

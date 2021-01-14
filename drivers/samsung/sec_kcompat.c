@@ -19,15 +19,16 @@
 #include <linux/bitmap.h>
 #include <linux/kernel.h>
 #include <linux/slab.h>
+#include <linux/module.h>
 
-#if defined(CONFIG_MSM_SMEM)
+#if IS_ENABLED(CONFIG_MSM_SMEM)
 #include <soc/qcom/smem.h>
 #endif
 
 #include "sec_kcompat.h"
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4,14,0)
-#if defined(CONFIG_MSM_SMEM)
+#if IS_ENABLED(CONFIG_MSM_SMEM)
 void * __weak qcom_smem_get(unsigned host, unsigned item, size_t *size)
 {
 	void * ret;
@@ -81,3 +82,6 @@ void __weak qcom_scm_disable_sdi(void)
 		pr_err("Failed to disable wdog debug: %d\n", ret);
 }
 #endif
+
+MODULE_DESCRIPTION("sec-kcompat");
+MODULE_LICENSE("GPL v2");

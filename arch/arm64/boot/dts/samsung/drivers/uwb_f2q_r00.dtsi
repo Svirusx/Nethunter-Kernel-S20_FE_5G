@@ -1,0 +1,133 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&apps_rsc {
+	rpmh-regulator-ldoa14 {
+		qcom,mode-threshold-currents = <0 1>;
+		L14A: pm8150_l14: regulator-pm8150-l14 {
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1800000>;
+			qcom,init-voltage = <1800000>;
+		};
+	};
+	rpmh-regulator-ldoa15 {
+		qcom,mode-threshold-currents = <0 1>;
+		L15A: pm8150_l15: regulator-pm8150-l15 {
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1800000>;
+			qcom,init-voltage = <1800000>;
+		};
+	};
+};
+
+&tlmm {
+	uwb_int: uwb_int {
+		mux {
+			pins = "gpio100";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio100";
+			drive-strength = <2>;
+			bias-pull-down;
+			input-enable;
+		};
+	};
+	uwb_default: uwb_default {
+		mux {
+			pins = "gpio11", "gpio54", "gpio74";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio11", "gpio54", "gpio74";
+			drive-strength = <2>;
+			bias-pull-down;
+			output-low;
+		};
+	};
+	qupv3_se8_spi_active: qupv3_se8_spi_active {
+		mux {
+			pins = "gpio24", "gpio25", "gpio26";
+			function = "qup8";
+		};
+
+		config {
+			pins = "gpio24", "gpio25", "gpio26";
+			drive-strength = <6>;
+			bias-disable;
+		};
+	};
+
+	qupv3_se8_spi_sleep: qupv3_se8_spi_sleep {
+		mux {
+			pins = "gpio24", "gpio25", "gpio26";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio24", "gpio25", "gpio26";
+			drive-strength = <6>;
+			bias-pull-down;
+			input-enable;
+		};
+	};
+	qupv3_se8_spi_cs_active: qupv3_se8_spi_cs_active {
+		mux {
+			pins = "gpio27";
+			function = "qup8";
+		};
+
+		config {
+			pins = "gpio27";
+			drive-strength = <6>;
+			bias-pull-up;
+		};
+	};
+
+	qupv3_se8_spi_cs_sleep: qupv3_se8_spi_cs_sleep {
+		mux {
+			pins = "gpio27";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio27";
+			drive-strength = <6>;
+			bias-pull-up;
+			input-enable;
+		};
+	};
+};
+
+&qupv3_se8_spi {
+	status = "ok";
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&qupv3_se8_spi_active &qupv3_se8_spi_cs_active>;
+	pinctrl-1 = <&qupv3_se8_spi_sleep &qupv3_se8_spi_cs_sleep>;
+
+	uwb_spi@0 {
+		compatible = "nxp,sr100";
+		reg = <0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&uwb_default &uwb_int>;
+		spi-max-frequency = <16000000>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <100 0>;
+		nxp,sr100-irq = <&tlmm 100 0>;
+		nxp,sr100-ce = <&tlmm 74 0>;
+		nxp,sr100-wakeup = <&tlmm 54 0>;
+		nxp,sr100-ri = <&tlmm 11 0>;
+		nxp,vdd-rf  = "pm8150_l14";
+		nxp,vdd  = "pm8150_l15";
+	};
+};

@@ -34,22 +34,22 @@
 #include <asm/stacktrace.h>
 
 
-#define FLAG_NOTHING  0
-#define FLAG_READING  1
-#define USE_WORKQUEUE 1
+#define FLAG_NOTHING			0
+#define FLAG_READING			1
+#define USE_WORKQUEUE			1
 
 
-#define	PROC_NAME	"kperfmon"
+#define	PROC_NAME			"kperfmon"
 #if defined(KPERFMON_KMALLOC)
-#define BUFFER_SIZE	(5 * 1024)
+#define BUFFER_SIZE			(5 * 1024)
 #else
-#define BUFFER_SIZE	(5 * 1024 * 1024)
+#define BUFFER_SIZE			(5 * 1024 * 1024)
 #endif
 
-#define HEADER_SIZE	PERFLOG_HEADER_SIZE
-#define DEBUGGER_SIZE	32
-#define STREAM_SIZE	PERFLOG_BUFF_STR_MAX_SIZE + PERFLOG_HEADER_SIZE
-#define READ_BUFFER_SIZE	STREAM_SIZE + 100
+#define HEADER_SIZE			PERFLOG_HEADER_SIZE
+#define DEBUGGER_SIZE			32
+#define STREAM_SIZE			(PERFLOG_BUFF_STR_MAX_SIZE + PERFLOG_HEADER_SIZE)
+#define READ_BUFFER_SIZE		(STREAM_SIZE + 100)
 
 #define MAX_DEPTH_OF_CALLSTACK		20
 #define MAX_MUTEX_RAWDATA		20
@@ -86,6 +86,11 @@ typedef struct {
 } t_ologk_work;
 #endif
 
+struct t_command {
+	char *command;
+	void (*func)(char *writebuffer);
+};
+
 #if defined(RETURN_ALL_DATA_AT_ONCE)
 byte *readbuffer = 0;
 #endif
@@ -93,6 +98,48 @@ byte *readbuffer = 0;
 #if defined(USE_MONITOR)
 unsigned long mutex_rawdata[MAX_MUTEX_RAWDATA + 1][MAX_MUTEX_RAWDATA_DIGIT] = {{0, },};
 #endif
+
+int ops_write_buffer(struct tRingBuffer *buffer,
+			byte *data, unsigned long length);
+int ops_process_command(struct tRingBuffer *buffer,
+			byte *data, unsigned long length);
+
+enum {
+    SH_TYPE_PACKET,
+    SH_TYPE_COMMAND,
+};
+
+enum {
+    SH_TYPE,
+    SH_IDX_PACKET
+};
+
+int (*write_opts[])(struct tRingBuffer *buffer,
+			byte *data, unsigned long length)
+			= {
+				ops_write_buffer,
+				ops_process_command,
+			};
+
+void set_kperfmon_debugger_function(char *writebuffer);
+void process_version_function(char *writebuffer);
+
+struct t_command commands[] = {
+	{"kperfmon_debugger", set_kperfmon_debugger_function},
+	{"java_version", process_version_function},
+	{"nativelib_version", process_version_function},
+	{"perfmond_version", process_version_function},
+};
+
+struct t_before_print {
+	void *pdata;
+	int (*func)(char *read_buffer);
+	struct list_head list;
+};
+
+struct t_before_print *before_list_cur_pos;
+static LIST_HEAD(before_print_list);
+
 
 void CreateBuffer(struct tRingBuffer *buffer,
 			unsigned long length);
@@ -260,59 +307,60 @@ static const struct file_operations kperfmon_fops = {
 	.write = kperfmon_write,
 };
 
-ssize_t kperfmon_write(struct file *filp,
-				const char __user *data,
-				size_t length,
-				loff_t *loff_data)
+void set_kperfmon_debugger_function(char *writebuffer)
 {
-	byte writebuffer[HEADER_SIZE + PERFLOG_BUFF_STR_MAX_SIZE] = {0, };
-	unsigned long DataLength = length;
+	buffer.debugger = !buffer.debugger;
 
-	if (!buffer.data) {
-		pr_info("%s() - Error buffer allocation is failed!!!\n",
-			__func__);
+	pr_info("%s() - buffer.debugger : %d\n",
+		__func__,
+		(int)buffer.debugger);
+}
+
+void process_version_function(char *writebuffer)
+{
+	struct t_before_print *pprinter = NULL;
+	int length = 0;
+
+	if (writebuffer == NULL) {
+		return;
+	}
+
+	pprinter = kmalloc(sizeof(struct t_before_print), GFP_ATOMIC);
+
+	if (pprinter == NULL) {
+		return;
+	}
+
+	length = strlen(writebuffer) + 1;
+	pprinter->pdata = kmalloc(length, GFP_ATOMIC);
+
+	if (pprinter->pdata == NULL) {
+		vfree(pprinter);
+		return;
+	}
+
+	strlcpy(pprinter->pdata, writebuffer, length);
+
+	list_add_tail(&pprinter->list, &before_print_list);
+}
+
+int ops_write_buffer(struct tRingBuffer *buffer,
+			byte *writebuffer, unsigned long length)
+{
+	unsigned long DataLength;
+
+	if (buffer == NULL) {
 		return length;
 	}
-	//pr_info("kperfmon_write(DataLength : %d)\n", (int)DataLength);
 
-	if (DataLength > (HEADER_SIZE + PERFLOG_BUFF_STR_MAX_SIZE)) {
-		DataLength = HEADER_SIZE + PERFLOG_BUFF_STR_MAX_SIZE;
-	}
-
-	if (copy_from_user(writebuffer, data, DataLength)) {
-		return length;
-	}
-
-	if (!strncmp(writebuffer, "kperfmon_debugger", 17)) {
-		if (buffer.debugger == 1) {
-			buffer.debugger = 0;
-		} else {
-			buffer.debugger = 1;
-		}
-
-		printk(KERN_INFO "kperfmon_write(buffer.debugger : %d)\n",
-			(int)buffer.debugger);
-		return length;
-	}
-
-
-	//pr_info("kperfmon_write(DataLength : %d, %c, %s)\n",
-	//	(int)DataLength,
-	//	writebuffer[HEADER_SIZE - 1],
-	//	writebuffer);
-	//pr_info("kperfmon_write(DataLength : %d, %d)\n",
-	//	writebuffer[0],
-	//	writebuffer[1]);
-
-	if (PERFLOG_BUFF_STR_MAX_SIZE < writebuffer[HEADER_SIZE - 1]) {
+	if (writebuffer[HEADER_SIZE - 1] > PERFLOG_BUFF_STR_MAX_SIZE) {
 		writebuffer[HEADER_SIZE - 1] = PERFLOG_BUFF_STR_MAX_SIZE;
 	}
 	DataLength = writebuffer[HEADER_SIZE - 1] + HEADER_SIZE;
-	//pr_info("kperfmon_write(DataLength : %d)\n", (int)DataLength);
 
-	mutex_lock(&buffer.mutex);
-	WriteBuffer(&buffer, writebuffer, DataLength);
-	mutex_unlock(&buffer.mutex);
+	mutex_lock(&buffer->mutex);
+	WriteBuffer(buffer, writebuffer, DataLength);
+	mutex_unlock(&buffer->mutex);
 #if defined(KPERFMON_DEBUG)
 	{
 		int i;
@@ -325,6 +373,80 @@ ssize_t kperfmon_write(struct file *filp,
 		}
 	}
 #endif
+	return length;
+}
+
+int ops_process_command(struct tRingBuffer *buffer,
+			byte *writebuffer, unsigned long length)
+{
+	int idx;
+	int max_commands = (int)(sizeof(commands) / sizeof(struct t_command)); /*commands[].command should be const string array.*/
+
+	for (idx = 0 ; idx < max_commands ; idx++) {
+		int cmd_length = strlen(commands[idx].command);
+
+		if (cmd_length >= HEADER_SIZE + PERFLOG_BUFF_STR_MAX_SIZE) {
+			continue;
+		}
+
+		if (!strncmp(writebuffer, commands[idx].command, cmd_length)
+		    && commands[idx].func != NULL
+		    && strlen(writebuffer) > cmd_length) {
+			commands[idx].func(writebuffer);
+			return length;
+		}
+	}
+
+	return length;
+}
+
+ssize_t kperfmon_write(struct file *filp,
+				const char __user *data,
+				size_t length,
+				loff_t *loff_data)
+{
+	byte writebuffer[HEADER_SIZE + PERFLOG_BUFF_STR_MAX_SIZE + SH_IDX_PACKET + 1] = {0, };
+	unsigned long DataLength = length;
+	int max_write_ops = (int)(sizeof(write_opts) / sizeof(void *));
+	int type_of_data;
+
+	if (!buffer.data) {
+		pr_info("%s() - Error buffer allocation is failed!!!\n",
+			__func__);
+		return length;
+	}
+
+	if (length <= 0) {
+		pr_info("%s() - Error length : %d", __func__, length);
+		return length;
+	}
+
+	if (DataLength > (HEADER_SIZE + PERFLOG_BUFF_STR_MAX_SIZE + SH_IDX_PACKET)) {
+		DataLength = HEADER_SIZE + PERFLOG_BUFF_STR_MAX_SIZE + SH_IDX_PACKET;
+	}
+
+	if (copy_from_user(writebuffer, data, DataLength)) {
+		return length;
+	}
+
+        // [[[ This will be replaced with below code
+	type_of_data = writebuffer[SH_TYPE];
+
+	if (type_of_data < max_write_ops && type_of_data >= 0) {
+		return write_opts[type_of_data](&buffer,
+			writebuffer + SH_IDX_PACKET,
+			DataLength - SH_IDX_PACKET);
+	}
+        // This will be replaced with below code ]]]
+
+	type_of_data -= (int)'0';
+
+	if (type_of_data < max_write_ops && type_of_data >= 0) {
+		return write_opts[type_of_data](&buffer,
+			writebuffer + SH_IDX_PACKET,
+			DataLength - SH_IDX_PACKET);
+	}
+
 	return length;
 }
 
@@ -378,7 +500,7 @@ ssize_t kperfmon_read(struct file *filp,
 	unsigned long end = 0;
 
 	if (!buffer.data) {
-		pr_info("kperfmon_read() - Error buffer allocation is failed!!!\n");
+		pr_info("%s() Error buffer allocation is failed!\n", __func__);
 		return 0;
 	}
 #if defined(USE_MONITOR)
@@ -439,10 +561,38 @@ ssize_t kperfmon_read(struct file *filp,
 	buffer.status = FLAG_READING;
 
 	mutex_lock(&buffer.mutex);
+
+	if (buffer.position == buffer.start) {
+
+		if (before_list_cur_pos !=
+		   list_last_entry(&before_print_list, typeof(*before_list_cur_pos), list)) {
+			before_list_cur_pos = list_next_entry(before_list_cur_pos, list);
+
+			if (before_list_cur_pos != 0 && before_list_cur_pos->pdata != 0) {
+				int length = snprintf(readbuffer,
+							READ_BUFFER_SIZE,
+							"%s\n",
+							before_list_cur_pos->pdata);
+
+				if (copy_to_user(data, readbuffer, length)) {
+					pr_info("%s(copy_to_user(4) returned > 0)\n", __func__);
+					mutex_unlock(&buffer.mutex);
+					buffer.status = FLAG_NOTHING;
+					return 0;
+				}
+
+				mutex_unlock(&buffer.mutex);
+				return length;
+			}
+		}
+	}
+
 	if (buffer.position == buffer.end || buffer.start < 0) {
 		buffer.position = buffer.start;
 		mutex_unlock(&buffer.mutex);
 		buffer.status = FLAG_NOTHING;
+		before_list_cur_pos
+			= list_first_entry(&before_print_list, typeof(*before_list_cur_pos), list);
 		return 0;
 	}
 
@@ -514,19 +664,19 @@ ssize_t kperfmon_read(struct file *filp,
 		}
 
 		if (copy_to_user(data, debugger, strnlen(debugger, DEBUGGER_SIZE))) {
-			printk("kperfmon_read(copy_to_user(1) returned > 0)\n");
+			pr_info("%s(copy_to_user(1) returned > 0)\n", __func__);
 			return 0;
 		}
 
 		if (copy_to_user(data + DEBUGGER_SIZE, readbuffer, length)) {
-			printk("kperfmon_read(copy_to_user(2) returned > 0)\n");
+			pr_info("%s(copy_to_user(2) returned > 0)\n", __func__);
 			return 0;
 		}
 
 		length += DEBUGGER_SIZE;
 	} else {
 		if (copy_to_user(data, readbuffer, length)) {
-			printk("kperfmon_read(copy_to_user(3) returned > 0)\n");
+			pr_info("%s(copy_to_user(3) returned > 0)\n", __func__);
 			return 0;
 		}
 	}
@@ -558,6 +708,12 @@ static int __init kperfmon_init(void)
 	}
 
 	/*dbg_level_is_low = (sec_debug_level() == ANDROID_DEBUG_LEVEL_LOW);*/
+
+	INIT_LIST_HEAD(&before_print_list);
+	before_list_cur_pos =
+		list_first_entry(&before_print_list, typeof(*before_list_cur_pos), list);
+	process_version_function("  ");
+	process_version_function("kperfmon_version [1.0]");
 
 	printk(KERN_INFO "kperfmon_init()\n");
 

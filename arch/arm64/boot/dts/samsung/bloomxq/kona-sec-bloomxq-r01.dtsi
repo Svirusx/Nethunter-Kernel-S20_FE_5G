@@ -1,0 +1,67 @@
+/* Copyright (c) 2020, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+/*
+ * CAUTION:
+ * Difference between r00 and r01 is capacity of battery.
+ * Thus this dtsi file includes pinctrl-r00.
+ */
+
+
+#include "kona-sec-bloomxq-r00.dtsi"
+#include "../drivers/fingerprint-sensor_bloomxq_r01.dtsi"
+#include "../drivers/battery-data-bloomxq-r01.dtsi"
+
+&soc {
+
+};
+
+&s2mpb02_l18 {
+	regulator-name = "s2mpb02-ldo18";
+	regulator-min-microvolt = <3400000>;
+	regulator-max-microvolt = <3400000>;
+	regulator-always-on;
+};
+
+/* Camera regulator change for VDD_OIS_VM_2P8 */
+&apps_rsc {
+	rpmh-regulator-ldoc7 {
+		/delete-property/ qcom,supported-modes;
+		qcom,supported-modes = <RPMH_REGULATOR_MODE_HPM>;
+		regulator-pm8150a-l7 {
+				regulator-min-microvolt = <2800000>;
+				regulator-max-microvolt = <2800000>;
+				qcom,init-voltage = <2800000>;
+				qcom,init-mode = <RPMH_REGULATOR_MODE_HPM>;
+		};
+	};
+
+};
+
+&pm8150a_l7 {
+	regulator-min-microvolt = <2800000>;
+	regulator-max-microvolt = <2800000>;
+	qcom,init-voltage = <2800000>;
+        /delete-property/ regulator-always-on;
+};
+
+&sensor_rear_wide {
+        cam_v_custom6-supply = <&pm8150a_l7>;      // VDD_OIS_VM_2P8
+};
+
+&ois_rear {
+	cam_v_custom3-supply = <&pm8150a_l7>;      // VDD_OIS_VM_2P8
+};
+
+&sub_zinitix {
+	zinitix,use_deep_sleep;
+};

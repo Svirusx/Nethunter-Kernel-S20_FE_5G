@@ -445,7 +445,7 @@ int adm_set_sound_booster(int port_id, int copp_idx,
 }
 
 int adm_set_sb_rotation(int port_id, int copp_idx,
-			long *param)
+			uint32_t rotation)
 {
 	struct adm_param_sb_rotation cmd;
 	struct param_hdr_v3 param_hdr;
@@ -457,7 +457,7 @@ int adm_set_sb_rotation(int port_id, int copp_idx,
 	param_hdr.param_id = PARAM_ID_PP_SB_ROTATION_PARAM;
 	param_hdr.param_size = sizeof(cmd);
 	/* rotation paramerters */
-	cmd.sb_rotation = (unsigned int)param[0];
+	cmd.sb_rotation = rotation;
 
 	pr_info("%s: Enter, port_id(0x%x), copp_idx(%d), enable(%d)\n",
 		  __func__, port_id, copp_idx, cmd.sb_rotation);
@@ -987,14 +987,43 @@ static int sec_audio_upscaler_put(struct snd_kcontrol *kcontrol,
 	return ret;
 }
 
+/*
+ * Stream Information
+ * 0 : Deep/Offload
+ * 1 : Low Latency
+ *
+ * Rotation Information
+ * 0 : Top up
+ * 1 : Left up
+ * 2 : Bottom up
+ * 3 : Right up
+ */
 static int sec_audio_sb_rotation_put(struct snd_kcontrol *kcontrol,
 			struct snd_ctl_elem_value *ucontrol)
 {
 	int ret = 0;
 	int port_id, copp_idx;
+	uint32_t stream = 0;
+	uint32_t rotation = 0;
+	enum sb_type func_type = SB_MAX;
+
+	stream = (uint32_t)ucontrol->value.integer.value[0];
+	rotation = (uint32_t)ucontrol->value.integer.value[1];
+
+	switch (stream) {
+	case LEGACY_PCM_MODE:
+		func_type = SB_ROTATION;
+		break;
+	case LOW_LATENCY_PCM_MODE:
+		func_type = SB_ROTATION_LL;
+		break;
+	default:
+		pr_info("%s: unknown stream type\n", __func__);
+		break;
+	}
 
 	port_id = afe_port.spk_rx_port;
-	ret = q6audio_get_copp_idx_from_port_id(port_id, SB_ROTATION, &copp_idx);
+	ret = q6audio_get_copp_idx_from_port_id(port_id, func_type, &copp_idx);
 	if (ret) {
 		pr_err("%s: Could not get copp idx for port_id=%d\n",
 			__func__, port_id);
@@ -1003,8 +1032,7 @@ static int sec_audio_sb_rotation_put(struct snd_kcontrol *kcontrol,
 		goto done;
 	}
 
-	ret = adm_set_sb_rotation(port_id, copp_idx,
-		(long *)ucontrol->value.integer.value);
+	ret = adm_set_sb_rotation(port_id, copp_idx, rotation);
 	if (ret) {
 		pr_err("%s: Error setting Sound boost rotation, err=%d\n",
 			  __func__, ret);
@@ -2469,7 +2497,7 @@ static int sec_afe_remote_mic_vol(int index)
 
 	pr_info("%s: port_id : %x , index : %d\n",
 			__func__, port_id, index);
-	
+
 	ret = afe_set_remote_mic_vol(port_id, index);
 
 	if (ret) {
@@ -2518,7 +2546,7 @@ static int sec_voice_remote_mic_vol_cmd(struct voice_data *v, int index)
 	cvp_voice_remote_mic_cmd.cvp_set_voice_remote_mic.module_id = VOICE_VOICEMODE_MODULE;
 	cvp_voice_remote_mic_cmd.cvp_set_voice_remote_mic.instance_id =
 		INSTANCE_ID_0;
-	cvp_voice_remote_mic_cmd.cvp_set_voice_remote_mic.param_id = 
+	cvp_voice_remote_mic_cmd.cvp_set_voice_remote_mic.param_id =
 		DIAMONDVOICE_REMOTEVOL_PARAM;
 	cvp_voice_remote_mic_cmd.cvp_set_voice_remote_mic.param_size = 4;
 	cvp_voice_remote_mic_cmd.cvp_set_voice_remote_mic.reserved = 0;
@@ -2843,7 +2871,7 @@ static const struct snd_kcontrol_new samsung_solution_mixer_controls[] = {
 				sec_audio_sound_boost_put),
 	SOC_SINGLE_MULTI_EXT("UPSCALER", SND_SOC_NOPM, 0, 65535, 0, 1,
 				sec_audio_upscaler_get, sec_audio_upscaler_put),
-	SOC_SINGLE_MULTI_EXT("SB rotation", SND_SOC_NOPM, 0, 65535, 0, 1,
+	SOC_SINGLE_MULTI_EXT("SB rotation", SND_SOC_NOPM, 0, 65535, 0, 2,
 				sec_audio_sb_rotation_get, sec_audio_sb_rotation_put),
 	SOC_SINGLE_MULTI_EXT("SB flatmotion", SND_SOC_NOPM, 0, 65535, 0, 1,
 				sec_audio_sb_flatmotion_get, sec_audio_sb_flatmotion_put),				

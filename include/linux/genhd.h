@@ -407,16 +407,6 @@ void part_dec_in_flight(struct request_queue *q, struct hd_struct *part,
 void part_inc_in_flight(struct request_queue *q, struct hd_struct *part,
 			int rw);
 
-static inline int part_in_flight_read(struct hd_struct *part)
-{
-	return atomic_read(&part->in_flight[0]);
-}
-
-static inline int part_in_flight_write(struct hd_struct *part)
-{
-	return atomic_read(&part->in_flight[1]);
-}
-
 static inline struct partition_meta_info *alloc_part_info(struct gendisk *disk)
 {
 	if (disk)

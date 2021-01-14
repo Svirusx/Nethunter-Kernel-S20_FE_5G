@@ -18,6 +18,7 @@
 #include <linux/device.h>
 #include <linux/err.h>
 #include <linux/sec_class.h>
+#include <linux/module.h>
 
 /* CAUTION : Do not be declared as external sec_class  */
 static struct class *sec_class;
@@ -70,6 +71,7 @@ void sec_device_destroy(dev_t devt)
 		device_destroy(sec_class, devt);
 	}
 }
+EXPORT_SYMBOL_GPL(sec_device_destroy);
 
 static int __init sec_class_create(void)
 {
@@ -80,4 +82,8 @@ static int __init sec_class_create(void)
 	}
 	return 0;
 }
-arch_initcall_sync(sec_class_create);
+
+arch_initcall(sec_class_create);
+
+MODULE_DESCRIPTION("sec-class");
+MODULE_LICENSE("GPL v2");

@@ -102,7 +102,7 @@ static int set_cpu_min_freq(const char *buf, const struct kernel_param *kp)
 		if (cpufreq_get_policy(&policy, i))
 			continue;
 
-		if (cpu_online(i) && (policy.min != i_cpu_stats->min))
+		if (cpu_online(i))
 			cpufreq_update_policy(i);
 
 		for_each_cpu(j, policy.related_cpus)
@@ -171,7 +171,7 @@ static int set_cpu_max_freq(const char *buf, const struct kernel_param *kp)
 		if (cpufreq_get_policy(&policy, i))
 			continue;
 
-		if (cpu_online(i) && (policy.max != i_cpu_stats->max))
+		if (cpu_online(i))
 			cpufreq_update_policy(i);
 
 		for_each_cpu(j, policy.related_cpus)

@@ -1,0 +1,142 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "../drivers/audio_qca_picasso_pinctrl_common.dtsi"
+#include "../drivers/kona-sec-picasso-display-pinctrl.dtsi"
+#include "../drivers/kona-sec-picasso-mfc-pinctrl.dtsi"
+#include "../drivers/kona-sec-hubble-tsp-pinctrl.dtsi"
+
+&tlmm {
+
+	bcmdhd_default: bcmdhd_default {
+		mux {
+			pins = "gpio128";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio128";
+			drive-strength = <2>;   /* 2 mA */
+			bias-pull-down;         /* PULL DOWN */
+		};
+	};
+
+	bcmdhd_wlan_en: bcmdhd_wlan_en {
+		mux {
+			pins = "gpio90";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio90";
+			drive-strength = <2>;   /* 2 mA */
+			bias-pull-down;         /* PULL DOWN */
+		};
+	};
+
+	bt_en_default: bt_en_default {
+		mux {
+			pins = "gpio132";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio132";
+			drive-strength = <2>;
+			bias-pull-down;
+		};
+	};			
+
+	bt_wake_default: bt_wake_default {
+		mux {
+			pins = "gpio76";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio76";
+			drive-strength = <2>;
+			bias-pull-down;
+		};
+	};
+
+	bt_hostwake_default: bt_hostwake_default {
+		mux {
+			pins = "gpio47";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio47";
+			drive-strength = <2>;
+			bias-pull-down;
+		};
+	};
+
+	qupv3_se1_ctsrx_active: qupv3_se1_ctsrx_active { 
+		mux { 
+			pins = "gpio4", "gpio7"; 
+			function = "qup1"; 
+		};
+		config { 
+			pins = "gpio4", "gpio7"; 
+			drive-strength = <2>; 
+			bias-pull-up; 
+		}; 
+	}; 
+
+	qupv3_se1_ctsrx_sleep: qupv3_se1_ctsrx_sleep { 
+		config { 
+			pins = "gpio4", "gpio7"; 
+			drive-strength = <2>; 
+			bias-pull-up; 
+		}; 
+	}; 
+
+	qupv3_se1_rts_active: qupv3_se1_rts_active { 
+		mux { 
+			pins = "gpio5"; 
+			function = "qup1"; 
+		}; 
+		config { 
+			pins = "gpio5"; 
+			drive-strength = <2>; 
+			output-high;
+			bias-pull-up; 
+		}; 
+	}; 
+
+	qupv3_se1_rts_sleep: qupv3_se1_rts_sleep { 
+		config { 
+			pins = "gpio5"; 
+			drive-strength = <2>; 
+			bias-pull-up; 
+		}; 
+	}; 
+
+	qupv3_se1_tx_active: qupv3_se1_tx_active { 
+		mux { 
+			pins = "gpio6"; 
+			function = "qup1"; 
+		};
+		config { 
+			pins = "gpio6"; 
+			drive-strength = <2>; 
+			output-high;
+			bias-pull-up; 
+		}; 
+	}; 
+
+	qupv3_se1_tx_sleep: qupv3_se1_tx_sleep { 
+		config { 
+			pins = "gpio6"; 
+			drive-strength = <2>; 
+			bias-pull-up; 
+		}; 
+	}; 
+};
+

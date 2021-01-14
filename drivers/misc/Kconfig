@@ -557,6 +557,15 @@ config MEMORY_STATE_TIME
 	help
 	  Memory time statistics exported to /sys/kernel/memory_state_time
 
+config QPNP_MISC
+	tristate "QPNP Misc Peripheral"
+	depends on MFD_SPMI_PMIC
+	help
+	  Say 'y' here to include support for the QTI QPNP MISC
+	  peripheral. The MISC peripheral holds the USB ID interrupt
+	  and the driver provides an API to check if this interrupt
+	  is available on the current PMIC chip.
+
 config OKL4_USER_VIRQ
 	tristate "User space accessible OKL4 virtual interrupts"
 	depends on OKL4_GUEST
@@ -609,6 +618,16 @@ config QTI_XR_SMRTVWR_MISC
 	  such as NDI controller chip, Power up Sensor rails etc. Note: This
 	  driver initializes gpios, enables/disables LDOs that are part of
 	  XR standalone reference device.
+
+config QTI_MAXIM_FAN_CONTROLLER
+	tristate "QTI MAXIM fan controller  driver support"
+	help
+	  This driver supports the Maxim(MAX31760) fan controller.
+	  This driver exposes i2c control to control registers for
+	  setting different PWM, different temperature settings etc.
+	  Also, this driver initializes the power for the fan controller
+	  and exposes sysfs node to control different speeds of fan.
+
 config DEV_RIL_BRIDGE
 	bool "Support a bridge between device and RIL"
 	default n
@@ -627,6 +646,7 @@ source "drivers/misc/echo/Kconfig"
 source "drivers/misc/cxl/Kconfig"
 source "drivers/misc/ocxl/Kconfig"
 source "drivers/misc/cardreader/Kconfig"
+source "drivers/misc/fpr_FingerprintCard/Kconfig"
 endmenu
 
 config OKL4_USER_VIPC

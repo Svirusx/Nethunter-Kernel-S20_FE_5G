@@ -59,7 +59,7 @@
 #define TX_REQ_MAX 4
 #define RX_REQ_MAX 2
 
-bool acc_dev_status = false;
+bool acc_dev_status;
 
 struct acc_hid_dev {
 	struct list_head	list;
@@ -616,8 +616,7 @@ static ssize_t acc_read(struct file *fp, char __user *buf,
 {
 	struct acc_dev *dev = fp->private_data;
 	struct usb_request *req;
-	ssize_t r = count;
-	unsigned xfer;
+	ssize_t r = count, xfer, len;
 	int ret = 0;
 
 	pr_debug("acc_read(%zu)\n", count);
@@ -638,6 +637,8 @@ static ssize_t acc_read(struct file *fp, char __user *buf,
 		goto done;
 	}
 
+	len = ALIGN(count, dev->ep_out->maxpacket);
+
 	if (dev->rx_done) {
 		// last req cancelled. try to get it.
 		req = dev->rx_req[0];
@@ -647,7 +648,7 @@ static ssize_t acc_read(struct file *fp, char __user *buf,
 requeue_req:
 	/* queue a request */
 	req = dev->rx_req[0];
-	req->length = count;
+	req->length = len;
 	dev->rx_done = 0;
 	ret = usb_ep_queue(dev->ep_out, req, GFP_KERNEL);
 	if (ret < 0) {
@@ -882,6 +883,12 @@ int acc_ctrlrequest(struct usb_composite_dev *cdev,
 	u16	w_length = le16_to_cpu(ctrl->wLength);
 	unsigned long flags;
 
+	/*
+	 * If instance is not created which is the case in power off charging
+	 * mode, dev will be NULL. Hence return error if it is the case.
+	 */
+	if (!dev)
+		return -ENODEV;
 /*
 	printk(KERN_INFO "acc_ctrlrequest "
 			"%02x.%02x v%04x i%04x l%u\n",
@@ -1274,12 +1281,12 @@ static int acc_setup(void)
 	INIT_DELAYED_WORK(&dev->start_work, acc_start_work);
 	INIT_WORK(&dev->hid_work, acc_hid_work);
 
-	/* _acc_dev must be set before calling usb_gadget_register_driver */
-	_acc_dev = dev;
-
 	ret = misc_register(&acc_device);
 	if (ret)
 		goto err;
+
+	/* _acc_dev must be set before calling usb_gadget_register_driver */
+	_acc_dev = dev;
 
 	return 0;
 

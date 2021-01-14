@@ -63,11 +63,7 @@ struct dp_hpd *dp_hpd_get(struct device *dev, struct dp_parser *parser,
 		}
 		dp_hpd->type = DP_HPD_GPIO;
 	} else {
-#ifndef CONFIG_SEC_DISPLAYPORT
 		dp_hpd = dp_usbpd_get(dev, cb);
-#else
-		dp_hpd = secdp_usbpd_get(dev, cb);
-#endif
 		if (IS_ERR(dp_hpd)) {
 			DP_ERR("failed to get usbpd\n");
 			return dp_hpd;

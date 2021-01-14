@@ -445,7 +445,7 @@ err:
  * src : packed gamma value
  * dst : extended V values (V255 ~ VT)
  */
-static void convert_GAMMA_to_V_HAC(u8 *src, u32 *dst)
+static void convert_GAMMA_to_V_HAC(u8 *src, int *dst)
 {
 	/* i : V index
 	 * j : RGB index
@@ -500,14 +500,42 @@ static void convert_GAMMA_to_V_HAC(u8 *src, u32 *dst)
  * src : extended V values (V255 ~ VT)
  * dst : packed gamma values (CAh)
  */
-static void convert_V_to_GAMMA_HAC(u32 *src, u8 *dst)
+static void convert_V_to_GAMMA_HAC(int *src, u8 *dst)
 {
 	/* i : gamma index
 	 * k : packed gamma index
 	 */
 	int i,k = 0;
+	int dbg_org[GAMMA_V_SIZE];
+
+	for (i = 0; i < GAMMA_V_SIZE; i++)
+		dbg_org[i] = src[i];
 
 	memset(dst, 0, GAMMA_SET_SIZE);
+
+	/* prevent underflow */
+	for (i = 0; i < GAMMA_V_SIZE; i++)
+		src[i] = max(src[i], 0);
+
+	/* prevent overflow */
+	for (i = V255; i < V_MAX; i++) {
+		int max;
+
+		if (i == V255)
+			max = BIT(10) - 1; /* 10 bits: V255 */
+		else if (i == V11 || i == V12)
+			max = BIT(4) - 1; /* 4 bits: V0, VT */
+		else
+			max = BIT(8) - 1; /* 8 bits: V2~V10, V13 */
+
+		src[i * RGB_MAX + R] = min(src[i * RGB_MAX + R], max);
+		src[i * RGB_MAX + G] = min(src[i * RGB_MAX + G], max);
+		src[i * RGB_MAX + B] = min(src[i * RGB_MAX + B], max);
+	}
+
+	for (i = 0; i < GAMMA_V_SIZE; i++)
+		if (dbg_org[i] != src[i])
+			LCD_INFO("fix: src[%d] %02X -> %02X\n", i, dbg_org[i],  src[i]);
 
 	for (i = 0; i < GAMMA_SET_SIZE; i++) {
 		if (i == 0) {
@@ -559,7 +587,7 @@ static int ss_gm2_gamma_comp_init(struct samsung_display_driver_data *vdd)
 	u8 readbuf[GAMMA_SET_SIZE * GAMMA_SET_VRR_MAX * GAMMA_SET_MODE_MAX]; /* 444 */
 	u8 *buf;
 	int i_vrr, j_mode, k;
-	u32 gammaV[GAMMA_V_SIZE];
+	int gammaV[GAMMA_V_SIZE];
 	struct dsi_panel_cmd_set *rx_cmds;
 
 	gm2_mtp->gamma_org = kzalloc(GAMMA_SET_SIZE * GAMMA_SET_MODE_MAX * GAMMA_SET_VRR_MAX, GFP_KERNEL);
@@ -1623,6 +1651,7 @@ static int ss_module_info_read(struct samsung_display_driver_data *vdd)
 	int hour, min;
 	int x, y;
 	int mdnie_tune_index = 0;
+	int ret;
 
 	if (IS_ERR_OR_NULL(vdd)) {
 		LCD_ERR("Invalid data vdd : 0x%zx", (size_t)vdd);
@@ -1630,7 +1659,11 @@ static int ss_module_info_read(struct samsung_display_driver_data *vdd)
 	}
 
 	if (ss_get_cmds(vdd, RX_MODULE_INFO)->count) {
-		ss_panel_data_read(vdd, RX_MODULE_INFO, buf, LEVEL1_KEY);
+		ret = ss_panel_data_read(vdd, RX_MODULE_INFO, buf, LEVEL1_KEY);
+		if (ret) {
+			LCD_ERR("fail to read module ID, ret: %d", ret);
+			return false;
+		}
 
 		/* Manufacture Date */
 

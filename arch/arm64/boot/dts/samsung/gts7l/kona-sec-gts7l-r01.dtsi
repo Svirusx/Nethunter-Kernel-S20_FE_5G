@@ -1,0 +1,41 @@
+/* Copyright (c) 2020, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "kona-sec-gts7l-r00.dtsi"
+#include "kona-sec-gts7l-pinctrl-r01.dtsi"
+
+&soc {
+    
+};
+
+&qupv3_se17_i2c {
+	status = "ok";
+	wacom@56 {
+		wacom,bringup = <1>;
+	};
+};
+
+&qupv3_se14_i2c {
+	status = "ok";
+
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&qupv3_se14_i2c_active>;
+	pinctrl-1 = <&qupv3_se14_i2c_sleep>;
+
+	ps5169@28 {
+		compatible = "ps5169_driver";
+		reg = <0x28>;
+		combo,con_sel = <&tlmm 65 0>;
+		combo,redriver_en = <&tlmm 8 0>;
+		combo,enable_control = <1>;
+	};
+};

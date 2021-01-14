@@ -165,6 +165,7 @@ static void run_sram_test(void *device_data);
 static void set_rear_selfie_mode(void *device_data);
 static void ear_detect_enable(void *device_data);
 static void set_sip_mode(void *device_data);
+static void set_game_mode(void *device_data);
 static void not_support_cmd(void *device_data);
 
 static ssize_t fts_scrub_position(struct device *dev,
@@ -269,6 +270,7 @@ struct sec_cmd ft_commands[] = {
 	{SEC_CMD_H("set_rear_selfie_mode", set_rear_selfie_mode),},
 	{SEC_CMD_H("ear_detect_enable", ear_detect_enable),},
 	{SEC_CMD("set_sip_mode", set_sip_mode),},
+	{SEC_CMD("set_game_mode", set_game_mode),},
 	{SEC_CMD("not_support_cmd", not_support_cmd),},
 };
 
@@ -1481,7 +1483,7 @@ static int fts_get_channel_info(struct fts_ts_info *info)
 {
 	int rc = -1;
 	u8 regAdd[1] = { FTS_READ_PANEL_INFO };
-	u8 data[11] = { 0 };
+	u8 data[FTS_EVENT_SIZE] = { 0 };
 
 	memset(data, 0x0, FTS_EVENT_SIZE);
 
@@ -2793,7 +2795,7 @@ static void get_chip_vendor(void *device_data)
 	struct fts_ts_info *info = container_of(sec, struct fts_ts_info, sec);
 	char buff[16] = { 0 };
 
-	snprintf(buff, PAGE_SIZE, "STM");
+	snprintf(buff, sizeof(buff), "STM");
 	sec_cmd_set_default_result(sec);
 	sec_cmd_set_cmd_result(sec, buff, strnlen(buff, sizeof(buff)));
 	if (sec->cmd_all_factory_state == SEC_CMD_STATUS_RUNNING)
@@ -4388,7 +4390,7 @@ int fts_panel_test_result(struct fts_ts_info *info, int type)
 				}
 				snprintf(tempv, sizeof(tempv), "%c%d,", data[1] == ITO_FORCE_SHRT_GND ? 'T' : 'R', data[2]);
 				strlcat(result_buff, tempv, size);
-				result = ITO_FAIL_SHORT;
+				result = -ITO_FAIL_SHORT;
 				break;
 			case ITO_FORCE_SHRT_VDD:
 			case ITO_SENSE_SHRT_VDD:
@@ -5009,7 +5011,6 @@ static void get_cx_all_data(void *device_data)
 
 	input_info(true, &info->client->dev, "%s: start\n", __func__);
 
-	enter_factory_mode(info, true);
 	rc = read_ms_cx_data(info, NORMAL_CX2, &cx_min, &cx_max);
 
 	/* do not systemreset in COB type */
@@ -7172,6 +7173,40 @@ static void set_sip_mode(void *device_data)
 		sec->cmd_state = SEC_CMD_STATUS_FAIL;
 	} else {
 		ret = fts_set_sip_mode(info, (u8)sec->cmd_param[0]);
+		if (ret < 0) {
+			snprintf(buff, sizeof(buff), "NG");
+			sec->cmd_state = SEC_CMD_STATUS_FAIL;
+		} else {
+			snprintf(buff, sizeof(buff), "OK");
+			sec->cmd_state = SEC_CMD_STATUS_OK;
+		}
+	}
+
+	sec_cmd_set_cmd_result(sec, buff, strnlen(buff, sizeof(buff)));
+	sec->cmd_state = SEC_CMD_STATUS_WAITING;
+	sec_cmd_set_cmd_exit(sec);
+
+	input_info(true, &info->client->dev, "%s: %s\n", __func__, buff);
+}
+
+static void set_game_mode(void *device_data)
+{
+	struct sec_cmd_data *sec = (struct sec_cmd_data *)device_data;
+	struct fts_ts_info *info = container_of(sec, struct fts_ts_info, sec);
+	char buff[SEC_CMD_STR_LEN] = { 0 };
+	int ret;
+	u8 regAdd[3] = { 0 };
+
+	sec_cmd_set_default_result(sec);
+
+	if (sec->cmd_param[0] < 0 || sec->cmd_param[0] > 1) {
+		snprintf(buff, sizeof(buff), "NG");
+		sec->cmd_state = SEC_CMD_STATUS_FAIL;
+	} else {
+		regAdd[0] = FTS_CMD_SET_FUNCTION_ONOFF;
+		regAdd[1] = FTS_FUNCTION_SET_GAME_MODE;
+		regAdd[2] = (u8) sec->cmd_param[0];
+		ret = fts_write_reg(info, regAdd, 3);
 		if (ret < 0) {
 			snprintf(buff, sizeof(buff), "NG");
 			sec->cmd_state = SEC_CMD_STATUS_FAIL;

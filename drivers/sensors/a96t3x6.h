@@ -132,11 +132,11 @@
 
 #define TK_FW_PATH_BIN 		"abov/abov_noble.fw"
 #define TK_FW_PATH_SDCARD 	"/sdcard/Firmware/Grip/abov_fw.bin"
-#define HALL_PATH		"/sys/class/sec/sec_key/hall_detect"
+#define HALL_PATH		"/sys/class/sec/hall_ic/hall_detect"
 #if defined(CONFIG_WACOM_HALL)
 #define WACOM_HALL_PATH		"/sys/class/sec/sec_key/hall_wacom_detect"
 #endif
-#define HALLIC_CERT_PATH	"/sys/class/sec/sec_key/certify_hall_detect"
+#define HALLIC_CERT_PATH	"/sys/class/sec/hall_ic/certify_hall_detect"
 #define HALL_CLOSE_STATE        1
 
 /* depends on FW address configuration */

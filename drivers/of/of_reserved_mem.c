@@ -125,6 +125,15 @@ static int __init __reserved_mem_alloc_size(unsigned long node,
 	}
 	size = dt_mem_next_cell(dt_root_size_cells, &prop);
 
+#ifdef CONFIG_ION_RBIN_HEAP_EXCEPTION
+	if (of_get_flat_dt_prop(node, "ion,recyclable", NULL) &&
+			need_ion_rbin_heap()) {
+		prop = of_get_flat_dt_prop(node, "rbin_size", NULL);
+		if (prop)
+			size = be32_to_cpup(prop);
+		pr_info("%s rbin_size %llx", __func__, size);
+	}
+#endif
 	nomap = of_get_flat_dt_prop(node, "no-map", NULL) != NULL;
 
 	prop = of_get_flat_dt_prop(node, "alignment", &len);

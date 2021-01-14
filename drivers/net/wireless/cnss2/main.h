@@ -227,8 +227,6 @@ enum cnss_driver_state {
 	CNSS_IMS_CONNECTED,
 	CNSS_IN_SUSPEND_RESUME,
 	CNSS_IN_REBOOT,
-	CNSS_COLD_BOOT_CAL_DONE,
-	CNSS_IN_PANIC,
 };
 
 struct cnss_recovery_data {
@@ -364,6 +362,7 @@ struct cnss_plat_data {
 	struct completion power_up_complete;
 	struct completion cal_complete;
 	struct mutex dev_lock; /* mutex for register access through debugfs */
+	struct mutex driver_ops_lock; /* mutex for external driver ops */
 	u32 device_freq_hz;
 	u32 diag_reg_read_addr;
 	u32 diag_reg_read_mem_type;
@@ -371,7 +370,9 @@ struct cnss_plat_data {
 	u8 *diag_reg_read_buf;
 	u8 cal_done;
 	u8 powered_on;
+	u8 use_fw_path_with_prefix;
 	char firmware_name[MAX_FIRMWARE_NAME_LEN];
+	char fw_fallback_name[MAX_FIRMWARE_NAME_LEN];
 	struct completion rddm_complete;
 	struct completion recovery_complete;
 	struct cnss_control_params ctrl_params;
@@ -386,7 +387,6 @@ struct cnss_plat_data {
 	int (*get_info_cb)(void *ctx, void *event, int event_len);
 	u8 use_nv_mac;
 	u8 set_wlaon_pwr_ctrl;
-	struct kobject *shutdown_kobj;
 
 	struct kobject *wifi_kobj;
 };

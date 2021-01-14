@@ -24,11 +24,24 @@ void sde_sync_put(void *fence)
 		dma_fence_put(fence);
 }
 
+#if defined(CONFIG_DISPLAY_SAMSUNG)
+extern bool flag_screenrecorder;
+#endif
+
 signed long sde_sync_wait(void *fnc, long timeout_ms)
 {
 	struct dma_fence *fence = fnc;
 	int rc;
 	char timeline_str[TIMELINE_VAL_LENGTH];
+
+#if defined(CONFIG_DISPLAY_SAMSUNG)
+	if (fence && fence->ops->get_timeline_name) {
+		const char *name = fence->ops->get_timeline_name(fence);
+
+		if (strnstr(name, "screenrecorder", strlen(name)))
+			flag_screenrecorder = true;
+	}
+#endif
 
 	if (!fence)
 		return -EINVAL;

@@ -1,0 +1,160 @@
+/* Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include <dt-bindings/input/input.h>
+
+&s2dos05_l2 {	/* tsp_io */
+	regulator-min-microvolt = <1800000>;
+	regulator-max-microvolt = <1800000>;
+	regulator-boot-on;
+};
+
+&s2dos05_l3 {	/* tsp_avdd */
+	regulator-min-microvolt = <3000000>;
+	regulator-max-microvolt = <3000000>;
+	regulator-boot-on;
+};
+
+/delete-node/ &gpio_keys;
+&soc {
+	gpio_keys: gpio_keys {
+		status = "ok";
+		compatible = "gpio-keys";
+		input-name = "gpio-keys";
+		label = "gpio_keys_flex";
+		pinctrl-names = "default";
+		pinctrl-0 = <&key_vol_up_default>;
+		gpio-key,wakeup_enable;
+
+		vol_up {
+			label = "volume_up";
+			gpios = <&pm8150l_gpios 3 GPIO_ACTIVE_LOW>;
+			linux,input-type = <1>;
+			linux,code = <KEY_VOLUMEUP>;
+			debounce-interval = <15>;
+			linux,can-disable;
+		};
+	};
+
+	ss_touch {
+		compatible = "samsung,ss_touch";
+		ss_touch,numbers = <2>;
+	};
+
+};
+
+/delete-node/ &key_vol_up_default;
+
+&pm8150l_gpios {
+	key_vol_up {
+		key_vol_up_default: key_vol_up_default {
+			pins = "gpio3";
+			function = "normal";
+			input-enable;
+			bias-pull-up;
+			power-source = <0>;
+		};
+	};
+};
+
+&spmi_bus {
+	qcom,pm8150@0 {
+		qcom,power-on@800 {
+			qcom,label = "qpnp_pon_flex";
+		};
+	};
+};
+
+&qupv3_se5_i2c {
+	pinctrl-0 = <&qupv3_se5_tsp_i2c_active>;
+	pinctrl-1 = <&qupv3_se5_tsp_i2c_sleep>;
+	status = "ok";
+
+	/* stm */
+	fts_ts: touchscreen@49 {
+		status = "ok";
+		compatible = "stm,fts_touch";
+		reg = <0x49>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <87 0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&attn_irq>;
+		stm,irq_gpio = <&tlmm 15 0x2008>;
+		stm,irq_type = <0x2008>;
+		stm,max_coords = <4095 4095>;	/* x y */
+		stm,regulator_dvdd = "s2dos05-ldo2";
+		stm,regulator_avdd = "s2dos05-ldo3";
+		stm,project_name = "bloom", "F700";
+		stm,firmware_name = "tsp_stm/fts9cu80f_bloom.fw";
+		stm,tclm_level = <2>;
+		stm,afe_base = <0x000B>;
+		stm,enable_settings_aot;
+		support_dex_mode;
+		support_ear_detect;
+		stm,ss_touch_num = <1>;
+/*		sync-reportrate-120 = "Y";*/
+		support_hall_ic;
+		support_open_short_test;
+		support_mis_calibration_test;
+	};
+};
+
+&pm8150_l13 {
+	regulator-min-microvolt = <3000000>;
+	regulator-max-microvolt = <3000000>;
+	qcom,init-voltage = <3000000>;
+	regulator-boot-on;
+	qcom,init-mode = <RPMH_REGULATOR_MODE_HPM>;
+};
+
+&qupv3_se13_i2c {
+	pinctrl-0 = <&qupv3_se13_tsp_i2c_active>;
+	pinctrl-1 = <&qupv3_se13_tsp_i2c_sleep>;
+	status = "ok";
+
+	st_fts@49 {
+		status = "disabled";
+	};
+
+	/* ZTW522 */
+	sub_zinitix: touchscreen@20 {
+		status = "okay";
+		compatible = "zinitix,ztw522";
+		reg = <0x20>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <152 0>;
+		pinctrl-names = "default", "on_state", "off_state";
+		pinctrl-0 = <&sub_tsp_int>;
+		pinctrl-1 = <&sub_tsp_int>;
+		pinctrl-2 = <&sub_tsp_int>;
+		zinitix,irq_gpio = <&tlmm 14 0x2008>;
+		zinitix,firmware_name = "tsp_zinitix/ztw522_bloom.bin";
+		zinitix,x_resolution = <300>;
+		zinitix,y_resolution = <120>;
+		zinitix,regulator_avdd = "pm8150_l13";
+		zinitix,chip_name = "ZTW522";
+		zinitix,project_name = "bloom";
+		zinitix,page_size = <128>;
+		zinitix,aot;
+/*
+		zinitix,spay;
+		zinitix,aod;
+		zinitix,tclm_level = <0x02>;
+		zinitix,afe_base = <0x910B>;
+		zinitix,mis_cal_check;
+		zinitix,factory_item_version = <6>;
+		support_ear_detect_mode;
+*/
+		support_hall_ic;
+	};
+};
+

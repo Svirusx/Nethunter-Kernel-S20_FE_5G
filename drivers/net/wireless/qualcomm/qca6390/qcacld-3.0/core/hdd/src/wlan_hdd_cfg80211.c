@@ -905,11 +905,7 @@ static int __wlan_hdd_cfg80211_get_tdls_capabilities(struct wiphy *wiphy,
 					WIFI_TDLS_EXTERNAL_CONTROL_SUPPORT : 0);
 		set = set | (tdls_off_channel ?
 					WIIF_TDLS_OFFCHANNEL_SUPPORT : 0);
-		if (tdls_sleep_sta_enable || tdls_buffer_sta ||
-		    tdls_off_channel)
-			max_num_tdls_sta = HDD_MAX_NUM_TDLS_STA_P_UAPSD_OFFCHAN;
-		else
-			max_num_tdls_sta = HDD_MAX_NUM_TDLS_STA;
+		max_num_tdls_sta = cfg_tdls_get_max_peer_count(hdd_ctx->psoc);
 
 		hdd_debug("TDLS Feature supported value %x", set);
 		if (nla_put_u32(skb, PARAM_MAX_TDLS_SESSION,
@@ -1120,9 +1116,19 @@ hdd_convert_hang_reason(enum qdf_hang_reason reason)
 	case QDF_VDEV_PEER_DELETE_ALL_RESPONSE_TIMED_OUT:
 		ret_val = QCA_WLAN_HANG_VDEV_PEER_DELETE_ALL_RESPONSE_TIMED_OUT;
 		break;
+	case QDF_WMI_BUF_SEQUENCE_MISMATCH:
+		ret_val = QCA_WLAN_HANG_VDEV_PEER_DELETE_ALL_RESPONSE_TIMED_OUT;
+		break;
+	case QDF_HAL_REG_WRITE_FAILURE:
+		ret_val = QCA_WLAN_HANG_REG_WRITE_FAILURE;
+		break;
+	case QDF_SUSPEND_NO_CREDIT:
+		ret_val = QCA_WLAN_HANG_SUSPEND_NO_CREDIT;
+		break;
 	case QDF_REASON_UNSPECIFIED:
 	default:
 		ret_val = QCA_WLAN_HANG_REASON_UNSPECIFIED;
+		break;
 	}
 	return ret_val;
 }
@@ -9324,13 +9330,15 @@ static int __wlan_hdd_cfg80211_wifi_logger_start(struct wiphy *wiphy,
 		return 0;
 	}
 
-	if (hdd_ctx->is_pktlog_enabled &&
-	    (start_log.verbose_level == WLAN_LOG_LEVEL_ACTIVE))
-		return 0;
+	if (start_log.ring_id == RING_ID_PER_PACKET_STATS) {
+		if (hdd_ctx->is_pktlog_enabled &&
+		    (start_log.verbose_level == WLAN_LOG_LEVEL_ACTIVE))
+			return 0;
 
-	if ((!hdd_ctx->is_pktlog_enabled) &&
-	    (start_log.verbose_level != WLAN_LOG_LEVEL_ACTIVE))
-		return 0;
+		if ((!hdd_ctx->is_pktlog_enabled) &&
+		    (start_log.verbose_level != WLAN_LOG_LEVEL_ACTIVE))
+			return 0;
+	}
 
 	mac_handle = hdd_ctx->mac_handle;
 	status = sme_wifi_start_logger(mac_handle, start_log);
@@ -9340,10 +9348,12 @@ static int __wlan_hdd_cfg80211_wifi_logger_start(struct wiphy *wiphy,
 		return -EINVAL;
 	}
 
-	if (start_log.verbose_level != WLAN_LOG_LEVEL_ACTIVE)
-		hdd_ctx->is_pktlog_enabled = true;
-	else
-		hdd_ctx->is_pktlog_enabled = false;
+	if (start_log.ring_id == RING_ID_PER_PACKET_STATS) {
+		if (start_log.verbose_level == WLAN_LOG_LEVEL_ACTIVE)
+			hdd_ctx->is_pktlog_enabled = true;
+		else
+			hdd_ctx->is_pktlog_enabled = false;
+	}
 
 	return 0;
 }
@@ -10495,8 +10505,9 @@ static int __wlan_hdd_cfg80211_get_link_properties(struct wiphy *wiphy,
 			return -EINVAL;
 		}
 
-		sta_info = hdd_get_sta_info_by_mac(&adapter->sta_info_list,
-						   peer_mac);
+		sta_info = hdd_get_sta_info_by_mac(
+					&adapter->sta_info_list, peer_mac,
+					STA_INFO_CFG80211_GET_LINK_PROPERTIES);
 
 		if (!sta_info) {
 			hdd_err("No active peer with mac = " QDF_MAC_ADDR_STR,
@@ -10507,7 +10518,8 @@ static int __wlan_hdd_cfg80211_get_link_properties(struct wiphy *wiphy,
 		nss = sta_info->nss;
 		freq = (WLAN_HDD_GET_AP_CTX_PTR(adapter))->operating_chan_freq;
 		rate_flags = sta_info->rate_flags;
-		hdd_put_sta_info_ref(&adapter->sta_info_list, &sta_info, true);
+		hdd_put_sta_info_ref(&adapter->sta_info_list, &sta_info, true,
+				     STA_INFO_CFG80211_GET_LINK_PROPERTIES);
 	} else {
 		hdd_err("Not Associated! with mac "QDF_MAC_ADDR_STR,
 		       QDF_MAC_ADDR_ARRAY(peer_mac));
@@ -15317,7 +15329,8 @@ static void wlan_hdd_cfg80211_set_wiphy_oce_scan_flags(struct wiphy *wiphy)
 #endif
 
 #if defined(WLAN_FEATURE_SAE) && \
-	defined(CFG80211_EXTERNAL_AUTH_SUPPORT)
+		(defined(CFG80211_EXTERNAL_AUTH_SUPPORT) || \
+		LINUX_VERSION_CODE >= KERNEL_VERSION(4, 17, 0))
 /**
  * wlan_hdd_cfg80211_set_wiphy_sae_feature() - Indicates support of SAE feature
  * @wiphy: Pointer to wiphy
@@ -18602,9 +18615,8 @@ static bool wlan_hdd_fils_data_in_limits(struct cfg80211_connect_params *req)
 		  req->fils_erp_next_seq_num, req->auth_type,
 		  req->fils_erp_username_len, req->fils_erp_rrk_len,
 		  req->fils_erp_realm_len);
-	if (!req->fils_erp_rrk_len || !req->fils_erp_realm_len ||
-	    !req->fils_erp_username_len ||
-	    req->fils_erp_rrk_len > FILS_MAX_RRK_LENGTH ||
+
+	if (req->fils_erp_rrk_len > FILS_MAX_RRK_LENGTH ||
 	    req->fils_erp_realm_len > FILS_MAX_REALM_LEN ||
 	    req->fils_erp_username_len > FILS_MAX_KEYNAME_NAI_LENGTH) {
 		hdd_err("length incorrect, user=%zu rrk=%zu realm=%zu",
@@ -18614,12 +18626,10 @@ static bool wlan_hdd_fils_data_in_limits(struct cfg80211_connect_params *req)
 	}
 
 	if (!req->fils_erp_rrk || !req->fils_erp_realm ||
-	    !req->fils_erp_username) {
-		hdd_err("buffer incorrect, user=%pK rrk=%pK realm=%pK",
+	    !req->fils_erp_username)
+		hdd_err("ERP info is NULL, user=%pK rrk=%pK realm=%pK",
 			req->fils_erp_username, req->fils_erp_rrk,
 			req->fils_erp_realm);
-		return false;
-	}
 
 	return true;
 }
@@ -18713,6 +18723,12 @@ static int wlan_hdd_cfg80211_set_fils_config(struct hdd_adapter *adapter,
 			roam_profile->fils_con_info->key_nai_length);
 		goto fils_conn_fail;
 	}
+
+	if (!req->fils_erp_username_len) {
+		hdd_err("FILS_PMKSA: No ERP username, return success");
+		return 0;
+	}
+
 	buf = roam_profile->fils_con_info->keyname_nai;
 	qdf_mem_copy(buf, req->fils_erp_username, req->fils_erp_username_len);
 	buf += req->fils_erp_username_len;
@@ -21444,10 +21460,10 @@ QDF_STATUS hdd_softap_deauth_current_sta(struct hdd_adapter *adapter,
 
 	qdf_event_reset(&hapd_state->qdf_sta_disassoc_event);
 
-	if (!qdf_is_macaddr_broadcast(&sta_info->sta_mac))
+	if (!qdf_is_macaddr_broadcast(&param->peerMacAddr))
 		sme_send_disassoc_req_frame(hdd_ctx->mac_handle,
 					    adapter->vdev_id,
-					    (uint8_t *)&sta_info->sta_mac,
+					    (uint8_t *)&param->peerMacAddr,
 					    param->reason_code, 0);
 
 	qdf_status = hdd_softap_sta_deauth(adapter, param);
@@ -21485,7 +21501,7 @@ QDF_STATUS hdd_softap_deauth_all_sta(struct hdd_adapter *adapter,
 	QDF_STATUS status;
 	bool is_sap_bcast_deauth_enabled = false;
 	struct hdd_context *hdd_ctx;
-	struct hdd_station_info *sta_info;
+	struct hdd_station_info *sta_info, *tmp = NULL;
 
 	hdd_ctx = WLAN_HDD_GET_CTX(adapter);
 	if (!hdd_ctx) {
@@ -21499,20 +21515,32 @@ QDF_STATUS hdd_softap_deauth_all_sta(struct hdd_adapter *adapter,
 	if (is_sap_bcast_deauth_enabled)
 		return QDF_STATUS_E_INVAL;
 
-	hdd_for_each_sta_ref(adapter->sta_info_list, sta_info) {
+	hdd_for_each_sta_ref_safe(adapter->sta_info_list, sta_info, tmp,
+				  STA_INFO_SOFTAP_DEAUTH_ALL_STA) {
 		if (!sta_info->is_deauth_in_progress) {
 			hdd_debug("Delete STA with MAC:" QDF_MAC_ADDR_STR,
 				  QDF_MAC_ADDR_ARRAY(sta_info->sta_mac.bytes));
+			qdf_mem_copy(param->peerMacAddr.bytes,
+				     sta_info->sta_mac.bytes,
+				     QDF_MAC_ADDR_SIZE);
 			status =
 			    hdd_softap_deauth_current_sta(adapter, sta_info,
 							  hapd_state, param);
 			if (QDF_IS_STATUS_ERROR(status)) {
-				hdd_put_sta_info_ref(&adapter->sta_info_list,
-						     &sta_info, true);
+				hdd_put_sta_info_ref(
+						&adapter->sta_info_list,
+						&sta_info, true,
+						STA_INFO_SOFTAP_DEAUTH_ALL_STA);
+				if (tmp)
+					hdd_put_sta_info_ref(
+						&adapter->sta_info_list,
+						&tmp, true,
+						STA_INFO_SOFTAP_DEAUTH_ALL_STA);
 				return status;
 			}
 		}
-		hdd_put_sta_info_ref(&adapter->sta_info_list, &sta_info, true);
+		hdd_put_sta_info_ref(&adapter->sta_info_list, &sta_info, true,
+				     STA_INFO_SOFTAP_DEAUTH_ALL_STA);
 	}
 
 	return QDF_STATUS_SUCCESS;
@@ -21581,8 +21609,10 @@ int __wlan_hdd_cfg80211_del_station(struct wiphy *wiphy,
 			hdd_softap_check_wait_for_tx_eap_pkt(
 					adapter, (struct qdf_mac_addr *)mac);
 
-		sta_info = hdd_get_sta_info_by_mac(&adapter->sta_info_list,
-						   mac);
+		sta_info = hdd_get_sta_info_by_mac(
+						&adapter->sta_info_list,
+						mac,
+						STA_INFO_CFG80211_DEL_STATION);
 
 		if (!sta_info) {
 			hdd_debug("Skip DEL STA as this is not used::"
@@ -21596,7 +21626,8 @@ int __wlan_hdd_cfg80211_del_station(struct wiphy *wiphy,
 				  QDF_MAC_ADDR_STR,
 				  QDF_MAC_ADDR_ARRAY(mac));
 			hdd_put_sta_info_ref(&adapter->sta_info_list, &sta_info,
-					     true);
+					     true,
+					     STA_INFO_CFG80211_DEL_STATION);
 			return -ENOENT;
 		}
 
@@ -21604,7 +21635,8 @@ int __wlan_hdd_cfg80211_del_station(struct wiphy *wiphy,
 			  QDF_MAC_ADDR_ARRAY(mac));
 		hdd_softap_deauth_current_sta(adapter, sta_info, hapd_state,
 					      param);
-		hdd_put_sta_info_ref(&adapter->sta_info_list, &sta_info, true);
+		hdd_put_sta_info_ref(&adapter->sta_info_list, &sta_info, true,
+				     STA_INFO_CFG80211_DEL_STATION);
 	}
 
 fn_end:
@@ -23665,7 +23697,8 @@ wlan_hdd_cfg80211_update_connect_params(struct wiphy *wiphy,
 #endif
 
 #if defined(WLAN_FEATURE_SAE) && \
-	defined(CFG80211_EXTERNAL_AUTH_SUPPORT)
+		(defined(CFG80211_EXTERNAL_AUTH_SUPPORT) || \
+		LINUX_VERSION_CODE >= KERNEL_VERSION(4, 17, 0))
 #if defined(CFG80211_EXTERNAL_AUTH_AP_SUPPORT)
 /**
  * wlan_hdd_extauth_cache_pmkid() - Extract and cache pmkid
@@ -24027,6 +24060,7 @@ void hdd_send_update_owe_info_event(struct hdd_adapter *adapter,
 
 	hdd_enter_dev(dev);
 
+	qdf_mem_zero(&owe_info, sizeof(owe_info));
 	qdf_mem_copy(owe_info.peer, sta_addr, ETH_ALEN);
 	owe_info.ie = owe_ie;
 	owe_info.ie_len = owe_ie_len;
@@ -24169,7 +24203,8 @@ static struct cfg80211_ops wlan_hdd_cfg80211_ops = {
 	.update_connect_params = wlan_hdd_cfg80211_update_connect_params,
 #endif
 #if defined(WLAN_FEATURE_SAE) && \
-		defined(CFG80211_EXTERNAL_AUTH_SUPPORT)
+		(defined(CFG80211_EXTERNAL_AUTH_SUPPORT) || \
+		LINUX_VERSION_CODE >= KERNEL_VERSION(4, 17, 0))
 	.external_auth = wlan_hdd_cfg80211_external_auth,
 #endif
 #if defined(WLAN_FEATURE_NAN) && \

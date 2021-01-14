@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2016-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2020, The Linux Foundation. All rights reserved.
  */
 
 #include <linux/delay.h>
@@ -13,6 +13,7 @@
 #include "dsi_panel.h"
 #include "dsi_ctrl_hw.h"
 #include "dsi_parser.h"
+#include "sde_dbg.h"
 #if defined(CONFIG_DISPLAY_SAMSUNG)
 #include "ss_dsi_panel_common.h"
 #endif
@@ -350,6 +351,7 @@ int dsi_panel_trigger_esd_attack(struct dsi_panel *panel)
 
 	if (gpio_is_valid(r_config->reset_gpio)) {
 		gpio_set_value(r_config->reset_gpio, 0);
+		SDE_EVT32(SDE_EVTLOG_FUNC_CASE1);
 		DSI_INFO("GPIO pulled low to simulate ESD\n");
 		return 0;
 	}
@@ -582,10 +584,12 @@ static int dsi_panel_power_off(struct dsi_panel *panel)
 		AOT disable on factory binary.
 	*/
 	if (!vdd->aot_enable || vdd->is_factory_mode)
-		if (gpio_is_valid(panel->reset_config.reset_gpio))
+		if (gpio_is_valid(panel->reset_config.reset_gpio) &&
+						!panel->reset_gpio_always_on)
 			gpio_set_value(panel->reset_config.reset_gpio, 0);
 #else
-	if (gpio_is_valid(panel->reset_config.reset_gpio))
+	if (gpio_is_valid(panel->reset_config.reset_gpio) &&
+					!panel->reset_gpio_always_on)
 		gpio_set_value(panel->reset_config.reset_gpio, 0);
 #endif
 
@@ -686,6 +690,7 @@ static int dsi_panel_tx_cmd_set(struct dsi_panel *panel,
 	cmds = mode->priv_info->cmd_sets[type].cmds;
 	count = mode->priv_info->cmd_sets[type].count;
 	state = mode->priv_info->cmd_sets[type].state;
+	SDE_EVT32(type, state, count);
 #endif
 
 #if defined(CONFIG_DISPLAY_SAMSUNG)
@@ -750,6 +755,8 @@ static int dsi_panel_tx_cmd_set(struct dsi_panel *panel,
 		if (cmds->last_command)
 			cmds->msg.flags |= MIPI_DSI_MSG_LASTCOMMAND;
 
+		if (type == DSI_CMD_SET_VID_TO_CMD_SWITCH)
+			cmds->msg.flags |= MIPI_DSI_MSG_ASYNC_OVERRIDE;
 #if defined(CONFIG_DISPLAY_SAMSUNG)
 		while (retry-- >= 0) {
 #endif
@@ -866,6 +873,9 @@ static int dsi_panel_update_backlight(struct dsi_panel *panel,
 	}
 
 	dsi = &panel->mipi_device;
+
+	if (panel->bl_config.bl_inverted_dbv)
+		bl_lvl = (((bl_lvl & 0xff) << 8) | (bl_lvl >> 8));
 
 #if defined(CONFIG_DISPLAY_SAMSUNG)
 	rc = ss_brightness_dcs(panel->panel_private, bl_lvl, BACKLIGHT_NORMAL);
@@ -1422,6 +1432,9 @@ static int dsi_panel_parse_misc_host_config(struct dsi_host_common_cfg *host,
 		host->t_clk_pre = val;
 		DSI_DEBUG("[%s] t_clk_pre = %d\n", name, val);
 	}
+
+	host->t_clk_pre_extend = utils->read_bool(utils->data,
+						"qcom,mdss-dsi-t-clk-pre-extend");
 
 	host->ignore_rx_eot = utils->read_bool(utils->data,
 						"qcom,mdss-dsi-rx-eot-ignore");
@@ -2102,6 +2115,9 @@ char *cmd_set_prop_map[SS_DSI_CMD_SET_MAX] = {
 
 	"samsung,micro_short_test_on_tx_cmds_revA",
 	"samsung,micro_short_test_off_tx_cmds_revA",
+	"samsung,tcon_pe_on_tx_cmds_revA",
+	"samsung,tcon_pe_off_tx_cmds_revA",
+
 	"TX_POC_CMD_START not parsed from DTSI",
 	"samsung,poc_enable_tx_cmds_revA",
 	"samsung,poc_disable_tx_cmds_revA",
@@ -2123,6 +2139,11 @@ char *cmd_set_prop_map[SS_DSI_CMD_SET_MAX] = {
 	"samsung,poc_post_read_tx_cmds_revA",
 	"samsung,reg_poc_read_pos_tx_cmds_revA",
 	"TX_POC_CMD_END not parsed from DTSI",
+	"samsung,firmware_update_erase_tx_cmds_revA",
+	"samsung,firmware_update_mtp_id_erase_tx_cmds_revA",
+	"samsung,firmware_update_write_tx_cmds_revA",
+	"samsung,firmware_update_mtp_id_write_tx_cmds_revA",
+	"samsung,firmware_update_read_tx_cmds_revA",
 	"samsung,gct_enter_tx_cmds_revA",
 	"samsung,gct_mid_tx_cmds_revA",
 	"samsung,gct_exit_tx_cmds_revA",
@@ -2274,6 +2295,9 @@ char *cmd_set_prop_map[SS_DSI_CMD_SET_MAX] = {
 	"samsung,vrr_tx_cmds_revA",
 	"samsung,vrr_gm2_gamma_comp_tx_cmds_revA",
 
+	"samsung,green_weight_normal_tx_cmds_revA",
+	"samsung,green_weight_80percent_tx_cmds_revA",
+
 	/* for vidoe panel dfps */
 	"samsung,dfps_tx_cmds_revA",
 
@@ -2327,6 +2351,10 @@ char *cmd_set_prop_map[SS_DSI_CMD_SET_MAX] = {
 	"samsung,poc_status_rx_cmds_revA",
 	"samsung,poc_checksum_rx_cmds_revA",
 	"samsung,poc_mca_check_rx_cmds_revA",
+	"samsung,firmware_update_read_rx_cmds_revA",
+	"samsung,firmware_update_mtp_id_read_rx_cmds_revA",
+	"samsung,firmware_update_status_read_rx_cmds_revA",
+	"samsung,firmware_update_done_check_rx_cmds_revA",
 	"samsung,gct_checksum_rx_cmds_revA",
 	"samsung,mcd_read_resistantant_rx_cmds_revA", /* For read real MCD R/L resistance */
 	"samsung,flash_gamma_rx_cmds_revA",
@@ -2812,6 +2840,10 @@ static int dsi_panel_parse_misc_features(struct dsi_panel *panel)
 
 	panel->lp11_init = utils->read_bool(utils->data,
 			"qcom,mdss-dsi-lp11-init");
+
+	panel->reset_gpio_always_on = utils->read_bool(utils->data,
+			"qcom,platform-reset-gpio-always-on");
+
 	return 0;
 }
 
@@ -3096,6 +3128,9 @@ static int dsi_panel_parse_bl_config(struct dsi_panel *panel)
 	} else {
 		panel->bl_config.brightness_max_level = val;
 	}
+
+	panel->bl_config.bl_inverted_dbv = utils->read_bool(utils->data,
+		"qcom,mdss-dsi-bl-inverted-dbv");
 
 	if (panel->bl_config.type == DSI_BACKLIGHT_PWM) {
 		rc = dsi_panel_parse_bl_pwm_config(panel);
@@ -4332,7 +4367,6 @@ int dsi_panel_get_mode_count(struct dsi_panel *panel)
 	int num_dfps_rates, num_bit_clks;
 	int num_video_modes = 0, num_cmd_modes = 0;
 	int count, rc = 0;
-	void *utils_data = NULL;
 
 	if (!panel) {
 		DSI_ERR("invalid params\n");
@@ -4369,10 +4403,9 @@ int dsi_panel_get_mode_count(struct dsi_panel *panel)
 
 	panel->num_timing_nodes = count;
 	dsi_for_each_child_node(timings_np, child_np) {
-		utils_data = child_np;
-		if (utils->read_bool(utils->data, "qcom,mdss-dsi-video-mode"))
+		if (utils->read_bool(child_np, "qcom,mdss-dsi-video-mode"))
 			num_video_modes++;
-		else if (utils->read_bool(utils->data,
+		else if (utils->read_bool(child_np,
 					"qcom,mdss-dsi-cmd-mode"))
 			num_cmd_modes++;
 		else if (panel->panel_mode == DSI_OP_VIDEO_MODE)
@@ -4387,9 +4420,20 @@ int dsi_panel_get_mode_count(struct dsi_panel *panel)
 	num_bit_clks = !panel->dyn_clk_caps.dyn_clk_support ? 1 :
 					panel->dyn_clk_caps.bit_clk_list_len;
 
-	/* Inflate num_of_modes by fps and bit clks in dfps */
-	panel->num_display_modes = (num_cmd_modes * num_bit_clks) +
-			(num_video_modes * num_bit_clks * num_dfps_rates);
+	/*
+	 * Inflate num_of_modes by fps and bit clks in dfps.
+	 * Single command mode for video mode panels supporting
+	 * panel operating mode switch.
+	 */
+	num_video_modes = num_video_modes * num_bit_clks * num_dfps_rates;
+
+	if ((panel->panel_mode == DSI_OP_VIDEO_MODE) &&
+			(panel->panel_mode_switch_enabled))
+		num_cmd_modes  = 1;
+	else
+		num_cmd_modes = num_cmd_modes * num_bit_clks;
+
+	panel->num_display_modes = num_video_modes + num_cmd_modes;
 
 error:
 	return rc;
@@ -5214,6 +5258,7 @@ int dsi_panel_send_roi_dcs(struct dsi_panel *panel, int ctrl_idx,
 	}
 	DSI_DEBUG("[%s] send roi x %d y %d w %d h %d\n", panel->name,
 			roi->x, roi->y, roi->w, roi->h);
+	SDE_EVT32(roi->x, roi->y, roi->w, roi->h);
 
 #if defined(CONFIG_DISPLAY_SAMSUNG)
 	ss_set_exclusive_tx_lock_from_qct(panel->panel_private, true);

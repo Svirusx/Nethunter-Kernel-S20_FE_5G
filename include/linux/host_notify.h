@@ -2,12 +2,12 @@
 /*
  *  Host notify class driver
  *
- * Copyright (C) 2019 Samsung, Inc.
+ * Copyright (C) 2011-2020 Samsung, Inc.
  * Author: Dongrak Shin <dongrak.shin@samsung.com>
  *
  */
 
- /* usb notify layer v3.4 */
+ /* usb notify layer v3.5 */
 
 #ifndef __LINUX_HOST_NOTIFY_H__
 #define __LINUX_HOST_NOTIFY_H__

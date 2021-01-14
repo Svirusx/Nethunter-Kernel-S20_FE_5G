@@ -2025,6 +2025,8 @@ static int __cam_isp_ctx_apply_req_in_activated_state(
 	struct cam_isp_ctx_req          *active_req_isp;
 	struct cam_isp_context          *ctx_isp = NULL;
 	struct cam_hw_config_args        cfg;
+	struct cam_hw_cmd_args           hw_cmd_args;
+	struct cam_isp_hw_cmd_args       isp_hw_cmd_args;
 
 	if (list_empty(&ctx->pending_req_list)) {
 		CAM_ERR(CAM_ISP, "No available request for Apply id %lld",
@@ -2095,6 +2097,17 @@ static int __cam_isp_ctx_apply_req_in_activated_state(
 			__cam_isp_ctx_handle_buf_done_fail_log(
 				active_req->request_id, active_req_isp);
 		}
+		CAM_INFO(CAM_ISP,
+			"Eabling the SOF to check Sensor is streaming or not");
+
+		hw_cmd_args.ctxt_to_hw_map = ctx_isp->hw_ctx;
+		hw_cmd_args.cmd_type = CAM_HW_MGR_CMD_INTERNAL;
+		isp_hw_cmd_args.cmd_type = CAM_ISP_HW_MGR_CMD_SOF_DEBUG;
+		isp_hw_cmd_args.u.sof_irq_enable = 1;
+		hw_cmd_args.u.internal_args = (void *)&isp_hw_cmd_args;
+
+		rc = ctx->hw_mgr_intf->hw_cmd(ctx->hw_mgr_intf->hw_mgr_priv,
+			&hw_cmd_args);
 
 		rc = -EFAULT;
 		goto end;

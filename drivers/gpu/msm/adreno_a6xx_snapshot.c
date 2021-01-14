@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2017-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
  */
 
 #include "adreno.h"
@@ -345,12 +345,12 @@ static const unsigned int a6xx_registers[] = {
 	0x0540, 0x0555,
 	/* CP */
 	0x0800, 0x0803, 0x0806, 0x0808, 0x0810, 0x0813, 0x0820, 0x0821,
-	0x0823, 0x0824, 0x0826, 0x0827, 0x0830, 0x0833, 0x0840, 0x0843,
-	0x084F, 0x086F, 0x0880, 0x088A, 0x08A0, 0x08AB, 0x08C0, 0x08C4,
-	0x08D0, 0x08DD, 0x08F0, 0x08F3, 0x0900, 0x0903, 0x0908, 0x0911,
-	0x0928, 0x093E, 0x0942, 0x094D, 0x0980, 0x0984, 0x098D, 0x0996,
-	0x0998, 0x099E, 0x09A0, 0x09A6, 0x09A8, 0x09AE, 0x09B0, 0x09B1,
-	0x09C2, 0x09C8, 0x0A00, 0x0A03,
+	0x0823, 0x0824, 0x0826, 0x0827, 0x0830, 0x0833, 0x0840, 0x0845,
+	0x084F, 0x088A, 0x08A0, 0x08AB, 0x08C0, 0x08C4, 0x08D0, 0x08DD,
+	0x08F0, 0x08F3, 0x0900, 0x0903, 0x0908, 0x0911, 0x0928, 0x093E,
+	0x0942, 0x094D, 0x0980, 0x0984, 0x098D, 0x0996, 0x0998, 0x099E,
+	0x09A0, 0x09A6, 0x09A8, 0x09AE, 0x09B0, 0x09B4, 0x09C2, 0x09C9,
+	0x0A00, 0x0A04,
 	/* VSC */
 	0x0C00, 0x0C04, 0x0C06, 0x0C06, 0x0C10, 0x0CD9, 0x0E00, 0x0E0E,
 	/* UCHE */
@@ -387,6 +387,12 @@ static const unsigned int a6xx_gmu_wrapper_registers[] = {
 	0x1f840, 0x1f840, 0x1f844, 0x1f845, 0x1f887, 0x1f889,
 	/* GMU AO*/
 	0x23b0C, 0x23b0E, 0x23b15, 0x23b15,
+	/* GPU CC */
+	0x24000, 0x24012, 0x24040, 0x24052, 0x24400, 0x24404, 0x24407, 0x2440B,
+	0x24415, 0x2441C, 0x2441E, 0x2442D, 0x2443C, 0x2443D, 0x2443F, 0x24440,
+	0x24442, 0x24449, 0x24458, 0x2445A, 0x24540, 0x2455E, 0x24800, 0x24802,
+	0x24C00, 0x24C02, 0x25400, 0x25402, 0x25800, 0x25802, 0x25C00, 0x25C02,
+	0x26000, 0x26002,
 };
 
 enum a6xx_debugbus_id {
@@ -404,6 +410,7 @@ enum a6xx_debugbus_id {
 	A6XX_DBGBUS_RAS          = 0xc,
 	A6XX_DBGBUS_VSC          = 0xd,
 	A6XX_DBGBUS_COM          = 0xe,
+	A6XX_DBGBUS_COM_1        = 0xf,
 	A6XX_DBGBUS_LRZ          = 0x10,
 	A6XX_DBGBUS_A2D          = 0x11,
 	A6XX_DBGBUS_CCUFCHE      = 0x12,
@@ -513,6 +520,11 @@ static const struct adreno_debugbus_block a650_dbgc_debugbus_blocks[] = {
 	{ A6XX_DBGBUS_SPTP_3, 0x100, },
 	{ A6XX_DBGBUS_SPTP_4, 0x100, },
 	{ A6XX_DBGBUS_SPTP_5, 0x100, },
+};
+
+static const struct adreno_debugbus_block a702_dbgc_debugbus_blocks[] = {
+	{ A6XX_DBGBUS_COM_1, 0x100, },
+	{ A6XX_DBGBUS_SPTP_0, 0x100, },
 };
 
 #define A6XX_NUM_SHADER_BANKS 3
@@ -1528,6 +1540,15 @@ static void a6xx_snapshot_debugbus(struct adreno_device *adreno_dev,
 		}
 	}
 
+	if (adreno_is_a702(adreno_dev)) {
+		for (i = 0; i < ARRAY_SIZE(a702_dbgc_debugbus_blocks); i++) {
+			kgsl_snapshot_add_section(device,
+				KGSL_SNAPSHOT_SECTION_DEBUGBUS,
+				snapshot, a6xx_snapshot_dbgc_debugbus_block,
+				(void *) &a702_dbgc_debugbus_blocks[i]);
+		}
+	}
+
 	/*
 	 * GBIF has same debugbus as of other GPU blocks hence fall back to
 	 * default path if GPU uses GBIF.
@@ -1804,11 +1825,12 @@ void a6xx_snapshot(struct adreno_device *adreno_dev,
 		adreno_snapshot_registers(device, snapshot,
 			a6xx_rscc_snapshot_registers,
 			ARRAY_SIZE(a6xx_rscc_snapshot_registers) / 2);
-	} else if (adreno_is_a610(adreno_dev)) {
+	}
+
+	if (!gmu_core_isenabled(device))
 		adreno_snapshot_registers(device, snapshot,
 			a6xx_gmu_wrapper_registers,
 			ARRAY_SIZE(a6xx_gmu_wrapper_registers) / 2);
-	}
 
 	sptprac_on = gpudev->sptprac_is_on(adreno_dev);
 

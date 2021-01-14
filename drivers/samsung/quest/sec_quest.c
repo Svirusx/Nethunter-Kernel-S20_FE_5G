@@ -37,6 +37,18 @@
 #include <linux/sec_quest_param.h>
 #include <linux/sec_quest_qdaf.h>
 
+// TEMPORARY DEFINITION!!!
+// Please disable it later!!!
+//#if defined(CONFIG_ARCH_LAHAINA)
+//#define CONFIG_SEC_QUEST_ALWAYS_RETURN_PASS_FOR_ACAT
+//#endif
+
+// Please disable it later!!!
+#if defined(CONFIG_ARCH_LAHAINA)
+#define CONFIG_SEC_QUEST_NOT_TRIGGER_SMDDL_QDAF
+#define CONFIG_SEC_QUEST_NOT_TRIGGER_MAIN_QDAF
+#endif
+
 #ifdef CONFIG_SEC_QUEST_BPS_CLASSIFIER
 #include <linux/sec_quest_bps_classifier.h>
 
@@ -112,13 +124,13 @@ char *STR_SUBITEM[SUBITEM_ITEMSCOUNT] = {
 	"HLOS_SUSPEND",
 	"HLOS_VDDMIN",
 	"HLOS_THERMAL",
-	"HLOS_UFS",	
+	"HLOS_UFS",
 	"FUSION_A75G",
 	"FUSION_Q65G",
 #endif
 #if defined(CONFIG_SEC_QUEST_HLOS_DUMMY_SMD)
 	"SMDDL_QDAF"
-#endif	
+#endif
 };
 
 #if defined(CONFIG_SEC_QUEST_BPS_CLASSIFIER)
@@ -196,11 +208,11 @@ static struct notifier_block quest_panic_block = {
 static int call_user_prg( char **argv, int wait )
 {
 	int ret_userapp;
-	char *envp[5] = { 
-		"HOME=/", 
-		"PATH=/system/bin/quest:/system/bin:/system/xbin", 
-		"ANDROID_DATA=/data", 
-		"ANDROID_ROOT=/system", 
+	char *envp[5] = {
+		"HOME=/",
+		"PATH=/system/bin/quest:/system/bin:/system/xbin",
+		"ANDROID_DATA=/data",
+		"ANDROID_ROOT=/system",
 		NULL };
 
 	ret_userapp = call_usermodehelper(argv[0], argv, envp, wait);
@@ -210,7 +222,7 @@ static int call_user_prg( char **argv, int wait )
 	} else {
 		QUEST_PRINT("%s is NOT executed. ret_userapp = %d\n", argv[0], ret_userapp);
 		return ret_userapp;
-	}		
+	}
 }
 
 static int do_quest()
@@ -290,9 +302,9 @@ static void move_questresult_to_sub_dir(int quest_step)
 	char *argv[4] = { NULL, NULL, NULL, NULL };
 
 	argv[0] = MOVE_QUESTRESULT_PRG;
-	switch (quest_step) 
+	switch (quest_step)
 	{
-		case STEP_SMDDL: 
+		case STEP_SMDDL:
 			argv[1] = SMD_QUEST_LOGPATH;
 			break;
 		case STEP_CAL1:
@@ -303,10 +315,10 @@ static void move_questresult_to_sub_dir(int quest_step)
 		case STEP_MAIN:
 			argv[1] = MAIN_QUEST_LOGPATH;
 			break;
-	}		
-	QUEST_PRINT("%s : will move questresult files to %s\n", __func__, argv[1]);	
+	}
+	QUEST_PRINT("%s : will move questresult files to %s\n", __func__, argv[1]);
 
-	call_user_prg(argv, UMH_WAIT_PROC);	
+	call_user_prg(argv, UMH_WAIT_PROC);
 }
 
 static int call_quest_debugging_sh(char* action, int wait)
@@ -332,7 +344,7 @@ static enum quest_enum_item_result check_item_result( uint64_t item_result, uint
 		return ITEM_RESULT_NONE;
 
 	// check fail first
-	for( iCnt=1; iCnt<max_cnt; iCnt++ ) 
+	for( iCnt=1; iCnt<max_cnt; iCnt++ )
 	{
 		result = QUEST_GET_ITEM_SUBITEM_RESULT(item_result, iCnt);
 		if( result == ITEM_RESULT_FAIL )
@@ -340,7 +352,7 @@ static enum quest_enum_item_result check_item_result( uint64_t item_result, uint
 	}
 
 	// check incompleted
-	for( iCnt=1; iCnt<max_cnt; iCnt++ ) 
+	for( iCnt=1; iCnt<max_cnt; iCnt++ )
 	{
 		result = QUEST_GET_ITEM_SUBITEM_RESULT(item_result, iCnt);
 		if( result == ITEM_RESULT_INCOMPLETED )
@@ -358,7 +370,7 @@ static int check_if_incompleted_item_result_exist( uint64_t item_result, uint32_
 	if( item_result == 0 )
 		return 0;
 
-	for( iCnt=1; iCnt<max_cnt; iCnt++ ) 
+	for( iCnt=1; iCnt<max_cnt; iCnt++ )
 	{
 		result = QUEST_GET_ITEM_SUBITEM_RESULT(item_result, iCnt);
 		if( result == ITEM_RESULT_INCOMPLETED )
@@ -411,8 +423,8 @@ static int get_smd_subitem_result_string(char *buf, int piece)
 static void check_and_update_qdaf_result()
 {
 	int qdaf_failed_cnt;
-	
-	// get result of ITEM_SMDDLQDAF 
+
+	// get result of ITEM_SMDDLQDAF
 	qdaf_failed_cnt = get_qdaf_failed_cnt();
 	if( qdaf_failed_cnt > 0 ) {
 		QUEST_PRINT("%s : ITEM_SMDDLQDAF was failed (failed_cnt=%d)\n", __func__, qdaf_failed_cnt);
@@ -421,7 +433,7 @@ static void check_and_update_qdaf_result()
 	}else {
 		QUEST_PRINT("%s : ITEM_SMDDLQDAF was succeeded\n", __func__ );
 		QUEST_SET_ITEM_SUBITEM_RESULT(param_quest_data.smd_item_result, ITEM_SMDDLQDAF, ITEM_RESULT_PASS);
-		QUEST_SET_ITEM_SUBITEM_RESULT(param_quest_data.smd_subitem_result, SUBITEM_SMDDLQDAF, ITEM_RESULT_PASS);				
+		QUEST_SET_ITEM_SUBITEM_RESULT(param_quest_data.smd_subitem_result, SUBITEM_SMDDLQDAF, ITEM_RESULT_PASS);
 	}
 	quest_sync_param_quest_data();
 }
@@ -432,7 +444,7 @@ static void run_qdaf_in_background(enum quest_qdaf_action_t action)
 #if defined(CONFIG_SEC_QUEST_HLOS_DUMMY_SMD)
 	if( param_quest_data.curr_step == STEP_SMDDL &&
 		((action == QUEST_QDAF_ACTION_CONTROL_START_WITH_PANIC) ||
-		(action == QUEST_QDAF_ACTION_CONTROL_START_WITH_PANIC)) ) {
+		(action == QUEST_QDAF_ACTION_CONTROL_START_WITHOUT_PANIC)) ) {
 		QUEST_SET_ITEM_SUBITEM_RESULT(param_quest_data.smd_item_result, ITEM_SMDDLQDAF, ITEM_RESULT_INCOMPLETED);
 		QUEST_SET_ITEM_SUBITEM_RESULT(param_quest_data.smd_subitem_result, SUBITEM_SMDDLQDAF, ITEM_RESULT_INCOMPLETED);
 		quest_sync_param_quest_data();
@@ -450,8 +462,12 @@ static void run_qdaf_in_background(enum quest_qdaf_action_t action)
 //////////////////////////////////////////////////
 static void make_debugging_files()
 {
+#if defined(CONFIG_ARM) || defined(CONFIG_ARM64)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5,4,0)
 	// refer to qpnp_pon_reason (index=boot_reason-1)
 	QUEST_PRINT("%s : boot_reason was %d\n", __func__, boot_reason);
+#endif
+#endif
 
 	// updatebootcount
 	// do not call this with UMH_WAIT_PROC. it can cause race condition with init thread
@@ -489,10 +505,10 @@ static void setup_scenario()
 {
 	switch (param_quest_data.curr_step) {
 	case STEP_SMDDL: {
-		enum quest_enum_item_result qdaf_item_result, hlos_item_result;
+		enum quest_enum_item_result qdaf_item_result, hlos_item_result, total_result;
 		uint64_t smd_item_result_without_qdaf;
 		int exist_incompleted=0;
-		
+
 		// smd scenario
 		QUEST_PRINT("%s : (step=%d) smd scenario\n", __func__, STEP_SMDDL);
 
@@ -505,6 +521,7 @@ static void setup_scenario()
 		smd_item_result_without_qdaf = param_quest_data.smd_item_result;
 		QUEST_SET_ITEM_SUBITEM_RESULT(smd_item_result_without_qdaf, ITEM_SMDDLQDAF, ITEM_RESULT_PASS);
 		exist_incompleted = check_if_incompleted_item_result_exist(smd_item_result_without_qdaf, ITEM_ITEMSCOUNT);
+		total_result = check_item_result(smd_item_result_without_qdaf, ITEM_ITEMSCOUNT);
 
 		if ( hlos_item_result == ITEM_RESULT_INCOMPLETED ) {
 			// first boot -> run boot items -> android boot -> quest_hlos
@@ -513,6 +530,11 @@ static void setup_scenario()
 			QUEST_PRINT("%s : (step=%d) reboot while running quest_hlos\n", __func__, STEP_SMDDL);
 			QUEST_PRINT("%s : Let's check lastkmsg\n", __func__);
 
+			if( param_quest_data.smd_subitem_result_first==0 )
+				param_quest_data.smd_subitem_result_first = param_quest_data.smd_subitem_result;
+			quest_initialize_curr_step();
+		}else if ( total_result == ITEM_RESULT_FAIL ) {
+			QUEST_PRINT("%s : (step=%d) total_result == ITEM_RESULT_FAIL, so initialize step\n", __func__, STEP_SMDDL);
 			if( param_quest_data.smd_subitem_result_first==0 )
 				param_quest_data.smd_subitem_result_first = param_quest_data.smd_subitem_result;
 			quest_initialize_curr_step();
@@ -542,8 +564,16 @@ static void setup_scenario()
 
 			// trigger SMDDL QDAF in background only if SMDDL line
 			if( boot_count == 1 ) {
+#if defined(CONFIG_SEC_QUEST_NOT_TRIGGER_SMDDL_QDAF)
+				QUEST_PRINT("%s : SMDDL line, but skip to run SMDDL QDAF\n", __func__);
+				check_and_update_qdaf_result();
+				if( param_quest_data.smd_subitem_result_first==0 ) // due to boot after abnormal reset
+					param_quest_data.smd_subitem_result_first = param_quest_data.smd_subitem_result;
+				quest_initialize_curr_step();
+#else
 				QUEST_PRINT("%s : SMDDL line, so run SMDDL QDAF\n", __func__);
 				run_qdaf_in_background(QUEST_QDAF_ACTION_CONTROL_START_WITHOUT_PANIC);
+#endif
 			}
 			else {
 				QUEST_PRINT("%s : ERASE seq, so do not run SMDDL QDAF and finish step\n", __func__);
@@ -563,6 +593,9 @@ static void setup_scenario()
 		if( 0 != ddr_err_total )
 		{
 			QUEST_PRINT("%s : ddr_err_addr_total=%d\n", __func__, ddr_err_total);
+
+			if (ddr_err_total > MAX_DDR_ERR_ADDR_CNT)
+				ddr_err_total = MAX_DDR_ERR_ADDR_CNT;
 
 			for( idx=0; idx<ddr_err_total; idx++ )
 			{
@@ -592,22 +625,24 @@ static void setup_scenario()
 			// initialize step
 			quest_initialize_curr_step();
 		}
-			
+
 		break;
 	case STEP_MAIN:
 
-		// click MAIN button -> quest_hlos -> ... -> ITEM_QUESTQUEFI * X 
+		// click MAIN button -> quest_hlos -> ... -> ITEM_QUESTQUEFI * X
 		// -> ITEM_QUESTSUEFI -> ITEM_DDRSCANRAMDUMPENCACHE -> boot ?
 		QUEST_PRINT("%s : (step=%d) maybe booting completing main scenario\n", __func__, STEP_MAIN);
 
 		// move boot questresult files to MAIN directory
 		move_questresult_to_sub_dir(STEP_MAIN);
-		
-		// initialize step			
+
+		// initialize step
 		quest_initialize_curr_step();
 
+#if !defined(CONFIG_SEC_QUEST_NOT_TRIGGER_MAIN_QDAF)
 		// will run run_qdaf_in_background() later
 		call_main_qdaf_after_finighing_main_quest = 1;
+#endif
 
 		break;
 	default: {
@@ -652,7 +687,7 @@ static void __initialize()
 #endif
 
 	// make debugging files
-	make_debugging_files();	
+	make_debugging_files();
 
 	// check abnormal param
 	check_abnormal_param();
@@ -731,8 +766,16 @@ static ssize_t store_quest_end(struct device *dev,
 #if defined(CONFIG_SEC_QUEST_HLOS_DUMMY_SMD)
 		// trigger SMDDL QDAF in background only if SMDDL line
 		if( boot_count == 1 ) {
+#if defined(CONFIG_SEC_QUEST_NOT_TRIGGER_SMDDL_QDAF)
+			QUEST_PRINT("%s : SMDDL line, but skip to run SMDDL QDAF\n", __func__);
+			check_and_update_qdaf_result();
+			if( param_quest_data.smd_subitem_result_first==0 )
+				param_quest_data.smd_subitem_result_first = param_quest_data.smd_subitem_result;
+			quest_initialize_curr_step();
+#else
 			QUEST_PRINT("%s : SMDDL line, so run SMDDL QDAF\n", __func__);
 			run_qdaf_in_background(QUEST_QDAF_ACTION_CONTROL_START_WITHOUT_PANIC);
+#endif
 		}
 		else {
 			QUEST_PRINT("%s : ERASE seq, so do not run SMDDL QDAF and finish step\n", __func__);
@@ -748,14 +791,14 @@ static ssize_t store_quest_end(struct device *dev,
 #endif
 
 		// send "NAD_TEST=DONE" to factory app
-		kobject_uevent_env(&dev->kobj, KOBJ_CHANGE, quest_uevent.envp);	
+		kobject_uevent_env(&dev->kobj, KOBJ_CHANGE, quest_uevent.envp);
 #if defined(CONFIG_SEC_DDR_SKP)
 		if( failed ) {
 			// triger panic
 			QUEST_PRINT("%s : trigger panic\n", __func__);
 			panic("%s", result);
 		}
-#endif		
+#endif
 		break;
 	case STEP_CAL1:
 	case STEP_CALX:
@@ -775,12 +818,12 @@ static ssize_t store_quest_end(struct device *dev,
 				panic("%s", result);
 			}
 
-			// initialize remained count 
+			// initialize remained count
 			// initialize step
 			QUEST_PRINT("%s : initialize param and step\n", __func__ );
 			param_quest_data.hlos_remained_count = 0;
-			param_quest_data.ddrscan_remained_count = 0;			
-#if defined(CONFIG_SEC_QUEST_UEFI)			
+			param_quest_data.ddrscan_remained_count = 0;
+#if defined(CONFIG_SEC_QUEST_UEFI)
 			param_quest_data.quefi_remained_count = 0;
 #endif
 #if defined(CONFIG_SEC_QUEST_UEFI_ENHANCEMENT)
@@ -791,17 +834,17 @@ static ssize_t store_quest_end(struct device *dev,
 			// triger panic
 			QUEST_PRINT("%s : trigger panic\n", __func__);
 			panic("%s", result);
-			
+
 		}else {
 			// set result as PASS
 			QUEST_PRINT("%s : CAL quest_hlos was succeeded\n", __func__ );
 			QUEST_SET_ITEM_SUBITEM_RESULT(param_quest_data.cal_item_result, QUESTHLOS_HLOS_ITEM_MAIN_CAL, ITEM_RESULT_PASS);
 			quest_sync_param_quest_data();
-			
+
 			// send "NAD_TEST=DONE" to factory app
 			kobject_uevent_env(&dev->kobj, KOBJ_CHANGE, quest_uevent.envp);
 		}
-		
+
 		break;
 	case STEP_MAIN:
 
@@ -810,24 +853,24 @@ static ssize_t store_quest_end(struct device *dev,
 			QUEST_PRINT("%s : MAIN quest_hlos was failed (%s)\n", __func__, result);
 			QUEST_SET_ITEM_SUBITEM_RESULT(param_quest_data.main_item_result, QUESTHLOS_HLOS_ITEM_MAIN_CAL, ITEM_RESULT_FAIL);
 			quest_sync_param_quest_data();
-			
+
 			// triger panic
 			QUEST_PRINT("%s : trigger panic\n", __func__);
 			panic("%s", result);
-			
+
 		}else {
 			// set result as PASS
-			QUEST_PRINT("%s : MAIN quest_hlos was succeeded\n", __func__ );
+			QUEST_PRINT("%s : MAIN quest_hlos was succeeded\n", __func__);
 			QUEST_SET_ITEM_SUBITEM_RESULT(param_quest_data.main_item_result, QUESTHLOS_HLOS_ITEM_MAIN_CAL, ITEM_RESULT_PASS);
 			quest_sync_param_quest_data();
-			
+
 			// send "NAD_TEST=DONE" to factory app
 			kobject_uevent_env(&dev->kobj, KOBJ_CHANGE, quest_uevent.envp);
-		}	
-		
+		}
+
 		break;
-	}	
-			
+	}
+
 	QUEST_SYSFS_EXIT();
 	return count;
 }
@@ -851,6 +894,12 @@ static ssize_t show_quest_acat(struct device *dev,
 	total_result = check_item_result(param_quest_data.cal_item_result, ITEM_ITEMSCOUNT);
 	QUEST_PRINT("%s : cal_item_result(%llu) total_result(%d)\n",
 					__func__, param_quest_data.cal_item_result, total_result);
+
+#if defined(CONFIG_SEC_QUEST_ALWAYS_RETURN_PASS_FOR_ACAT)
+	QUEST_PRINT("%s : CONFIG_SEC_QUEST_ALWAYS_RETURN_PASS_FOR_ACAT enabled, so return pass\n", __func__);
+	total_result = ITEM_RESULT_PASS;
+#endif
+
 	switch (total_result) {
 		case ITEM_RESULT_PASS: {
 			QUEST_PRINT("ACAT QUEST PASS\n");
@@ -858,7 +907,7 @@ static ssize_t show_quest_acat(struct device *dev,
 		} break;
 		case ITEM_RESULT_FAIL: {
 			QUEST_PRINT("ACAT QUEST FAIL\n");
-			count = snprintf(buf, BUFF_SZ, "NG_ACAT_ASV\n"); 
+			count = snprintf(buf, BUFF_SZ, "NG_ACAT_ASV\n");
 		} break;
 
 		case ITEM_RESULT_INCOMPLETED: {
@@ -869,11 +918,11 @@ static ssize_t show_quest_acat(struct device *dev,
 		case ITEM_RESULT_NONE: {
 			QUEST_PRINT("ACAT QUEST NOT_TESTED\n");
 			count = snprintf(buf, BUFF_SZ, "OK\n");
-		} break;		
-	}	
+		} break;
+	}
 
 	QUEST_SYSFS_EXIT();
-	return count;	
+	return count;
 }
 
 static ssize_t store_quest_acat(struct device *dev,
@@ -894,7 +943,7 @@ static ssize_t store_quest_acat(struct device *dev,
 		QUEST_PRINT("%s : exceptional cases (erased=%d, buf=%s\n",
 			__func__, erased, buf);
 		goto out;
-	}	
+	}
 
 	// parse argument
 	strlcpy(temp, buf, QUEST_BUFF_SIZE * 3);
@@ -909,47 +958,47 @@ static ssize_t store_quest_acat(struct device *dev,
 	if (ret != 1) return -EINVAL;
 	ret = sscanf(quest_cmd[2], "%d\n", &dram_loop_count);
 	if (ret != 1) return -EINVAL;
-	QUEST_PRINT("%s : nad_acat%d,%d\n", 
+	QUEST_PRINT("%s : nad_acat%d,%d\n",
 		__func__, quest_loop_count, dram_loop_count);
 
-	// nad_acat,0,0 
-	// trigger SMD quest_hlos or CAL with remained_count 
-	if( (quest_loop_count==0) && (dram_loop_count==0) ) {	
+	// nad_acat,0,0
+	// trigger SMD quest_hlos or CAL with remained_count
+	if( (quest_loop_count==0) && (dram_loop_count==0) ) {
 
 		// S   M   D
 		// check if smd quest_hlos should start
 		if( unlikely(step_to_smd_quest_hlos && (param_quest_data.curr_step==STEP_SMDDL)) ) {
 			QUEST_PRINT("%s : cur_step==STEP_SMDDL and will triger quest_hlos\n", __func__);
-	
+
 			// update item result
 			QUEST_SET_ITEM_SUBITEM_RESULT(param_quest_data.smd_item_result, QUESTHLOS_HLOS_ITEM_SMD, ITEM_RESULT_INCOMPLETED);
 			quest_sync_param_quest_data();
-	
+
 			// trigger quest_hlos
 			do_quest();
 			goto out;
-		}		
+		}
 
 		// check exceptional cases
 		if( unlikely( (param_quest_data.curr_step!=STEP_TESTMODE &&
 						param_quest_data.curr_step!=STEP_CALX && param_quest_data.curr_step!=STEP_CAL1) ||
 						(param_quest_data.hlos_remained_count <= 0) ) ) {
-			QUEST_PRINT("%s : exceptional cases (step=%d, hlos_cnt=%d)\n", 
+			QUEST_PRINT("%s : exceptional cases (step=%d, hlos_cnt=%d)\n",
 				__func__, param_quest_data.curr_step, param_quest_data.hlos_remained_count);
 			goto out;
 		}
 
 		// C   A   L
 		// update remained_count and item result
-		QUEST_PRINT("%s : will triger quest_hlos\n", __func__);		
+		QUEST_PRINT("%s : will triger quest_hlos\n", __func__);
 		param_quest_data.hlos_remained_count--;
 		QUEST_SET_ITEM_SUBITEM_RESULT(param_quest_data.cal_item_result, QUESTHLOS_HLOS_ITEM_MAIN_CAL, ITEM_RESULT_INCOMPLETED);
 		quest_sync_param_quest_data();
 
 		// trigger quest_hlos
 		do_quest();
-		
-	}else {	
+
+	}else {
 
 		QUEST_PRINT("%s : update step, item_result and remained_count\n", __func__);
 
@@ -973,24 +1022,24 @@ static ssize_t store_quest_acat(struct device *dev,
 #endif
 				if( testmode_ddrscan_enabled )
 					param_quest_data.ddrscan_remained_count = quest_loop_count;
-				
+
 		}
 		else {
 			if( (quest_loop_count==1) && (dram_loop_count==0) ) {
-				// nad_acat,1,0 (trigger CAL 1time)			
+				// nad_acat,1,0 (trigger CAL 1time)
 				param_quest_data.curr_step = STEP_CAL1;
 				param_quest_data.cal_item_result = (uint64_t)0;
-				param_quest_data.ddrscan_remained_count = 0;			
+				param_quest_data.ddrscan_remained_count = 0;
 				param_quest_data.hlos_remained_count = quest_loop_count;
 				param_quest_data.quefi_remained_count = 0;
 				param_quest_data.suefi_remained_count = 0;
 			}else {
 				// nad_acat,x,y (trigger CAL Xtime and DDR_SCAN Ytime)
-				param_quest_data.curr_step = STEP_CALX;		
-				param_quest_data.cal_item_result = (uint64_t)0;			
-				param_quest_data.ddrscan_remained_count = dram_loop_count;			
+				param_quest_data.curr_step = STEP_CALX;
+				param_quest_data.cal_item_result = (uint64_t)0;
+				param_quest_data.ddrscan_remained_count = dram_loop_count;
 				param_quest_data.hlos_remained_count = quest_loop_count;
-				
+
 				// if quest_loop_count==1, run hlos only
 				// if quest_loop_count==0, set quefi,suefi count to 0 also
 #if defined(CONFIG_SEC_QUEST_UEFI)
@@ -1014,7 +1063,7 @@ static ssize_t store_quest_acat(struct device *dev,
 
 out:
 	QUEST_SYSFS_EXIT();
-	return count;	
+	return count;
 
 }
 static DEVICE_ATTR(nad_acat, S_IRUGO | S_IWUSR, show_quest_acat, store_quest_acat);
@@ -1081,6 +1130,7 @@ static void make_additional_stat_string(char *additional_str)
 		"FDET(%d)," \
 		"FQUET(%d)," \
 		"FSUET(%d)," \
+		"FQUPT(%d)," \
 		"FBR(%.2s)," \
 		"FHST(%d),FHET(%d)," \
 		"FHITH(%d),FHMTH(%d)," \
@@ -1089,6 +1139,7 @@ static void make_additional_stat_string(char *additional_str)
 		"DET(%d)," \
 		"QUET(%d)," \
 		"SUET(%d)," \
+		"QUPT(%d)," \
 		"BR(%.2s)," \
 		"HST(%d),HET(%d)," \
 		"HITH(%d),HMTH(%d)," \
@@ -1102,6 +1153,7 @@ static void make_additional_stat_string(char *additional_str)
 		param_quest_data.smd_ddrscan_elapsed_time_first,
 		param_quest_data.smd_quefi_elapsed_time_first,
 		param_quest_data.smd_suefi_elapsed_time_first,
+		param_quest_data.smd_quefi_total_pause_time_first,
 		param_quest_data.smd_boot_reason_first,
 		param_quest_data.smd_hlos_start_time_first, param_quest_data.smd_hlos_elapsed_time_first,
 		param_quest_data.smd_hlos_init_thermal_first, param_quest_data.smd_hlos_max_thermal_first,
@@ -1110,6 +1162,7 @@ static void make_additional_stat_string(char *additional_str)
 		param_quest_data.smd_ddrscan_elapsed_time,
 		param_quest_data.smd_quefi_elapsed_time,
 		param_quest_data.smd_suefi_elapsed_time,
+		param_quest_data.smd_quefi_total_pause_time,
 		param_quest_data.smd_boot_reason,
 		param_quest_data.smd_hlos_start_time,param_quest_data.smd_hlos_elapsed_time,
 		param_quest_data.smd_hlos_init_thermal, param_quest_data.smd_hlos_max_thermal,
@@ -1238,7 +1291,7 @@ static ssize_t show_quest_stat(struct device *dev,
 
 out:
 	QUEST_SYSFS_EXIT();
-	return count;	
+	return count;
 }
 
 static DEVICE_ATTR(nad_stat, S_IRUGO, show_quest_stat, NULL);
@@ -1277,9 +1330,9 @@ static ssize_t store_quest_smd_subitem_result(struct device *dev,
 				const char *buf, size_t count)
 {
 	enum quest_enum_item_result _result = ITEM_RESULT_NONE;
-	enum quest_enum_smd_subitem item = SUBITEM_NONE;	
+	enum quest_enum_smd_subitem item = SUBITEM_NONE;
 	char test_name[QUEST_BUFF_SIZE * 2] = { '\0', };
-	char result_string[QUEST_BUFF_SIZE] = { '\0', };	
+	char result_string[QUEST_BUFF_SIZE] = { '\0', };
 	char temp[QUEST_BUFF_SIZE * 3] = { '\0', };
 	char quest_test[2][QUEST_BUFF_SIZE * 2];	// 2: "test_name", "result"
 	char *quest_ptr, *string;
@@ -1314,18 +1367,18 @@ static ssize_t store_quest_smd_subitem_result(struct device *dev,
 	else if (TEST_ICACHE(test_name)) item = SUBITEM_QUESTHLOSICACHE;
 	else if (TEST_CCOHERENCY(test_name)) item = SUBITEM_QUESTHLOSCCOHERENCY;
 	else if (TEST_QMESADDR(test_name)) item = SUBITEM_QUESTHLOSQMESADDR;
-	else if (TEST_QMESACACHE(test_name)) item = SUBITEM_QUESTHLOSQMESACACHE;	
+	else if (TEST_QMESACACHE(test_name)) item = SUBITEM_QUESTHLOSQMESACACHE;
 	else if (TEST_SUSPEND(test_name)) item = SUBITEM_QUESTHLOSSUSPEND;
 	else if (TEST_VDDMIN(test_name)) item = SUBITEM_QUESTHLOSVDDMIN;
 	else if (TEST_THERMAL(test_name)) item = SUBITEM_QUESTHLOSTHERMAL;
 	else if (TEST_UFS(test_name)) item = SUBITEM_QUESTHLOSUFS;
 	else if (TEST_A75G(test_name)) item = SUBITEM_QUESTFUSIONA75G;
 	else if (TEST_Q65G(test_name)) item = SUBITEM_QUESTFUSIONQ65G;
-#endif	
+#endif
 
 	// check exceptional cases
 	if( unlikely( (item==SUBITEM_NONE) || (param_quest_data.curr_step!=STEP_SMDDL) ) ) {
-		QUEST_PRINT("%s : exceptional cases (item=%d, step=%d)\n", 
+		QUEST_PRINT("%s : exceptional cases (item=%d, step=%d)\n",
 			__func__, item, param_quest_data.curr_step );
 		goto out;
 	}
@@ -1338,7 +1391,7 @@ out:
 	QUEST_SYSFS_EXIT();
 	return count;
 }
-static DEVICE_ATTR(nad_result, S_IRUGO | S_IWUSR, 
+static DEVICE_ATTR(nad_result, S_IRUGO | S_IWUSR,
 	show_quest_smd_subitem_result, store_quest_smd_subitem_result);
 //////////////////////////////////////////////////
 
@@ -1385,6 +1438,7 @@ static ssize_t store_quest_erase(struct device *dev,
 		param_quest_data.smd_ddrscan_elapsed_time_first = 0;
 		param_quest_data.smd_quefi_elapsed_time_first = 0;
 		param_quest_data.smd_suefi_elapsed_time_first = 0;
+		param_quest_data.smd_quefi_total_pause_time_first = 0;
 		param_quest_data.smd_boot_reason_first[0] = '\0';
 		param_quest_data.smd_hlos_start_time_first = 0;
 		param_quest_data.smd_hlos_elapsed_time_first = 0;
@@ -1437,16 +1491,16 @@ static ssize_t store_quest_main(struct device *dev,
 	// update param
 	QUEST_PRINT("%s : start STEP_MAIN\n", __func__);
 	param_quest_data.curr_step = STEP_MAIN;
-	param_quest_data.main_item_result = 0;	
+	param_quest_data.main_item_result = 0;
 	param_quest_data.hlos_remained_count = 1;
-#if defined(CONFIG_SEC_QUEST_UEFI)	
+#if defined(CONFIG_SEC_QUEST_UEFI)
 	param_quest_data.quefi_remained_count = 4;
 #endif
 #if defined(CONFIG_SEC_QUEST_UEFI_ENHANCEMENT)
 	param_quest_data.suefi_remained_count = 1;
 #endif
 	param_quest_data.ddrscan_remained_count = 1;
-	
+
 	param_quest_data.hlos_remained_count--;
 	QUEST_SET_ITEM_SUBITEM_RESULT(param_quest_data.main_item_result, QUESTHLOS_HLOS_ITEM_MAIN_CAL, ITEM_RESULT_INCOMPLETED);
 
@@ -1454,7 +1508,7 @@ static ssize_t store_quest_main(struct device *dev,
 
 	// trigger quest_hlos first
 	do_quest();
-	
+
 out:
 	QUEST_SYSFS_EXIT();
 	return count;
@@ -1475,9 +1529,9 @@ static ssize_t show_quest_main(struct device *dev,
 		run_qdaf_in_background(QUEST_QDAF_ACTION_CONTROL_START_WITH_PANIC);
 	}
 
-	total_result = check_item_result(param_quest_data.main_item_result, ITEM_ITEMSCOUNT);	
+	total_result = check_item_result(param_quest_data.main_item_result, ITEM_ITEMSCOUNT);
 	QUEST_PRINT("%s : main_item_result(%llu) total_result(%d)\n",
-					__func__, param_quest_data.main_item_result, total_result);	
+					__func__, param_quest_data.main_item_result, total_result);
 	switch (total_result) {
 		case ITEM_RESULT_PASS: {
 			QUEST_PRINT("MAIN QUEST PASS\n");
@@ -1515,7 +1569,7 @@ static ssize_t show_main_quest_timeout(struct device *dev,
 				     struct device_attribute *attr, char *buf)
 {
 	QUEST_SYSFS_ENTER();
-	QUEST_SYSFS_EXIT();	
+	QUEST_SYSFS_EXIT();
 	return snprintf(buf, BUFF_SZ, "%d\n", STEP_MAIN_HLOS_TIMEOUT);
 }
 static DEVICE_ATTR(timeout, 0444, show_main_quest_timeout, NULL);
@@ -1539,7 +1593,7 @@ static ssize_t show_main_quest_run(struct device *dev,
 				     struct device_attribute *attr, char *buf)
 {
 	QUEST_SYSFS_ENTER();
-	QUEST_SYSFS_EXIT();	
+	QUEST_SYSFS_EXIT();
 	return snprintf(buf, BUFF_SZ, "END\n");
 }
 static DEVICE_ATTR(run, S_IRUGO | S_IWUSR, show_main_quest_run, store_main_quest_run);
@@ -1558,7 +1612,7 @@ static ssize_t show_quest_hlos_remain_count(struct device *dev,
 	QUEST_SYSFS_ENTER();
 	count = snprintf(buf, BUFF_SZ, "%d\n", param_quest_data.hlos_remained_count);
 	QUEST_SYSFS_EXIT();
-	
+
 	return count;
 }
 static DEVICE_ATTR(nad_qmvs_remain_count, S_IRUGO, show_quest_hlos_remain_count, NULL);
@@ -1577,8 +1631,8 @@ static ssize_t show_ddrtest_remain_count(struct device *dev,
 
 	QUEST_SYSFS_ENTER();
 	count = snprintf(buf, BUFF_SZ, "%d\n", param_quest_data.ddrscan_remained_count);
-	QUEST_SYSFS_EXIT();	
-	
+	QUEST_SYSFS_EXIT();
+
 	return count;
 }
 static DEVICE_ATTR(nad_ddrtest_remain_count, S_IRUGO, show_ddrtest_remain_count, NULL);
@@ -1601,6 +1655,11 @@ static ssize_t show_quest_dram(struct device *dev,
 	// If the ddrtest result of SMD and MAIN are also needed,
 	// implement an additional sysfs node or a modification of app.
 	ddrscan_result = QUEST_GET_ITEM_SUBITEM_RESULT(param_quest_data.cal_item_result, ITEM_DDRSCANRAMDUMPDISCACHE);
+
+#if defined(CONFIG_SEC_QUEST_ALWAYS_RETURN_PASS_FOR_ACAT)
+	QUEST_PRINT("%s : CONFIG_SEC_QUEST_ALWAYS_RETURN_PASS_FOR_ACAT enabled, so return pass\n", __func__);
+	ddrscan_result = ITEM_RESULT_PASS;
+#endif
 
 	if (ddrscan_result == ITEM_RESULT_PASS)
 		count = snprintf(buf, BUFF_SZ, "OK_DRAM\n");
@@ -1627,8 +1686,8 @@ static ssize_t show_quest_dram_err_addr(struct device *dev,
 	int i = 0;
 
 	QUEST_SYSFS_ENTER();
-	
-    count = snprintf(buf, BUFF_SZ, "Total : %d\n\n", 
+
+    count = snprintf(buf, BUFF_SZ, "Total : %d\n\n",
 				param_quest_ddr_result_data.ddr_err_addr_total);
 	for (i = 0; i < param_quest_ddr_result_data.ddr_err_addr_total; i++) {
 		count += snprintf(buf + count - 1, BUFF_SZ, "[%d] 0x%llx\n", i,
@@ -1673,21 +1732,21 @@ static ssize_t store_quest_logs(struct device *dev,
 	//and this function does not access param, so skip enter/exit functions
 	//QUEST_SYSFS_ENTER();
 
-	QUEST_PRINT("%s : file = %s\n", __func__, buf);	
-	
+	QUEST_PRINT("%s : file = %s\n", __func__, buf);
+
 	set_fs(KERNEL_DS);
 	sscanf(buf, "%s", path);
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4,17,0)	
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,17,0)
 	fd = sys_open(path, O_RDONLY, 0);
 #else
 	fd = ksys_open(path, O_RDONLY, 0);
-#endif	
+#endif
 	if (fd >= 0) {
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4,17,0)		
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,17,0)
 		while (sys_read(fd, temp, 1) == 1) {
-#else		
+#else
 		while (ksys_read(fd, temp, 1) == 1) {
-#endif		
+#endif
 			tempbuf[idx++] = temp[0];
 			if( temp[0]=='\n' ) {
 				tempbuf[idx] = '\0';
@@ -1695,11 +1754,11 @@ static ssize_t store_quest_logs(struct device *dev,
 				idx = 0;
 			}
 		}
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4,17,0)	
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,17,0)
 		sys_close(fd);
 #else
 		ksys_close(fd);
-#endif		
+#endif
 	} else {
 		QUEST_PRINT("%s : file does not exist\n", __func__);
 	}
@@ -1791,7 +1850,7 @@ static ssize_t show_quest_info(struct device *dev,
 {
 	ssize_t info_size = 0;
 
-	QUEST_SYSFS_ENTER();	
+	QUEST_SYSFS_ENTER();
 
 	info_size +=
 	    snprintf((char *)(buf + info_size), MAX_LEN_STR - info_size,
@@ -1821,13 +1880,13 @@ static ssize_t show_quest_version(struct device *dev,
 				     struct device_attribute *attr, char *buf)
 {
 	QUEST_SYSFS_ENTER();
-	QUEST_SYSFS_EXIT();	
+	QUEST_SYSFS_EXIT();
 #if 0
 	//
-#else	
+#else
 	//QUEST_1.0.1_SS_10030018_SDM855_naturescene_path
-	return snprintf(buf, BUFF_SZ, "SM8150.0103.01.1030RELEASE\n");	
-#endif	
+	return snprintf(buf, BUFF_SZ, "SM8150.0103.01.1030RELEASE\n");
+#endif
 }
 static DEVICE_ATTR(nad_version, 0444, show_quest_version, NULL);
 //////////////////////////////////////////////////
@@ -1836,25 +1895,25 @@ static DEVICE_ATTR(nad_version, 0444, show_quest_version, NULL);
 #if defined(CONFIG_SEC_QUEST_AUTO_TRIGGER_KWORKER) || defined(CONFIG_SEC_QUEST_AUTO_TRIGGER_INIT_WRITE)
 //////////////////////////////////////////////////
 // if you can auto_trigger, please run the belows first
-// adb shell "setprop persist.quest.auto_repeat 1" 
+// adb shell "setprop persist.quest.auto_repeat 1"
 // adb shell "setprop debug.quest.auto_repeat.enabled 1"
 //////////////////////////////////////////////////
 static void quest_auto_trigger(char* test_name)
 {
 	char *argv[4] = { QUESTHLOS_PROG_MAIN_CAL, "logPath:/data/log/quest", "Reboot", NULL };
 	//char *envp[3] = { "HOME=/", "TERM=linux", NULL, };
-	char *envp[5] = { 
-		"HOME=/", 
-		"PATH=/system/bin/quest:/system/bin:/system/xbin", 
-		"ANDROID_DATA=/data", 
-		"ANDROID_ROOT=/system", 
+	char *envp[5] = {
+		"HOME=/",
+		"PATH=/system/bin/quest:/system/bin:/system/xbin",
+		"ANDROID_DATA=/data",
+		"ANDROID_ROOT=/system",
 		NULL };
 	int ret;
 
-	initialized = 1;	// skip initialization routine	
+	initialized = 1;	// skip initialization routine
 
 	QUEST_PRINT("%s : will trigger quest\n",__func__);
-	QUEST_PRINT("%s : test_name (%s)\n", __func__, test_name);	
+	QUEST_PRINT("%s : test_name (%s)\n", __func__, test_name);
 
 	// set CALX scenario with remained_count
 	if( strncmp(test_name, "HLOSUEFI", 8)==0 ||
@@ -1866,7 +1925,7 @@ static void quest_auto_trigger(char* test_name)
 		param_quest_data.quefi_remained_count = 1;
 		param_quest_data.suefi_remained_count = 1;
 		param_quest_data.ddrscan_remained_count = 0;
-		quest_sync_param_quest_data();		
+		quest_sync_param_quest_data();
 
 	}else if( strncmp(test_name, "HLOSONLY", 8)==0 )
 	{
@@ -1876,8 +1935,8 @@ static void quest_auto_trigger(char* test_name)
 		param_quest_data.quefi_remained_count = 0;
 		param_quest_data.suefi_remained_count = 0;
 		param_quest_data.ddrscan_remained_count = 0;
-		quest_sync_param_quest_data();	
-		
+		quest_sync_param_quest_data();
+
 	}else if( strncmp(test_name, "UEFIONLY", 8)==0 )
 	{
 		QUEST_PRINT("%s : set CALX\n", __func__);
@@ -1919,14 +1978,14 @@ static void quest_auto_trigger(char* test_name)
 		param_quest_data.hlos_remained_count--;
 		quest_sync_param_quest_data();
 
-		// quest.sh will call reboot 
+		// quest.sh will call reboot
 		ret = call_usermodehelper(argv[0], argv, envp, UMH_WAIT_EXEC);
 		QUEST_PRINT("%s : call_usermodehelper(ret=%d)\n", __func__, ret);
 	}else
 	{
 		msleep(3000);
-		kernel_restart(NULL);	
-		QUEST_PRINT("%s : reboot and run uefi\n", __func__);		
+		kernel_restart(NULL);
+		QUEST_PRINT("%s : reboot and run uefi\n", __func__);
 	}
 
 }
@@ -1959,7 +2018,7 @@ static DEVICE_ATTR(nad_auto_trigger, S_IWUSR, NULL, store_quest_auto_trigger);
 //////////////////////////////////////////////////
 static void delayed_quest_work_func(struct work_struct *work)
 {
-	quest_auto_trigger("HLOSUEFI");		
+	quest_auto_trigger("HLOSUEFI");
 }
 //////////////////////////////////////////////////
 #endif
@@ -1988,32 +2047,32 @@ static ssize_t store_quest_testmode(struct device *dev,
 	}
 
 	QUEST_PRINT("%s : %s(%s)\n", __func__, quest_cmd[0], quest_cmd[1]);
-	
+
 	sscanf(quest_cmd[1], "%d", &flag);
-	
+
 	if( strncmp(quest_cmd[0], "testmode", 8)==0 ) testmode_enabled = flag;
 	else if( strncmp(quest_cmd[0], "quefi", 5)==0 ) {
 		testmode_quefi_enabled = flag;
 		// if flag is updated after setting repeating count, we should set count also here
-		if( flag ) 
+		if( flag )
 			param_quest_data.quefi_remained_count = param_quest_data.hlos_remained_count;
-		else 
+		else
 			param_quest_data.quefi_remained_count = 0;
 	}
 	else if( strncmp(quest_cmd[0], "suefi", 5)==0 ) {
-		testmode_suefi_enabled = flag;		
+		testmode_suefi_enabled = flag;
 		// if flag is updated after setting repeating count, we should set count also here
-		if( flag ) 
+		if( flag )
 			param_quest_data.suefi_remained_count = param_quest_data.hlos_remained_count;
-		else 
+		else
 			param_quest_data.suefi_remained_count = 0;
 	}
 	else if( strncmp(quest_cmd[0], "ddrscan", 7)==0 ) {
-		testmode_ddrscan_enabled = flag;		
+		testmode_ddrscan_enabled = flag;
 		// if flag is updated after setting repeating count, we should set count also here
-		if( flag ) 
+		if( flag )
 			param_quest_data.ddrscan_remained_count = param_quest_data.hlos_remained_count;
-		else 
+		else
 			param_quest_data.ddrscan_remained_count = 0;
 	}
 	quest_sync_param_quest_data();
@@ -2147,28 +2206,28 @@ static int __init sec_quest_init(void)
 	mutex_init(&sysfs_common_lock);
 
 	// sec_nad, sec_nad_balancer device
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4,19,0)	
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,19,0)
 	sec_nad = sec_device_create(0, NULL, "sec_nad");
-#else	
+#else
 	sec_nad = sec_device_create(NULL, "sec_nad");
-#endif	
+#endif
 	if (IS_ERR(sec_nad)) {
 		QUEST_PRINT("%s Failed to create device(sec_nad)!\n", __func__);
 		return PTR_ERR(sec_nad);
 	}
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4,19,0)	
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,19,0)
 	sec_nad_balancer = sec_device_create(0, NULL, "sec_nad_balancer");
-#else	
+#else
 	sec_nad_balancer = sec_device_create(NULL, "sec_nad_balancer");
-#endif	
+#endif
 	if (IS_ERR(sec_nad)) {
 		QUEST_PRINT("%s Failed to create device(sec_nad)!\n", __func__);
 		return PTR_ERR(sec_nad);
-	}	
+	}
 
 
-	// sysfs nodes at /sys/class/sec/sec_nad 
+	// sysfs nodes at /sys/class/sec/sec_nad
 	ret = device_create_file(sec_nad, &dev_attr_nad_stat);
 	if (ret) {
 		QUEST_PRINT("%s: Failed to create device file\n", __func__);
@@ -2277,7 +2336,7 @@ static int __init sec_quest_init(void)
 		QUEST_PRINT("%s: Failed to create device file\n", __func__);
 		goto err_create_nad_sysfs;
 	}
-#endif	
+#endif
 
 	// sysfs nodes at /sys/class/sec/sec_nad_balancer
 	ret = device_create_file(sec_nad_balancer, &dev_attr_balancer);
@@ -2308,10 +2367,12 @@ static int __init sec_quest_init(void)
 
 #if defined(CONFIG_SEC_QUEST_AUTO_TRIGGER_KWORKER)
 	INIT_DELAYED_WORK(&trigger_quest_work, delayed_quest_work_func);
-	schedule_delayed_work(&trigger_quest_work, msecs_to_jiffies(WAIT_TIME_BEFORE_TRIGGER_MSECS));	
+	schedule_delayed_work(&trigger_quest_work, msecs_to_jiffies(WAIT_TIME_BEFORE_TRIGGER_MSECS));
 #endif
 
+#if defined(CONFIG_SEC_FACTORY)
 	atomic_notifier_chain_register(&panic_notifier_list, &quest_panic_block);
+#endif
 
 	return 0;
 err_create_nad_sysfs:

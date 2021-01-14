@@ -770,6 +770,12 @@ int sec_ts_firmware_update_on_probe(struct sec_ts_data *ts, bool force_update)
 		goto err_request_fw;
 	}
 
+	/* unset support multi calibration flag for 6layer */
+	if (ts->plat_data->img_version_of_bin[2] == 1) {
+		ts->plat_data->support_multi_cal = 0;
+		input_info(true, &ts->client->dev, "%s: set multi cal flag off\n", __func__);
+	}
+
 	/* don't firmup case */
 	if ((result <= 0) && (!force_update)) {
 		input_info(true, &ts->client->dev, "%s: skip - fw update\n", __func__);

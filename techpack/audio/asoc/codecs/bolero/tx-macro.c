@@ -194,6 +194,7 @@ struct tx_macro_priv {
 	int dec_mode[NUM_DECIMATORS];
 	bool bcs_clk_en;
 	bool hs_slow_insert_complete;
+	int amic_sample_rate;
 	u32 dmic_rate_override;
 
 	struct regulator *sub_dmic_bias;
@@ -475,6 +476,9 @@ static int tx_macro_event_handler(struct snd_soc_component *component,
 		else
 			tx_priv->hs_slow_insert_complete = false;
 		break;
+	default:
+		pr_debug("%s Invalid Event\n", __func__);
+		break;
 	}
 	return 0;
 }
@@ -561,8 +565,29 @@ static void tx_macro_tx_hpf_corner_freq_callback(struct work_struct *work)
 				hpf_cut_off_freq << 5);
 		snd_soc_component_update_bits(component, hpf_gate_reg,
 						0x03, 0x02);
-		/* Minimum 1 clk cycle delay is required as per HW spec */
-		usleep_range(1000, 1010);
+		/* Add delay between toggle hpf gate based on sample rate */
+		switch(tx_priv->amic_sample_rate) {
+		case 8000:
+			usleep_range(125, 130);
+			break;
+		case 16000:
+			usleep_range(62, 65);
+			break;
+		case 32000:
+			usleep_range(31, 32);
+			break;
+		case 48000:
+			usleep_range(20, 21);
+			break;
+		case 96000:
+			usleep_range(10, 11);
+			break;
+		case 192000:
+			usleep_range(5, 6);
+			break;
+		default:
+			usleep_range(125, 130);
+		}
 		snd_soc_component_update_bits(component, hpf_gate_reg,
 						0x03, 0x01);
 	} else {
@@ -858,6 +883,66 @@ static int tx_macro_set_bcs(struct snd_kcontrol *kcontrol,
 	return 0;
 }
 
+static const char * const bcs_ch_sel_mux_text[] = {
+	"SWR_MIC0", "SWR_MIC1", "SWR_MIC2", "SWR_MIC3",
+	"SWR_MIC4", "SWR_MIC5", "SWR_MIC6", "SWR_MIC7",
+	"SWR_MIC8", "SWR_MIC9", "SWR_MIC10", "SWR_MIC11",
+};
+
+static const struct soc_enum bcs_ch_sel_mux_enum =
+	SOC_ENUM_SINGLE_EXT(ARRAY_SIZE(bcs_ch_sel_mux_text),
+			    bcs_ch_sel_mux_text);
+
+static int tx_macro_get_bcs_ch_sel(struct snd_kcontrol *kcontrol,
+			       struct snd_ctl_elem_value *ucontrol)
+{
+	struct snd_soc_component *component =
+				snd_soc_kcontrol_component(kcontrol);
+	struct tx_macro_priv *tx_priv = NULL;
+	struct device *tx_dev = NULL;
+	int value = 0;
+
+	if (!tx_macro_get_data(component, &tx_dev, &tx_priv, __func__))
+		return -EINVAL;
+
+	if (tx_priv->version == BOLERO_VERSION_2_1)
+		value = (snd_soc_component_read32(component,
+			BOLERO_CDC_VA_TOP_CSR_SWR_CTRL)) & 0x0F;
+	else if (tx_priv->version == BOLERO_VERSION_2_0)
+		value = (snd_soc_component_read32(component,
+			BOLERO_CDC_TX_TOP_CSR_SWR_CTRL)) & 0x0F;
+
+	ucontrol->value.integer.value[0] = value;
+	return 0;
+}
+
+static int tx_macro_put_bcs_ch_sel(struct snd_kcontrol *kcontrol,
+			       struct snd_ctl_elem_value *ucontrol)
+{
+	struct snd_soc_component *component =
+				snd_soc_kcontrol_component(kcontrol);
+	struct tx_macro_priv *tx_priv = NULL;
+	struct device *tx_dev = NULL;
+	int value;
+
+	if (!tx_macro_get_data(component, &tx_dev, &tx_priv, __func__))
+		return -EINVAL;
+
+	if (ucontrol->value.integer.value[0] < 0 ||
+	    ucontrol->value.integer.value[0] > ARRAY_SIZE(bcs_ch_sel_mux_text))
+		return -EINVAL;
+
+	value = ucontrol->value.integer.value[0];
+	if (tx_priv->version == BOLERO_VERSION_2_1)
+		snd_soc_component_update_bits(component,
+			BOLERO_CDC_VA_TOP_CSR_SWR_CTRL, 0x0F, value);
+	else if (tx_priv->version == BOLERO_VERSION_2_0)
+		snd_soc_component_update_bits(component,
+			BOLERO_CDC_TX_TOP_CSR_SWR_CTRL, 0x0F, value);
+
+	return 0;
+}
+
 static int tx_macro_enable_dmic(struct snd_soc_dapm_widget *w,
 		struct snd_kcontrol *kcontrol, int event)
 {
@@ -905,6 +990,7 @@ static int tx_macro_enable_dec(struct snd_soc_dapm_widget *w,
 	u16 dec_cfg_reg = 0;
 	u16 hpf_gate_reg = 0;
 	u16 tx_gain_ctl_reg = 0;
+	u16 tx_fs_reg = 0;
 	u8 hpf_cut_off_freq = 0;
 	int hpf_delay = TX_MACRO_DMIC_HPF_DELAY_MS;
 	int unmute_delay = TX_MACRO_DMIC_UNMUTE_DELAY_MS;
@@ -929,6 +1015,11 @@ static int tx_macro_enable_dec(struct snd_soc_dapm_widget *w,
 				TX_MACRO_TX_PATH_OFFSET * decimator;
 	tx_gain_ctl_reg = BOLERO_CDC_TX0_TX_VOL_CTL +
 				TX_MACRO_TX_PATH_OFFSET * decimator;
+	tx_fs_reg = BOLERO_CDC_TX0_TX_PATH_CTL +
+				TX_MACRO_TX_PATH_OFFSET * decimator;
+
+	tx_priv->amic_sample_rate = (snd_soc_component_read32(component,
+				     tx_fs_reg) & 0x0F);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -998,10 +1089,6 @@ static int tx_macro_enable_dec(struct snd_soc_dapm_widget *w,
 			if (!is_amic_enabled(component, decimator))
 				snd_soc_component_update_bits(component,
 					hpf_gate_reg, 0x03, 0x00);
-			/*
-			 * Minimum 1 clk cycle delay is required as per HW spec
-			 */
-			usleep_range(1000, 1010);
 			snd_soc_component_update_bits(component,
 					hpf_gate_reg, 0x03, 0x01);
 			/*
@@ -2381,6 +2468,8 @@ static const struct snd_kcontrol_new tx_macro_snd_controls_common[] = {
 	SOC_SINGLE_EXT("DEC0_BCS Switch", SND_SOC_NOPM, 0, 1, 0,
 		       tx_macro_get_bcs, tx_macro_set_bcs),
 
+	SOC_ENUM_EXT("BCS CH_SEL", bcs_ch_sel_mux_enum,
+			tx_macro_get_bcs_ch_sel, tx_macro_put_bcs_ch_sel),
 	SOC_ENUM_EXT("DMIC_RATE OVERRIDE", dmic_rate_enum,
 			dmic_rate_override_get, dmic_rate_override_put),
 };
@@ -2501,7 +2590,7 @@ static int tx_macro_register_event_listener(struct snd_soc_component *component,
 					tx_priv->tx_swr_gpio_p, false);
 		} else {
 			msm_cdc_pinctrl_set_wakeup_capable(
-					tx_priv->tx_swr_gpio_p, false);
+				tx_priv->tx_swr_gpio_p, false);
 			ret = swrm_wcd_notify(
 				tx_priv->swr_ctrl_data[0].tx_swr_pdev,
 				SWR_DEREGISTER_WAKEUP, NULL);
@@ -2632,7 +2721,7 @@ static int tx_macro_tx_va_mclk_enable(struct tx_macro_priv *tx_priv,
 				dev_err(tx_priv->dev, "%s: clock already disabled\n",
 						__func__);
 				tx_priv->tx_mclk_users = 0;
-				return 0;
+				goto tx_clk;
 			}
 			tx_priv->tx_mclk_users--;
 			if (tx_priv->tx_mclk_users == 0) {
@@ -2657,6 +2746,7 @@ static int tx_macro_tx_va_mclk_enable(struct tx_macro_priv *tx_priv,
 				goto done;
 			}
 		}
+tx_clk:
 		if (!clk_tx_ret)
 			ret = bolero_clk_rsc_request_clock(tx_priv->dev,
 						   TX_CORE_CLK,
@@ -2891,7 +2981,7 @@ undefined_rate:
 }
 
 static const struct tx_macro_reg_mask_val tx_macro_reg_init[] = {
-	{BOLERO_CDC_TX0_TX_PATH_SEC7, 0x3F, 0x02},
+	{BOLERO_CDC_TX0_TX_PATH_SEC7, 0x3F, 0x0A},
 	{BOLERO_CDC_TX0_TX_PATH_CFG1, 0x0F, 0x0A},
 	{BOLERO_CDC_TX1_TX_PATH_CFG1, 0x0F, 0x0A},
 	{BOLERO_CDC_TX2_TX_PATH_CFG1, 0x0F, 0x0A},
@@ -3247,6 +3337,12 @@ static int tx_macro_probe(struct platform_device *pdev)
 	const char *dmic_sample_rate = "qcom,tx-dmic-sample-rate";
 	u32 is_used_tx_swr_gpio = 1;
 	const char *is_used_tx_swr_gpio_dt = "qcom,is-used-swr-gpio";
+
+	if (!bolero_is_va_macro_registered(&pdev->dev)) {
+		dev_err(&pdev->dev,
+			"%s: va-macro not registered yet, defer\n", __func__);
+		return -EPROBE_DEFER;
+	}
 
 	tx_priv = devm_kzalloc(&pdev->dev, sizeof(struct tx_macro_priv),
 			    GFP_KERNEL);

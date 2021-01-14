@@ -13,7 +13,7 @@ config SEC_BSP
 	  Samsung BSP Feature.
 
 config DRV_SAMSUNG
-	bool "Samsung sec class/sysfs Feature"
+	tristate "Samsung sec class/sysfs Feature"
 	default n
 	help
 	  Samsung sysfs name 'sec' directory create
@@ -24,6 +24,12 @@ config SEC_DEBUG
 
 config SEC_PARAM
 	bool "Enable Param modification"
+	default n
+	help
+	  Samsung TN Param Feature.
+
+config SEC_MPARAM
+	tristate "Enable Module Param modification"
 	default n
 	help
 	  Samsung TN Param Feature.
@@ -71,3 +77,10 @@ endmenu
 source "drivers/samsung/debug/Kconfig"
 source "drivers/samsung/misc/Kconfig"
 source "drivers/samsung/quest/Kconfig"
+
+config SEC_CLASS_TEST
+	bool "KUnit test for sec_class_test"
+	depends on KUNIT
+	help
+	  TODO: Describe config fully.
+

@@ -2571,6 +2571,8 @@ struct device_attribute *attr, const char *buf, size_t size)
 		return err;
 	}
 
+	mutex_lock(&data->activelock);
+
 	data->eol_flash_type = EOL_TORCH;
 
 	switch (mode) {
@@ -2616,8 +2618,6 @@ struct device_attribute *attr, const char *buf, size_t size)
 	ALS_dbg("%s - mode = %d-%d, gSpec_ir = %d - %d, gSpec_clear = %d - %d, gSpec_icratio = %d - %d eol_flash_type : %d\n",	__func__, mode,
 		preEnalble, gSpec_ir_min, gSpec_ir_max, gSpec_clear_min, gSpec_clear_max, gSpec_icratio_min, gSpec_icratio_max, data->eol_flash_type);
 
-	mutex_lock(&data->activelock);
-
 	if (!preEnalble) {
 		tcs3407_irq_set_state(data, PWR_ON);
 
@@ -2648,11 +2648,7 @@ struct device_attribute *attr, const char *buf, size_t size)
 	AMS_SET_ALS_GAIN(EOL_GAIN, err);
 	ALS_dbg("%s - fixed ALS GAIN : %d\n", __func__, EOL_GAIN);
 
-	mutex_unlock(&data->activelock);
-
 	tcs3407_eol_mode(data);
-
-	mutex_lock(&data->activelock);
 
 	if (data->regulator_state == 0) {
 		ALS_dbg("%s - already power off - disable skip\n",
@@ -2815,7 +2811,7 @@ static int ams_deviceEventHandler(ams_deviceCtx_t *ctx)
 			return ret;
 		}
 	} else {
-		ALS_dbg("%s - ams_devEventHd Status is not ready!!!!\n", __func__);
+		ALS_err("%s - ams_devEventHd Error Case!!!!\n", __func__);
 		//ams_setByte(ctx->portHndl, DEVREG_STATUS, 0xff);
 		return ret;
 	}

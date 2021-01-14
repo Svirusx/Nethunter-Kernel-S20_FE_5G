@@ -1,0 +1,128 @@
+/* Copyright (c) 2020, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "kona-sec-gts7lwifi-pinctrl-r02.dtsi"
+#include "../drivers/audio_gts7xl_common.dtsi"
+#include "kona-sec-gts7-pm-common.dtsi"
+#include "kona-sec-gts7lwifi-pm-r02.dtsi"
+#include "../drivers/gps_bcm47531.dtsi"
+#include "../drivers/displayport_gts7l_r01.dtsi"
+#include "../drivers/eif_gts7l_common.dtsi"
+#include "../drivers/kona-sec-gts7l-display-r00.dtsi"
+#include "../drivers/camera_sensor_gts7xl_r01.dtsi"
+#include "../drivers/bluetooth_gts7l_common.dtsi"
+#include "../drivers/input_gts7l_common.dtsi"
+#include "../drivers/battery-data-gts7l-common.dtsi"
+#include "../drivers/kona-sec-gts7l-grip-r00.dtsi"
+#include "../drivers/fingerprint-sensor_gts7l_r00.dtsi"
+
+/delete-node/ &vdd_spen_3p3;
+
+&soc {
+	rome_cable {
+		compatible = "samsung,rome_cable";
+		wlan_cable_wifi1 = <&tlmm 130 0>;
+		wlan_cable_wifi2 = <&tlmm 146 0>;
+		status = "ok";
+	};
+};
+
+&qupv3_se14_i2c {
+	status = "ok";
+
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&qupv3_se14_i2c_active>;
+	pinctrl-1 = <&qupv3_se14_i2c_sleep>;
+
+	ps5169@28 {
+		compatible = "ps5169_driver";
+		reg = <0x28>;
+		combo,con_sel = <&tlmm 65 0>;
+		combo,redriver_en = <&tlmm 8 0>;
+	};
+};
+
+&apps_rsc {
+	rpmh-regulator-ldoa13 {
+		qcom,supported-modes = <RPMH_REGULATOR_MODE_HPM>;
+		L13A: pm8150_l13: regulator-pm8150-l13 {
+			regulator-min-microvolt = <3300000>;
+			regulator-max-microvolt = <3300000>;
+			qcom,init-voltage = <3300000>;
+			regulator-boot-on;
+			qcom,init-mode = <RPMH_REGULATOR_MODE_HPM>;
+		};
+	};
+};
+
+&qupv3_se17_i2c {
+	wacom@56 {
+		wacom,regulator_avdd = "pm8150_l13";
+		wacom,fw_path = "epen/w9021_gts7l_pv1.bin";
+		wacom,bringup = <3>;
+	};
+};
+
+
+&pcie0 {
+	esoc-name = "wlan";
+	oops-after-ready;
+};
+
+&pcie2 {
+    status = "disabled";
+};
+
+&pcie2_msi {
+    status = "disabled";
+};
+
+&wlan {
+	wlan-en-gpio = <&tlmm 90 0>;
+	vdd-wlan-dig-supply = <&pm8150_s6>;
+	pinctrl-0 = <&qca6390_wlan_en_active>;
+	pinctrl-1 = <&qca6390_wlan_en_sleep>;
+	pinctrl-2 = <&rome_cable_default>;
+	status = "ok";
+};
+
+&qupv3_se3_4uart {
+    status = "ok";
+};
+
+/*disable extcon_usb1 because of pm8150_gpio 10 conflict*/
+&extcon_usb1 {
+        status = "disabled";
+};
+
+/* MAIN GRIP */
+&i2c_16 {
+	a96t3x6@20 {
+		a96t3x6,fw_path = "abov/a96t356_gts7lwifi_main1.bin";	
+	};
+};
+
+/* WIFI GRIP */
+&i2c_17 {
+	a96t3x6@20 {
+		a96t3x6,fw_path = "abov/a96t356_gts7lwifi_wifi1.bin";	
+	};
+};
+
+&camera_mem {
+	rbin_size = <0x14000000>;
+};
+
+&sdhc_2 {
+	qcom,clk-rates = <300000 400000 20000000 25000000
+		50000000 85714285 201500000>;
+}; 

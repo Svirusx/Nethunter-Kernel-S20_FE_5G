@@ -307,13 +307,25 @@ bool is_input_present(struct qpnp_qg *chip)
 	return is_usb_present(chip) || is_dc_present(chip);
 }
 
-static bool is_parallel_available(struct qpnp_qg *chip)
+bool is_parallel_available(struct qpnp_qg *chip)
 {
 	if (chip->parallel_psy)
 		return true;
 
 	chip->parallel_psy = power_supply_get_by_name("parallel");
 	if (!chip->parallel_psy)
+		return false;
+
+	return true;
+}
+
+bool is_cp_available(struct qpnp_qg *chip)
+{
+	if (chip->cp_psy)
+		return true;
+
+	chip->cp_psy = power_supply_get_by_name("charge_pump_master");
+	if (!chip->cp_psy)
 		return false;
 
 	return true;
@@ -326,6 +338,9 @@ bool is_parallel_enabled(struct qpnp_qg *chip)
 	if (is_parallel_available(chip)) {
 		power_supply_get_property(chip->parallel_psy,
 			POWER_SUPPLY_PROP_CHARGING_ENABLED, &pval);
+	} else if (is_cp_available(chip)) {
+		power_supply_get_property(chip->cp_psy,
+			POWER_SUPPLY_PROP_CP_ENABLE, &pval);
 	}
 
 	return pval.intval ? true : false;
@@ -370,6 +385,11 @@ int qg_get_battery_current(struct qpnp_qg *chip, int *ibat_ua)
 
 	if (chip->battery_missing) {
 		*ibat_ua = 0;
+		return 0;
+	}
+
+	if (chip->qg_mode == QG_V_MODE) {
+		*ibat_ua = chip->qg_v_ibat;
 		return 0;
 	}
 
@@ -447,6 +467,15 @@ int qg_get_ibat_avg(struct qpnp_qg *chip, int *ibat_ua)
 				(u8 *)&last_ibat, 2);
 	if (rc < 0) {
 		pr_err("Failed to read S2_NORMAL_AVG_I reg, rc=%d\n", rc);
+		return rc;
+	}
+
+	if (last_ibat == FIFO_I_RESET_VAL) {
+		/* First FIFO is not complete, read instantaneous IBAT */
+		rc = qg_get_battery_current(chip, ibat_ua);
+		if (rc < 0)
+			pr_err("Failed to read inst. IBAT rc=%d\n", rc);
+
 		return rc;
 	}
 

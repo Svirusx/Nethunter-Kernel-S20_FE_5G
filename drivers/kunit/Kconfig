@@ -1,0 +1,49 @@
+#
+# KUnit base configuration
+#
+
+menu "KUnit support"
+
+config KUNIT
+	bool "Enable support for unit tests (KUnit)"
+	select HAS_IOMEM
+	help
+	  Enables support for kernel unit tests (KUnit), a lightweight unit
+	  testing and mocking framework for the Linux kernel. These tests are
+	  able to be run locally on a developer's workstation without a VM or
+	  special hardware. For more information, please see Documentation/test/
+
+if KUNIT
+
+config KUNIT_TEST
+	bool "KUnit test for KUnit"
+	depends on KUNIT
+	default n
+	help
+	  Enables KUnit test to test KUnit.
+
+config KUNIT_DEATH_TEST
+	bool "(Expert) KUnit death test for KUnit"
+	depends on KUNIT
+	default n
+	help
+	  Enables KUnit test to test KUnit death test feature. This test is not
+	  hermetic and can cause other tests to misbehave.
+
+config KUNIT_EXAMPLE_TEST
+	bool "Example test for KUnit"
+	depends on KUNIT
+	default n
+	help
+	  Enables example KUnit test to demo features of KUnit.
+
+config KUNIT_MANAGER
+	bool "Manager for KUnit"
+	depends on KUNIT
+	default y
+	help
+	  Enables KUnit Manager.
+
+endif # KUNIT
+
+endmenu

@@ -28,7 +28,6 @@
 #include <linux/module.h>
 #include <linux/platform_device.h>
 #include <linux/rfkill.h>
-#include <linux/wakelock.h>
 #include <linux/of_gpio.h>
 
 #include <linux/gpio.h>

@@ -114,6 +114,7 @@ struct dsi_backlight_config {
 	u32 bl_level;
 	u32 bl_scale;
 	u32 bl_scale_sv;
+	bool bl_inverted_dbv;
 
 	int en_gpio;
 	/* PWM params */
@@ -204,6 +205,7 @@ struct dsi_panel {
 	bool ulps_feature_enabled;
 	bool ulps_suspend_enabled;
 	bool allow_phy_power_off;
+	bool reset_gpio_always_on;
 	atomic_t esd_recovery_pending;
 
 	bool panel_initialized;

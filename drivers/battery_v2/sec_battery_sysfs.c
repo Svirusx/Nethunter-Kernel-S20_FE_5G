@@ -348,7 +348,7 @@ ssize_t sec_bat_show_attrs(struct device *dev,
 				psy_do_property(battery->pdata->fuelgauge_name, get,
 					POWER_SUPPLY_EXT_PROP_MEASURE_SYS, isys);
 			}
-			pr_err("%s: batt_current_ua_now - Input(%dmV, %dmA), Output(%dmA), ISys(%dmA) \n",
+			pr_err("%s: batt_current_ua_now - Input(%dmV, %dmA), Output(%dmA), ISys(%dmA)\n",
 					__func__, vin.intval, iin.intval, value.intval, isys.intval);
 
 			i += scnprintf(buf + i, PAGE_SIZE - i, "%d\n",
@@ -2000,7 +2000,7 @@ ssize_t sec_bat_store_attrs(
 					"%s: SLATE MODE unknown command\n", __func__);
 				return -EINVAL;
 			}
-			__pm_stay_awake(&battery->cable_wake_lock);
+			__pm_stay_awake(battery->cable_wake_lock);
 			queue_delayed_work(battery->monitor_wqueue,
 					   &battery->cable_work, 0);
 			ret = count;
@@ -2037,7 +2037,7 @@ ssize_t sec_bat_store_attrs(
 				battery->siop_level = 100;
 			}
 
-			__pm_stay_awake(&battery->siop_level_wake_lock);
+			__pm_stay_awake(battery->siop_level_wake_lock);
 			queue_delayed_work(battery->monitor_wqueue, &battery->siop_level_work, 0);
 
 			ret = count;
@@ -2095,7 +2095,7 @@ ssize_t sec_bat_store_attrs(
 					__func__);
 				return -EINVAL;
 			}
-			__pm_stay_awake(&battery->cable_wake_lock);
+			__pm_stay_awake(battery->cable_wake_lock);
 			queue_delayed_work(battery->monitor_wqueue,
 					&battery->cable_work, 0);
 			ret = count;
@@ -2118,14 +2118,14 @@ ssize_t sec_bat_store_attrs(
 
 #if defined(CONFIG_DISABLE_MFC_IC)
 				wpc_en_status[1] = false;
-				value.strval= wpc_en_status;
+				value.strval = wpc_en_status;
 				psy_do_property(battery->pdata->wireless_charger_name, set,
 					POWER_SUPPLY_EXT_PROP_WPC_EN, value);
 #else
 				if (battery->pdata->wpc_en)
 					gpio_direction_output(battery->pdata->wpc_en, 1);
 #endif
-				pr_info("%s: WC CONTROL: Disable\n", __func__);
+				pr_info("@DIS_MFC %s: WC CONTROL: Disable\n", __func__);
 				mutex_unlock(&battery->wclock);
 			} else if (x == 1) {
 				mutex_lock(&battery->wclock);
@@ -2136,14 +2136,14 @@ ssize_t sec_bat_store_attrs(
 					POWER_SUPPLY_EXT_PROP_WC_CONTROL, value);
 #if defined(CONFIG_DISABLE_MFC_IC)
 				wpc_en_status[1] = true;
-				value.strval= wpc_en_status;
+				value.strval = wpc_en_status;
 				psy_do_property(battery->pdata->wireless_charger_name, set,
 					POWER_SUPPLY_EXT_PROP_WPC_EN, value);
 #else
 				if (battery->pdata->wpc_en)
 					gpio_direction_output(battery->pdata->wpc_en, 0);
 #endif
-				pr_info("%s: WC CONTROL: Enable\n", __func__);
+				pr_info("@DIS_MFC %s: WC CONTROL: Enable\n", __func__);
 				mutex_unlock(&battery->wclock);
 			} else {
 				dev_info(battery->dev,
@@ -2180,11 +2180,11 @@ ssize_t sec_bat_store_attrs(
 				"%s: HV_CHARGER_SET(%d)\n", __func__, x);
 			if (x == 1) {
 				battery->wire_status = SEC_BATTERY_CABLE_9V_TA;
-				__pm_stay_awake(&battery->cable_wake_lock);
+				__pm_stay_awake(battery->cable_wake_lock);
 				queue_delayed_work(battery->monitor_wqueue, &battery->cable_work, 0);
 			} else {
 				battery->wire_status = SEC_BATTERY_CABLE_NONE;
-				__pm_stay_awake(&battery->cable_wake_lock);
+				__pm_stay_awake(battery->cable_wake_lock);
 				queue_delayed_work(battery->monitor_wqueue, &battery->cable_work, 0);
 			}
 			ret = count;
@@ -2201,7 +2201,7 @@ ssize_t sec_bat_store_attrs(
 #if !defined(CONFIG_SEC_FACTORY)
 			if (x) {
 				battery->store_mode = true;
-				__pm_stay_awake(&battery->parse_mode_dt_wake_lock);
+				__pm_stay_awake(battery->parse_mode_dt_wake_lock);
 				queue_delayed_work(battery->monitor_wqueue,
 					&battery->parse_mode_dt_work, 0);
 
@@ -2227,7 +2227,7 @@ ssize_t sec_bat_store_attrs(
 	case TEST_MODE:
 		if (sscanf(buf, "%10d\n", &x) == 1) {
 			battery->test_mode = x;
-			__pm_stay_awake(&battery->monitor_wake_lock);
+			__pm_stay_awake(battery->monitor_wake_lock);
 			queue_delayed_work(battery->monitor_wqueue,
 				&battery->monitor_work, 0);
 			ret = count;
@@ -2245,7 +2245,7 @@ ssize_t sec_bat_store_attrs(
 				sec_bat_set_current_event(battery, SEC_BAT_CURRENT_EVENT_CALL, SEC_BAT_CURRENT_EVENT_CALL);
 			else
 				sec_bat_set_current_event(battery, 0, SEC_BAT_CURRENT_EVENT_CALL);
-			__pm_stay_awake(&battery->monitor_wake_lock);
+			__pm_stay_awake(battery->monitor_wake_lock);
 			queue_delayed_work(battery->monitor_wqueue, &battery->monitor_work, 0);
 #endif
 			ret = count;
@@ -2315,23 +2315,10 @@ ssize_t sec_bat_store_attrs(
 
 			if (battery->wc_tx_enable || battery->wpc_vout_ctrl_lcd_on) {
 				battery->polling_short = false;
-				__pm_stay_awake(&battery->monitor_wake_lock);
+				__pm_stay_awake(battery->monitor_wake_lock);
 				queue_delayed_work(battery->monitor_wqueue,
 					&battery->monitor_work, 0);
 			}
-#if defined(CONFIG_DISABLE_MFC_IC)
-			if (lpcharge) {
-				if (battery->lcd_status &&
-					(battery->mfc_unknown_swelling || battery->mfc_unknown_fullcharged)) {
-					sec_bat_set_mfc_on(battery, true);
-					battery->mfc_work_check = false;
-					queue_delayed_work(battery->monitor_wqueue,
-						&battery->mfc_work, msecs_to_jiffies(2000));
-				} else {
-					cancel_delayed_work(&battery->mfc_work);
-				}
-			}
-#endif
 #endif
 			ret = count;
 		}
@@ -2513,7 +2500,7 @@ ssize_t sec_bat_store_attrs(
 						"%s: changed to OTG cable detached\n", __func__);
 
 				battery->wire_status = SEC_BATTERY_CABLE_HMT_CONNECTED;
-				__pm_stay_awake(&battery->cable_wake_lock);
+				__pm_stay_awake(battery->cable_wake_lock);
 				queue_delayed_work(battery->monitor_wqueue, &battery->cable_work, 0);
 			} else {
 				value.intval = true;
@@ -2524,7 +2511,7 @@ ssize_t sec_bat_store_attrs(
 						"%s: changed to OTG cable attached\n", __func__);
 
 				battery->wire_status = SEC_BATTERY_CABLE_OTG;
-				__pm_stay_awake(&battery->cable_wake_lock);
+				__pm_stay_awake(battery->cable_wake_lock);
 				queue_delayed_work(battery->monitor_wqueue, &battery->cable_work, 0);
 			}
 #endif
@@ -2571,7 +2558,7 @@ ssize_t sec_bat_store_attrs(
 					dev_info(battery->dev,
 						"%s: changed to OTG cable detached\n", __func__);
 					battery->wire_status = SEC_BATTERY_CABLE_HMT_CHARGE;
-					__pm_stay_awake(&battery->cable_wake_lock);
+					__pm_stay_awake(battery->cable_wake_lock);
 					queue_delayed_work(battery->monitor_wqueue, &battery->cable_work, 0);
 				} else {
 					value.intval = false;
@@ -2581,7 +2568,7 @@ ssize_t sec_bat_store_attrs(
 					dev_info(battery->dev,
 							"%s: changed to OTG cable detached\n", __func__);
 					battery->wire_status = SEC_BATTERY_CABLE_HMT_CONNECTED;
-					__pm_stay_awake(&battery->cable_wake_lock);
+					__pm_stay_awake(battery->cable_wake_lock);
 					queue_delayed_work(battery->monitor_wqueue, &battery->cable_work, 0);
 				}
 			}
@@ -2721,14 +2708,9 @@ ssize_t sec_bat_store_attrs(
 				pr_info("@Tx_Mode %s : skip Tx by mfc_fw_update\n", __func__);
 				return count;
 			}
-				
-			if (battery->wc_tx_enable == x) {
-				pr_info("@Tx_Mode %s : Ignore same tx status\n", __func__);
-				return count;
-			}
 
-			if (x &&
-				(is_wireless_type(battery->cable_type) || (battery->cable_type == SEC_BATTERY_CABLE_WIRELESS_FAKE))) {
+			/* x value is written by ONEUI 2.5 PMS when tx_event is changed */
+			if (x && is_wireless_fake_type(battery->cable_type)) {
 				pr_info("@Tx_Mode %s : Can't enable Tx mode during wireless charging\n", __func__);
 				return count;
 			} else {
@@ -2764,7 +2746,7 @@ ssize_t sec_bat_store_attrs(
 	case BATT_HV_WIRELESS_STATUS:
 		if (sscanf(buf, "%10d\n", &x) == 1) {
 			if (x == 1 && is_hv_wireless_type(battery->cable_type)) {
-				__pm_stay_awake(&battery->cable_wake_lock);
+				__pm_stay_awake(battery->cable_wake_lock);
 #ifdef CONFIG_SEC_FACTORY
 				pr_info("%s change cable type HV WIRELESS -> WIRELESS \n", __func__);
 				battery->wc_status = SEC_WIRELESS_PAD_WPC;
@@ -2775,7 +2757,7 @@ ssize_t sec_bat_store_attrs(
 				value.intval = WIRELESS_VOUT_5V;
 				psy_do_property(battery->pdata->wireless_charger_name, set,
 					POWER_SUPPLY_PROP_INPUT_VOLTAGE_REGULATION, value);
-				__pm_relax(&battery->cable_wake_lock);
+				__pm_relax(battery->cable_wake_lock);
 			} else if (x == 3 && is_hv_wireless_type(battery->cable_type)) {
 				pr_info("%s HV_WIRELESS_STATUS set to 3. Vout set to 10V. \n", __func__);
 				value.intval = WIRELESS_VOUT_10V;
@@ -2816,7 +2798,7 @@ ssize_t sec_bat_store_attrs(
 				} else {
 					pr_info("%s: hv wireless charging is enabled\n", __func__);
 					sleep_mode = false;
-
+					battery->auto_mode = false;
 					value.intval = WIRELESS_SLEEP_MODE_DISABLE;
 					psy_do_property(battery->pdata->wireless_charger_name, set,
 									POWER_SUPPLY_PROP_INPUT_VOLTAGE_REGULATION, value);
@@ -2836,7 +2818,7 @@ ssize_t sec_bat_store_attrs(
 				return -EINVAL;
 			}
 
-			__pm_stay_awake(&battery->monitor_wake_lock);
+			__pm_stay_awake(battery->monitor_wake_lock);
 			queue_delayed_work(battery->monitor_wqueue, &battery->monitor_work, 0);
 			ret = count;
 		}
@@ -3061,7 +3043,7 @@ ssize_t sec_bat_store_attrs(
 			if (battery->data_path) {
 				sscanf(buf, "%s\n", battery->data_path);
 				cancel_delayed_work(&battery->batt_data_work);
-				__pm_stay_awake(&battery->batt_data_wake_lock);
+				__pm_stay_awake(battery->batt_data_wake_lock);
 				queue_delayed_work(battery->monitor_wqueue,
 					&battery->batt_data_work, msecs_to_jiffies(100));
 			} else {
@@ -3290,7 +3272,7 @@ ssize_t sec_bat_store_attrs(
 				}
 			}
 			ret = count;
-			__pm_stay_awake(&battery->monitor_wake_lock);
+			__pm_stay_awake(battery->monitor_wake_lock);
 			queue_delayed_work(battery->monitor_wqueue, &battery->monitor_work, 0);
 		}
 		break;
@@ -3644,7 +3626,7 @@ ssize_t sec_bat_store_attrs(
 			dev_info(battery->dev,
 				"%s: ext event 0x%x \n", __func__, x);
 			battery->ext_event = x;
-			__pm_stay_awake(&battery->ext_event_wake_lock);
+			__pm_stay_awake(battery->ext_event_wake_lock);
 			queue_delayed_work(battery->monitor_wqueue, &battery->ext_event_work, 0);
 			ret = count;
 		}
@@ -3710,7 +3692,13 @@ ssize_t sec_bat_store_attrs(
 					pr_info("%s: pd hv charging is disabled\n", __func__);
 				}
 				sec_bat_set_current_event(battery,
-					SEC_BAT_CURRENT_EVENT_HV_DISABLE, SEC_BAT_CURRENT_EVENT_HV_DISABLE);	
+					SEC_BAT_CURRENT_EVENT_HV_DISABLE, SEC_BAT_CURRENT_EVENT_HV_DISABLE);
+
+				if (is_pd_wire_type(battery->cable_type)) {
+					battery->update_pd_list = true;
+					pr_info("%s: update pd list\n", __func__);
+					select_pdo(1);
+				}
 			} else {
 				battery->pd_disable = false;
 				param_val = '0';
@@ -3724,10 +3712,14 @@ ssize_t sec_bat_store_attrs(
 				sec_bat_set_current_event(battery,
 					0, SEC_BAT_CURRENT_EVENT_HV_DISABLE);
 
-				if (battery->cable_type == SEC_BATTERY_CABLE_PDIC) {
+				if (is_pd_wire_type(battery->cable_type)) {
 					battery->update_pd_list = true;
 					pr_info("%s: update pd list\n", __func__);
+#if defined(CONFIG_PDIC_PD30)
 					select_pdo(battery->pd_list.pd_info[battery->pd_list.num_fpdo - 1].pdo_index);
+#else
+					select_pdo(battery->pd_list.pd_info[battery->pd_list.max_pd_count - 1].pdo_index);
+#endif
 				}
 			}
 		}

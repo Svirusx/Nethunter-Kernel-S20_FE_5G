@@ -1,0 +1,9 @@
+#
+# Samsung Victory Projects
+#
+config MACH_VICTORY_CHN_OPEN
+	default n
+	bool "Samsung VICTORY CHN SQ"
+	help
+	  Support for Samsung VICTORY CHN SQ device.
+

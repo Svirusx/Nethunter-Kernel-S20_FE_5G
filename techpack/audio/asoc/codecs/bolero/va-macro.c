@@ -16,6 +16,7 @@
 #include <asoc/msm-cdc-pinctrl.h>
 #include <soc/swr-common.h>
 #include <soc/swr-wcd.h>
+#include <dsp/digital-cdc-rsc-mgr.h>
 #include "bolero-cdc.h"
 #include "bolero-cdc-registers.h"
 #include "bolero-clk-rsc.h"
@@ -297,8 +298,7 @@ static int va_macro_event_handler(struct snd_soc_component *component,
 				"%s: va_mclk_users is non-zero still, audio SSR fail!!\n",
 				__func__);
 		break;
-	case BOLERO_MACRO_EVT_SSR_UP:
-		trace_printk("%s, enter SSR up\n", __func__);
+	case BOLERO_MACRO_EVT_PRE_SSR_UP:
 		/* enable&disable VA_CORE_CLK to reset GFMUX reg */
 		ret = bolero_clk_rsc_request_clock(va_priv->dev,
 						va_priv->default_clk_id,
@@ -311,6 +311,9 @@ static int va_macro_event_handler(struct snd_soc_component *component,
 			bolero_clk_rsc_request_clock(va_priv->dev,
 						va_priv->default_clk_id,
 						VA_CORE_CLK, false);
+		break;
+	case BOLERO_MACRO_EVT_SSR_UP:
+		trace_printk("%s, enter SSR up\n", __func__);
 		/* reset swr after ssr/pdr */
 		va_priv->reset_swr = true;
 		if (va_priv->swr_ctrl_data)
@@ -444,7 +447,8 @@ static int va_macro_swr_pwr_event(struct snd_soc_dapm_widget *w,
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
 		if (va_priv->lpass_audio_hw_vote) {
-			ret = clk_prepare_enable(va_priv->lpass_audio_hw_vote);
+			ret = digital_cdc_rsc_mgr_hw_vote_enable(
+					va_priv->lpass_audio_hw_vote);
 			if (ret)
 				dev_err(va_dev,
 					"%s: lpass audio hw enable failed\n",
@@ -467,7 +471,8 @@ static int va_macro_swr_pwr_event(struct snd_soc_dapm_widget *w,
 		if (bolero_tx_clk_switch(component, CLK_SRC_TX_RCG))
 			dev_dbg(va_dev, "%s: clock switch failed\n",__func__);
 		if (va_priv->lpass_audio_hw_vote)
-			clk_disable_unprepare(va_priv->lpass_audio_hw_vote);
+			digital_cdc_rsc_mgr_hw_vote_disable(
+				va_priv->lpass_audio_hw_vote);
 		break;
 	default:
 		dev_err(va_priv->dev,
@@ -1156,10 +1161,11 @@ static int va_macro_enable_dec(struct snd_soc_dapm_widget *w,
 		va_priv->va_hpf_work[decimator].hpf_cut_off_freq =
 							hpf_cut_off_freq;
 
-		if (hpf_cut_off_freq != CF_MIN_3DB_150HZ)
+		if (hpf_cut_off_freq != CF_MIN_3DB_150HZ) {
 			snd_soc_component_update_bits(component, dec_cfg_reg,
 					    TX_HPF_CUT_OFF_FREQ_MASK,
 					    CF_MIN_3DB_150HZ << 5);
+		}
 		if (is_amic_enabled(component, decimator)) {
 			hpf_delay = BOLERO_CDC_VA_TX_AMIC_HPF_DELAY_MS;
 			unmute_delay = BOLERO_CDC_VA_TX_AMIC_UNMUTE_DELAY_MS;

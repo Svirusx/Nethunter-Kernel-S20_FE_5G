@@ -182,6 +182,22 @@ static bool cds_is_drv_connected(void)
 	return ((ret > 0) ? true : false);
 }
 
+static bool cds_is_drv_supported(void)
+{
+	qdf_device_t qdf_ctx;
+	struct pld_platform_cap cap = {0};
+
+	qdf_ctx = cds_get_context(QDF_MODULE_ID_QDF_DEVICE);
+	if (!qdf_ctx) {
+		cds_err("cds context is invalid");
+		return false;
+	}
+
+	pld_get_platform_cap(qdf_ctx->dev, &cap);
+
+	return ((cap.cap_flag & PLD_HAS_DRV_SUPPORT) ? true : false);
+}
+
 static QDF_STATUS cds_wmi_send_recv_qmi(void *buf, uint32_t len, void * cb_ctx,
 					qdf_wmi_recv_qmi_cb wmi_rx_cb)
 {
@@ -220,6 +236,7 @@ QDF_STATUS cds_init(void)
 	qdf_register_is_driver_unloading_callback(cds_is_driver_unloading);
 	qdf_register_recovering_state_query_callback(cds_is_driver_recovering);
 	qdf_register_drv_connected_callback(cds_is_drv_connected);
+	qdf_register_drv_supported_callback(cds_is_drv_supported);
 	qdf_register_wmi_send_recv_qmi_callback(cds_wmi_send_recv_qmi);
 
 	return QDF_STATUS_SUCCESS;
@@ -547,10 +564,9 @@ static int cds_hang_event_notifier_call(struct notifier_block *block,
 	if (!cds_hang_evt_buff)
 		return NOTIFY_STOP_MASK;
 
-	if (cds_hang_data->offset >= QDF_WLAN_MAX_HOST_OFFSET)
-		return NOTIFY_STOP_MASK;
-
 	total_len = sizeof(*cmd);
+	if (cds_hang_data->offset + total_len > QDF_WLAN_HANG_FW_OFFSET)
+		return NOTIFY_STOP_MASK;
 
 	cds_hang_evt_buff = cds_hang_data->hang_data + cds_hang_data->offset;
 	cmd = (struct cds_hang_event_fixed_param *)cds_hang_evt_buff;
@@ -559,9 +575,11 @@ static int cds_hang_event_notifier_call(struct notifier_block *block,
 
 	cmd->recovery_reason = gp_cds_context->recovery_reason;
 
-	qdf_mem_copy(&cmd->driver_version, QWLAN_VERSIONSTR, 11);
+	qdf_mem_copy(&cmd->driver_version, QWLAN_VERSIONSTR,
+		     sizeof(QWLAN_VERSIONSTR));
 
-	qdf_mem_copy(&cmd->hang_event_version, QDF_HANG_EVENT_VERSION, 3);
+	qdf_mem_copy(&cmd->hang_event_version, QDF_HANG_EVENT_VERSION,
+		     sizeof(QDF_HANG_EVENT_VERSION));
 
 	cds_hang_data->offset += total_len;
 	return NOTIFY_OK;

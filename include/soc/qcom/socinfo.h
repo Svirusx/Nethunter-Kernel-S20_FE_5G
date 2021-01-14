@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * Copyright (c) 2009-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2009-2020, The Linux Foundation. All rights reserved.
  */
 
 #ifndef _ARCH_ARM_MACH_MSM_SOCINFO_H_
@@ -56,6 +56,8 @@
 	of_flat_dt_is_compatible(of_get_flat_dt_root(), "qcom,kona")
 #define early_machine_is_lito()	\
 	of_flat_dt_is_compatible(of_get_flat_dt_root(), "qcom,lito")
+#define early_machine_is_orchid()	\
+	of_flat_dt_is_compatible(of_get_flat_dt_root(), "qcom,orchid")
 #define early_machine_is_bengal()	\
 	of_flat_dt_is_compatible(of_get_flat_dt_root(), "qcom,bengal")
 #define early_machine_is_bengalp()	\
@@ -64,6 +66,10 @@
 	of_flat_dt_is_compatible(of_get_flat_dt_root(), "qcom,lagoon")
 #define early_machine_is_scuba()	\
 	of_flat_dt_is_compatible(of_get_flat_dt_root(), "qcom,scuba")
+#define early_machine_is_scubaiot()        \
+	of_flat_dt_is_compatible(of_get_flat_dt_root(), "qcom,scuba-iot")
+#define early_machine_is_scubapiot()        \
+	of_flat_dt_is_compatible(of_get_flat_dt_root(), "qcom,scubap-iot")
 #define early_machine_is_sdmshrike()	\
 	of_flat_dt_is_compatible(of_get_flat_dt_root(), "qcom,sdmshrike")
 #define early_machine_is_sm6150()	\
@@ -74,6 +80,12 @@
 	of_flat_dt_is_compatible(of_get_flat_dt_root(), "qcom,sdxprairie")
 #define early_machine_is_sdmmagpie()	\
 	of_flat_dt_is_compatible(of_get_flat_dt_root(), "qcom,sdmmagpie")
+#define early_machine_is_sdm660()	\
+	of_flat_dt_is_compatible(of_get_flat_dt_root(), "qcom,sdm660")
+#define early_machine_is_bengal_iot()	\
+	of_flat_dt_is_compatible(of_get_flat_dt_root(), "qcom,bengal-iot")
+#define early_machine_is_bengalp_iot()	\
+	of_flat_dt_is_compatible(of_get_flat_dt_root(), "qcom,bengalp-iot")
 #else
 #define of_board_is_sim()		0
 #define of_board_is_rumi()		0
@@ -96,15 +108,21 @@
 #define early_machine_is_sa8150()	0
 #define early_machine_is_kona()		0
 #define early_machine_is_lito()		0
+#define early_machine_is_orchid()	0
 #define early_machine_is_bengal()	0
 #define early_machine_is_bengalp()	0
 #define early_machine_is_lagoon()	0
 #define early_machine_is_scuba()	0
+#define early_machine_is_scubaiot()	0
+#define early_machine_is_scubapiot()	0
 #define early_machine_is_sdmshrike()	0
 #define early_machine_is_sm6150()	0
 #define early_machine_is_qcs405()	0
 #define early_machine_is_sdxprairie()	0
 #define early_machine_is_sdmmagpie()	0
+#define early_machine_is_sdm660()	0
+#define early_machine_is_bengal_iot()	0
+#define early_machine_is_bengalp_iot()	0
 #endif
 
 #define PLATFORM_SUBTYPE_MDM	1
@@ -125,19 +143,25 @@ enum msm_cpu {
 	MSM_CPU_8916,
 	MSM_CPU_8084,
 	MSM_CPU_8996,
+	MSM_CPU_SDM660,
 	MSM_CPU_SM8150,
 	MSM_CPU_SA8150,
 	MSM_CPU_KONA,
 	MSM_CPU_LITO,
+	MSM_CPU_ORCHID,
 	MSM_CPU_BENGAL,
 	MSM_CPU_BENGALP,
 	MSM_CPU_LAGOON,
 	MSM_CPU_SCUBA,
+	MSM_CPU_SCUBAIOT,
+	MSM_CPU_SCUBAPIOT,
 	MSM_CPU_SDMSHRIKE,
 	MSM_CPU_SM6150,
 	MSM_CPU_QCS405,
 	SDX_CPU_SDXPRAIRIE,
 	MSM_CPU_SDMMAGPIE,
+	MSM_CPU_BENGAL_IOT,
+	MSM_CPU_BENGALP_IOT,
 };
 
 struct msm_soc_info {

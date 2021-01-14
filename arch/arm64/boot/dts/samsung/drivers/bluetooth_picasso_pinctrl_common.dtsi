@@ -1,0 +1,125 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&tlmm {
+	bt_en_default: bt_en_default {
+		mux {
+			pins = "gpio76";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio76";
+			drive-strength = <2>;
+			bias-pull-down;
+		};
+	};
+
+	bt_en_sleep: bt_en_sleep{
+		mux {
+			pins = "gpio76";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio76";
+			drive-strength = <2>;
+			output-low;
+			bias-pull-down;
+		};
+	};
+
+	bt_wake_default: bt_wake_default {
+		mux {
+			pins = "gpio133";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio133";
+			drive-strength = <2>;
+			bias-pull-down;
+		};
+	};
+
+	bt_hostwake_default: bt_hostwake_default {
+		mux {
+			pins = "gpio126";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio126";
+			drive-strength = <2>;
+			bias-pull-down;
+		};
+	};
+
+	qupv3_se6_ctsrx_active: qupv3_se6_ctsrx_active {
+		mux {
+			pins = "gpio16", "gpio19";
+			function = "qup6";
+		};
+		config {
+			pins = "gpio16", "gpio19";
+			drive-strength = <2>;
+			bias-pull-up;
+		};
+	};
+
+	qupv3_se6_ctsrx_sleep: qupv3_se6_ctsrx_sleep {
+		config {
+			pins = "gpio16", "gpio19";
+			drive-strength = <2>;
+			bias-pull-up;
+		};
+	};
+
+	qupv3_se6_rts_active: qupv3_se6_rts_active {
+		mux {
+			pins = "gpio17";
+			function = "qup6";
+		};
+		config {
+			pins = "gpio17";
+			drive-strength = <2>;
+			output-high;
+			bias-pull-up;
+		};
+	};
+
+	qupv3_se6_rts_sleep: qupv3_se6_rts_sleep {
+		config {
+			pins = "gpio17";
+			drive-strength = <2>;
+			bias-pull-up;
+		};
+	};
+
+	qupv3_se6_tx_active: qupv3_se6_tx_active {
+		mux {
+			pins = "gpio18";
+			function = "qup6";
+		};
+		config {
+			pins = "gpio18";
+			drive-strength = <2>;
+			output-high;
+			bias-pull-up;
+		};
+	};
+
+	qupv3_se6_tx_sleep: qupv3_se6_tx_sleep {
+		config {
+			pins = "gpio18";
+			drive-strength = <2>;
+			bias-pull-up;
+		};
+	};
+};

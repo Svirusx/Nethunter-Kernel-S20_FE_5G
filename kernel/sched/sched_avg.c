@@ -139,6 +139,10 @@ static inline void update_busy_hyst_end_time(int cpu, bool dequeue,
 				unsigned long prev_nr_run, u64 curr_time)
 {
 	bool nr_run_trigger = false, load_trigger = false;
+	bool is_sched_boost = false;
+
+	if (sysctl_sched_boost > 0)
+		is_sched_boost = true;
 
 	if (!per_cpu(hyst_time, cpu))
 		return;
@@ -150,7 +154,7 @@ static inline void update_busy_hyst_end_time(int cpu, bool dequeue,
 			capacity_orig_of(cpu))
 		load_trigger = true;
 
-	if (nr_run_trigger || load_trigger)
+	if (nr_run_trigger || load_trigger || is_sched_boost)
 		atomic64_set(&per_cpu(busy_hyst_end_time, cpu),
 				curr_time + per_cpu(hyst_time, cpu));
 }

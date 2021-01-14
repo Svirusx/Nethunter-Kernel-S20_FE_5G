@@ -125,8 +125,10 @@ typedef enum {
 	NOTIFIER_WACOM_PEN_CHARGING_STARTED,	/* to tsp: pen charging started */
 	NOTIFIER_WACOM_PEN_INSERT,		/* to tsp: pen is inserted */
 	NOTIFIER_WACOM_PEN_REMOVE,		/* to tsp: pen is removed */
-	NOTIFIER_LCD_VRR_LFD_LOCK_REQUEST,	/* temp: to LCD: disable to set LFD */
-	NOTIFIER_LCD_VRR_LFD_LOCK_RELEASE,	/* temp: to LCD: enable to set LFD */
+	NOTIFIER_LCD_VRR_LFD_LOCK_REQUEST,	/* to LCD: set LFD min lock */
+	NOTIFIER_LCD_VRR_LFD_LOCK_RELEASE,	/* to LCD: unset LFD min lock */
+	NOTIFIER_LCD_VRR_LFD_OFF_REQUEST,	/* to LCD: set LFD OFF */
+	NOTIFIER_LCD_VRR_LFD_OFF_RELEASE,	/* to LCD: unset LFD OFF */
 	NOTIFIER_VALUE_MAX,
 } sec_input_notify_t;
 

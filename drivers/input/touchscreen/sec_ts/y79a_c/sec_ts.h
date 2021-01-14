@@ -230,6 +230,7 @@
 #define SEC_TS_CMD_SYNC_CHANGED			0x9C
 #define SEC_TS_CMD_SIP_MODE			0xB5
 #define SEC_TS_CMD_NOTE_MODE			0x46
+#define SEC_TS_CMD_GAME_MODE			0x47
 #define SET_TS_CMD_SET_LOWTEMPERATURE_MODE	0xBE
 #define SET_TS_CMD_ELVSS_TEST			0xD7
 #define SET_TS_CMD_SRAM_TEST			0x9D
@@ -336,6 +337,7 @@
 #define SEC_TS_GESTURE_CODE_PRESS		0x03
 #define SEC_TS_GESTURE_CODE_SINGLE_TAP		0x04
 #define SEC_TS_GESTURE_CODE_DUMPFLUSH		0x05
+#define SEC_TS_GESTURE_CODE_LARGEPALM		0x06
 
 
 /* SEC_TS_GESTURE_ID */
@@ -894,10 +896,14 @@ struct sec_ts_data {
 	u8 grip_edgehandler_direction;
 	int grip_edgehandler_start_y;
 	int grip_edgehandler_end_y;
-	u16 grip_edge_range;
-	u8 grip_deadzone_up_x;
-	u8 grip_deadzone_dn_x;
-	int grip_deadzone_y;
+	u16 grip_edge_range;//grip X1
+	u8 grip_deadzone_up_x;//reject X1
+	u8 grip_deadzone_dn_x;//reject X2
+	int grip_deadzone_y;//reject Y1
+	/* add 3state reject zone */
+	u8 grip_deadzone_dn2_x;//reject X3
+	int grip_deadzone_dn_y;//reject Y2
+	/* add 3state reject zone */
 	u8 grip_landscape_mode;
 	int grip_landscape_edge;
 	u16 grip_landscape_deadzone;

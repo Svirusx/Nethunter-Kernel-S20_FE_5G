@@ -77,10 +77,12 @@ static void wcd_program_hs_vref(struct wcd_mbhc *mbhc)
 	struct snd_soc_component *component = mbhc->component;
 	u32 reg_val;
 
-	plug_type_cfg = WCD_MBHC_CAL_PLUG_TYPE_PTR(mbhc->mbhc_cfg->calibration);
+	plug_type_cfg = WCD_MBHC_CAL_PLUG_TYPE_PTR(
+				mbhc->mbhc_cfg->calibration);
 	reg_val = ((plug_type_cfg->v_hs_max - HS_VREF_MIN_VAL) / 100);
 
-	dev_dbg(component->dev, "%s: reg_val  = %x\n", __func__, reg_val);
+	dev_dbg(component->dev, "%s: reg_val  = %x\n",
+		__func__, reg_val);
 	WCD_MBHC_REG_UPDATE_BITS(WCD_MBHC_HS_VREF, reg_val);
 }
 
@@ -415,7 +417,6 @@ static void wcd_mbhc_clr_and_turnon_hph_padac(struct wcd_mbhc *mbhc)
 			       &mbhc->hph_pa_dac_state)) {
 		pr_debug("%s: HPHR clear flag and enable PA\n", __func__);
 		WCD_MBHC_REG_UPDATE_BITS(WCD_MBHC_HPHR_PA_EN, 1);
-		WCD_MBHC_REG_UPDATE_BITS(WCD_MBHC_HPHR_OCP_DET_EN, 1);
 		pa_turned_on = true;
 	}
 	mutex_unlock(&mbhc->hphr_pa_lock);
@@ -424,7 +425,6 @@ static void wcd_mbhc_clr_and_turnon_hph_padac(struct wcd_mbhc *mbhc)
 			       &mbhc->hph_pa_dac_state)) {
 		pr_debug("%s: HPHL clear flag and enable PA\n", __func__);
 		WCD_MBHC_REG_UPDATE_BITS(WCD_MBHC_HPHL_PA_EN, 1);
-		WCD_MBHC_REG_UPDATE_BITS(WCD_MBHC_HPHL_OCP_DET_EN, 1);
 		pa_turned_on = true;
 	}
 	mutex_unlock(&mbhc->hphl_pa_lock);
@@ -1378,8 +1378,7 @@ static int wcd_mbhc_initialise(struct wcd_mbhc *mbhc)
 	if (mbhc->mbhc_cfg->moisture_en && mbhc->mbhc_cb->mbhc_moisture_config
 		&& !mbhc->mbhc_cfg->moisture_duty_cycle_en)
 		mbhc->mbhc_cb->mbhc_moisture_config(mbhc);
-	else if (mbhc->mbhc_cfg->moisture_duty_cycle_en &&
-		 mbhc->mbhc_cb->mbhc_moisture_detect_en)
+	else if (mbhc->mbhc_cb->mbhc_moisture_detect_en)
 		mbhc->mbhc_cb->mbhc_moisture_detect_en(mbhc, false);
 
 	/*
@@ -1800,6 +1799,8 @@ int wcd_mbhc_init(struct wcd_mbhc *mbhc, struct snd_soc_component *component,
 	mbhc->hph_type = WCD_MBHC_HPH_NONE;
 	mbhc->wcd_mbhc_regs = wcd_mbhc_regs;
 	mbhc->swap_thr = GND_MIC_SWAP_THRESHOLD;
+	mbhc->hphl_cross_conn_thr = HPHL_CROSS_CONN_THRESHOLD;
+	mbhc->hphr_cross_conn_thr = HPHR_CROSS_CONN_THRESHOLD;
 
 	if (mbhc->intr_ids == NULL) {
 		pr_err("%s: Interrupt mapping not provided\n", __func__);

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2014-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2014-2020, The Linux Foundation. All rights reserved.
  */
 
 #include <linux/clk/qcom.h>
@@ -148,6 +148,9 @@ static void a5xx_platform_setup(struct adreno_device *adreno_dev)
 
 	/* Set the GPU busy counter to use for frequency scaling */
 	adreno_dev->perfctr_pwr_lo = A5XX_RBBM_PERFCTR_RBBM_0_LO;
+
+	if (ADRENO_FEATURE(adreno_dev, ADRENO_SPTP_PC))
+		set_bit(ADRENO_SPTP_PC_CTRL, &adreno_dev->pwrctrl_flag);
 
 	/* Check efuse bits for various capabilties */
 	a5xx_check_features(adreno_dev);
@@ -350,12 +353,15 @@ static void a5xx_protect_init(struct adreno_device *adreno_dev)
 	/*
 	 * For a530 and a540 the SMMU region is 0x20000 bytes long and 0x10000
 	 * bytes on all other targets. The base offset for both is 0x40000.
-	 * Write it to the next available slot
+	 * Write it to the next available slot. The base offset and length of a
+	 * block must be specified as power of 2 values.
 	 */
 	if (adreno_is_a530(adreno_dev) || adreno_is_a540(adreno_dev))
-		_setprotectreg(device, reg + 1, 0x40000, ilog2(0x20000));
+		_setprotectreg(device, reg + 1, (0x40000 >> 2),
+			ilog2(0x20000 >> 2));
 	else
-		_setprotectreg(device, reg + 1, 0x40000, ilog2(0x10000));
+		_setprotectreg(device, reg + 1, (0x40000 >> 2),
+			ilog2(0x10000 >> 2));
 }
 
 /*
@@ -1508,10 +1514,10 @@ static void a5xx_start(struct adreno_device *adreno_dev)
 
 	/* Program the GMEM VA range for the UCHE path */
 	kgsl_regwrite(device, A5XX_UCHE_GMEM_RANGE_MIN_LO,
-			adreno_dev->gpucore->gmem_base);
+			adreno_dev->uche_gmem_base);
 	kgsl_regwrite(device, A5XX_UCHE_GMEM_RANGE_MIN_HI, 0x0);
 	kgsl_regwrite(device, A5XX_UCHE_GMEM_RANGE_MAX_LO,
-			adreno_dev->gpucore->gmem_base +
+			adreno_dev->uche_gmem_base +
 			adreno_dev->gpucore->gmem_size - 1);
 	kgsl_regwrite(device, A5XX_UCHE_GMEM_RANGE_MAX_HI, 0x0);
 
@@ -1718,12 +1724,15 @@ static int a5xx_post_start(struct adreno_device *adreno_dev)
 		*cmds++ = 0xF;
 	}
 
-	if (adreno_is_preemption_enabled(adreno_dev))
+	if (adreno_is_preemption_enabled(adreno_dev)) {
 		cmds += _preemption_init(adreno_dev, rb, cmds, NULL);
+		rb->_wptr = rb->_wptr - (42 - (cmds - start));
+		ret = adreno_ringbuffer_submit_spin_nosync(rb, NULL, 2000);
+	} else {
+		rb->_wptr = rb->_wptr - (42 - (cmds - start));
+		ret = adreno_ringbuffer_submit_spin(rb, NULL, 2000);
+	}
 
-	rb->_wptr = rb->_wptr - (42 - (cmds - start));
-
-	ret = adreno_ringbuffer_submit_spin(rb, NULL, 2000);
 	if (ret)
 		adreno_spin_idle_debug(adreno_dev,
 				"hw initialization failed to idle\n");
@@ -2032,7 +2041,7 @@ static int _load_firmware(struct kgsl_device *device, const char *fwfile,
 
 	memcpy(firmware->memdesc.hostptr, &fw->data[4], fw->size - 4);
 	firmware->size = (fw->size - 4) / sizeof(uint32_t);
-	firmware->version = *(unsigned int *)&fw->data[4];
+	firmware->version = adreno_get_ucode_version((u32 *)fw->data);
 
 done:
 	release_firmware(fw);
@@ -2840,11 +2849,11 @@ static void a5xx_gpmu_int_callback(struct adreno_device *adreno_dev, int bit)
 }
 
 /*
- * a5x_gpc_err_int_callback() - Isr for GPC error interrupts
+ * a5xx_gpc_err_int_callback() - Isr for GPC error interrupts
  * @adreno_dev: Pointer to device
  * @bit: Interrupt bit
  */
-void a5x_gpc_err_int_callback(struct adreno_device *adreno_dev, int bit)
+static void a5xx_gpc_err_int_callback(struct adreno_device *adreno_dev, int bit)
 {
 	struct kgsl_device *device = KGSL_DEVICE(adreno_dev);
 
@@ -2854,7 +2863,7 @@ void a5x_gpc_err_int_callback(struct adreno_device *adreno_dev, int bit)
 	 * with help of register dump.
 	 */
 
-	dev_crit(device->dev, "RBBM: GPC error\n");
+	dev_crit_ratelimited(device->dev, "RBBM: GPC error\n");
 	adreno_irqctrl(adreno_dev, 0);
 
 	/* Trigger a fault in the dispatcher - this will effect a restart */
@@ -2892,7 +2901,7 @@ static struct adreno_irq_funcs a5xx_irq_funcs[32] = {
 	ADRENO_IRQ_CALLBACK(a5xx_err_callback),
 	/* 6 - RBBM_ATB_ASYNC_OVERFLOW */
 	ADRENO_IRQ_CALLBACK(a5xx_err_callback),
-	ADRENO_IRQ_CALLBACK(a5x_gpc_err_int_callback), /* 7 - GPC_ERR */
+	ADRENO_IRQ_CALLBACK(a5xx_gpc_err_int_callback), /* 7 - GPC_ERR */
 	ADRENO_IRQ_CALLBACK(a5xx_preempt_callback),/* 8 - CP_SW */
 	ADRENO_IRQ_CALLBACK(a5xx_cp_hw_err_callback), /* 9 - CP_HW_ERROR */
 	/* 10 - CP_CCU_FLUSH_DEPTH_TS */

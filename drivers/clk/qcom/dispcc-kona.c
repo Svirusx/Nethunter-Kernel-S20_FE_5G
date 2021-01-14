@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-only
-/* Copyright (c) 2018-2019, The Linux Foundation. All rights reserved. */
+/* Copyright (c) 2018-2020, The Linux Foundation. All rights reserved. */
 
 #define pr_fmt(fmt) "clk: %s: " fmt, __func__
 
@@ -210,10 +210,11 @@ static struct pll_vco lucid_vco[] = {
 
 static const struct alpha_pll_config disp_cc_pll0_config = {
 	.l = 0x47,
+	.cal_l = 0x44,
 	.alpha = 0xE000,
 	.config_ctl_val = 0x20485699,
 	.config_ctl_hi_val = 0x00002261,
-	.config_ctl_hi1_val = 0x029A699C,
+	.config_ctl_hi1_val = 0x329A699C,
 	.user_ctl_val = 0x00000000,
 	.user_ctl_hi_val = 0x00000805,
 	.user_ctl_hi1_val = 0x00000000,
@@ -243,10 +244,11 @@ static struct clk_alpha_pll disp_cc_pll0 = {
 
 static const struct alpha_pll_config disp_cc_pll1_config = {
 	.l = 0x1F,
+	.cal_l = 0x44,
 	.alpha = 0x4000,
 	.config_ctl_val = 0x20485699,
 	.config_ctl_hi_val = 0x00002261,
-	.config_ctl_hi1_val = 0x029A699C,
+	.config_ctl_hi1_val = 0x329A699C,
 	.user_ctl_val = 0x00000000,
 	.user_ctl_hi_val = 0x00000805,
 	.user_ctl_hi1_val = 0x00000000,
@@ -486,8 +488,7 @@ static struct clk_rcg2 disp_cc_mdss_dp_link1_clk_src = {
 		.num_rate_max = VDD_NUM,
 		.rate_max = (unsigned long[VDD_NUM]) {
 			[VDD_MIN] = 19200,
-			[VDD_LOWER] = 162000,
-			[VDD_LOW] = 270000,
+			[VDD_LOWER] = 270000,
 			[VDD_LOW_L1] = 540000,
 			[VDD_NOMINAL] = 810000},
 	},
@@ -509,8 +510,7 @@ static struct clk_rcg2 disp_cc_mdss_dp_link_clk_src = {
 		.num_rate_max = VDD_NUM,
 		.rate_max = (unsigned long[VDD_NUM]) {
 			[VDD_MIN] = 19200,
-			[VDD_LOWER] = 162000,
-			[VDD_LOW] = 270000,
+			[VDD_LOWER] = 270000,
 			[VDD_LOW_L1] = 540000,
 			[VDD_NOMINAL] = 810000},
 	},
@@ -532,7 +532,7 @@ static struct clk_rcg2 disp_cc_mdss_dp_pixel1_clk_src = {
 		.rate_max = (unsigned long[VDD_NUM]) {
 			[VDD_MIN] = 19200,
 			[VDD_LOWER] = 337500,
-			[VDD_LOW_L1] = 675000},
+			[VDD_NOMINAL] = 675000},
 	},
 };
 
@@ -552,7 +552,7 @@ static struct clk_rcg2 disp_cc_mdss_dp_pixel2_clk_src = {
 		.rate_max = (unsigned long[VDD_NUM]) {
 			[VDD_MIN] = 19200,
 			[VDD_LOWER] = 337500,
-			[VDD_LOW_L1] = 675000},
+			[VDD_NOMINAL] = 675000},
 	},
 };
 

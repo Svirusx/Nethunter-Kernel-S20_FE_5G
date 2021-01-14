@@ -483,13 +483,14 @@ static void reset_bdev(struct zram *zram)
 static ssize_t backing_dev_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
+	struct file *file;
 	struct zram *zram = dev_to_zram(dev);
-	struct file *file = zram->backing_dev;
 	char *p;
 	ssize_t ret;
 
 	down_read(&zram->init_lock);
-	if (!zram->backing_dev) {
+	file = zram->backing_dev;
+	if (!file) {
 		memcpy(buf, "none\n", 5);
 		up_read(&zram->init_lock);
 		return 5;
@@ -780,19 +781,25 @@ static u32 entry_to_index(struct zram *zram, struct zram_table_entry *entry)
 			sizeof(struct zram_table_entry));
 }
 
-static bool zram_try_mark_page(struct zram *zram, u32 index)
+#define SKIP 1
+#define ABORT 2
+static int zram_try_mark_page(struct zram *zram, u32 index)
 {
 	if (!zram_slot_trylock(zram, index))
-		return false;
-	if (!zram_allocated(zram, index) ||
-			zram_test_flag(zram, index, ZRAM_SAME) ||
+		return SKIP;
+
+	if (!zram_allocated(zram, index)) {
+		zram_slot_unlock(zram, index);
+		return ABORT;
+	}
+	if (zram_test_flag(zram, index, ZRAM_SAME) ||
 			zram_test_flag(zram, index, ZRAM_UNDER_WB)) {
 		zram_slot_unlock(zram, index);
-		return false;
+		return SKIP;
 	}
 	zram_set_flag(zram, index, ZRAM_IDLE);
 	zram_slot_unlock(zram, index);
-	return true;
+	return 0;
 }
 
 #define ZRAM_WBD_INTERVAL 10 * HZ
@@ -1122,6 +1129,7 @@ static int zram_wbd(void *p)
 	struct page *page;
 	u32 index, offset = 0;
 	int count = 0;
+	int ret;
 
 	set_freezable();
 
@@ -1140,8 +1148,11 @@ static int zram_wbd(void *p)
 			if (!zram_wb_available(zram))
 				break;
 			index = entry_to_index(zram, zram_entry);
-			if (!zram_try_mark_page(zram, index))
+			ret = zram_try_mark_page(zram, index);
+			if (ret == SKIP)
 				continue;
+			else if (ret == ABORT)
+				break;
 			if (zram_comp_writeback_index(zram, index,
 					entry, &count, page, &offset, false))
 				break;
@@ -2162,14 +2173,36 @@ static int __zram_bvec_read(struct zram *zram, struct page *page, u32 index,
 
 		dst = kmap_atomic(page);
 		ret = zcomp_decompress(zstrm, src, size, dst);
+
+		/* Should NEVER happen. BUG() if it does. */
+		if (unlikely(ret)) {
+#ifdef CONFIG_PGTABLE_MAPPING
+			unsigned long pa_start = 0, pa_end = 0;
+
+			if (is_vmalloc_addr(src)) {
+				void *src_last;
+
+				src_last = src + size - 1;
+				pa_start = (vmalloc_to_pfn(src) << PAGE_SHIFT);
+				pa_start |= (unsigned long)src & ~PAGE_MASK;
+				pa_end = vmalloc_to_pfn(src_last) << PAGE_SHIFT;
+				pa_end |= (unsigned long)src_last & ~PAGE_MASK;
+				pa_end += 1;
+			} else {
+				pa_start = virt_addr_valid(src) ? virt_to_phys(src) : 0;
+				pa_end = pa_start + size;
+			}
+			pr_err("%s Decompression failed! err=%d, page=%u, len=%u, vaddr=0x%px, paddr=0x%lx--0x%lx\n",
+			       zram->compressor, ret, index, size, src, pa_start, pa_end);
+#else
+			pr_err("%s Decompression failed! err=%d, page=%u, len=%u, vaddr=0x%px\n",
+			       zram->compressor, ret, index, size, src);
+#endif
+			print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 16, 1, src, size, 1);
+			BUG();
+		}
 		kunmap_atomic(dst);
 		zcomp_stream_put(zram->comp);
-	}
-	/* Should NEVER happen. BUG() if it does. */
-	if (unlikely(ret)) {
-		pr_err("Decompression failed! err=%d, page=%u, len=%u, addr=%p\n", ret, index, size, src);
-		print_hex_dump(KERN_DEBUG, "", DUMP_PREFIX_OFFSET, 16, 1, src, size, 1);
-		BUG();
 	}
 	zs_unmap_object(zram->mem_pool, zram_entry_handle(zram, entry));
 #ifdef CONFIG_ZRAM_LRU_WRITEBACK

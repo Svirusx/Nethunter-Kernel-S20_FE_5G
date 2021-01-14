@@ -120,10 +120,26 @@ static inline bool is_grid_session(struct msm_vidc_inst *inst)
 	}
 	return 0;
 }
+
+static inline bool is_video_session(struct msm_vidc_inst *inst)
+{
+	return !is_grid_session(inst);
+}
 static inline bool is_realtime_session(struct msm_vidc_inst *inst)
 {
 	struct v4l2_ctrl *ctrl;
 	ctrl = get_ctrl(inst, V4L2_CID_MPEG_VIDC_VIDEO_PRIORITY);
+	return !!ctrl->val;
+}
+
+static inline bool is_low_latency_hint(struct msm_vidc_inst *inst)
+{
+	struct v4l2_ctrl *ctrl;
+
+	if (inst->session_type != MSM_VIDC_DECODER)
+		return false;
+
+	ctrl = get_ctrl(inst, V4L2_CID_MPEG_VIDC_VIDEO_LOWLATENCY_HINT);
 	return !!ctrl->val;
 }
 
@@ -282,7 +298,9 @@ int msm_comm_get_inst_load(struct msm_vidc_inst *inst,
 int msm_comm_get_inst_load_per_core(struct msm_vidc_inst *inst,
 			enum load_calc_quirks quirks);
 int msm_comm_get_device_load(struct msm_vidc_core *core,
-			enum session_type type, enum load_calc_quirks quirks);
+			enum session_type sess_type,
+			enum load_type load_type,
+			enum load_calc_quirks quirks);
 int msm_comm_set_color_format(struct msm_vidc_inst *inst,
 		enum hal_buffer buffer_type, int fourcc);
 int msm_comm_g_ctrl(struct msm_vidc_inst *inst, struct v4l2_control *ctrl);
@@ -295,6 +313,7 @@ int msm_comm_ctrl_deinit(struct msm_vidc_inst *inst);
 void msm_comm_cleanup_internal_buffers(struct msm_vidc_inst *inst);
 bool msm_comm_turbo_session(struct msm_vidc_inst *inst);
 void msm_comm_print_inst_info(struct msm_vidc_inst *inst);
+void msm_comm_print_insts_info(struct msm_vidc_core *core);
 int msm_comm_v4l2_to_hfi(int id, int value, u32 sid);
 int msm_comm_hfi_to_v4l2(int id, int value, u32 sid);
 int msm_comm_get_v4l2_profile(int fourcc, int profile, u32 sid);

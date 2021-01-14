@@ -49,6 +49,7 @@ struct accel_data {
 	struct workqueue_struct *accel_wq;
 	struct adsp_data *dev_data;
 	bool is_complete_cal;
+	bool st_complete;
 	int32_t raw_data[ACCEL_RAW_DATA_CNT];
 	int32_t avg_data[ACCEL_RAW_DATA_CNT];
 };
@@ -218,7 +219,7 @@ static void accel_work_func(struct work_struct *work)
 
 	for (i = 0; i < ACCEL_RAW_DATA_CNT; i++) {
 		pdata->avg_data[i] /= ACCEL_FACTORY_CAL_CNT;
-		pr_err("[FACTORY] %s: avg : %d\n", __func__, pdata->avg_data[i]);
+		pr_info("[FACTORY] %s: avg : %d\n", __func__, pdata->avg_data[i]);
 	}
 
 	if (pdata->avg_data[2] > 0)
@@ -239,6 +240,7 @@ static ssize_t accel_selftest_show(struct device *dev,
 	uint8_t cnt = 0;
 	int retry = 0;
 
+	pdata->st_complete = false;
 RETRY_ACCEL_SELFTEST:
 	adsp_unicast(NULL, 0, MSG_ACCEL, 0, MSG_TYPE_ST_SHOW_DATA);
 
@@ -278,6 +280,8 @@ RETRY_ACCEL_SELFTEST:
 		}
 	}
 
+	pdata->st_complete = true;
+
 	return snprintf(buf, PAGE_SIZE, "%d,%d,%d,%d,%d,%d,%d\n",
 			data->msg_buf[MSG_ACCEL][1],
 			(int)abs(data->msg_buf[MSG_ACCEL][2]),
@@ -293,6 +297,12 @@ static ssize_t accel_raw_data_show(struct device *dev,
 {
 	struct adsp_data *data = dev_get_drvdata(dev);
 	int32_t raw_data[ACCEL_RAW_DATA_CNT] = {0, };
+
+	if (pdata->st_complete == false) {
+		pr_info("[FACTORY] %s: selftest is running\n", __func__);
+		return snprintf(buf, PAGE_SIZE, "%d,%d,%d\n",
+			raw_data[0], raw_data[1], raw_data[2]);
+	}
 
 	mutex_lock(&data->accel_factory_mutex);
 	get_accel_raw_data(raw_data);
@@ -548,6 +558,7 @@ static int __init lsm6dsl_accel_factory_init(void)
 	pdata->accel_wq = create_singlethread_workqueue("accel_wq");
 	INIT_WORK(&pdata->work_accel, accel_work_func);
 
+	pdata->st_complete = true;
 	pr_info("[FACTORY] %s\n", __func__);
 
 	return 0;

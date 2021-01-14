@@ -1,0 +1,51 @@
+#include "kona-sec-c2q-camera-sensor-pinctrl-r01.dtsi"
+
+&tlmm {
+	/delete-node/ cam_sensor_active_tof_int;
+	/delete-node/ cam_sensor_suspend_tof_int;
+	/delete-node/ cam_sensor_active_tof_reset;
+	/delete-node/ cam_sensor_suspend_tof_reset;
+	/delete-node/ cam_sensor_active_tof_bb;
+	/delete-node/ cam_sensor_suspend_tof_bb;
+};
+
+&cam_sensor_active_tele {
+	mux {
+		pins = "gpio150", "gpio126";
+	};
+
+	config {
+		pins = "gpio150", "gpio126";
+	};
+};
+
+&cam_sensor_suspend_tele {
+	mux {
+		pins = "gpio150", "gpio126";
+	};
+
+	config {
+		pins = "gpio150", "gpio126";
+	};
+};
+
+&cam_sensor_active_rear {
+	mux {
+		pins = "gpio73", "gpio125";
+	};
+
+	config {
+		pins = "gpio73", "gpio125";
+	};
+};
+
+&cam_sensor_suspend_rear {
+	mux {
+		pins = "gpio73", "gpio125";
+	};
+
+	config {
+		pins = "gpio73", "gpio125";
+	};
+};
+

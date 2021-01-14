@@ -12,11 +12,6 @@
 #include "esoc-mdm.h"
 #include "mdm-dbg.h"
 
-#ifdef CONFIG_SEC_PERIPHERAL_SECURE_CHK
-#include <linux/sec_debug.h>
-extern bool sec_check_first_boot_modem;
-#endif
-
 /* Default number of powerup trial requests per session */
 #define ESOC_DEF_PON_REQ	3
 
@@ -425,10 +420,6 @@ static int mdm_handle_boot_fail(struct esoc_clink *esoc_clink, u8 *pon_trial)
 		break;
 	case BOOT_FAIL_ACTION_PANIC:
 		esoc_mdm_log("Calling panic!!\n");
-#ifdef CONFIG_SEC_PERIPHERAL_SECURE_CHK
-		if (sec_check_first_boot_modem)
-			sec_modem_loading_fail_to_bootloader();
-#endif
 		panic("Panic requested on unrecoverable external_modem boot failure\n");
 		break;
 	case BOOT_FAIL_ACTION_NOP:

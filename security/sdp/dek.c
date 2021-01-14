@@ -335,7 +335,7 @@ int dek_encrypt_dek_ecdh(dek_t *plainDek, dek_t *encDek, kek_t *drv_key)
 	memset(encDek->buf, 0, DEK_MAXLEN);
 	memcpy(encDek->buf, &sspay.dh, sizeof(dhk_t));
 	memcpy((u8 *)encDek->buf + sizeof(dhk_t), enc_pbuf, enc_plen);
-	encDek->len = sizeof(dhk_t) + enc_plen;
+	encDek->len = (unsigned int) sizeof(dhk_t) + enc_plen;
 	encDek->type = DEK_TYPE_ECDH256_ENC;
 
 #if DEK_DEBUG
@@ -470,7 +470,7 @@ int dek_decrypt_dek_ecdh(dek_t *encDek, dek_t *plainDek, kek_t *drv_key)
 	dek_t in;
 	dek_t out;
 
-	dec_plen = encDek->len - sizeof(dhk_t);
+	dec_plen = encDek->len - (unsigned int) sizeof(dhk_t);
 	dec_type = CONV_PLEN_TO_TYPE(dec_plen);
 	if (unlikely(!dec_type))
 		return -EINVAL;

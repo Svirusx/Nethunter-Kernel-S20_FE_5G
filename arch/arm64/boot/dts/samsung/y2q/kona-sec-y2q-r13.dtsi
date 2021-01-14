@@ -1,0 +1,60 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "kona-sec-y2q-r12.dtsi"
+#include "kona-sec-y2q-pinctrl-r13.dtsi"
+
+&soc {
+	i2c@22 {
+		gpios = <&tlmm 71 0 /* sda */
+			&tlmm 72 0 /* scl */
+		>;
+	};
+	sec_detect_conn {
+		compatible = "samsung,sec_detect_conn";
+		sec,det_conn_gpios = <&tlmm 81 0>; /* CAM_DETECT */
+
+		sec,det_conn_name = "CAM_CONNECT";
+
+		sec,det_conn_irq_type = <3>; /* CAM_DETECT FALLING, RIGING EDGE*/
+
+		pinctrl-names = "det_ap_connect";
+		pinctrl-0 = <&detect_conn_setting>;
+	};
+
+	abc_hub {
+		pinctrl-names = "det_ap_connect";
+		pinctrl-0 = <&detect_conn_setting>;
+
+		cond {
+			sec,det_conn_gpios = <&tlmm 81 0>; /* CAM_DETECT */
+			sec,det_conn_name = "cam";
+		};
+	};
+};
+
+&tlmm {
+       /delete-node/ pcie0_wake_nc_default;
+};
+
+&pcie0 {
+	wake-gpio = <>;
+	pinctrl-0 = <&pcie0_clkreq_default
+			&pcie0_perst_default>;
+	pinctrl-1 = <&pcie0_clkreq_sleep
+			&pcie0_perst_default>;
+};
+
+&ssc_sensors {
+	/delete-property/ qcom,ssc_hw_rev;
+	qcom,ssc_hw_rev = <13>;
+};

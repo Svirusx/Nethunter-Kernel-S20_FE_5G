@@ -799,13 +799,6 @@ static int dp_audio_off(struct dp_audio *dp_audio)
 
 	ext = &audio->ext_audio_data;
 
-#ifdef CONFIG_SEC_DISPLAYPORT
-	if (!atomic_read(&audio->session_on)) {
-		DP_INFO("dp audio already off\n");
-		return rc;
-	}
-#endif
-
 	work_pending = cancel_delayed_work_sync(&audio->notify_delayed_work);
 	if (work_pending)
 		DP_DEBUG("pending notification work completed\n");

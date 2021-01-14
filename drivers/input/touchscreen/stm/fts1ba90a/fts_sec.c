@@ -139,6 +139,7 @@ static void touch_aging_mode(void *device_data);
 static void run_sram_test(void *device_data);
 static void set_sip_mode(void *device_data);
 static void set_note_mode(void *device_data);
+static void set_game_mode(void *device_data);
 
 static void not_support_cmd(void *device_data);
 
@@ -228,6 +229,7 @@ struct sec_cmd ft_commands[] = {
 	{SEC_CMD("run_sram_test", run_sram_test),},
 	{SEC_CMD("set_sip_mode", set_sip_mode),},
 	{SEC_CMD_H("set_note_mode", set_note_mode),},
+	{SEC_CMD_H("set_game_mode", set_game_mode),},
 	{SEC_CMD("not_support_cmd", not_support_cmd),},
 };
 
@@ -1033,7 +1035,7 @@ static int fts_get_channel_info(struct fts_ts_info *info)
 {
 	int rc = -1;
 	u8 regAdd[1] = { FTS_READ_PANEL_INFO };
-	u8 data[11] = { 0 };
+	u8 data[FTS_EVENT_SIZE] = { 0 };
 
 	memset(data, 0x0, FTS_EVENT_SIZE);
 
@@ -5172,6 +5174,51 @@ static void set_note_mode(void *device_data)
 
 	regAdd[0] = FTS_CMD_SET_FUNCTION_ONOFF;
 	regAdd[1] = FTS_FUNCTION_SET_NOTE_MODE;
+	regAdd[2] = sec->cmd_param[0] & 0xFF;
+
+	input_info(true, &info->client->dev, "%s: %s\n",
+			__func__, sec->cmd_param[0] ? "enable" : "disable");
+
+	ret = fts_write_reg(info, regAdd, 3);
+	if (ret < 0) {
+		snprintf(buff, sizeof(buff), "NG");
+		sec->cmd_state = SEC_CMD_STATUS_FAIL;
+	} else {
+		snprintf(buff, sizeof(buff), "OK");
+		sec->cmd_state = SEC_CMD_STATUS_OK;
+	}
+
+out:
+	sec_cmd_set_cmd_result(sec, buff, strnlen(buff, sizeof(buff)));
+	sec->cmd_state = SEC_CMD_STATUS_WAITING;
+	sec_cmd_set_cmd_exit(sec);
+}
+
+/*	for game mode 
+	byte[0]: Setting for the Game Mode
+		- 0: Disable
+		- 1: Enable
+*/
+static void set_game_mode(void *device_data)
+{
+	struct sec_cmd_data *sec = (struct sec_cmd_data *)device_data;
+	struct fts_ts_info *info = container_of(sec, struct fts_ts_info, sec);
+	char buff[SEC_CMD_STR_LEN] = { 0 };
+	u8 regAdd[3];
+	int ret;
+
+	sec_cmd_set_default_result(sec);
+
+	if (sec->cmd_param[0] < 0 || sec->cmd_param[0] > 1) {
+		input_err(true, &info->client->dev,
+				"%s: wrong param %d\n", __func__, sec->cmd_param[0]);
+		snprintf(buff, sizeof(buff), "NG");
+		sec->cmd_state = SEC_CMD_STATUS_FAIL;
+		goto out;
+	}
+
+	regAdd[0] = FTS_CMD_SET_FUNCTION_ONOFF;
+	regAdd[1] = FTS_FUNCTION_SET_GAME_MODE;
 	regAdd[2] = sec->cmd_param[0] & 0xFF;
 
 	input_info(true, &info->client->dev, "%s: %s\n",

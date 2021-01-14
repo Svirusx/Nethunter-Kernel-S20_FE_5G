@@ -112,6 +112,7 @@ static void run_prox_intensity_read_all(void *device_data);
 static void set_low_power_sensitivity(void *device_data);
 static void set_sip_mode(void *device_data);
 static void set_note_mode(void *device_data);
+static void set_game_mode(void *device_data);
 static void sync_changed(void *device_data);
 static void not_support_cmd(void *device_data);
 static void run_elvss_test(void *device_data);
@@ -225,6 +226,7 @@ static struct sec_cmd sec_cmds[] = {
 	{SEC_CMD_H("set_low_power_sensitivity", set_low_power_sensitivity),},	
 	{SEC_CMD("set_sip_mode", set_sip_mode),},
 	{SEC_CMD_H("set_note_mode", set_note_mode),},
+	{SEC_CMD_H("set_game_mode", set_game_mode),},
 	{SEC_CMD_H("sync_changed", sync_changed),},
 	{SEC_CMD("not_support_cmd", not_support_cmd),},
 };
@@ -6064,6 +6066,13 @@ static void set_wirelesscharger_mode(void *device_data)
 	struct sec_ts_data *ts = container_of(sec, struct sec_ts_data, sec);
 	char buff[SEC_CMD_STR_LEN] = { 0 };
 	int ret;
+	struct sec_input_notify_data data;
+
+#if defined(CONFIG_TOUCHSCREEN_DUAL_FOLDABLE)
+	data.dual_policy = SUB_TOUCHSCREEN;
+#else
+	data.dual_policy = MAIN_TOUCHSCREEN;
+#endif
 
 	sec_cmd_set_default_result(sec);
 
@@ -6096,6 +6105,11 @@ static void set_wirelesscharger_mode(void *device_data)
 				"%s: invalid param %d\n", __func__, sec->cmd_param[0]);
 		goto NG;
 	}
+
+	if (sec->cmd_param[0])
+		sec_input_notify(&ts->sec_input_nb, NOTIFIER_LCD_VRR_LFD_OFF_REQUEST, &data);
+	else
+		sec_input_notify(&ts->sec_input_nb, NOTIFIER_LCD_VRR_LFD_OFF_RELEASE, &data);
 
 	ret = ts->sec_ts_i2c_write(ts, SET_TS_CMD_SET_CHARGER_MODE, &ts->charger_mode, 1);
 	if (ret < 0) {
@@ -6725,9 +6739,12 @@ void set_grip_data_to_ic(struct sec_ts_data *ts, u8 flag)
 		data[1] = ts->grip_deadzone_dn_x & 0xFF;
 		data[2] = (ts->grip_deadzone_y >> 8) & 0xFF;
 		data[3] = ts->grip_deadzone_y & 0xFF;
-		ts->sec_ts_i2c_write(ts, SEC_TS_CMD_DEAD_ZONE, data, 4);
-		input_info(true, &ts->client->dev, "%s: 0x%02X %02X,%02X,%02X,%02X\n",
-				__func__, SEC_TS_CMD_DEAD_ZONE, data[0], data[1], data[2], data[3]);
+		data[4] = ts->grip_deadzone_dn2_x & 0xFF;
+		data[5] = (ts->grip_deadzone_dn_y >> 8) & 0xFF;
+		data[6] = ts->grip_deadzone_dn_y & 0xFF;
+		ts->sec_ts_i2c_write(ts, SEC_TS_CMD_DEAD_ZONE, data, 7);
+		input_info(true, &ts->client->dev, "%s: 0x%02X %02X,%02X,%02X,%02X,%02X,%02X,%02X\n",
+				__func__, SEC_TS_CMD_DEAD_ZONE, data[0], data[1], data[2], data[3], data[4], data[5], data[6]);
 	}
 
 	if (flag & G_SET_LANDSCAPE_MODE) {
@@ -6809,6 +6826,9 @@ static void set_grip_data(void *device_data)
 		ts->grip_deadzone_up_x = sec->cmd_param[2];
 		ts->grip_deadzone_dn_x = sec->cmd_param[3];
 		ts->grip_deadzone_y = sec->cmd_param[4];
+		/* add 3state reject zone */
+		ts->grip_deadzone_dn2_x = sec->cmd_param[5];
+		ts->grip_deadzone_dn_y = sec->cmd_param[6];
 		mode = mode | G_SET_NORMAL_MODE;
 
 		if (ts->grip_landscape_mode == 1) {
@@ -7608,6 +7628,44 @@ static void set_note_mode(void *device_data)
 	ret = ts->sec_ts_i2c_write(ts, SEC_TS_CMD_NOTE_MODE, &data, 1);
 	if (ret < 0) {
 		input_err(true, &ts->client->dev, "%s: Failed to send  note mode cmd\n", __func__);
+		goto NG;
+	}
+
+	snprintf(buff, sizeof(buff), "OK");
+	sec->cmd_state = SEC_CMD_STATUS_OK;
+	sec_cmd_set_cmd_result(sec, buff, strnlen(buff, sizeof(buff)));
+	sec_cmd_set_cmd_exit(sec);
+	return;
+
+NG:
+	snprintf(buff, sizeof(buff), "NG");
+	sec->cmd_state = SEC_CMD_STATUS_FAIL;
+	sec_cmd_set_cmd_result(sec, buff, strnlen(buff, sizeof(buff)));
+	sec_cmd_set_cmd_exit(sec);
+}
+
+static void set_game_mode(void *device_data)
+{
+	struct sec_cmd_data *sec = (struct sec_cmd_data *)device_data;
+	struct sec_ts_data *ts = container_of(sec, struct sec_ts_data, sec);
+	char buff[SEC_CMD_STR_LEN] = { 0 };
+	int ret;
+	unsigned char data;
+
+	sec_cmd_set_default_result(sec);
+
+	input_info(true, &ts->client->dev, "%s: %d\n", __func__, sec->cmd_param[0]);
+
+	if (sec->cmd_param[0] < 0 || sec->cmd_param[0] > 1) {
+		input_err(true, &ts->client->dev, "%s: parm err(%d)\n", __func__, sec->cmd_param[0]);
+		goto NG;
+	}
+
+	data = sec->cmd_param[0];
+
+	ret = ts->sec_ts_i2c_write(ts, SEC_TS_CMD_GAME_MODE, &data, 1);
+	if (ret < 0) {
+		input_err(true, &ts->client->dev, "%s: Failed to send game mode cmd\n", __func__);
 		goto NG;
 	}
 

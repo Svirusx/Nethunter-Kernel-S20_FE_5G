@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * Copyright (C) 2019 Samsung Electronics Co. Ltd.
+ * Copyright (C) 2016-2020 Samsung Electronics Co. Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  */
 
- /* usb notify layer v3.4 */
+ /* usb notify layer v3.5 */
 
 #define pr_fmt(fmt) "usb_notify: " fmt
 
@@ -103,6 +103,7 @@ int usb_external_notify_register(struct notifier_block *nb,
 
 	return ret;
 }
+EXPORT_SYMBOL(usb_external_notify_register);
 
 int usb_external_notify_unregister(struct notifier_block *nb)
 {
@@ -121,6 +122,7 @@ int usb_external_notify_unregister(struct notifier_block *nb)
 
 	return ret;
 }
+EXPORT_SYMBOL(usb_external_notify_unregister);
 
 int send_external_notify(unsigned long cmd, int data)
 {
@@ -151,14 +153,12 @@ int send_external_notify(unsigned long cmd, int data)
 
 	return ret;
 }
+EXPORT_SYMBOL(send_external_notify);
 
-static int __init external_notifier_init(void)
+void external_notifier_init(void)
 {
-	int ret = 0;
-
 	pr_info("%s\n", __func__);
 	create_external_notify();
-
-	return ret;
 }
-module_init(external_notifier_init);
+EXPORT_SYMBOL(external_notifier_init);
+

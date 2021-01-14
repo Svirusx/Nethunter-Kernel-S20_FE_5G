@@ -51,6 +51,7 @@ typedef enum {
 	SET_GRIP_LANDSCAPE_MODE = 3,
 	SET_PALM_MODE = 4,
 	SET_TOUCH_DEBOUNCE = 5,
+	SET_GAME_MODE = 6,
 } EXTENDED_CUSTOMIZED_CMD_TYPE;
 
 typedef enum {
@@ -63,6 +64,11 @@ typedef enum {
 	DEBOUNCE_NORMAL = 0,
 	DEBOUNCE_LOWER = 1,	//to optimize tapping performance for SIP
 } TOUCH_DEBOUNCE;
+
+typedef enum {
+	GAME_MODE_DISABLE = 0,
+	GAME_MODE_ENABLE = 1,
+} GAME_MODE;
 
 #define I2C_TANSFER_LENGTH	64
 
@@ -1913,6 +1919,73 @@ out:
 	input_info(true, &ts->client->dev, "%s: %s\n", __func__, buff);
 }
 
+/*	for game mode 
+	byte[0]: Setting for the Game Mode
+		- 0: Disable
+		- 1: Enable
+*/
+static void set_game_mode(void *device_data)
+{
+	struct sec_cmd_data *sec = (struct sec_cmd_data *)device_data;
+	struct nvt_ts_data *ts = container_of(sec, struct nvt_ts_data, sec);
+	char buff[SEC_CMD_STR_LEN] = { 0 };
+	u8 mode = 0;
+	u8 buf[4] = { 0 };
+	int ret;
+
+	sec_cmd_set_default_result(sec);
+
+	if (ts->power_status == POWER_OFF_STATUS) {
+		input_err(true, &ts->client->dev, "%s: POWER_STATUS : OFF!\n", __func__);
+		goto out;
+	}
+
+	if (sec->cmd_param[0] < GAME_MODE_DISABLE || sec->cmd_param[0] > GAME_MODE_ENABLE) {
+		input_err(true, &ts->client->dev, "%s: invalid parameter %d\n",
+			__func__, sec->cmd_param[0]);
+		goto out;
+	}
+
+	mode = sec->cmd_param[0];
+
+	if (mutex_lock_interruptible(&ts->lock)) {
+		input_err(true, &ts->client->dev, "%s: another task is running\n",
+			__func__);
+		goto out;
+	}
+
+	input_info(true, &ts->client->dev, "%s: %s\n",
+			__func__, mode ? "enable" : "disable");
+
+	buf[0] = EVENT_MAP_HOST_CMD;
+	buf[1] = EXTENDED_CUSTOMIZED_CMD;
+	buf[2] = SET_GAME_MODE;
+	buf[3] = mode;
+	ret = nvt_ts_i2c_write(ts, I2C_FW_Address, buf, 4);
+	if (ret < 0) {
+		mutex_unlock(&ts->lock);
+		goto out;
+	}
+
+	mutex_unlock(&ts->lock);
+
+	snprintf(buff, sizeof(buff), "%s", "OK");
+	sec->cmd_state =  SEC_CMD_STATUS_OK;
+	sec_cmd_set_cmd_result(sec, buff, strnlen(buff, sizeof(buff)));
+	sec_cmd_set_cmd_exit(sec);
+
+	input_info(true, &ts->client->dev, "%s: %s\n", __func__, buff);
+
+	return;
+out:
+	snprintf(buff, sizeof(buff), "%s", "NG");
+	sec->cmd_state = SEC_CMD_STATUS_FAIL;
+	sec_cmd_set_cmd_result(sec, buff, strnlen(buff, sizeof(buff)));
+	sec_cmd_set_cmd_exit(sec);
+
+	input_info(true, &ts->client->dev, "%s: %s\n", __func__, buff);
+}
+
 static void dead_zone_enable(void *device_data)
 {
 	struct sec_cmd_data *sec = (struct sec_cmd_data *)device_data;
@@ -3434,6 +3507,23 @@ out:
 	sec_cmd_set_cmd_exit(sec);
 }
 
+static void debug(void *device_data)
+{
+	struct sec_cmd_data *sec = (struct sec_cmd_data *)device_data;
+	struct nvt_ts_data *ts = container_of(sec, struct nvt_ts_data, sec);
+	char buff[SEC_CMD_STR_LEN] = { 0 };
+
+	sec_cmd_set_default_result(sec);
+
+	ts->debug_flag = sec->cmd_param[0];
+
+	input_info(true, &ts->client->dev, "%s: command is %d\n", __func__, ts->debug_flag);
+
+	sec_cmd_set_cmd_result(sec, buff, strnlen(buff, sizeof(buff)));
+	sec->cmd_state = SEC_CMD_STATUS_WAITING;
+	sec_cmd_set_cmd_exit(sec);
+}
+
 static void not_support_cmd(void *device_data)
 {
 	struct sec_cmd_data *sec = (struct sec_cmd_data *)device_data;
@@ -3463,6 +3553,7 @@ static struct sec_cmd sec_cmds[] = {
 	{SEC_CMD_H("glove_mode", glove_mode),},
 	{SEC_CMD_H("set_note_mode", set_note_mode),},
 	{SEC_CMD("set_sip_mode", set_sip_mode),},
+	{SEC_CMD_H("set_game_mode", set_game_mode),},
 	{SEC_CMD_H("dead_zone_enable", dead_zone_enable),},
 	/*{SEC_CMD_H("spay_enable", spay_enable),},*/
 	{SEC_CMD("get_x_num", get_x_num),},
@@ -3486,6 +3577,7 @@ static struct sec_cmd sec_cmds[] = {
 	{SEC_CMD("run_sram_test", run_sram_test),},
 	{SEC_CMD("get_func_mode", get_func_mode),},
 	{SEC_CMD_H("aot_enable", aot_enable),},
+	{SEC_CMD("debug", debug),},
 	{SEC_CMD("not_support_cmd", not_support_cmd),},
 };
 

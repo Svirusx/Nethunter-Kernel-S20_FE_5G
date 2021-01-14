@@ -24,7 +24,7 @@ struct sec_param_data {
 	unsigned int debuglevel;
 	unsigned int uartsel;
 	unsigned int rory_control;
-	unsigned int reserved0;
+	unsigned int product_device;   /* product/dev device */
 	unsigned int reserved1;
 	unsigned int cp_debuglevel;
 	unsigned int reserved2;

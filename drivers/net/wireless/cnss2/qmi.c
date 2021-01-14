@@ -150,6 +150,18 @@ qmi_registered:
 	return ret;
 }
 
+#ifdef CONFIG_CNSS2_DEBUG
+static inline u32 cnss_get_host_build_type(void)
+{
+	return QMI_HOST_BUILD_TYPE_PRIMARY_V01;
+}
+#else
+static inline u32 cnss_get_host_build_type(void)
+{
+	return QMI_HOST_BUILD_TYPE_SECONDARY_V01;
+}
+#endif
+
 static int cnss_wlfw_host_cap_send_sync(struct cnss_plat_data *plat_priv)
 {
 	struct wlfw_host_cap_req_msg_v01 *req;
@@ -157,7 +169,7 @@ static int cnss_wlfw_host_cap_send_sync(struct cnss_plat_data *plat_priv)
 	struct qmi_txn txn;
 	int ret = 0;
 	u64 iova_start = 0, iova_size = 0,
-		iova_ipa_start = 0, iova_ipa_size = 0;
+	    iova_ipa_start = 0, iova_ipa_size = 0;
 
 	cnss_pr_dbg("Sending host capability message, state: 0x%lx\n",
 		    plat_priv->driver_state);
@@ -200,14 +212,17 @@ static int cnss_wlfw_host_cap_send_sync(struct cnss_plat_data *plat_priv)
 	cnss_pr_dbg("Calibration done is %d\n", plat_priv->cal_done);
 
 	if (!cnss_bus_get_iova(plat_priv, &iova_start, &iova_size) &&
-		!cnss_bus_get_iova_ipa(plat_priv, &iova_ipa_start,
-							   &iova_ipa_size)) {
-			req->ddr_range_valid = 1;
-			req->ddr_range[0].start = iova_start;
-			req->ddr_range[0].size = iova_size + iova_ipa_size;
-			cnss_pr_dbg("Sending iova starting 0x%llx with size 0x%llx\n",
-						req->ddr_range[0].start, req->ddr_range[0].size);
+	    !cnss_bus_get_iova_ipa(plat_priv, &iova_ipa_start,
+				   &iova_ipa_size)) {
+		req->ddr_range_valid = 1;
+		req->ddr_range[0].start = iova_start;
+		req->ddr_range[0].size = iova_size + iova_ipa_size;
+		cnss_pr_dbg("Sending iova starting 0x%llx with size 0x%llx\n",
+			    req->ddr_range[0].start, req->ddr_range[0].size);
 	}
+
+	req->host_build_type_valid = 1;
+	req->host_build_type = cnss_get_host_build_type();
 
 	ret = qmi_txn_init(&plat_priv->qmi_wlfw, &txn,
 			   wlfw_host_cap_resp_msg_v01_ei, resp);
@@ -503,8 +518,8 @@ static int cnss_get_bdf_file_name(struct cnss_plat_data *plat_priv,
 				 BDF_FILE_NAME_PREFIX "%02x.e%02x",
 				 plat_priv->board_info.board_id >> 8 & 0xFF,
 				 plat_priv->board_info.board_id & 0xFF);
-				 
-#ifdef CONFIG_SEC_SEPARATE_BDFILE	
+
+#ifdef CONFIG_SEC_SEPARATE_BDFILE
 	cnss_pr_info("%s: system_rev : %d ", __func__, system_rev);
 	if (system_rev < 2)
 		strcat(filename_tmp, "_old");
@@ -1082,7 +1097,7 @@ int cnss_wlfw_athdiag_read_send_sync(struct cnss_plat_data *plat_priv,
 		return -ENODEV;
 
 	if (!data || data_len == 0 || data_len > QMI_WLFW_MAX_DATA_SIZE_V01) {
-		cnss_pr_err("Invalid parameters for athdiag read: data %p, data_len %u\n",
+		cnss_pr_err("Invalid parameters for athdiag read: data %pK, data_len %u\n",
 			    data, data_len);
 		return -EINVAL;
 	}
@@ -1169,12 +1184,12 @@ int cnss_wlfw_athdiag_write_send_sync(struct cnss_plat_data *plat_priv,
 		return -ENODEV;
 
 	if (!data || data_len == 0 || data_len > QMI_WLFW_MAX_DATA_SIZE_V01) {
-		cnss_pr_err("Invalid parameters for athdiag write: data %p, data_len %u\n",
+		cnss_pr_err("Invalid parameters for athdiag write: data %pK, data_len %u\n",
 			    data, data_len);
 		return -EINVAL;
 	}
 
-	cnss_pr_dbg("athdiag write: state 0x%lx, offset %x, mem_type %x, data_len %u, data %p\n",
+	cnss_pr_dbg("athdiag write: state 0x%lx, offset %x, mem_type %x, data_len %u, data %pK\n",
 		    plat_priv->driver_state, offset, mem_type, data_len, data);
 
 	req = kzalloc(sizeof(*req), GFP_KERNEL);
@@ -1522,8 +1537,8 @@ out:
 	return ret;
 }
 
-static int cnss_wlfw_wfc_call_status_send_sync(struct cnss_plat_data *plat_priv,
-					       u32 data_len, const void *data)
+int cnss_wlfw_wfc_call_status_send_sync(struct cnss_plat_data *plat_priv,
+					u32 data_len, const void *data)
 {
 	struct wlfw_wfc_call_status_req_msg_v01 *req;
 	struct wlfw_wfc_call_status_resp_msg_v01 *resp;
@@ -2136,7 +2151,7 @@ int cnss_wlfw_server_arrive(struct cnss_plat_data *plat_priv, void *data)
 	if (test_bit(CNSS_QMI_WLFW_CONNECTED, &plat_priv->driver_state)) {
 		cnss_pr_err("Unexpected WLFW server arrive\n");
 		return -EINVAL;
-	}	
+	}
 
 	ret = cnss_wlfw_connect_to_server(plat_priv, data);
 	if (ret < 0)

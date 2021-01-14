@@ -1043,8 +1043,10 @@ int get_wacom_scan_info(bool mode)
 	struct timeval current_time;
 	long diff_time;
 
-	if (!wac_i2c)
+	if (g_wac_i2c == NULL) {
+		pr_info("%s: %s: g_wac_i2c is NULL(%d)\n", SECLOG, __func__, mode);
 		return -ENODEV;
+	}
 
 	do_gettimeofday(&current_time);
 	diff_time = current_time.tv_sec - wac_i2c->chg_time_stamp;
@@ -1097,6 +1099,11 @@ int set_wacom_ble_charge_mode(bool mode)
 	struct wacom_i2c *wac_i2c = g_wac_i2c;
 	int ret = 0;
 	int ret_val = 0;	/* 0:pass, etc:fail */
+
+	if (g_wac_i2c == NULL) {
+		pr_info("%s: %s: g_wac_i2c is NULL(%d)\n", SECLOG, __func__, mode);
+		return 0;
+	}
 
 	mutex_lock(&wac_i2c->ble_charge_mode_lock);
 	input_info(true, &wac_i2c->client->dev, "%s start(%d)\n", __func__, mode);

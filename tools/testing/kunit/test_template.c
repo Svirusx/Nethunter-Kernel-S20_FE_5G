@@ -16,6 +16,9 @@
  * `void (*)(struct test *)`. `struct test` is a context object that stores
  * information about the current test.
  */
+
+#if !defined(CONFIG_UML)
+/* NOTE: Target running TC must be in the #ifndef CONFIG_UML */
 static void ${test_prefix}_foo(struct test *test)
 {
 	/*
@@ -26,7 +29,9 @@ static void ${test_prefix}_foo(struct test *test)
 	 */
 	EXPECT_EQ(test, 1, 2); // Obvious failure.
 }
+#endif
 
+/* NOTE: UML TC */
 static void ${test_prefix}_bar(struct test *test)
 {
 	/* Test cases for UML */
@@ -62,10 +67,10 @@ static struct test_case ${test_prefix}_cases[] = {
 	 * test module.
 	 */
 #if !defined(CONFIG_UML)
-	/* TODO: Target running TC */
+	/* NOTE: Target running TC */
 	TEST_CASE(${test_prefix}_foo),
 #endif
-	/* TODO: UML TC */
+	/* NOTE: UML TC */
 	TEST_CASE(${test_prefix}_bar),
 	{},
 };

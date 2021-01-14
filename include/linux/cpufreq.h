@@ -248,6 +248,10 @@ static inline void cpufreq_stats_create_table(struct cpufreq_policy *policy) { }
 static inline void cpufreq_stats_free_table(struct cpufreq_policy *policy) { }
 static inline void cpufreq_stats_record_transition(struct cpufreq_policy *policy,
 						   unsigned int new_freq) { }
+static inline int cpufreq_stats_on_check(struct cpufreq_policy *policy)
+{
+	return 0;
+}
 #endif /* CONFIG_CPU_FREQ_STAT */
 
 /*********************************************************************

@@ -24,13 +24,13 @@
 #include <linux/alarmtimer.h>
 #include "../sec_charging_common.h"
 
-#define MFC_FW_BIN_VERSION			0x142
-#define MFC_FW_BIN_FULL_VERSION		0x01420000
+#define MFC_FW_BIN_VERSION			0x144
+#define MFC_FW_BIN_FULL_VERSION		0x01440000
 #define MFC_FW_BIN_VERSION_ADDR		0x0084 //fw rev85 address
 #define MTP_MAX_PROGRAM_SIZE 0x4000
 #define MTP_VERIFY_ADDR			0x0000
 #define MTP_VERIFY_SIZE			0x4680
-#define MTP_VERIFY_CHKSUM		0xC068
+#define MTP_VERIFY_CHKSUM		0x0274
 
 #define MFC_FLASH_FW_HEX_PATH		"mfc/mfc_fw_flash.bin"
 #define MFC_FW_SDCARD_BIN_PATH		"/sdcard/mfc_fw_flash.bin"
@@ -150,6 +150,9 @@
 /* TX Min Operating Frequency = 60 MHz/value, default is 110kHz (60MHz/0x222=110) */
 #define MFC_TX_MIN_OP_FREQ_L_REG			0xD4 /* default 0x22 */
 #define MFC_TX_MIN_OP_FREQ_H_REG			0xD5 /* default 0x02 */
+
+#define TX_MIN_OP_FREQ_DEFAULT	113
+
 /* TX Max Operating Frequency = 60 MHz/value, default is 148kHz (60MHz/0x196=148) */
 #define MFC_TX_MAX_OP_FREQ_L_REG			0xD6 /* default 0x96 */
 #define MFC_TX_MAX_OP_FREQ_H_REG			0xD7 /* default 0x01 */
@@ -622,15 +625,16 @@ enum {
 };
 
 enum {
-    MFC_ADC_VOUT = 0,
-    MFC_ADC_VRECT,
-    MFC_ADC_RX_IOUT,
-    MFC_ADC_DIE_TEMP,
-    MFC_ADC_OP_FRQ,
-    MFC_ADC_TX_OP_FRQ,
-    MFC_ADC_PING_FRQ,
-    MFC_ADC_TX_IOUT,
-    MFC_ADC_TX_VOUT,
+	MFC_ADC_VOUT = 0,
+	MFC_ADC_VRECT,
+	MFC_ADC_RX_IOUT,
+	MFC_ADC_DIE_TEMP,
+	MFC_ADC_OP_FRQ,
+	MFC_ADC_TX_OP_FRQ,
+	MFC_ADC_TX_MIN_OP_FRQ,
+	MFC_ADC_PING_FRQ,
+	MFC_ADC_TX_IOUT,
+	MFC_ADC_TX_VOUT,
 };
 
 enum {
@@ -759,7 +763,7 @@ typedef struct _mfc_fod_data {
 	u32* data[FOD_STATE_MAX];
 } mfc_fod_data;
 
-#if defined(CONFIG_CHECK_UNKNOWN_PAD)
+#if defined(CONFIG_CHECK_UNAUTH_PAD)
 enum mfc_ping_freq {
 	FREQ_TXID,
 	FREQ_LOW,
@@ -1101,6 +1105,8 @@ struct mfc_charger_platform_data {
 	u32 oc_fod1;
 	u32 phone_fod_threshold;
 	u32 gear_ping_freq;
+	u32 gear_min_op_freq;
+	u32 gear_min_op_freq_delay;
 	bool wpc_vout_ctrl_lcd_on;
 	int no_hv;
 	bool keep_tx_vout;
@@ -1126,22 +1132,23 @@ struct mfc_charger_data {
 	int wc_w_state;
 
 	struct power_supply *psy_chg;
-	struct wakeup_source wpc_wake_lock;
-	struct wakeup_source wpc_tx_wake_lock;
-	struct wakeup_source wpc_rx_wake_lock;
-	struct wakeup_source wpc_update_lock;
-	struct wakeup_source wpc_opfq_lock;
-	struct wakeup_source wpc_tx_opfq_lock;
-	struct wakeup_source wpc_tx_duty_min_lock;
-	struct wakeup_source wpc_afc_vout_lock;
-	struct wakeup_source wpc_vout_mode_lock;
-	struct wakeup_source wpc_rx_connection_lock;
-	struct wakeup_source wpc_rx_det_lock;
-	struct wakeup_source wpc_tx_phm_lock;
-	struct wakeup_source wpc_vrect_check_lock;
-	struct wakeup_source wpc_tx_id_lock;
-	struct wakeup_source wpc_cs100_lock;
-	struct wakeup_source wpc_pdrc_lock;
+	struct wakeup_source *wpc_wake_lock;
+	struct wakeup_source *wpc_tx_wake_lock;
+	struct wakeup_source *wpc_rx_wake_lock;
+	struct wakeup_source *wpc_update_lock;
+	struct wakeup_source *wpc_opfq_lock;
+	struct wakeup_source *wpc_tx_opfq_lock;
+	struct wakeup_source *wpc_tx_duty_min_lock;
+	struct wakeup_source *wpc_tx_min_opfq_lock;
+	struct wakeup_source *wpc_afc_vout_lock;
+	struct wakeup_source *wpc_vout_mode_lock;
+	struct wakeup_source *wpc_rx_connection_lock;
+	struct wakeup_source *wpc_rx_det_lock;
+	struct wakeup_source *wpc_tx_phm_lock;
+	struct wakeup_source *wpc_vrect_check_lock;
+	struct wakeup_source *wpc_tx_id_lock;
+	struct wakeup_source *wpc_cs100_lock;
+	struct wakeup_source *wpc_pdrc_lock;
 	struct workqueue_struct *wqueue;
 	struct work_struct	wcin_work;
 	struct delayed_work	wpc_det_work;
@@ -1159,6 +1166,7 @@ struct mfc_charger_data {
 	struct delayed_work wpc_i2c_error_work;
 	struct delayed_work	wpc_rx_type_det_work;
 	struct delayed_work	wpc_rx_connection_work;
+	struct delayed_work wpc_tx_min_op_freq_work;
 	struct delayed_work wpc_tx_op_freq_work;
 	struct delayed_work wpc_tx_duty_min_work;
 	struct delayed_work wpc_tx_phm_work;
@@ -1218,7 +1226,7 @@ struct mfc_charger_data {
 
 	bool req_tx_id;
 	bool is_abnormal_pad;
-#if defined(CONFIG_CHECK_UNKNOWN_PAD)
+#if defined(CONFIG_CHECK_UNAUTH_PAD)
 	u8 ping_freq;
 	bool req_afc_tx;
 #endif

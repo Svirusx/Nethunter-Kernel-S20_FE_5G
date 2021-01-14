@@ -1,8 +1,16 @@
 &soc {
-	tlmm: pinctrl@f000000 {
+	tlmm: pinctrl@f100000 {
 		compatible = "qcom,lagoon-pinctrl";
-		reg = <0x0f000000 0x1000000>;
-		interrupts = <GIC_SPI 208 IRQ_TYPE_LEVEL_HIGH>;
+		reg = <0x0f100000 0x300000>;
+		interrupts = <GIC_SPI 208 IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI 209 IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI 210 IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI 211 IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI 212 IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI 213 IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI 214 IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI 215 IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI 216 IRQ_TYPE_LEVEL_HIGH>;
 		gpio-controller;
 		#gpio-cells = <2>;
 		interrupt-controller;
@@ -98,6 +106,19 @@
 		irqdomain-map-mask = <0xff 0>;
 		irqdomain-map-pass-thru = <0 0xff>;
 
+		trigout_a: trigout_a {
+			mux {
+				pins = "gpio87";
+				function = "qdss_cti";
+			};
+
+			config {
+				pins = "gpio87";
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+
 		ufs_dev_reset_assert: ufs_dev_reset_assert {
 			config {
 				pins = "ufs_reset";
@@ -176,7 +197,7 @@
 			qupv3_se9_2uart_active: qupv3_se9_2uart_active {
 				mux {
 					pins = "gpio25", "gpio26";
-					function = "qup13";
+					function = "qup13_f2";
 				};
 
 				config {
@@ -290,6 +311,98 @@
 				config {
 					pins = "gpio0", "gpio1";
 					drive-strength = <2>;
+					bias-disable;
+				};
+			};
+		};
+
+		nfc {
+			nfc_int_active: nfc_int_active {
+				/* active state */
+				mux {
+					/* GPIO 9 NFC Read Interrupt */
+					pins = "gpio9";
+					function = "gpio";
+				};
+
+				config {
+					pins = "gpio9";
+					drive-strength = <2>; /* 2 MA */
+					bias-pull-up;
+				};
+			};
+
+			nfc_int_suspend: nfc_int_suspend {
+				/* sleep state */
+				mux {
+					/* GPIO 9 NFC Read Interrupt */
+					pins = "gpio9";
+					function = "gpio";
+				};
+
+				config {
+					pins = "gpio9";
+					drive-strength = <2>; /* 2 MA */
+					bias-pull-up;
+				};
+			};
+
+			nfc_enable_active: nfc_enable_active {
+				/* active state */
+				mux {
+					/* 6: Enable 8: Firmware */
+					pins = "gpio6", "gpio8";
+					function = "gpio";
+				};
+
+				config {
+					pins = "gpio6", "gpio8";
+					drive-strength = <2>; /* 2 MA */
+					bias-pull-up;
+				};
+			};
+
+			nfc_enable_suspend: nfc_enable_suspend {
+				/* sleep state */
+				mux {
+					/* 6: Enable 8: Firmware */
+					pins = "gpio6", "gpio8";
+					function = "gpio";
+				};
+
+				config {
+					pins = "gpio6", "gpio8";
+					drive-strength = <2>; /* 2 MA */
+					bias-disable;
+				};
+			};
+
+			nfc_clk_req_active: nfc_clk_req_active {
+				/* active state */
+				mux {
+					/* GPIO 7: NFC CLOCK REQUEST */
+					pins = "gpio7";
+					function = "gpio";
+				};
+
+				config {
+					pins = "gpio7";
+					drive-strength = <2>; /* 2 MA */
+					bias-pull-up;
+				};
+			};
+
+			nfc_clk_req_suspend: nfc_clk_req_suspend {
+				/* sleep state */
+				mux {
+					/* GPIO 7: NFC CLOCK REQUEST */
+					pins = "gpio7";
+					function = "gpio";
+				};
+
+				config {
+					pins = "gpio7";
+					drive-strength = <2>; /* 2 MA */
 					bias-disable;
 				};
 			};
@@ -799,13 +912,12 @@
 			};
 		};
 
-
 		/* Camera GPIOs  CCI*/
 		cci0_active: cci0_active {
 			mux {
 				/* CLK, DATA */
 				pins = "gpio39", "gpio40";
-				function = "cci_i2c";
+				function = "CCI_I2C";
 			};
 
 			config {
@@ -819,7 +931,7 @@
 			mux {
 				/* CLK, DATA */
 				pins = "gpio39", "gpio40";
-				function = "cci_i2c";
+				function = "CCI_I2C";
 			};
 
 			config {
@@ -833,7 +945,7 @@
 			mux {
 				/* CLK, DATA */
 				pins = "gpio41", "gpio42";
-				function = "cci_i2c";
+				function = "CCI_I2C";
 			};
 
 			config {
@@ -847,7 +959,7 @@
 			mux {
 				/* CLK, DATA */
 				pins = "gpio41", "gpio42";
-				function = "cci_i2c";
+				function = "CCI_I2C";
 			};
 
 			config {
@@ -861,7 +973,7 @@
 			mux {
 				/* CLK, DATA */
 				pins = "gpio43", "gpio44";
-				function = "cci_i2c";
+				function = "CCI_I2C";
 			};
 
 			config {
@@ -875,7 +987,7 @@
 			mux {
 				/* CLK, DATA */
 				pins = "gpio43", "gpio44";
-				function = "cci_i2c";
+				function = "CCI_I2C";
 			};
 
 			config {
@@ -885,11 +997,40 @@
 			};
 		};
 
+		cci3_active: cci3_active {
+			mux {
+				/* CLK, DATA */
+				pins = "gpio2", "gpio3";
+				function = "CCI_I2C";
+			};
+
+			config {
+				pins = "gpio2", "gpio3";
+				bias-pull-up; /* PULL UP*/
+				drive-strength = <2>; /* 2 MA */
+			};
+		};
+
+		cci3_suspend: cci3_suspend {
+			mux {
+				/* CLK, DATA */
+				pins = "gpio2", "gpio3";
+				function = "CCI_I2C";
+			};
+
+			config {
+				pins = "gpio2", "gpio3";
+				bias-pull-down; /* PULL DOWN */
+				drive-strength = <2>; /* 2 MA */
+			};
+		};
+
+		/* Camera GPIOs  CCI*/
 		cam_sensor_mclk0_active: cam_sensor_mclk0_active {
 			/* MCLK0 */
 			mux {
 				pins = "gpio29";
-				function = "cam_mclk";
+				function = "CAM_MCLK0";
 			};
 
 			config {
@@ -903,7 +1044,7 @@
 			/* MCLK0 */
 			mux {
 				pins = "gpio29";
-				function = "cam_mclk";
+				function = "CAM_MCLK0";
 			};
 
 			config {
@@ -917,7 +1058,7 @@
 			/* MCLK1 */
 			mux {
 				pins = "gpio30";
-				function = "cam_mclk";
+				function = "CAM_MCLK1";
 			};
 
 			config {
@@ -931,7 +1072,7 @@
 			/* MCLK1 */
 			mux {
 				pins = "gpio30";
-				function = "cam_mclk";
+				function = "CAM_MCLK1";
 			};
 
 			config {
@@ -945,7 +1086,7 @@
 			/* MCLK2 */
 			mux {
 				pins = "gpio31";
-				function = "cam_mclk";
+				function = "CAM_MCLK2";
 			};
 
 			config {
@@ -959,7 +1100,7 @@
 			/* MCLK2 */
 			mux {
 				pins = "gpio31";
-				function = "cam_mclk";
+				function = "CAM_MCLK2";
 			};
 
 			config {
@@ -973,7 +1114,7 @@
 			/* MCLK3 */
 			mux {
 				pins = "gpio32";
-				function = "cam_mclk";
+				function = "CAM_MCLK3";
 			};
 
 			config {
@@ -987,11 +1128,39 @@
 			/* MCLK3 */
 			mux {
 				pins = "gpio32";
-				function = "cam_mclk";
+				function = "CAM_MCLK3";
 			};
 
 			config {
 				pins = "gpio32";
+				bias-pull-down; /* PULL DOWN */
+				drive-strength = <2>; /* 2 MA */
+			};
+		};
+
+		cam_sensor_mclk4_active: cam_sensor_mclk4_active {
+			/* MCLK4 */
+			mux {
+				pins = "gpio33";
+				function = "CAM_MCLK4";
+			};
+
+			config {
+				pins = "gpio33";
+				bias-disable; /* No PULL */
+				drive-strength = <2>; /* 2 MA */
+			};
+		};
+
+		cam_sensor_mclk4_suspend: cam_sensor_mclk4_suspend {
+			/* MCLK4 */
+			mux {
+				pins = "gpio33";
+				function = "CAM_MCLK4";
+			};
+
+			config {
+				pins = "gpio33";
 				bias-pull-down; /* PULL DOWN */
 				drive-strength = <2>; /* 2 MA */
 			};
@@ -1117,7 +1286,7 @@
 			sde_te_active: sde_te_active {
 				mux {
 					pins = "gpio23";
-					function = "mdp_vsync";
+					function = "MDP_VSYNC";
 				};
 
 				config {
@@ -1130,7 +1299,7 @@
 			sde_te_suspend: sde_te_suspend {
 				mux {
 					pins = "gpio23";
-					function = "mdp_vsync";
+					function = "MDP_VSYNC";
 				};
 
 				config {

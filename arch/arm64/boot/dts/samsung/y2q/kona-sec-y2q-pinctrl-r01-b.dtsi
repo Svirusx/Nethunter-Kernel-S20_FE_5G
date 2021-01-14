@@ -1,0 +1,99 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+&soc {
+};
+
+&tlmm {
+                cnss_pins {
+                        qca6390_wlan_en_active: qca6390_wlan_en_active {
+                                mux {
+                                        pins = "gpio90";
+                                        function = "gpio";
+                                };
+
+                                config {
+                                        pins = "gpio90";
+                                        drive-strength = <16>;
+                                        output-high;
+                                        bias-pull-up;
+                                };
+                        };
+
+                        qca6390_wlan_en_sleep: qca6390_wlan_en_sleep {
+                                mux {
+                                        pins = "gpio90";
+                                        function = "gpio";
+                                };
+
+                                config {
+                                        pins = "gpio90";
+                                        drive-strength = <2>;
+                                        output-low;
+                                        bias-pull-down;
+                                };
+                        };
+                };
+
+	bt_en_sleep: bt_en_sleep{
+		mux {
+			pins = "gpio76";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio76";
+			drive-strength = <2>;
+			output-low;
+			bias-pull-down;
+		};
+	};
+	qupv3_se1_4uart_pins: qupv3_se1_4uart_pins { 
+		qupv3_se1_ctsrx: qupv3_se1_ctsrx { 
+			mux { 
+				pins = "gpio4", "gpio7"; 
+				function = "qup1"; 
+			}; 
+
+			config { 
+				pins = "gpio4", "gpio7"; 
+				drive-strength = <2>; 
+				bias-no-pull; 
+			}; 
+		}; 
+
+		qupv3_se1_rts: qupv3_se1_rts { 
+			mux { 
+				pins = "gpio5"; 
+				function = "qup1"; 
+			}; 
+
+			config { 
+				pins = "gpio5"; 
+				drive-strength = <2>; 
+				bias-pull-down; 
+			}; 
+		}; 
+
+		qupv3_se1_tx: qupv3_se1_tx { 
+			mux { 
+				pins = "gpio6"; 
+				function = "qup1"; 
+			}; 
+
+			config { 
+				pins = "gpio6"; 
+				drive-strength = <2>; 
+				bias-pull-up; 
+			}; 
+		}; 
+	}; 
+};

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2018 - 2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2019 - 2020, The Linux Foundation. All rights reserved.
  */
 
 #include "ipa_i.h"
@@ -641,7 +641,6 @@ int ipa3_conn_wdi3_pipes(struct ipa_wdi_conn_in_params *in,
 	IPADBG("db_addr %u  TX base_addr 0x%x evt wp val: 0x%x\n",
 		evt_ring_db_addr_low,
 		ep_tx->gsi_mem_info.evt_ring_base_addr, db_val);
-
 fail:
 	IPA_ACTIVE_CLIENTS_DEC_SIMPLE();
 	return result;
@@ -688,6 +687,7 @@ int ipa3_disconn_wdi3_pipes(int ipa_ep_idx_tx, int ipa_ep_idx_rx)
 		IPAERR("failed to release gsi channel: %d\n", result);
 		goto exit;
 	}
+	ipa3_release_wdi3_gsi_smmu_mappings(IPA_WDI3_TX_DIR);
 
 	memset(ep_tx, 0, sizeof(struct ipa3_ep_context));
 	IPADBG("tx client (ep: %d) disconnected\n", ipa_ep_idx_tx);
@@ -708,6 +708,7 @@ int ipa3_disconn_wdi3_pipes(int ipa_ep_idx_tx, int ipa_ep_idx_rx)
 		IPAERR("failed to release gsi channel: %d\n", result);
 		goto exit;
 	}
+	ipa3_release_wdi3_gsi_smmu_mappings(IPA_WDI3_RX_DIR);
 
 	if (ipa3_ctx->ipa_hw_type >= IPA_HW_v4_5)
 		ipa3_uc_debug_stats_dealloc(IPA_HW_PROTOCOL_WDI3);

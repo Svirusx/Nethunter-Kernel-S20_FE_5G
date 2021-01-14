@@ -1,0 +1,52 @@
+/* Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+/* display_panel_avdd node, in kona-sde-display.dtsi file, is gpio regualtor.
+ * So, even SS doesn't enable the regulator, gpio61 is always registered as fixed regulator,
+ * even it is for the other module, like audio i2c...
+ * change compatible name to unused name, prevent to call probe of fixed regulator.
+ */
+
+&sde_dsi {
+	vci-supply = <&s2dos05_l4>;	/* VDD_MAIN_DDI_3P0, S2DOS05 LDO4 */
+	vdd3-supply = <&s2dos05_l1>;	/* VDD_MAIN_DDI_1P8, S2DOS05 LDO1 */
+	vddr-supply = <&s2dos05_buck1>;	/* VDD_MAIN_DDR_1P6, S2DOS05 buck */
+
+	pinctrl-names = "panel_active", "panel_suspend";
+	pinctrl-0 = <&sde_dsi_active &sde_te_active &sde_ub_det_active &sde_esd_default>;
+	pinctrl-1 = <&sde_dsi_suspend &sde_te_suspend &sde_ub_det_suspend &sde_esd_default>;
+
+	qcom,platform-te-gpio = <&tlmm 66 0>;
+
+	qcom,dsi-display-list =
+		<&ss_dsi_panel_S6E3XA1_AMF759VG01_QXGA
+		&ss_dsi_panel_PBA_BOOTING_FHD>;
+};
+
+/* override display-list / supply for samsung panel */
+&sde_dsi1 {
+
+	vcisub-supply = <&s2mpb02_sub_l15>;	/* VDD_MAIN_DDI_3P0, S2DOS05 LDO4 */
+	vdd3sub-supply = <&s2mpb02_sub_l10>;	/* VDD_MAIN_DDI_1P8, S2DOS05 LDO1 */
+	vddrsub-supply = <&s2mpb02_sub_l8>;	/* VDD_MAIN_DDR_1P7, S2DOS05 buck */
+
+	pinctrl-names = "panel_active", "panel_suspend";
+	pinctrl-0 = <&sde_dsi1_active &sde_te1_active &sde_ub_det1_active &sde_esd1_default>;
+	pinctrl-1 = <&sde_dsi1_suspend &sde_te1_suspend &sde_ub_det1_suspend  &sde_esd1_default>;
+
+	qcom,platform-te-gpio = <&tlmm 67 0>;
+
+	qcom,dsi-display-list =
+		<&ss_dsi_panel_S6E3FA7_AMB458WJ01_HD
+		&ss_dsi_panel_S6E3FA7_AMB623VH01_HD
+		&ss_dsi_panel_PBA_BOOTING_FHD_DSI1>;
+};

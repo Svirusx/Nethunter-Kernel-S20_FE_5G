@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * Copyright (c) 2013-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2013-2020, The Linux Foundation. All rights reserved.
  */
 
 #ifndef __MSM_VIDC_RESOURCES_H__
@@ -158,6 +158,7 @@ struct msm_vidc_platform_resources {
 	struct addr_set qdss_addr_set;
 	struct buffer_usage_set buffer_usage_set;
 	uint32_t max_load;
+	uint32_t max_image_load;
 	uint32_t max_mbpf;
 	uint32_t max_hq_mbs_per_frame;
 	uint32_t max_hq_mbs_per_sec;
@@ -171,6 +172,7 @@ struct msm_vidc_platform_resources {
 	bool sw_power_collapsible;
 	bool slave_side_cp;
 	struct list_head context_banks;
+	struct mutex cb_lock;
 	bool thermal_mitigable;
 	const char *fw_name;
 	const char *hfi_version;

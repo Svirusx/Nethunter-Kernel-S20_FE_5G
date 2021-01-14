@@ -369,12 +369,12 @@ struct max77705_charger_data {
 
 	/* wakelock */
 #if defined(CONFIG_USE_POGO)
-	struct wakeup_source wpc_wake_lock;
+	struct wakeup_source *wpc_wake_lock;
 #endif
-	struct wakeup_source chgin_wake_lock;
-	struct wakeup_source wc_current_wake_lock;
-	struct wakeup_source aicl_wake_lock;
-	struct wakeup_source otg_wake_lock;
+	struct wakeup_source *chgin_wake_lock;
+	struct wakeup_source *wc_current_wake_lock;
+	struct wakeup_source *aicl_wake_lock;
+	struct wakeup_source *otg_wake_lock;
 
 	unsigned int	is_charging;
 	unsigned int	charging_type;
@@ -419,7 +419,7 @@ struct max77705_charger_data {
 	bool enable_sysovlo_irq;
 	bool enable_noise_wa;
 	int irq_sysovlo;
-	struct wakeup_source sysovlo_wake_lock;
+	struct wakeup_source *sysovlo_wake_lock;
 
 	bool is_mdock;
 	bool otg_on;

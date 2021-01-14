@@ -1,0 +1,118 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&tlmm {
+	attn_irq: attn_irq {
+		mux {
+			pins = "gpio15";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio15";
+			input-enable;
+			bias-disable;
+		};
+	};
+
+	epen_int_active: epen-int-active {
+		mux {
+			pins = "gpio59";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio59";
+			input-enable;
+			bias-disable;
+		};
+	};
+
+	epen_pdct_active: epen-pdct-active {
+		mux {
+			pins = "gpio39";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio39";
+			input-enable;
+			bias-disable;
+		};
+	};
+
+	epen_ldo_en: epen_ldo_en {
+		mux {
+			pins = "gpio91";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio91";
+			bias-disable;
+		};
+	};
+
+	/* SE 5 pin mappings */
+	qupv3_se5_tsp_i2c_pins: qupv3_se5_tsp_i2c_pins {
+		qupv3_se5_tsp_i2c_active: qupv3_se5_tsp_i2c_active {
+			mux {
+				pins = "gpio12", "gpio13";
+				function = "qup5";
+			};
+
+			config {
+				pins = "gpio12", "gpio13";
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+
+		qupv3_se5_tsp_i2c_sleep: qupv3_se5_tsp_i2c_sleep {
+			mux {
+				pins = "gpio12", "gpio13";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio12", "gpio13";
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+	};
+
+	qupv3_se13_i2c_pins_wacom: qupv3_se13_i2c_pins_wacom {
+		qupv3_se13_i2c_active_wacom: qupv3_se13_i2c_active_wacom {
+			mux {
+				pins = "gpio36", "gpio37";
+				function = "qup13";
+			};
+
+			config {
+				pins = "gpio36", "gpio37";
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+
+		qupv3_se13_i2c_sleep_wacom: qupv3_se13_i2c_sleep_wacom {
+			mux {
+				pins = "gpio36", "gpio37";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio36", "gpio37";
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+	};
+};
+

@@ -27,6 +27,106 @@ Copyright (C) 2012, Samsung Electronics. All rights reserved.
 #include "ss_dsi_interpolation_S6E3HA9_AMF670UH01.h"
 #include "ss_dsi_smart_dimming_S6E3HA9_AMF670UH01.h"
 
+#if defined(CONFIG_MACH_BLOOMXQ_JPN_SINGLE)
+/* From interpolation input file*/
+static struct ss_interpolation_brightness_table hbm_interpolation_table[] = {
+	{255, 1, 420},
+	{269, 5, 444},
+	{284, 5, 468},
+	{298, 5, 491},
+	{313, 5, 515},
+	{327, 5, 539},
+	{342, 5, 563},
+	{356, 5, 586},
+	{370, 5, 610},
+	{385, 5, 634},
+	{399, 5, 658},
+	{414, 5, 681},
+	{428, 5, 705},
+	{442, 5, 729},
+	{457, 5, 753},
+	{471, 5, 776},
+	{486, 5, 800},
+};
+
+static struct ss_interpolation_brightness_table normal_interpolation_table[] = {
+	{0, 	1,	2},
+	{7, 	7,	3},
+	{14,	7,	4},
+	{21,	7,	5},
+	{28,	7,	6},
+	{35,	7,	7},
+	{39,	7,	8},
+	{44,	7,	9},
+	{49,	7,	10},
+	{54,	7,	11},
+	{59,	7,	12},
+	{64,	7,	13},
+	{68,	7,	14},
+	{71,	7,	15},
+	{74,	7,	16},
+	{77,	7,	17},
+	{80,	8,	19},
+	{83,	7,	20},
+	{86,	7,	21},
+	{89,	7,	22},
+	{92,	7,	24},
+	{95,	7,	25},
+	{98,	8,	27},
+	{101,	8,	29},
+	{104,	8,	30},
+	{107,	8,	32},
+	{110,	8,	34},
+	{113,	9,	37},
+	{116,	8,	39},
+	{119,	8,	41},
+	{122,	8,	44},
+	{125,	8,	47},
+	{128,	8,	50},
+	{130,	7,	53},
+	{132,	7,	56},
+	{134,	7,	60},
+	{136,	7,	64},
+	{138,	7,	68},
+	{140,	7,	72},
+	{142,	7,	77},
+	{144,	7,	82},
+	{146,	7,	87},
+	{148,	7,	93},
+	{150,	7,	98},
+	{152,	7,	105},
+	{154,	7,	111},
+	{156,	7,	119},
+	{158,	7,	126},
+	{160,	7,	134},
+	{162,	7,	143},
+	{164,	7,	152},
+	{166,	7,	162},
+	{168,	7,	172},
+	{170,	7,	183},
+	{174,	7,	195},
+	{178,	7,	207},
+	{182,	7,	220},
+	{186,	8,	234},
+	{190,	8,	249},
+	{194,	9,	265},
+	{198,	9,	282},
+	{204,	10, 300},
+	{209,	8,	316},
+	{214,	9,	333},
+	{219,	9,	350},
+	{223,	4,	357},
+	{227,	4,	365},
+	{230,	3,	372},
+	{234,	4,	380},
+	{238,	4,	387},
+	{242,	4,	395},
+	{246,	4,	403},
+	{250,	4,	412},
+	{255,	5,	420},
+};
+#else
+
 /* From interpolation input file*/
 static struct ss_interpolation_brightness_table hbm_interpolation_table[] = {
 	{261, 1, 420},
@@ -124,6 +224,7 @@ static struct ss_interpolation_brightness_table normal_interpolation_table[] = {
 	{258, 3, 412},
 	{261, 3, 420},
 };
+#endif
 
 /* debugging for 512 step */
 #if 0
@@ -463,13 +564,13 @@ int table_parsing_data_S6E3HA9_AMF670UH01(struct samsung_display_driver_data *vd
 	}__packed;
 
 	struct hbm_table_format *hbm_table = (struct hbm_table_format *)table_hbm_br_info;
-	int hbm_step = sizeof(table_hbm_br_info) / sizeof(struct hbm_table_format);
+	int hbm_step = (int)sizeof(table_hbm_br_info) / (int)sizeof(struct hbm_table_format);
 
 	struct normal_table_format *normal_table = (struct normal_table_format *)table_normal_br_info;
-	int normal_step = sizeof(table_normal_br_info) / sizeof(struct normal_table_format);
+	int normal_step = (int)sizeof(table_normal_br_info) / (int)sizeof(struct normal_table_format);
 
 	struct hmd_table_format *hmd_table = (struct hmd_table_format *)table_hmd_br_info;
-	int hmd_step = sizeof(table_hmd_br_info) / sizeof(struct hmd_table_format);
+	int hmd_step = (int)sizeof(table_hmd_br_info) / (int)sizeof(struct hmd_table_format);
 
 	int input_table_size = sizeof(table_hbm_br_info) + sizeof(table_normal_br_info) + sizeof(table_hmd_br_info);
 	int loop;

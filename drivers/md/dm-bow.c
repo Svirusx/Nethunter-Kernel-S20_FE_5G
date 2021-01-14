@@ -725,6 +725,7 @@ static int dm_bow_ctr(struct dm_target *ti, unsigned int argc, char **argv)
 	rb_insert_color(&br->node, &bc->ranges);
 
 	ti->discards_supported = true;
+	ti->may_passthrough_inline_crypto = true;
 
 	return 0;
 
@@ -791,6 +792,7 @@ static int prepare_unchanged_range(struct bow_context *bc, struct bow_range *br,
 	 */
 	original_type = br->type;
 	sector0 = backup_br->sector;
+	bc->trims_total -= range_size(backup_br);
 	if (backup_br->type == TRIMMED)
 		list_del(&backup_br->trimmed_list);
 	backup_br->type = br->type == SECTOR0_CURRENT ? SECTOR0_CURRENT

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2013-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2013-2020, The Linux Foundation. All rights reserved.
  */
 
 #include <linux/module.h>
@@ -633,7 +633,7 @@ static int msm_ssphy_qmp_init(struct usb_phy *uphy)
 	ret = configure_phy_regs(uphy, reg);
 	if (ret) {
 		dev_err(uphy->dev, "Failed the main PHY configuration\n");
-		return ret;
+		goto fail;
 	}
 
 	/* perform software reset of PHY common logic */
@@ -664,7 +664,8 @@ static int msm_ssphy_qmp_init(struct usb_phy *uphy)
 		dev_err(uphy->dev, "USB3_PHY_PCS_STATUS:%x\n",
 				readl_relaxed(phy->base +
 					phy->phy_reg[USB3_PHY_PCS_STATUS]));
-		return -EBUSY;
+		ret = -EBUSY;
+		goto fail;
 	};
 #ifdef CONFIG_USB_MSM_SSPHY_QMP_TUNING
 	if (tune_buf_cnt)
@@ -672,6 +673,14 @@ static int msm_ssphy_qmp_init(struct usb_phy *uphy)
 #endif
 
 	return 0;
+fail:
+	phy->in_suspend = true;
+	writel_relaxed(0x00,
+		phy->base + phy->phy_reg[USB3_PHY_POWER_DOWN_CONTROL]);
+	msm_ssphy_qmp_enable_clks(phy, false);
+	msm_ssusb_qmp_ldo_enable(phy, 0);
+
+	return ret;
 }
 
 static int msm_ssphy_qmp_dp_combo_reset(struct usb_phy *uphy)

@@ -28,10 +28,12 @@
 static int get_dd_file_key(struct dd_crypt_context *crypt_context,
 		struct fscrypt_key *dd_master_key, unsigned char *raw_key);
 
-extern int fscrypt_get_encryption_kek(struct inode *inode,
-								struct fscrypt_info *crypt_info,
-								struct fscrypt_key *kek);
-extern int fscrypt_get_encryption_key(struct inode *inode, struct fscrypt_key *key);
+extern int fscrypt_get_encryption_kek(
+						struct fscrypt_info *crypt_info,
+						struct fscrypt_key *kek);
+extern int fscrypt_get_encryption_key(
+						struct fscrypt_info *crypt_info,
+						struct fscrypt_key *key);
 
 #define DD_CRYPT_MODE_INVALID     0
 #define DD_CRYPT_MODE_AES_256_XTS 1
@@ -274,7 +276,7 @@ int dd_add_master_key(int userid, void *key, int len) {
 	mk->userid = userid;
 
 	memcpy(&mk->key, key, sizeof(struct fscrypt_key));
-	if (mk->key.size > FS_MAX_KEY_SIZE) {
+	if (mk->key.size > FSCRYPT_MAX_KEY_SIZE) {
 		//handle wrong size
 		dd_error("failed to add master key: size error");
 		kzfree(mk);
@@ -392,7 +394,7 @@ int dd_dump_key(int userid, int fd)
 	/**
 	 * DUMPM KEY FOR OUTER LAYER
 	 */
-	rc = fscrypt_get_encryption_kek(inode, inode->i_crypt_info, &dd_outer_master_key);
+	rc = fscrypt_get_encryption_kek(inode->i_crypt_info, &dd_outer_master_key);
 	if (rc) {
 		dd_error("[DUALDAR_DUMP] failed to retrieve outer master key, rc : %d\n", rc);
 		goto out;
@@ -400,7 +402,7 @@ int dd_dump_key(int userid, int fd)
 	dd_hex_key_dump("[DUALDAR_DUMP] OUTER LAYER MASTER KEY", dd_outer_master_key.raw, dd_outer_master_key.size);
 
 	memset(&dd_outer_file_encryption_key, 0, sizeof(dd_outer_file_encryption_key));
-	rc = fscrypt_get_encryption_key(inode, &dd_outer_file_encryption_key);
+	rc = fscrypt_get_encryption_key(inode->i_crypt_info, &dd_outer_file_encryption_key);
 	if (rc) {
 		dd_error("[DUALDAR_DUMP] failed to retrieve outer fek, rc:%d\n", rc);
 		goto out;
@@ -646,11 +648,11 @@ int dd_sec_crypt_bio_pages(struct dd_info *info, struct bio *orig,
 	return 0;
 }
 
-void dd_hex_key_dump(const char* tag, uint8_t *data, size_t data_len)
+void dd_hex_key_dump(const char* tag, uint8_t *data, unsigned int data_len)
 {
 	static const char *hex = "0123456789ABCDEF";
 	static const char delimiter = ' ';
-	int i;
+	unsigned int i;
 	char *buf;
 	size_t buf_len;
 

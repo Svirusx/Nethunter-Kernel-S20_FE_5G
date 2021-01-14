@@ -7,7 +7,7 @@ mydir$ tree
 ├── my_driver.c
 ├── Kconfig
 ├── Makefile
-└── test
+└── kunit_test
     ├── Makefile
     └── my_driver_test.c
 '''
@@ -22,6 +22,8 @@ import sys
 import os
 import re
 from kunit_new_template import create_skeletons, Skeletons
+
+TEST_PATH='kunit_test'
 
 class ConfigNameExtractor():
     def __init__(self, path):
@@ -81,15 +83,15 @@ class TestConstructor():
     '''
     modify path/Makefile
     modify path/Kconfig
-    mkdir path/test
-    gen path/test/Makefile
-    gen path/test/testfile.c
+    mkdir path/kunit_test
+    gen path/kunit_test/Makefile
+    gen path/kunit_test/testfile.c
     '''
     def __init__(self, path):
         self.tmplts = TemplateGenerator(path)
         self.dir_name = self.tmplts.dir_name
         self.file_prefix = self.tmplts.file_prefix
-        self.test_path = os.path.join(self.dir_name, 'test')
+        self.test_path = os.path.join(self.dir_name, TEST_PATH)
         self.test_driver_name = self.file_prefix + '_test'
         self.tgt_config_name = ConfigNameExtractor(path).result
         if os.path.exists(self.test_path):
@@ -151,7 +153,7 @@ class TestConstructor():
 
     def append_makefile(self):
         mk_path = os.path.join(self.dir_name, 'Makefile')
-        mk_content = '\nobj-$(CONFIG_KUNIT)\t\t\t+= test/\n'
+        mk_content = '\nobj-$(CONFIG_KUNIT)\t\t\t+= %s/\n' %TEST_PATH
         gcov_content = 'GCOV_PROFILE_' + self.file_prefix + '.o\t\t:=y\n'
 
         self.__append_content(mk_content, mk_path)
@@ -174,7 +176,6 @@ class TestConstructor():
         else:
             tgt_config = 'y'
         mk_contents = [
-                'ccflags-y += -Wno-unused-function\n',
                 'obj-%s\t\t+= %s\n' %(tgt_config, obj_name),
                 'obj-$(%s)\t\t+= %s\n' %(test_config, obj_name)
                 ]
@@ -199,7 +200,7 @@ def main():
     a.append_kconfig()
     a.write_test_makefile()
     a.write_test_driver()
-    result = os.path.join(os.path.split(arg.file_path)[0], 'test', a.test_driver_name + '.c')
+    result = os.path.join(os.path.split(arg.file_path)[0], TEST_PATH, a.test_driver_name + '.c')
     print('Done! You can write test cases on the %s' %result)
 
 if __name__ == '__main__':

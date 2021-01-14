@@ -882,7 +882,7 @@ static int cam_sync_close(struct file *filep)
 	sync_dev->cam_sync_eventq = NULL;
 	spin_unlock_bh(&sync_dev->cam_sync_eventq_lock);
 	v4l2_fh_release(filep);
-
+	CAM_INFO(CAM_SYNC, " Cam Sync Close End");
 	return rc;
 }
 

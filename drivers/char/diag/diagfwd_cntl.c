@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-only
-/* Copyright (c) 2011-2019, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2011-2020, The Linux Foundation. All rights reserved.
  */
 
 #include <linux/slab.h>
@@ -989,7 +989,8 @@ void diag_cntl_process_read_data(struct diagfwd_info *p_info, void *buf,
 
 	while (read_len + header_len < len) {
 		ctrl_pkt = (struct diag_ctrl_pkt_header_t *)ptr;
-		if ((read_len + header_len + ctrl_pkt->len) > len)
+		if (((size_t)read_len + (size_t)ctrl_pkt->len +
+			header_len) > len)
 			return;
 		switch (ctrl_pkt->pkt_id) {
 		case DIAG_CTRL_MSG_REG:
@@ -1894,12 +1895,18 @@ int diag_send_passthru_ctrl_pkt(struct diag_hw_accel_cmd_req_t *req_params)
 			pr_err("diag: Unable to send PASSTHRU ctrl packet to peripheral %d, err: %d\n",
 				i, err);
 	}
+	if ((diagid_mask & DIAG_ID_APPS) &&
+		(hw_accel_type == DIAG_HW_ACCEL_TYPE_STM)) {
+		diag_process_stm_mask(req_params->operation,
+			DIAG_STM_APPS, APPS_DATA);
+	}
 	return 0;
 }
 
 int diagfwd_cntl_init(void)
 {
 	uint8_t peripheral = 0;
+	uint32_t diagid_mask = 0;
 
 	driver->polling_reg_flag = 0;
 	driver->log_on_demand_support = 1;
@@ -1919,6 +1926,9 @@ int diagfwd_cntl_init(void)
 	driver->cntl_wq = create_singlethread_workqueue("diag_cntl_wq");
 	if (!driver->cntl_wq)
 		return -ENOMEM;
+
+	diagid_mask = (BITMASK_DIAGID_FMASK | BITMASK_HW_ACCEL_STM_V1);
+	process_diagid_v2_feature_mask(DIAG_ID_APPS, diagid_mask);
 
 	return 0;
 }

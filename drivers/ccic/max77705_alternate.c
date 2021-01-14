@@ -177,9 +177,10 @@ static char DP_Pin_Assignment_Print[7][40] = {
 	{"DP_Pin_Assignment_F"},
 };
 
-bool max77705_check_hmd_dev(struct max77705_usbc_platform_data *usbpd_data) {
+bool max77705_check_hmd_dev(struct max77705_usbc_platform_data *usbpd_data)
+{
 	struct max77705_hmd_power_dev *hmd_list;
-	int  i;	
+	int i;
 	bool ret = false;
 	uint16_t vid = usbpd_data->Vendor_ID;
 	uint16_t pid = usbpd_data->Product_ID;
@@ -219,7 +220,7 @@ bool max77705_check_hmd_dev(struct max77705_usbc_platform_data *usbpd_data) {
 int max77705_process_check_accessory(void *data)
 {
 	struct max77705_usbc_platform_data *usbpd_data = data;
-#if defined(CONFIG_USB_HW_PARAM) || defined(CONFIG_USB_NOTIFY_LAYER)
+#if defined(CONFIG_USB_HW_PARAM) || IS_ENABLED(CONFIG_USB_NOTIFY_LAYER)
 	struct otg_notify *o_notify = get_otg_notify();
 #endif
 	uint16_t vid = usbpd_data->Vendor_ID;
@@ -295,8 +296,9 @@ int max77705_process_check_accessory(void *data)
 
 	mutex_lock(&usbpd_data->hmd_power_lock);
 	if (max77705_check_hmd_dev(usbpd_data)) {
-#if defined(CONFIG_USB_NOTIFY_LAYER)
-		send_otg_notify(o_notify, NOTIFY_EVENT_HMD_EXT_CURRENT, 1);
+#if IS_ENABLED(CONFIG_USB_NOTIFY_LAYER)
+		if (o_notify)
+			send_otg_notify(o_notify, NOTIFY_EVENT_HMD_EXT_CURRENT, 1);
 #endif
 	}
 	mutex_unlock(&usbpd_data->hmd_power_lock);
@@ -1098,7 +1100,7 @@ void max77705_acc_detach_check(struct work_struct *wk)
 		container_of(wk, struct delayed_work, work);
 	struct max77705_usbc_platform_data *usbpd_data =
 		container_of(delay_work, struct max77705_usbc_platform_data, acc_detach_work);
-#if defined(CONFIG_USB_NOTIFY_LAYER)
+#if IS_ENABLED(CONFIG_USB_NOTIFY_LAYER)
 	struct otg_notify *o_notify = get_otg_notify();
 #endif
 
@@ -1115,8 +1117,9 @@ void max77705_acc_detach_check(struct work_struct *wk)
 			usbpd_data->Vendor_ID = 0;
 			usbpd_data->Product_ID = 0;
 			usbpd_data->send_enter_mode_req = 0;
-#if defined(CONFIG_USB_NOTIFY_LAYER)
-			send_otg_notify(o_notify, NOTIFY_EVENT_HMD_EXT_CURRENT, 0);
+#if IS_ENABLED(CONFIG_USB_NOTIFY_LAYER)
+			if (o_notify)
+				send_otg_notify(o_notify, NOTIFY_EVENT_HMD_EXT_CURRENT, 0);
 #endif
 		}
 	}

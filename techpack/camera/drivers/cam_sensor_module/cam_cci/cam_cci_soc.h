@@ -23,8 +23,7 @@ int cam_cci_init(struct v4l2_subdev *sd,
  *
  * This API releases the CCI and its SOC resources
  */
-int cam_cci_soc_release(struct cci_device *cci_dev,
-	enum cci_i2c_master_t master);
+int cam_cci_soc_release(struct cci_device *cci_dev);
 
 /**
  * @pdev: Platform device

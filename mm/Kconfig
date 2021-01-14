@@ -643,6 +643,16 @@ config ZSMALLOC_STAT
 	  information to userspace via debugfs.
 	  If unsure, say N.
 
+config VMAP_LAZY_PURGING_FACTOR
+	int "multiplier to the size of purged vmap areas"
+	default "8" if ARM
+	default "32"
+	help
+	  It is used as a multiplier to the max VA pages purged in a
+	  single attempt. For 32-bit in order to reduce fragmentation
+	  of vmalloc space, we decrease the default value to "8".
+
+
 config GENERIC_EARLY_IOREMAP
 	bool
 
@@ -875,6 +885,12 @@ config MMAP_READAROUND_LIMIT
 	  Inappropriate mmap readaround size can hurt device performance
 	  during the sluggish situation. Add the hard upper-limit for
 	  mmap readaround.
+
+config KSWAPD_PERFTUNE
+	bool "kswapd cpumask can be limited"
+	default y
+	help
+	  This provides sysctl node to set kswapd cpu affinity.
 
 config RBIN
 	bool "RBIN memory support"

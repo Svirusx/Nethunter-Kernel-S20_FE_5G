@@ -13,8 +13,6 @@
  * These values were determined empirically and shows good E2E bi-
  * directional throughputs
  */
-#define IPA_HOLB_TMR_EN 0x1
-#define IPA_HOLB_TMR_DIS 0x0
 #define IPA_POLL_AGGR_STATE_RETRIES_NUM 3
 #define IPA_POLL_AGGR_STATE_SLEEP_MSEC 1
 
@@ -63,11 +61,22 @@ int ipa3_enable_data_path(u32 clnt_hdl)
 		 * on other end from IPA hw.
 		 */
 		if ((ep->client == IPA_CLIENT_USB_DPL_CONS) ||
-				(ep->client == IPA_CLIENT_MHI_DPL_CONS))
+				(ep->client == IPA_CLIENT_MHI_DPL_CONS)) {
+			holb_cfg.tmr_val = 0;
 			holb_cfg.en = IPA_HOLB_TMR_EN;
-		else
+		} else if ((ipa3_ctx->ipa_hw_type == IPA_HW_v4_2 ||
+			ipa3_ctx->ipa_hw_type == IPA_HW_v4_7) &&
+			(ep->client == IPA_CLIENT_WLAN1_CONS ||
+				ep->client == IPA_CLIENT_USB_CONS)) {
+			holb_cfg.en = IPA_HOLB_TMR_EN;
+			if (ipa3_ctx->ipa_hw_type < IPA_HW_v4_5)
+				holb_cfg.tmr_val = IPA_HOLB_TMR_VAL;
+			else
+				holb_cfg.tmr_val = IPA_HOLB_TMR_VAL_4_5;
+		} else {
 			holb_cfg.en = IPA_HOLB_TMR_DIS;
-		holb_cfg.tmr_val = 0;
+			holb_cfg.tmr_val = 0;
+		}
 		res = ipa3_cfg_ep_holb(clnt_hdl, &holb_cfg);
 	}
 
@@ -1402,8 +1411,6 @@ int ipa3_xdci_disconnect(u32 clnt_hdl, bool should_force_clear, u32 qmi_req_id)
 	if (!ep->keep_ipa_awake)
 		IPA_ACTIVE_CLIENTS_INC_EP(ipa3_get_client_mapping(clnt_hdl));
 
-	ipa3_disable_data_path(clnt_hdl);
-
 	if (!IPA_CLIENT_IS_CONS(ep->client)) {
 		IPADBG("Stopping PROD channel - hdl=%d clnt=%d\n",
 			clnt_hdl, ep->client);
@@ -1427,6 +1434,9 @@ int ipa3_xdci_disconnect(u32 clnt_hdl, bool should_force_clear, u32 qmi_req_id)
 			goto stop_chan_fail;
 		}
 	}
+
+	ipa3_disable_data_path(clnt_hdl);
+
 	IPA_ACTIVE_CLIENTS_DEC_EP(ipa3_get_client_mapping(clnt_hdl));
 
 	IPADBG("exit\n");
@@ -1455,6 +1465,9 @@ int ipa3_release_gsi_channel(u32 clnt_hdl)
 
 	if (!ep->keep_ipa_awake)
 		IPA_ACTIVE_CLIENTS_INC_EP(ipa3_get_client_mapping(clnt_hdl));
+
+	/* Set the disconnect in progress flag to avoid calling cb.*/
+	atomic_set(&ep->disconnect_in_progress, 1);
 
 	gsi_res = gsi_dealloc_channel(ep->gsi_chan_hdl);
 	if (gsi_res != GSI_STATUS_SUCCESS) {
@@ -1631,6 +1644,8 @@ int ipa3_start_gsi_channel(u32 clnt_hdl)
 	int result = -EFAULT;
 	enum gsi_status gsi_res;
 	enum ipa_client_type client_type;
+	struct ipa_ep_cfg_holb holb_cfg;
+	int res = 0;
 
 	IPADBG("entry\n");
 	if (clnt_hdl >= ipa3_ctx->ipa_num_pipes  ||
@@ -1641,6 +1656,23 @@ int ipa3_start_gsi_channel(u32 clnt_hdl)
 
 	ep = &ipa3_ctx->ep[clnt_hdl];
 	client_type = ipa3_get_client_mapping(clnt_hdl);
+	/* Disable HOLB on MHIP RMNET CONS before starting
+	 * USB PROD pipe
+	 */
+	if (ipa3_is_mhip_offload_enabled() &&
+		client_type == IPA_CLIENT_USB_PROD) {
+		memset(&holb_cfg, 0, sizeof(struct ipa_ep_cfg_holb));
+		holb_cfg.en = IPA_HOLB_TMR_DIS;
+		holb_cfg.tmr_val = 0;
+		IPADBG("Disabling HOLB on RMNET CONS pipe");
+		res = ipa3_cfg_ep_holb(ipa3_get_ep_mapping(
+				IPA_CLIENT_MHI_PRIME_RMNET_CONS), &holb_cfg);
+		if (res) {
+			IPAERR("Disable HOLB failed ep:%lu\n",
+				ipa3_get_ep_mapping(
+					IPA_CLIENT_MHI_PRIME_RMNET_CONS));
+		}
+	}
 	if (!ep->keep_ipa_awake)
 		IPA_ACTIVE_CLIENTS_INC_EP(client_type);
 
@@ -1763,9 +1795,7 @@ int ipa3_clear_endpoint_delay(u32 clnt_hdl)
 	/* Set disconnect in progress flag so further flow control events are
 	 * not honored.
 	 */
-	spin_lock(&ipa3_ctx->disconnect_lock);
-	ep->disconnect_in_progress = true;
-	spin_unlock(&ipa3_ctx->disconnect_lock);
+	atomic_set(&ep->disconnect_in_progress, 1);
 
 	/* If flow is disabled at this point, restore the ep state.*/
 	ep_ctrl.ipa_ep_delay = false;

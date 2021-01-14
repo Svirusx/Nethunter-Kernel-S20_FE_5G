@@ -1035,14 +1035,18 @@ static int dfc_update_fc_map(struct net_device *dev, struct qos_info *qos,
 		itm->grant_size = adjusted_grant;
 
 		/* No further query if the adjusted grant is less
-		 * than 20% of the original grant
+		 * than 20% of the original grant. Add to watch to
+		 * recover if no indication is received.
 		 */
 		if (dfc_qmap && is_query &&
-		    itm->grant_size < (fc_info->num_bytes / 5))
+		    itm->grant_size < (fc_info->num_bytes / 5)) {
 			itm->grant_thresh = itm->grant_size;
-		else
+			qmi_rmnet_watchdog_add(itm);
+		} else {
 			itm->grant_thresh =
 				qmi_rmnet_grant_per(itm->grant_size);
+			qmi_rmnet_watchdog_remove(itm);
+		}
 
 		itm->seq = fc_info->seq_num;
 		itm->ack_req = ack_req;
@@ -1052,9 +1056,9 @@ static int dfc_update_fc_map(struct net_device *dev, struct qos_info *qos,
 		itm->last_adjusted_grant = adjusted_grant;
 
 		if (action) {
-			net_log("I> m=%d b=%d gr=%d agr=%d s=%d a=%d\n",
+			net_log("I> m=%d b=%d gr=%d s=%d a=%d\n",
 				fc_info->mux_id, fc_info->bearer_id,
-				fc_info->num_bytes, itm->grant_size, fc_info->seq_num,
+				fc_info->num_bytes, fc_info->seq_num,
 				ancillary);
 			rc = dfc_bearer_flow_ctl(dev, itm, qos);
 		}
@@ -1156,6 +1160,7 @@ static void dfc_update_tx_link_status(struct net_device *dev,
 		itm->grant_size = 0;
 		itm->tcp_bidir = false;
 		itm->bytes_in_flight = 0;
+		qmi_rmnet_watchdog_remove(itm);
 		dfc_bearer_flow_ctl(dev, itm, qos);
 	} else if (itm->grant_size == 0 && tx_status && !itm->rat_switch) {
 		itm->grant_size = DEFAULT_GRANT;

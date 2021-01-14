@@ -123,6 +123,10 @@ struct adsp_data {
 	int32_t main2_light_cal2;
 	int32_t main2_copr_w;
 #endif
+#if defined(CONFIG_SEC_C1Q_PROJECT) || defined(CONFIG_SEC_C2Q_PROJECT)
+	struct delayed_work light_copr_debug_work;
+	int light_copr_debug_count;
+#endif
 #ifdef CONFIG_SUPPORT_BRIGHTNESS_NOTIFY_FOR_LIGHT_SENSOR
 	struct work_struct light_br_work;
 	int32_t brightness_info[3];
@@ -199,6 +203,9 @@ int ams_save_ub_cell_id_to_efs(char *path, char *data_str, bool first_booting);
 #else
 int ams_save_ub_cell_id_to_efs(char *data_str, bool first_booting);
 #endif
+#endif
+#if defined(CONFIG_SEC_C1Q_PROJECT) || defined(CONFIG_SEC_C2Q_PROJECT)
+void light_copr_debug_work_func(struct work_struct *work);
 #endif
 #ifdef CONFIG_SUPPORT_AMS_PROX_CALIBRATION
 void prox_cal_init_work(struct adsp_data *data);

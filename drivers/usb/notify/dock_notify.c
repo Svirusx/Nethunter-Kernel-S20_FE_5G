@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * Copyright (C) 2019 Samsung Electronics Co. Ltd.
+ * Copyright (C) 2015-2020 Samsung Electronics Co. Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  */
 
- /* usb notify layer v3.4 */
+ /* usb notify layer v3.5 */
 
 #define pr_fmt(fmt) "usb_notify: " fmt
 
@@ -23,7 +23,6 @@
 
 #define SMARTDOCK_INDEX	1
 #define MMDOCK_INDEX	2
-
 
 struct dev_table {
 	struct usb_device_id dev;
@@ -170,7 +169,6 @@ static int call_battery_notify(struct usb_device *dev, bool on)
 {
 	struct usb_device *hdev;
 	struct usb_device *udev;
-	struct usb_hub *hub;
 	struct otg_notify *o_notify = get_otg_notify();
 	int index = 0;
 	int count = 0;
@@ -183,19 +181,15 @@ static int call_battery_notify(struct usb_device *dev, bool on)
 		goto skip;
 
 	hdev = dev->parent;
-	hub = usb_hub_to_struct_hub(hdev);
-	if (!hub)
+	if (!hdev)
 		goto skip;
 
-	for (port = 1; port <= hdev->maxchild; port++) {
-		udev = hub->ports[port-1]->child;
-		if (udev) {
-			if (check_essential_device(udev, index)) {
-				if (!on && (udev == dev))
-					continue;
-				else
-					count++;
-			}
+	usb_hub_for_each_child(hdev, port, udev) {
+		if (check_essential_device(udev, index)) {
+			if (!on && (udev == dev))
+				continue;
+			else
+				count++;
 		}
 	}
 
@@ -287,7 +281,6 @@ static void check_device_speed(struct usb_device *dev, bool on)
 	struct otg_notify *o_notify = get_otg_notify();
 	struct usb_device *hdev;
 	struct usb_device *udev;
-	struct usb_hub *hub;
 	int port = 0;
 	int speed = USB_SPEED_UNKNOWN;
 	static int hs_hub = 0;
@@ -303,18 +296,14 @@ static void check_device_speed(struct usb_device *dev, bool on)
 		return;
 
 	hdev = dev->bus->root_hub;
+	if (!hdev)
+		return;
 
-	hub = usb_hub_to_struct_hub(hdev);
-
-	/* check all ports */
-	for (port = 1; port <= hdev->maxchild; port++) {
-		udev = hub->ports[port-1]->child;
-		if (udev) {
-			if (!on && (udev == dev))
-				continue;
-			if (udev->speed > speed)
-				speed = udev->speed;
-		}
+	usb_hub_for_each_child(hdev, port, udev) {
+		if (!on && (udev == dev))
+			continue;
+		if (udev->speed > speed)
+			speed = udev->speed;
 	}
 
 	if (hdev->speed >= USB_SPEED_SUPER) {

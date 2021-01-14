@@ -1,0 +1,57 @@
+/* Copyright (c) 2020, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "kona-sec-c1q-r05.dtsi"
+#include "kona-sec-c1q-pinctrl-r06.dtsi"
+#include "kona-sec-c1q-pm-r06.dtsi"
+#include "../drivers/eif_c1q_r06.dtsi"
+#include "../drivers/kona-sec-sensor-vdd-lpm.dtsi"
+#include "../drivers/kona-sec-c1q-display-r01.dtsi"
+
+&soc {
+
+};
+
+/*
+ * L1C source power is changed from VREG_S4A_1P8 to VREG_S5A_2P0.
+ * so, Need to be changed to LDO mode(HPM) for NFC.
+ */
+&apps_rsc {
+	rpmh-regulator-ldoc1 {
+		qcom,supported-modes =
+			<RPMH_REGULATOR_MODE_LPM
+			RPMH_REGULATOR_MODE_HPM>;
+		qcom,mode-threshold-currents = <0 10000>;
+		L1C: pm8150a_l1: regulator-pm8150a-l1 {
+			qcom,init-mode = <RPMH_REGULATOR_MODE_HPM>;
+		};
+	};
+
+	rpmh-regulator-ldoa16 {
+		L16A: pm8150_l16: regulator-pm8150-l16 {
+			qcom,init-mode = <RPMH_REGULATOR_MODE_HPM>;
+		};
+	};
+};
+
+&tsp_lsi {
+	sec,regulator_dvdd = "pm8150_l15";
+	sec,regulator_avdd = "pm8150_l16";
+	sec,bringup = <1>;
+	sec,tclm_level = <1>;
+//	sec,afe_base = <0x0000>;
+};
+
+&wacom {
+	status = "disabled";
+};
+

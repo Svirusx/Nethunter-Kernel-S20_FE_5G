@@ -3804,8 +3804,11 @@ csr_connect_info(struct mac_context *mac_ctx,
 		diag_dot11_mode_from_csr_type(conn_profile->dot11Mode);
 	conn_stats.bss_type =
 	     diag_persona_from_csr_type(session->pCurRoamProfile->csrPersona);
-	conn_stats.operating_channel = wlan_reg_freq_to_chan(mac_ctx->pdev,
-							conn_profile->op_freq);
+	if (conn_profile->op_freq)
+		conn_stats.operating_channel =
+			wlan_reg_freq_to_chan(mac_ctx->pdev,
+					      conn_profile->op_freq);
+
 	conn_stats.qos_capability = conn_profile->qosConnection;
 	conn_stats.auth_type =
 	     diag_auth_type_from_csr_type(conn_profile->AuthType);
@@ -15430,30 +15433,64 @@ static inline void csr_set_mgmt_enc_type(struct csr_roam_profile *profile,
 
 #ifdef WLAN_FEATURE_FILS_SK
 /*
- * csr_update_fils_connection_info: Copy fils connection info to join request
+ * csr_validate_and_update_fils_info: Copy fils connection info to join request
  * @profile: pointer to profile
  * @csr_join_req: csr join request
  *
  * Return: None
  */
-static void csr_update_fils_connection_info(struct csr_roam_profile *profile,
-					    struct join_req *csr_join_req)
+static QDF_STATUS
+csr_validate_and_update_fils_info(struct mac_context *mac,
+				  struct csr_roam_profile *profile,
+				  struct bss_description *bss_desc,
+				  struct join_req *csr_join_req,
+				  uint8_t vdev_id)
 {
-	if (!profile->fils_con_info)
-		return;
+	uint8_t cache_id[CACHE_ID_LEN] = {0};
+	struct qdf_mac_addr bssid;
 
-	if (profile->fils_con_info->is_fils_connection) {
-		qdf_mem_copy(&csr_join_req->fils_con_info,
-			     profile->fils_con_info,
-			     sizeof(struct cds_fils_connection_info));
-	} else {
+	if (!profile->fils_con_info)
+		return QDF_STATUS_SUCCESS;
+
+	if (!profile->fils_con_info->is_fils_connection) {
+		sme_debug("FILS_PMKSA: Not a FILS connection");
 		qdf_mem_zero(&csr_join_req->fils_con_info,
 			     sizeof(struct cds_fils_connection_info));
+		return QDF_STATUS_SUCCESS;
 	}
+
+	if (bss_desc->fils_info_element.is_cache_id_present) {
+		qdf_mem_copy(cache_id, bss_desc->fils_info_element.cache_id,
+			     CACHE_ID_LEN);
+		sme_debug("FILS_PMKSA: cache_id[0]:%d, cache_id[1]:%d",
+			  cache_id[0], cache_id[1]);
+	}
+
+	qdf_mem_copy(bssid.bytes,
+		     csr_join_req->bssDescription.bssId,
+		     QDF_MAC_ADDR_SIZE);
+
+	if ((!profile->fils_con_info->r_rk_length ||
+	     !profile->fils_con_info->key_nai_length) &&
+	    !bss_desc->fils_info_element.is_cache_id_present &&
+	    !csr_lookup_fils_pmkid(mac, vdev_id, cache_id,
+				   csr_join_req->ssId.ssId,
+				   csr_join_req->ssId.length, &bssid))
+		return QDF_STATUS_E_FAILURE;
+
+	qdf_mem_copy(&csr_join_req->fils_con_info,
+		     profile->fils_con_info,
+		     sizeof(struct cds_fils_connection_info));
+
+	return QDF_STATUS_SUCCESS;
 }
 #else
-static void csr_update_fils_connection_info(struct csr_roam_profile *profile,
-					    struct join_req *csr_join_req)
+static QDF_STATUS
+csr_validate_and_update_fils_info(struct mac_context *mac,
+				  struct csr_roam_profile *profile,
+				  struct bss_description *bss_desc,
+				  struct join_req *csr_join_req,
+				  uint8_t vdev_id)
 { }
 #endif
 
@@ -16608,7 +16645,14 @@ QDF_STATUS csr_send_join_req_msg(struct mac_context *mac, uint32_t sessionId,
 		qdf_mem_copy(&csr_join_req->bssDescription, pBssDescription,
 				pBssDescription->length +
 				sizeof(pBssDescription->length));
-		csr_update_fils_connection_info(pProfile, csr_join_req);
+
+		status = csr_validate_and_update_fils_info(mac, pProfile,
+							   pBssDescription,
+							   csr_join_req,
+							   sessionId);
+		if (QDF_IS_STATUS_ERROR(status))
+			return status;
+
 		csr_update_sae_config(csr_join_req, mac, pSession);
 		/*
 		 * conc_custom_rule1:
@@ -18082,7 +18126,10 @@ static inline void
 csr_update_roam_scan_offload_request(struct mac_context *mac_ctx,
 				     struct roam_offload_scan_req *req_buf,
 				     struct csr_roam_session *session)
-{}
+{
+	req_buf->roam_force_rssi_trigger =
+			mac_ctx->mlme_cfg->lfr.roam_force_rssi_trigger;
+}
 #endif /* WLAN_FEATURE_ROAM_OFFLOAD */
 
 #if defined(WLAN_FEATURE_HOST_ROAM) || defined(WLAN_FEATURE_ROAM_OFFLOAD)
@@ -20982,17 +21029,11 @@ void csr_roaming_report_diag_event(struct mac_context *mac_ctx,
 #endif
 
 #ifdef WLAN_FEATURE_ROAM_OFFLOAD
-/*
- * fn csr_process_ho_fail_ind
- * brief  This function will process the Hand Off Failure indication
- *        received from the firmware. It will trigger a disconnect on
- *        the session which the firmware reported a hand off failure
- * param  mac global structure
- * param  msg_buf - Contains the session ID for which the handler should apply
- */
 void csr_process_ho_fail_ind(struct mac_context *mac_ctx, void *msg_buf)
 {
 	struct handoff_failure_ind *pSmeHOFailInd = msg_buf;
+	struct mlme_roam_after_data_stall *vdev_roam_params;
+	struct wlan_objmgr_vdev *vdev;
 	uint32_t sessionId;
 
 	if (!pSmeHOFailInd) {
@@ -21008,6 +21049,22 @@ void csr_process_ho_fail_ind(struct mac_context *mac_ctx, void *msg_buf)
 			sessionId);
 		return;
 	}
+
+	vdev = wlan_objmgr_get_vdev_by_id_from_psoc(mac_ctx->psoc, sessionId,
+						    WLAN_LEGACY_SME_ID);
+	if (!vdev) {
+		sme_err("LFR3: vdev is NULL");
+		return;
+	}
+
+	vdev_roam_params = mlme_get_roam_invoke_params(vdev);
+	if (vdev_roam_params)
+		vdev_roam_params->roam_invoke_in_progress = false;
+	else
+		sme_err("LFR3: Vdev roam params is NULL");
+
+	wlan_objmgr_vdev_release_ref(vdev, WLAN_LEGACY_SME_ID);
+
 	mac_ctx->sme.set_connection_info_cb(false);
 	csr_roam_roaming_offload_timer_action(mac_ctx, 0, sessionId,
 			ROAMING_OFFLOAD_TIMER_STOP);
@@ -21055,7 +21112,7 @@ csr_update_op_class_array(struct mac_context *mac_ctx,
 		*i < (REG_MAX_SUPP_OPER_CLASSES - 1); idx++) {
 		wlan_reg_freq_to_chan_op_class(
 			mac_ctx->pdev, channel_info->channel_freq_list[idx],
-			false, BIT(BEHAV_NONE), &class, &ch_num);
+			true, BIT(BEHAV_NONE), &class, &ch_num);
 
 		found = false;
 		for (j = 0; j < REG_MAX_SUPP_OPER_CLASSES - 1; j++) {

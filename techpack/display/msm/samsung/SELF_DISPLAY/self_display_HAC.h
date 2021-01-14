@@ -23,7 +23,7 @@ void make_self_dispaly_img_cmds_HAC(struct samsung_display_driver_data *vdd,
 		enum dsi_cmd_set_type cmd, u32 op);
 void make_mass_self_display_img_cmds_HAC(struct samsung_display_driver_data *vdd,
 		enum dsi_cmd_set_type cmd, u32 op);
-
+#if 0 /* No need to update this just use that from dtsi */
 #define AC_HH_MASK_ST_X 0x0F
 #define AC_HH_MASK_ST_Y 0x07
 #define AC_HH_MASK_ED_X 0x85
@@ -41,5 +41,5 @@ void make_mass_self_display_img_cmds_HAC(struct samsung_display_driver_data *vdd
 #define AC_HH_MEM_REUSE_Y 0
 #define AC_HH_MEM_REUSE_W 640
 #define AC_HH_MEM_REUSE_H 640
-
+#endif
 #endif /* __SELF_DISPLAY_HAC_H__ */

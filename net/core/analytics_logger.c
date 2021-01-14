@@ -15,6 +15,15 @@
 #include <net/tcp.h>
 #include <net/analytics.h>
 
+/* print format 
+*
+* u(user) tcpRxBytes tcpTxBytes udpRxBytes udpTxBytes
+* ue(user err) tcpRxCounts tcpTxCounts udpRxCounts udpTxCounts
+*
+* d(rmnet_data) i(rmnet_ipa) m(rmnet_mhi) r(rmnet), etc ,,
+* d(rmnet_data) rxBytes rxPackets rxDrops txBytes txPackets txDrops
+*/
+
 #ifdef CONFIG_IPC_LOGGING
 #include <linux/ipc_logging.h>
 
@@ -42,7 +51,14 @@ struct usr_io {
 	__u64 o_stream_tx;
 	__u64 o_dgram_rx;
 	__u64 o_dgram_tx;
-
+	atomic64_t stream_err_rx;
+	atomic64_t stream_err_tx;
+	atomic64_t dgram_err_rx;
+	atomic64_t dgram_err_tx;
+	__u64 o_stream_err_rx;
+	__u64 o_stream_err_tx;
+	__u64 o_dgram_err_rx;
+	__u64 o_dgram_err_tx;
 };
 static struct usr_io usr_stat;
 
@@ -77,10 +93,17 @@ void net_usr_tx(struct sock *sk, int len)
 	// sk reference -> usr tx += len << does not need to be atomic var.
 
 	/* now count total bytes */
-	if (sk->sk_type == SOCK_STREAM)
-		atomic64_add(len, &usr_stat.stream_tx);
-	else if (sk->sk_type == SOCK_DGRAM)
-		atomic64_add(len, &usr_stat.dgram_tx);
+	if (len < 0) {
+		if (sk->sk_type == SOCK_STREAM)
+			atomic64_inc(&usr_stat.stream_err_tx);
+		else if (sk->sk_type == SOCK_DGRAM)
+			atomic64_inc(&usr_stat.dgram_err_tx);
+	} else {
+		if (sk->sk_type == SOCK_STREAM)
+			atomic64_add(len, &usr_stat.stream_tx);
+		else if (sk->sk_type == SOCK_DGRAM)
+			atomic64_add(len, &usr_stat.dgram_tx);
+	}
 }
 
 void net_usr_rx(struct sock *sk, int len)
@@ -90,10 +113,17 @@ void net_usr_rx(struct sock *sk, int len)
 	// sk reference -> usr tx += len
 
 	/* now count total bytes */
-	if (sk->sk_type == SOCK_STREAM)
-		atomic64_add(len, &usr_stat.stream_rx);
-	else if (sk->sk_type == SOCK_DGRAM)
-		atomic64_add(len, &usr_stat.dgram_rx);
+	if (len < 0) {
+		if (sk->sk_type == SOCK_STREAM)
+			atomic64_inc(&usr_stat.stream_err_rx);
+		else if (sk->sk_type == SOCK_DGRAM)
+			atomic64_inc(&usr_stat.dgram_err_rx);	
+	} else {
+		if (sk->sk_type == SOCK_STREAM)
+			atomic64_add(len, &usr_stat.stream_rx);
+		else if (sk->sk_type == SOCK_DGRAM)
+			atomic64_add(len, &usr_stat.dgram_rx);
+	}
 }
 
 /** ptype handler to get each packet information **/
@@ -240,6 +270,14 @@ static void get_stats_diff(struct stats_diff *st_diff,
 }
 
 #define PRINT_DIFF
+/* print format 
+*
+* u(user) tcpRxBytes tcpTxBytes udpRxBytes udpTxBytes
+* ue(user err) tcpRxCounts tcpTxCounts udpRxCounts udpTxCounts
+*
+* d(rmnet_data) i(rmnet_ipa) m(rmnet_mhi) r(rmnet), etc ,,
+* d(rmnet_data) rxBytes rxPackets rxDrops txBytes txPackets txDrops
+*/
 static void netio_printout(void)
 {
 	int off = 0;
@@ -250,6 +288,8 @@ static void netio_printout(void)
 	struct stats_diff st_diff;
 	__u64 s_rx, s_tx, d_rx, d_tx;
 	__u64 s_rx_delta, s_tx_delta, d_rx_delta, d_tx_delta;
+	__u64 s_erx, s_etx, d_erx, d_etx;
+	__u64 s_erx_delta, s_etx_delta, d_erx_delta, d_etx_delta;
 	struct timespec ts;
 	struct rtc_time tm;
 
@@ -270,6 +310,21 @@ static void netio_printout(void)
 	usr_stat.o_stream_tx = s_tx;
 	usr_stat.o_dgram_rx = d_rx;
 	usr_stat.o_dgram_tx = d_tx;
+	
+	s_erx = atomic64_read(&usr_stat.stream_err_rx);
+	s_etx = atomic64_read(&usr_stat.stream_err_tx);
+	d_erx = atomic64_read(&usr_stat.dgram_err_rx);
+	d_etx = atomic64_read(&usr_stat.dgram_err_tx);
+
+	s_erx_delta = s_erx - usr_stat.o_stream_err_rx;
+	s_etx_delta = s_etx - usr_stat.o_stream_err_tx;
+	d_erx_delta = d_erx - usr_stat.o_dgram_err_rx;
+	d_etx_delta = d_etx - usr_stat.o_dgram_err_tx;
+
+	usr_stat.o_stream_err_rx = s_erx;
+	usr_stat.o_stream_err_tx = s_etx;
+	usr_stat.o_dgram_err_rx = d_erx;
+	usr_stat.o_dgram_err_tx = d_etx;
 
 	if (s_rx_delta || s_tx_delta ||	d_rx_delta || d_tx_delta) {
 #ifdef PRINT_DIFF
@@ -286,6 +341,21 @@ static void netio_printout(void)
 		remain -= written;
 	}
 
+	if (s_erx_delta || s_etx_delta ||	d_erx_delta || d_etx_delta) {
+#ifdef PRINT_DIFF
+		written = scnprintf(log_buf + off, remain,
+				    "ue %llu %llu %llu %llu ",
+				    s_erx_delta, s_etx_delta,
+				    d_erx_delta, d_etx_delta);
+#else
+		written = scnprintf(log_buf + off, remain,
+				    "ue %llu %llu %llu %llu ",
+				    s_erx, s_etx, d_erx, d_etx);
+#endif
+		off += written;
+		remain -= written;
+	}
+	
 	list_for_each_entry_safe(ndev_i, temp, &updev_list, list) {
 		if (!ndev_i->dev || !(ndev_i->dev->flags & IFF_NETIO))
 			continue;

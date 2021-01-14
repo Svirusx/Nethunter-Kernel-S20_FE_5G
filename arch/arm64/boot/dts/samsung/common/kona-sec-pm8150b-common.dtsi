@@ -1,0 +1,117 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&spmi_bus {
+	qcom,pm8150b@2 {
+		status = "disabled";
+	};
+};
+
+&pm8150b_revid {
+	status = "disabled";
+};
+
+&pm8150b_tz {
+	status = "disabled";
+};
+
+&pm8150b_clkdiv {
+	status = "disabled";
+};
+
+&pm8150b_qnovo {
+	status = "disabled";
+};
+
+&pm8150b_gpios {
+	status = "disabled";
+};
+
+&pm8150b_charger {
+	status = "disabled";
+};
+
+&pm8150b_pdphy {
+	status = "disabled";
+};
+
+&pm8150b_bcl {
+	status = "disabled";
+};
+
+&bcl_soc {
+	status = "disabled";
+};
+
+&pm8150b_fg {
+	status = "disabled";
+};
+
+&pm8150b_vadc {
+	status = "disabled";
+};
+
+&pm8150b_adc_tm {
+	status = "disabled";
+};
+
+&pm8150b_pwm {
+	status = "disabled";
+};
+
+&pm8150b_hr_led {
+	status = "disabled";
+};
+
+&pm8150b_haptics {
+	status = "disabled";
+};
+
+&pm8150b_temp_alarm {
+	status = "disabled";
+};
+
+&pm8150b_trip0 {
+	status = "disabled";
+};
+
+&pm8150b_trip1 {
+	status = "disabled";
+};
+
+&ibat_lvl0 {
+	status = "disabled";
+};
+
+&ibat_lvl1 {
+	status = "disabled";
+};
+
+&vbat_lvl0 {
+	status = "disabled";
+};
+
+&vbat_lvl1 {
+	status = "disabled";
+};
+
+&vbat_lvl2 {
+	status = "disabled";
+};
+
+&soc_trip {
+	status = "disabled";
+};
+
+&usb0 {
+	extcon = <&eud>;
+};

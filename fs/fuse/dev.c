@@ -1251,6 +1251,12 @@ static ssize_t fuse_dev_do_read(struct fuse_dev *fud, struct file *file,
 	struct fuse_in *in;
 	unsigned reqsize;
 
+	if ((current->flags & PF_NOFREEZE) == 0) {
+		current->flags |= PF_NOFREEZE;
+		printk_ratelimited(KERN_WARNING "%s(%d): This thread should not be frozen\n",
+				current->comm, task_pid_nr(current));
+	}
+
  restart:
 	for (;;) {
 		spin_lock(&fiq->lock);
@@ -2127,6 +2133,9 @@ static void end_polls(struct fuse_conn *fc)
 void fuse_abort_conn(struct fuse_conn *fc, bool is_abort)
 {
 	struct fuse_iqueue *fiq = &fc->iq;
+
+	ST_LOG("<%s> dev = %u:%u  fuse abort all requests",
+			__func__, MAJOR(fc->dev), MINOR(fc->dev));
 
 	spin_lock(&fc->lock);
 	if (fc->connected) {

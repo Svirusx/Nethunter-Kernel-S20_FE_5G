@@ -142,6 +142,9 @@
 /* TX Min Operating Frequency = 60 MHz/value, default is 80kHz (60MHz/0x2EE=80KHz) */
 #define MFC_TX_MIN_OP_FREQ_L_REG			0x62 /* default 0xEE */
 #define MFC_TX_MIN_OP_FREQ_H_REG			0x63 /* default 0x2 */
+
+#define TX_MIN_OP_FREQ_DEFAULT	1130
+
 /* TX Digital Ping Frequency = 60 MHz/value, default is 90kHz (60MHz/0x29B=90KHz) */
 #define MFC_TX_PING_FREQ_L_REG				0x64 /* default 0x9B */
 #define MFC_TX_PING_FREQ_H_REG				0x65 /* default 0x02 */
@@ -788,7 +791,7 @@ typedef struct _mfc_fod_data {
 	u32* data[FOD_STATE_MAX];
 } mfc_fod_data;
 
-#if defined(CONFIG_CHECK_UNKNOWN_PAD)
+#if defined(CONFIG_CHECK_UNAUTH_PAD)
 enum mfc_ping_freq {
 	FREQ_TXID,
 	FREQ_LOW,
@@ -872,6 +875,8 @@ struct mfc_charger_platform_data {
 	u32 oc_fod1;
 	u32 phone_fod_threshold;
 	u32 gear_ping_freq;
+	u32 gear_min_op_freq;
+	u32 gear_min_op_freq_delay;
 	bool wpc_vout_ctrl_lcd_on;
 	int no_hv;
 	bool keep_tx_vout;
@@ -897,21 +902,22 @@ struct mfc_charger_data {
 	int wc_w_state;
 
 	struct power_supply *psy_chg;
-	struct wakeup_source wpc_wake_lock;
-	struct wakeup_source wpc_tx_wake_lock;
-	struct wakeup_source wpc_rx_wake_lock;
-	struct wakeup_source wpc_update_lock;
-	struct wakeup_source wpc_opfq_lock;
-	struct wakeup_source wpc_tx_opfq_lock;
-	struct wakeup_source wpc_tx_duty_min_lock;
-	struct wakeup_source wpc_afc_vout_lock;
-	struct wakeup_source wpc_vout_mode_lock;
-	struct wakeup_source wpc_rx_det_lock;
-	struct wakeup_source wpc_tx_phm_lock;
-	struct wakeup_source wpc_vrect_check_lock;
-	struct wakeup_source wpc_tx_id_lock;
-	struct wakeup_source wpc_cs100_lock;
-	struct wakeup_source wpc_pdrc_lock;
+	struct wakeup_source *wpc_wake_lock;
+	struct wakeup_source *wpc_tx_wake_lock;
+	struct wakeup_source *wpc_rx_wake_lock;
+	struct wakeup_source *wpc_update_lock;
+	struct wakeup_source *wpc_opfq_lock;
+	struct wakeup_source *wpc_tx_opfq_lock;
+	struct wakeup_source *wpc_tx_duty_min_lock;
+	struct wakeup_source *wpc_tx_min_opfq_lock;
+	struct wakeup_source *wpc_afc_vout_lock;
+	struct wakeup_source *wpc_vout_mode_lock;
+	struct wakeup_source *wpc_rx_det_lock;
+	struct wakeup_source *wpc_tx_phm_lock;
+	struct wakeup_source *wpc_vrect_check_lock;
+	struct wakeup_source *wpc_tx_id_lock;
+	struct wakeup_source *wpc_cs100_lock;
+	struct wakeup_source *wpc_pdrc_lock;
 	struct workqueue_struct *wqueue;
 	struct work_struct	wcin_work;
 	struct delayed_work	wpc_det_work;
@@ -929,6 +935,7 @@ struct mfc_charger_data {
 	struct delayed_work wpc_i2c_error_work;
 	struct delayed_work	wpc_rx_type_det_work;
 	struct delayed_work	wpc_rx_connection_work;
+	struct delayed_work wpc_tx_min_op_freq_work;
 	struct delayed_work wpc_tx_op_freq_work;
 	struct delayed_work wpc_tx_duty_min_work;
 	struct delayed_work wpc_tx_phm_work;
@@ -989,7 +996,7 @@ struct mfc_charger_data {
 
 	bool req_tx_id;
 	bool is_abnormal_pad;
-#if defined(CONFIG_CHECK_UNKNOWN_PAD)
+#if defined(CONFIG_CHECK_UNAUTH_PAD)
 	u8 ping_freq;
 	bool req_afc_tx;
 #endif

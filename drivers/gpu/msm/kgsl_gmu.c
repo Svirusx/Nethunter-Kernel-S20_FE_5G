@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2017-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
  */
 
 #include <dt-bindings/regulator/qcom,rpmh-regulator-levels.h>
@@ -558,7 +558,8 @@ static int gmu_dcvs_set(struct kgsl_device *device,
 		 */
 		if (test_bit(ADRENO_DEVICE_STARTED, &adreno_dev->priv)) {
 			gmu_core_snapshot(device);
-			adreno_set_gpu_fault(adreno_dev, ADRENO_GMU_FAULT |
+			adreno_set_gpu_fault(adreno_dev, ADRENO_GMU_FAULT);
+			adreno_set_gpu_fault(adreno_dev,
 				ADRENO_GMU_FAULT_SKIP_SNAPSHOT);
 			adreno_dispatcher_schedule(device);
 		}
@@ -935,8 +936,6 @@ static irqreturn_t gmu_irq_handler(int irq, void *data)
 
 		dev_err_ratelimited(&gmu->pdev->dev,
 				"GMU watchdog expired interrupt received\n");
-		adreno_set_gpu_fault(adreno_dev, ADRENO_GMU_FAULT);
-		adreno_dispatcher_schedule(device);
 	}
 	if (status & GMU_INT_HOST_AHB_BUS_ERR)
 		dev_err_ratelimited(&gmu->pdev->dev,
@@ -1348,14 +1347,17 @@ static int gmu_probe(struct kgsl_device *device, struct device_node *node)
 	device->gmu_core.reg_len = gmu->reg_len;
 
 	/* Initialize HFI and GMU interrupts */
-	hfi->hfi_interrupt_num = kgsl_request_irq(gmu->pdev, "kgsl_hfi_irq",
-		hfi_irq_handler, device);
-
-	gmu->gmu_interrupt_num = kgsl_request_irq(gmu->pdev, "kgsl_gmu_irq",
-		gmu_irq_handler, device);
-
-	if (hfi->hfi_interrupt_num < 0 || gmu->gmu_interrupt_num < 0)
+	ret = kgsl_request_irq(gmu->pdev, "kgsl_hfi_irq",
+			hfi_irq_handler, device);
+	if (ret < 0)
 		goto error;
+	hfi->hfi_interrupt_num = ret;
+
+	ret = kgsl_request_irq(gmu->pdev, "kgsl_gmu_irq",
+			gmu_irq_handler, device);
+	if (ret < 0)
+		goto error;
+	gmu->gmu_interrupt_num = ret;
 
 	/* Don't enable GMU interrupts until GMU started */
 	/* We cannot use irq_disable because it writes registers */
@@ -1540,6 +1542,9 @@ static int gmu_suspend(struct kgsl_device *device)
 		regulator_set_mode(gmu->cx_gdsc, REGULATOR_MODE_NORMAL);
 
 	dev_err(&gmu->pdev->dev, "Suspended GMU\n");
+
+	clear_bit(GMU_FAULT, &device->gmu_core.flags);
+
 	return 0;
 }
 
@@ -1548,6 +1553,10 @@ static void gmu_snapshot(struct kgsl_device *device)
 	struct adreno_device *adreno_dev = ADRENO_DEVICE(device);
 	struct gmu_dev_ops *gmu_dev_ops = GMU_DEVICE_OPS(device);
 	struct gmu_device *gmu = KGSL_GMU_DEVICE(device);
+
+	/* Abstain from sending another nmi or over-writing snapshot */
+	if (test_and_set_bit(GMU_FAULT, &device->gmu_core.flags))
+		return;
 
 	adreno_gmu_send_nmi(adreno_dev);
 	/* Wait for the NMI to be handled */
@@ -1690,6 +1699,12 @@ static void gmu_stop(struct kgsl_device *device)
 	if (!test_bit(GMU_CLK_ON, &device->gmu_core.flags))
 		return;
 
+	/* Force suspend if gmu is already in fault */
+	if (test_bit(GMU_FAULT, &device->gmu_core.flags)) {
+		gmu_core_suspend(device);
+		return;
+	}
+
 	/* Wait for the lowest idle level we requested */
 	if (gmu_core_dev_wait_for_lowest_idle(device))
 		goto error;
@@ -1715,14 +1730,13 @@ static void gmu_stop(struct kgsl_device *device)
 	return;
 
 error:
-	/*
-	 * The power controller will change state to SLUMBER anyway
-	 * Set GMU_FAULT flag to indicate to power contrller
-	 * that hang recovery is needed to power on GPU
-	 */
-	set_bit(GMU_FAULT, &device->gmu_core.flags);
 	dev_err(&gmu->pdev->dev, "Failed to stop GMU\n");
 	gmu_core_snapshot(device);
+	/*
+	 * We failed to stop the gmu successfully. Force a suspend
+	 * to set things up for a fresh start.
+	 */
+	gmu_core_suspend(device);
 }
 
 static void gmu_remove(struct kgsl_device *device)

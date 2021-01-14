@@ -1,0 +1,131 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&aliases {
+		spi7 = "/soc/spi@99c000";
+};
+
+&tlmm {
+	fps_rst: fps_rst {
+		mux {
+			pins = "gpio131";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio131";
+			bias-pull-down;
+		};
+	};
+
+	fps_ldo: fps_ldo {
+		mux {
+			pins = "gpio67";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio67";
+			bias-pull-down;
+		};
+	};
+
+	qupv3_se7_spi_pins: qupv3_se7_spi_pins {
+		qupv3_se7_spi_active: qupv3_se7_spi_active {
+			mux {
+				pins = "gpio20", "gpio21", "gpio22",
+							"gpio23";
+				function = "qup7";
+			};
+			config {
+				pins = "gpio20", "gpio21", "gpio22",
+							"gpio23";
+				drive-strength = <6>;
+				bias-disable;
+			};
+		};
+		qupv3_se7_spi_sleep: qupv3_se7_spi_sleep {
+			mux {
+				pins = "gpio20", "gpio21", "gpio22",
+							"gpio23";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio20", "gpio21", "gpio22",
+							"gpio23";
+				drive-strength = <6>;
+				bias-pull-down;
+				input-enable;
+			};
+		};
+	};
+};
+
+&qupv3_se7_spi {
+	compatible = "qcom,spi-geni";
+	#address-cells = <1>;
+	#size-cells = <0>;
+	reg = <0x99c000 0x4000>;
+	reg-names = "se_phys";
+	clock-names = "se-clk", "m-ahb", "s-ahb";
+	clocks = <&clock_gcc GCC_QUPV3_WRAP0_S7_CLK>,
+		<&clock_gcc GCC_QUPV3_WRAP_0_M_AHB_CLK>,
+		<&clock_gcc GCC_QUPV3_WRAP_0_S_AHB_CLK>;
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&qupv3_se7_spi_active>;
+	pinctrl-1 = <&qupv3_se7_spi_sleep>;
+	interrupts = <GIC_SPI 608 IRQ_TYPE_LEVEL_HIGH>;
+	spi-max-frequency = <25000000>;
+	qcom,wrapper-core = <&qupv3_0>;
+	dmas = <&gpi_dma0 0 7 1 64 0>,
+		<&gpi_dma0 1 7 1 64 0>;
+	dma-names = "tx", "rx";
+	qcom,set-miso-sampling;
+	qcom,miso-sampling-ctrl-val = <2>;
+	status = "ok";
+	gw9558-spi@0 {
+		compatible = "goodix,gw9558x_factory";
+		reg = <0>;
+		spi-max-frequency = <25000000>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&fps_rst &fps_ldo>;
+
+		gpio-controller;
+		#gpio-cells = <2>;
+
+		goodix,gpio_pwr = <&tlmm 67 0>;
+		goodix,gpio_reset = <&tlmm 131 0>;
+		goodix,chip_id = "GW9558";
+		goodix,position = "11.41,0.00,9.10,9.10,14.80,14.80,12.00,12.00,5.00";
+		goodix,modelinfo = "G781";
+		goodix,rb = "525,215,-1,FFFFFF";
+	};
+};
+
+&soc {
+	gw9558@0 {
+		compatible = "goodix,gw9558x";
+		reg = <0>;
+		spi-max-frequency = <25000000>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&fps_rst &fps_ldo>;
+
+		gpio-controller;
+		#gpio-cells = <2>;
+
+		goodix,gpio_pwr = <&tlmm 67 0>;
+		goodix,gpio_reset = <&tlmm 131 0>;
+		goodix,chip_id = "GW9558";
+		goodix,position = "11.41,0.00,9.10,9.10,14.80,14.80,12.00,12.00,5.00";
+		goodix,modelinfo = "G781";
+		goodix,rb = "525,215,-1,FFFFFF";
+	};
+};

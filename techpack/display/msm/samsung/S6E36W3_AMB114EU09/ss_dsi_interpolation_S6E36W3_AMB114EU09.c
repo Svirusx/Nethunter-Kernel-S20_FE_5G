@@ -168,7 +168,7 @@ int table_parsing_data_S6E36W3_AMB114EU09(struct samsung_display_driver_data *vd
 	}__packed;
 
 	struct normal_table_format *normal_table = (struct normal_table_format *)table_normal_br_info;
-	int normal_step = sizeof(table_normal_br_info) / sizeof(struct normal_table_format);
+	int normal_step = (int)sizeof(table_normal_br_info) / (int)sizeof(struct normal_table_format);
 
 	int input_table_size = sizeof(table_normal_br_info);
 	int loop;

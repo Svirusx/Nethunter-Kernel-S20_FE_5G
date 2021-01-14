@@ -200,6 +200,8 @@ void max77705_response_apdo_request(struct max77705_usbc_platform_data *usbc_dat
 		unsigned char *data)
 {
 	u8 result = data[1];
+	u8 status[5];
+	u8 vbvolt;
 
 	pr_info("%s: %s (0x%02X)\n", __func__, result ? "Error," : "Sent,", result);
 
@@ -232,8 +234,13 @@ void max77705_response_apdo_request(struct max77705_usbc_platform_data *usbc_dat
 		break;
 	}
 
+	max77705_bulk_read(usbc_data->muic, MAX77705_USBC_REG_USBC_STATUS1, 5, status);
+	vbvolt = (status[2] & BC_STATUS_VBUSDET_MASK) >> BC_STATUS_VBUSDET_SHIFT;
+	if (vbvolt != 0x01)
+		pr_info("%s: Error, VBUS isn't above 5V(0x%02X)\n", __func__, vbvolt);
+
 	/* retry if the state of sink is not stable yet */
-	if (result == 0x05 || result == 0x07) {
+	if ((result == 0x05 || result == 0x07) && vbvolt == 0x1) {
 		cancel_delayed_work(&usbc_data->pd_data->retry_work);
 		queue_delayed_work(usbc_data->pd_data->wqueue, &usbc_data->pd_data->retry_work, 0);
 	}

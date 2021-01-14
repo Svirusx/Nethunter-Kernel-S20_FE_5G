@@ -135,7 +135,7 @@ static int need_update_coef_efs(void)
 	set_fs(old_fs);
 
 	temp_version = tmd90x_strtok_first_dot(coef_version);
-	if (temp_version == '\0') {
+	if (temp_version == NULL) {
 		pr_err("[FACTORY] %s : Dot NULL.\n", __func__);
 		return false;
 	}

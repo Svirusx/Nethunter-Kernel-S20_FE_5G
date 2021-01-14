@@ -1,0 +1,90 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+#include "../drivers/audio_gts7xl_pinctrl_common.dtsi"
+#include "../drivers/kona-sec-gts7xl-input-pinctrl.dtsi"
+#include "../drivers/kona-sec-gts7xl-camera-sensor-pinctrl-r00.dtsi"
+#include "../drivers/kona-sec-gts7xl-grip-pinctrl-r00.dtsi"
+
+&tlmm {
+	epen_ldo_active: epen-ldo-active {
+		mux {
+			pins = "gpio54";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio54";
+			bias-disable; /* No PULL */
+		};
+	};
+	/* pogo keyboard int pinctrl */
+	keypad_conn_active: keypad_conn_active {
+		mux {
+			pins = "gpio32";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio32";
+			drive-strength = <2>;
+			input-enable;
+			bias-pull-down;
+		};
+	};
+};
+
+&tlmm {
+	wakeup-disabled-gpios = <
+		4	/* I2C : PM3003A_SDA_1P8 */
+		11	/* NC : NC */
+		14	/* NC : NC */
+		23	/* SPI : BTP_SPI_CS_N */
+		24	/* NC : NC */
+		27	/* NC : NC */
+		28	/* I2C : DIRECT_IF_PMIC_SDA_1P8 */
+		39	/* NC : NC */
+		40	/* I2C : REDRIVER_SDA_1P8 */
+		43	/* NC : NC */
+		45	/* I2C : WIFI2_GRIP_SCL_1P8 */
+		59	/* NC : NC */
+		83	/* NC : NC */
+		100	/* NC : NC */
+		103	/* I2C : VTCAM_SDA_1P8 */
+		104	/* I2C : VTCAM_SCL_1P8 */
+		108	/* I2C : CAM_AF_EEP_SCL_1P8 */
+		112	/* I2C : MAIN1_GRIP_SDA_1P8 */
+		113	/* I2C : MAIN1_GRIP_SCL_1P8 */
+		126	/* I2C : MCU_SCL_1P8 */
+		128	/* NC : NC */
+		133	/* NC : NC */
+		150	/* NC : NC */
+		157	/* NC : NC */
+		158	/* NC : NC */
+		160	/* I2C : 6AXIS_I3C_SDA_1P8 */
+		162	/* I2C : MAGNETIC_SDA_1P8 */
+		164	/* NC : NC */
+		166	/* NC : NC */
+		167	/* NC : NC */
+		175	/* NC : NC */
+	>;
+};
+
+&pm8150l_gpios {
+	ap2mdm_errfatal2 {
+		ap2mdm_errfatal2_default: ap2mdm_errfatal2_default {
+	        pins = "gpio7";
+	        function = "normal";
+	        bias-disable;
+	        output-low;
+	        input-disable;
+	    };
+	};
+};

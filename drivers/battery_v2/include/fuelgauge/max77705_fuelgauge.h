@@ -192,7 +192,7 @@ struct max77705_fuelgauge_data {
 	struct battery_data_t        *battery_data;
 
 	bool is_fuel_alerted;
-	struct wakeup_source fuel_alert_wake_lock;
+	struct wakeup_source *fuel_alert_wake_lock;
 
 	unsigned int capacity_old;	/* only for atomic calculation */
 	unsigned int capacity_max;	/* only for dynamic calculation */

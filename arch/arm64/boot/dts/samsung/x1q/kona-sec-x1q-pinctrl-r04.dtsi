@@ -1,0 +1,69 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "../drivers/audio_picasso_pinctrl_common.dtsi"
+#include "../drivers/kona-sec-picasso-display-pinctrl.dtsi"
+#include "../drivers/kona-sec-picasso-mfc-pinctrl.dtsi"
+#include "../drivers/kona-sec-hubble-tsp-pinctrl.dtsi"
+#include "../drivers/bluetooth_picasso_pinctrl_common.dtsi"
+#include "../drivers/kona-sec-x1q-camera-sensor-pinctrl-r04.dtsi"
+
+&tlmm {
+
+	bcmdhd_default: bcmdhd_default {
+		mux {
+			pins = "gpio128";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio128";
+			drive-strength = <2>;   /* 2 mA */
+			bias-pull-down;         /* PULL DOWN */
+		};
+	};
+
+	bcmdhd_wlan_en: bcmdhd_wlan_en {
+		mux {
+			pins = "gpio90";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio90";
+			drive-strength = <2>;   /* 2 mA */
+			bias-pull-down;         /* PULL DOWN */
+		};
+	};
+
+	grip_i2c_active: grip_i2c_active {
+		mux {
+			pins = "gpio112", "gpio113";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio112", "gpio113";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+
+	grip_int_active: grip_int_active {
+		mux {
+			pins = "gpio111";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio111";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+};

@@ -78,6 +78,13 @@ config SEC_QUEST_UEFI_ACT_TRIGGER
 	default n
 	help
 	 Samsung QUEST UEFI TRIGGER CONCEPT Feature (using act)
+	 
+config SEC_QUEST_UEFI_USER
+	bool "feature to trigger uefi quest from user binary"
+	default n
+	depends on !SEC_FACTORY
+	help
+	 feature to trigger uefi quest from user binary
 
 config SEC_QUEST_BPS_CLASSIFIER
 	bool "Samsung TN QUEST BPS Classifier Feature"
@@ -92,3 +99,17 @@ config SEC_QUEST_USE_SS_HLOS_SH_MAIN_CAL
 	depends on SEC_FACTORY
 	help
 	  This option use samsung HLOS Shell Script for MAIN and CAL QUEST
+
+config SEC_QUEST_DDR_SCAN_USER
+	bool "Samsung QUEST supports user_dram_test"
+	default n
+	depends on !SEC_FACTORY
+	help
+	 Samsung Quest supports user_dram_test
+
+config SEC_QUEST_EDL
+	bool "Samsung QUEST EDL Feature"
+	default n
+	depends on SEC_FACTORY
+	help
+	  This option enables QUEST EDL.

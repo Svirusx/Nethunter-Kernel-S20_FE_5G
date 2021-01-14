@@ -1694,7 +1694,7 @@ static const struct seq_operations diskstats_op = {
 	.show	= diskstats_show
 };
 
-/* IOPP-iod-v1.0.4.19 */
+/* IOPP-iod-v1.1.4.19 - change inflight count */
 #define PG2KB(x) ((unsigned long)((x) << (PAGE_SHIFT - 10)))
 static int iostats_show(struct seq_file *seqf, void *v)
 {
@@ -1707,7 +1707,7 @@ static int iostats_show(struct seq_file *seqf, void *v)
 	unsigned long thresh = 0;
 	unsigned long bg_thresh = 0;
 	struct backing_dev_info *bdi;
-	unsigned int nread, nwrite;
+	unsigned int inflight[2];
 
 	global_dirty_limits(&bg_thresh, &thresh);
 
@@ -1715,12 +1715,11 @@ static int iostats_show(struct seq_file *seqf, void *v)
 	while ((hd = disk_part_iter_next(&piter))) {
 		cpu = part_stat_lock();
 		part_round_stats(gp->queue, cpu, hd);
+		part_in_flight_rw(gp->queue, hd, inflight);
 		part_stat_unlock();
 		uptime = ktime_to_ns(ktime_get());
 		uptime /= 1000000; /* in ms */
 		bdi = gp->queue->backing_dev_info;
-		nread = part_in_flight_read(hd);
-		nwrite = part_in_flight_write(hd);
 		seq_printf(seqf, "%4d %7d %s %lu %lu %lu %u "
 				"%lu %lu %lu %u %u %u %u "
 				/* added */
@@ -1738,8 +1737,7 @@ static int iostats_show(struct seq_file *seqf, void *v)
 				part_stat_read(hd, merges[WRITE]) + part_stat_read(hd, merges[STAT_DISCARD]),
 				part_stat_read(hd, sectors[WRITE]) + part_stat_read(hd, sectors[STAT_DISCARD]),
 				(unsigned int)part_stat_read_msecs(hd, STAT_WRITE),
-				/*part_in_flight(hd),*/
-				nread + nwrite,
+				inflight[0] + inflight[1],
 				jiffies_to_msecs(part_stat_read(hd, io_ticks)),
 				jiffies_to_msecs(part_stat_read(hd, time_in_queue)),
 				/* followings are added */
@@ -1748,7 +1746,8 @@ static int iostats_show(struct seq_file *seqf, void *v)
 				part_stat_read(hd, flush_ios),
 				gp->queue->flush_ios,
 
-				nread,
+				inflight[0], /* read request count */
+				/* hd->io_time_us / USEC_PER_MSEC, */
 				gp->queue->in_flight_time / USEC_PER_MSEC,
 				PG2KB(thresh),
 				PG2KB(bdi->last_thresh),

@@ -239,6 +239,7 @@ endif
 obj-y  += security/samsung/tzic/
 
 # KUnit
+obj-y				+= kunit/
 
 # GNSS
 obj-$(CONFIG_GPS_BCM4753)	+= gps/

@@ -65,6 +65,8 @@ enum {
 	BOLERO_WSA_EVT_PA_OFF_PRE_SSR,
 	BOLERO_WSA_EVT_SSR_DOWN,
 	BOLERO_WSA_EVT_SSR_UP,
+	BOLERO_WSA_EVT_PA_ON_POST_FSCLK,
+	BOLERO_WSA_EVT_PA_ON_POST_FSCLK_ADIE_LB,
 };
 
 struct wsa_ctrl_platform_data {
@@ -96,6 +98,7 @@ struct wsa883x_priv {
 	bool comp_enable;
 	bool visense_enable;
 	bool ext_vdd_spk;
+	bool dapm_bias_off;
 	struct swr_port port[WSA883X_MAX_SWR_PORTS];
 	int global_pa_cnt;
 	int dev_mode;
@@ -124,10 +127,10 @@ struct wsa883x_priv {
 	void *handle;
 	int (*register_notifier)(void *handle,
 				struct notifier_block *nblock, bool enable);
-	struct delayed_work vbat_work;
 	struct cdc_regulator *regulator;
 	int num_supplies;
 	struct regulator_bulk_data *supplies;
+	unsigned long status_mask;
 };
 
 #endif /* WSA883X_INTERNAL_H */

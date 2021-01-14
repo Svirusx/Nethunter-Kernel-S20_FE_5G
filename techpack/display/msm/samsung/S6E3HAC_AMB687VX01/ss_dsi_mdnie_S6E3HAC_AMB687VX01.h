@@ -6259,8 +6259,8 @@ static unsigned char DSI_VIDEO_ENHANCER_D65_MDNIE_1[] = {
 	0x30,
 	0xc3,
 	0xff, //ascr_skin_Rr
-	0x44, //ascr_skin_Rg
-	0x46, //ascr_skin_Rb
+	0x35, //ascr_skin_Rg
+	0x35, //ascr_skin_Rb
 	0xff, //ascr_skin_Yr
 	0xf7, //ascr_skin_Yg
 	0x00, //ascr_skin_Yb
@@ -6475,7 +6475,7 @@ static unsigned char DSI_VIDEO_ENHANCER_D65_MDNIE_2[] = {
 	0x07, //nr fa de cs gamma 0 0000
 	0xff, //nr_mask_th
 	0x00, //de_gain 10
-	0x10,
+	0x20,
 	0x00, //de_maxplus 11
 	0x40,
 	0x00, //de_maxminus 11
@@ -6486,7 +6486,7 @@ static unsigned char DSI_VIDEO_ENHANCER_D65_MDNIE_2[] = {
 	0x00, //fa_step_n 10
 	0x01,
 	0x00, //fa_max_de_gain 10
-	0x10,
+	0x20,
 	0x00, //fa_pcl_ppi 14
 	0x00,
 	0x28, //fa_os_cnt_10_co
@@ -6612,8 +6612,8 @@ static unsigned char DSI_VIDEO_ENHANCER_AUTO_MDNIE_1[] = {
 	0x30,
 	0xc3,
 	0xff, //ascr_skin_Rr
-	0x44, //ascr_skin_Rg
-	0x46, //ascr_skin_Rb
+	0x35, //ascr_skin_Rg
+	0x35, //ascr_skin_Rb
 	0xff, //ascr_skin_Yr
 	0xf7, //ascr_skin_Yg
 	0x00, //ascr_skin_Yb
@@ -6828,7 +6828,7 @@ static unsigned char DSI_VIDEO_ENHANCER_AUTO_MDNIE_2[] = {
 	0x07, //nr fa de cs gamma 0 0000
 	0xff, //nr_mask_th
 	0x00, //de_gain 10
-	0x10,
+	0x20,
 	0x00, //de_maxplus 11
 	0x40,
 	0x00, //de_maxminus 11
@@ -6839,7 +6839,7 @@ static unsigned char DSI_VIDEO_ENHANCER_AUTO_MDNIE_2[] = {
 	0x00, //fa_step_n 10
 	0x01,
 	0x00, //fa_max_de_gain 10
-	0x10,
+	0x20,
 	0x00, //fa_pcl_ppi 14
 	0x00,
 	0x28, //fa_os_cnt_10_co
@@ -6966,8 +6966,8 @@ static unsigned char DSI_VIDEO_ENHANCER_THIRD_D65_MDNIE_1[] = {
 	0x30,
 	0xc3,
 	0xff, //ascr_skin_Rr
-	0x44, //ascr_skin_Rg
-	0x46, //ascr_skin_Rb
+	0x35, //ascr_skin_Rg
+	0x35, //ascr_skin_Rb
 	0xff, //ascr_skin_Yr
 	0xf7, //ascr_skin_Yg
 	0x00, //ascr_skin_Yb
@@ -7182,7 +7182,7 @@ static unsigned char DSI_VIDEO_ENHANCER_THIRD_D65_MDNIE_2[] = {
 	0x07, //nr fa de cs gamma 0 0000
 	0xff, //nr_mask_th
 	0x00, //de_gain 10
-	0x10,
+	0x20,
 	0x00, //de_maxplus 11
 	0x40,
 	0x00, //de_maxminus 11
@@ -7193,7 +7193,7 @@ static unsigned char DSI_VIDEO_ENHANCER_THIRD_D65_MDNIE_2[] = {
 	0x00, //fa_step_n 10
 	0x01,
 	0x00, //fa_max_de_gain 10
-	0x10,
+	0x20,
 	0x00, //fa_pcl_ppi 14
 	0x00,
 	0x28, //fa_os_cnt_10_co
@@ -7319,8 +7319,8 @@ static unsigned char DSI_VIDEO_ENHANCER_THIRD_AUTO_MDNIE_1[] = {
 	0x30,
 	0xc3,
 	0xff, //ascr_skin_Rr
-	0x44, //ascr_skin_Rg
-	0x46, //ascr_skin_Rb
+	0x35, //ascr_skin_Rg
+	0x35, //ascr_skin_Rb
 	0xff, //ascr_skin_Yr
 	0xf7, //ascr_skin_Yg
 	0x00, //ascr_skin_Yb
@@ -7535,7 +7535,7 @@ static unsigned char DSI_VIDEO_ENHANCER_THIRD_AUTO_MDNIE_2[] = {
 	0x07, //nr fa de cs gamma 0 0000
 	0xff, //nr_mask_th
 	0x00, //de_gain 10
-	0x10,
+	0x20,
 	0x00, //de_maxplus 11
 	0x40,
 	0x00, //de_maxminus 11
@@ -7546,7 +7546,7 @@ static unsigned char DSI_VIDEO_ENHANCER_THIRD_AUTO_MDNIE_2[] = {
 	0x00, //fa_step_n 10
 	0x01,
 	0x00, //fa_max_de_gain 10
-	0x10,
+	0x20,
 	0x00, //fa_pcl_ppi 14
 	0x00,
 	0x28, //fa_os_cnt_10_co
@@ -10143,8 +10143,8 @@ static char DSI_VIDEO_AUTO_MDNIE_1[] = {
 	0x30,
 	0xc3,
 	0xff, //ascr_skin_Rr
-	0x44, //ascr_skin_Rg
-	0x46, //ascr_skin_Rb
+	0x35, //ascr_skin_Rg
+	0x35, //ascr_skin_Rb
 	0xff, //ascr_skin_Yr
 	0xf7, //ascr_skin_Yg
 	0x00, //ascr_skin_Yb
@@ -10359,7 +10359,7 @@ static char DSI_VIDEO_AUTO_MDNIE_2[] = {
 	0x0e, //nr fa de cs gamma 0 0000
 	0xff, //nr_mask_th
 	0x00, //de_gain 10
-	0x10,
+	0x20,
 	0x00, //de_maxplus 11
 	0x40,
 	0x00, //de_maxminus 11
@@ -10370,7 +10370,7 @@ static char DSI_VIDEO_AUTO_MDNIE_2[] = {
 	0x00, //fa_step_n 10
 	0x01,
 	0x00, //fa_max_de_gain 10
-	0x10,
+	0x20,
 	0x00, //fa_pcl_ppi 14
 	0x00,
 	0x28, //fa_os_cnt_10_co
@@ -11555,8 +11555,8 @@ static char DSI_CAMERA_AUTO_MDNIE_1[] = {
 	0x30,
 	0xc3,
 	0xff, //ascr_skin_Rr
-	0x44, //ascr_skin_Rg
-	0x46, //ascr_skin_Rb
+	0x35, //ascr_skin_Rg
+	0x35, //ascr_skin_Rb
 	0xff, //ascr_skin_Yr
 	0xf7, //ascr_skin_Yg
 	0x00, //ascr_skin_Yb
@@ -12967,8 +12967,8 @@ static char DSI_GALLERY_AUTO_MDNIE_1[] = {
 	0x30,
 	0xc3,
 	0xff, //ascr_skin_Rr
-	0x44, //ascr_skin_Rg
-	0x46, //ascr_skin_Rb
+	0x35, //ascr_skin_Rg
+	0x35, //ascr_skin_Rb
 	0xff, //ascr_skin_Yr
 	0xf7, //ascr_skin_Yg
 	0x00, //ascr_skin_Yb
@@ -13183,7 +13183,7 @@ static char DSI_GALLERY_AUTO_MDNIE_2[] = {
 	0x0c, //nr fa de cs gamma 0 0000
 	0xff, //nr_mask_th
 	0x00, //de_gain 10
-	0x10,
+	0x20,
 	0x02, //de_maxplus 11
 	0x00,
 	0x02, //de_maxminus 11
@@ -13194,7 +13194,7 @@ static char DSI_GALLERY_AUTO_MDNIE_2[] = {
 	0x00, //fa_step_n 10
 	0x01,
 	0x00, //fa_max_de_gain 10
-	0x10,
+	0x20,
 	0x00, //fa_pcl_ppi 14
 	0x00,
 	0x28, //fa_os_cnt_10_co
@@ -14379,8 +14379,8 @@ static char DSI_BROWSER_AUTO_MDNIE_1[] = {
 	0x30,
 	0xc3,
 	0xff, //ascr_skin_Rr
-	0x44, //ascr_skin_Rg
-	0x46, //ascr_skin_Rb
+	0x35, //ascr_skin_Rg
+	0x35, //ascr_skin_Rb
 	0xff, //ascr_skin_Yr
 	0xf7, //ascr_skin_Yg
 	0x00, //ascr_skin_Yb
@@ -17556,8 +17556,8 @@ static char DSI_TDMB_AUTO_MDNIE_1[] = {
 	0x30,
 	0xc3,
 	0xff, //ascr_skin_Rr
-	0x44, //ascr_skin_Rg
-	0x46, //ascr_skin_Rb
+	0x35, //ascr_skin_Rg
+	0x35, //ascr_skin_Rb
 	0xff, //ascr_skin_Yr
 	0xf7, //ascr_skin_Yg
 	0x00, //ascr_skin_Yb
@@ -17772,7 +17772,7 @@ static char DSI_TDMB_AUTO_MDNIE_2[] = {
 	0x0c, //nr fa de cs gamma 0 0000
 	0xff, //nr_mask_th
 	0x00, //de_gain 10
-	0x10,
+	0x20,
 	0x02, //de_maxplus 11
 	0x00,
 	0x02, //de_maxminus 11
@@ -17783,7 +17783,7 @@ static char DSI_TDMB_AUTO_MDNIE_2[] = {
 	0x00, //fa_step_n 10
 	0x01,
 	0x00, //fa_max_de_gain 10
-	0x10,
+	0x20,
 	0x00, //fa_pcl_ppi 14
 	0x00,
 	0x28, //fa_os_cnt_10_co

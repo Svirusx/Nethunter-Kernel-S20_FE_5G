@@ -382,6 +382,9 @@ struct max77705_dev {
 
 	int set_altmode;
 
+	bool suspended;
+	wait_queue_head_t suspend_wait;
+
 	wait_queue_head_t queue_empty_wait_q;
 	int doing_irq;
 	int is_usbc_queue;

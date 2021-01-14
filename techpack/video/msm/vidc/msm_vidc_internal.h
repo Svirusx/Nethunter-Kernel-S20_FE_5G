@@ -493,7 +493,7 @@ struct msm_vidc_inst_smem_ops {
 
 struct msm_vidc_inst {
 	struct list_head list;
-	struct mutex sync_lock, lock, flush_lock;
+	struct mutex sync_lock, lock;
 	struct msm_vidc_core *core;
 	enum session_type session_type;
 	void *session;
@@ -560,6 +560,8 @@ struct msm_vidc_inst {
 	bool is_perf_eligible_session;
 	u32 max_filled_len;
 	int full_range;
+	u64 last_qbuf_time_ns;
+	bool active;
 };
 
 extern struct msm_vidc_drv *vidc_driver;

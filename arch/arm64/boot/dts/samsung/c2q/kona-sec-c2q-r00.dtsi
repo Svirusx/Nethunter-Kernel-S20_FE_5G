@@ -1,0 +1,150 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "kona-sec-c2q-pinctrl-r00.dtsi"
+#include "kona-sec-c2q-pm-common.dtsi"
+
+#include "../drivers/eif_picasso_common.dtsi"
+#include "../drivers/eif_c2q_common.dtsi"
+#include "../drivers/audio_canvas_common.dtsi"
+#include "../drivers/displayport_c2q_r00.dtsi"
+#include "../drivers/kona-sec-picassoq-common-mst-r04.dtsi"
+#include "../drivers/kona-sec-c2q-display-r00.dtsi"
+#include "../drivers/input_c2q_common.dtsi"
+#include "../drivers/battery-data-c2q-common.dtsi"
+#include "../drivers/battery-rx-data-c2q-idt.dtsi"
+#include "../drivers/nfc_c2q_r00.dtsi"
+#include "../drivers/fingerprint-sensor_c2q_r00.dtsi"
+#include "../drivers/uwb_c2q_r00.dtsi"
+#include "../drivers/camera_sensor_c2q_r00.dtsi"
+#include "../drivers/optics_c2q_r00.dtsi"
+#include "../drivers/abc_c2_common.dtsi"
+
+&soc {
+	bcmdhd_wlan {
+		qcom,iommu-dma = "disabled";
+		compatible = "android,bcmdhd_wlan";
+		wlan-en-gpio = <&tlmm 90 0>;
+		wlan-host-wake-gpio = <&tlmm 150 0>;
+		wlan-smmu-iova-address = <0xa0000000 0x10000000>;
+		pinctrl-name = "bcmdhd_wlan_en","bcmdhd_default";
+		pinctrl-0 = <&bcmdhd_wlan_en>;
+		pinctrl-1 = <&bcmdhd_default>;
+		status = "ok";
+	};
+	bt_driver: bt_driver{
+		compatible = "bcm,btdriver";  //bt_en
+		pinctrl-names = "default";
+		pinctrl-0 = <&bt_en_default>;
+		bcm,bt-reset-gpio = <&tlmm 76 GPIO_ACTIVE_HIGH>;
+		status = "ok";
+	};
+	bt_bluesleep: bt_bluesleep {
+		compatible = "bcm,bluesleep";
+		bcm,bt-wake-gpio = <&tlmm 133 0>;
+		bcm,bt-host-wake-gpio = <&tlmm 126 0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&bt_wake_default &bt_hostwake_default>;
+		status = "ok";
+	};
+	i2c@17 { /* SW I2C */
+		status = "ok";
+
+		cell-index = <17>;
+		compatible = "i2c-gpio";
+		gpios = <&tlmm 112 0 /* sda */
+			 &tlmm 113 0 /* scl */
+		>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&grip_i2c_active>;
+
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		a96t3x6@20 {
+			compatible = "a96t3x6";
+			pinctrl-names = "default";
+			pinctrl-0 = <&grip_int_active>;
+			reg = <0x20>;
+
+			interrupt-parent = <&tlmm>;
+			interrupts = <111 0>;
+
+			a96t3x6,irq_gpio = <&tlmm 111 0>;
+			a96t3x6,dvdd_vreg_name = "pm8150_l10";
+			a96t3x6,fw_path = "a96t365_z3_usa.bin";
+			a96t3x6,firmup_cmd = <0x60>;
+		};
+	};
+	max77705-fuelgauge {
+		fuelgauge,capacity = <0x05AC>;
+	};
+};
+
+&tsp_lsi {
+	sec,select_lcdid = <0x810440 0x810450 0x810451 0x810452>;
+	sec,firmware_name = "tsp_sec/y79a_c2_6layer.bin", "tsp_sec/y79a_c2_6layer.bin", "tsp_sec/y79a_c2_4layer.bin", "tsp_sec/y79a_c2_4layer.bin";
+};
+
+&bluetooth {
+	status = "disabled";
+};
+
+&wlan {
+	status = "disabled";
+};
+
+&cnss_pci {
+	status = "disabled";
+};
+
+&qupv3_se6_4uart {
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&qupv3_se6_ctsrx_active>, <&qupv3_se6_rts_active>,
+						<&qupv3_se6_tx_active>;
+	pinctrl-1 = <&qupv3_se6_ctsrx_sleep>, <&qupv3_se6_rts_sleep>,
+						<&qupv3_se6_tx_sleep>;
+	interrupts-extended = <&intc GIC_SPI 607 IRQ_TYPE_LEVEL_HIGH>;
+	status = "ok";
+};
+
+&sdhc_2 {
+	status = "disabled";
+};
+
+&pcie0 {
+    qcom,target-link-speed = <0x2>;
+};
+
+&pcie2 {
+	qcom,core-preset = <0x55555555>;
+};
+
+&wacom {
+	wacom,bringup = <1>;
+};
+
+&ssc_sensors {
+	qcom,ssc_hw_rev = <0>;
+};
+
+&mdm0 {
+	pinctrl-names = "default", "mdm_active", "mdm_suspend";
+	pinctrl-0 = <&ap2mdm_errfatal2_default>;
+	pinctrl-1 = <&ap2mdm_active &mdm2ap_active>;
+	pinctrl-2 = <&ap2mdm_sleep &mdm2ap_sleep>;
+	qcom,ap2mdm-errfatal2-gpio = <&pm8150l_gpios 7 0>;
+};
+
+&ufshc_mem {
+	hpb-enable = <1>;
+};

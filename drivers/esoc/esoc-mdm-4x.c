@@ -85,10 +85,6 @@ static struct notifier_block esoc_dbg_notifier_block = {
 
 void *ipc_log;
 
-#ifdef CONFIG_SEC_PERIPHERAL_SECURE_CHK
-bool sec_check_first_boot_modem = true;
-#endif
-
 static void mdm_debug_gpio_show(struct mdm_ctrl *mdm)
 {
 	struct device *dev = mdm->dev;
@@ -409,10 +405,6 @@ static void mdm_status_fn(struct work_struct *work)
 	dev_dbg(dev, "%s: status:%d\n", __func__, value);
 	/* Update gpio configuration to "running" config. */
 	mdm_update_gpio_configs(mdm, GPIO_UPDATE_RUNNING_CONFIG);
-
-#ifdef CONFIG_SEC_PERIPHERAL_SECURE_CHK
-	sec_check_first_boot_modem = false;
-#endif
 }
 
 static void mdm_get_restart_reason(struct work_struct *work)

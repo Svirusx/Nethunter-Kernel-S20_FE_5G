@@ -148,10 +148,17 @@ static struct msm_power_dou *__msm_power_dou_get_instance(void)
 
 	np = of_find_node_by_name(NULL, "samsung,sec_misc");
 	if (np) {
-		uint32_t reg_phys_dt;
+		uint32_t reg_phys_dt = 0;
 
-		if (!of_property_read_u32(np, "msm_power_dou,reg", &reg_phys_dt))
-			reg_phys = reg_phys_dt;
+		if (!of_property_read_u32(np, "msm_power_dou,reg", &reg_phys_dt)) {
+			if (reg_phys_dt == 0x0) {
+				pr_err("reg_phys for msm_power_dou,reg is %x\n", reg_phys);
+				memset(&power_dou, 0x0, sizeof(struct msm_power_dou));
+				return &power_dou;
+			} else {
+				reg_phys = reg_phys_dt;
+			}
+		}
 	}
 
 	reg_virt = ioremap_nocache((phys_addr_t)reg_phys, SZ_4K);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2019 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2015-2020 The Linux Foundation. All rights reserved.
  * Copyright (C) 2013 Red Hat
  * Author: Rob Clark <robdclark@gmail.com>
  *
@@ -29,6 +29,7 @@
 #include "sde_hw_ds.h"
 
 #define SDE_CRTC_NAME_SIZE	12
+#define RGB_NUM_COMPONENTS	3
 
 /* define the maximum number of in-flight frame events */
 /* Expand it to 2x for handling atleast 2 connectors safely */
@@ -235,6 +236,8 @@ struct sde_crtc_misr_info {
  * @ad_dirty      : list containing ad properties that are dirty
  * @ad_active     : list containing ad properties that are active
  * @crtc_lock     : crtc lock around create, destroy and access.
+ * @vblank_modeset_ctrl_lock     : lock used for controlling vblank
+				during modeset
  * @frame_pending : Whether or not an update is pending
  * @frame_events  : static allocation of in-flight frame events
  * @frame_event_list : available frame event list
@@ -263,6 +266,7 @@ struct sde_crtc_misr_info {
  * @ltm_buffer_lock : muttx to protect ltm_buffers allcation and free
  * @ltm_lock        : Spinlock to protect ltm buffer_cnt, hist_en and ltm lists
  * @needs_hw_reset  : Initiate a hw ctl reset
+ * @comp_ratio      : Compression ratio
  */
 struct sde_crtc {
 	struct drm_crtc base;
@@ -307,6 +311,7 @@ struct sde_crtc {
 
 	struct mutex crtc_lock;
 	struct mutex crtc_cp_lock;
+	struct mutex vblank_modeset_ctrl_lock;
 
 	atomic_t frame_pending;
 	struct sde_crtc_frame_event frame_events[SDE_CRTC_FRAME_EVENT_SIZE];
@@ -342,6 +347,8 @@ struct sde_crtc {
 	struct mutex ltm_buffer_lock;
 	spinlock_t ltm_lock;
 	bool needs_hw_reset;
+
+	int comp_ratio;
 };
 
 #define to_sde_crtc(x) container_of(x, struct sde_crtc, base)
@@ -477,17 +484,6 @@ static inline int sde_crtc_get_mixer_height(struct sde_crtc *sde_crtc,
 
 	return (cstate->num_ds_enabled ?
 			cstate->ds_cfg[0].lm_height : mode->vdisplay);
-}
-
-/**
- * sde_crtc_get_num_datapath - get the number of datapath active
- * @crtc: Pointer to drm crtc object
- */
-static inline int sde_crtc_get_num_datapath(struct drm_crtc *crtc)
-{
-	struct sde_crtc *sde_crtc = to_sde_crtc(crtc);
-
-	return sde_crtc ? sde_crtc->num_mixers : 0;
 }
 
 /**
@@ -835,5 +831,41 @@ void sde_crtc_misr_setup(struct drm_crtc *crtc, bool enable, u32 frame_count);
  */
 void sde_crtc_get_misr_info(struct drm_crtc *crtc,
 		struct sde_crtc_misr_info *crtc_misr_info);
+
+/**
+ * sde_crtc_get_num_datapath - get the number of datapath active
+ *				of primary connector
+ * @crtc: Pointer to DRM crtc object
+ * @connector: Pointer to DRM connector object of WB in CWB case
+ */
+int sde_crtc_get_num_datapath(struct drm_crtc *crtc,
+		struct drm_connector *connector);
+
+/*
+ * sde_crtc_set_compression_ratio - set compression ratio src_bpp/target_bpp
+ * @msm_mode_info: Mode info
+ * @crtc: Pointer to drm crtc structure
+ */
+static inline void sde_crtc_set_compression_ratio(
+		struct msm_mode_info mode_info, struct drm_crtc *crtc)
+{
+	int target_bpp, src_bpp;
+	struct sde_crtc *sde_crtc = to_sde_crtc(crtc);
+
+	/**
+	 * In cases where DSC compression type is not found, set
+	 * compression value to default value of 1.
+	 */
+	if (mode_info.comp_info.comp_type != MSM_DISPLAY_COMPRESSION_DSC) {
+		sde_crtc->comp_ratio = 1;
+		goto end;
+	}
+
+	target_bpp = mode_info.comp_info.dsc_info.bpp;
+	src_bpp = mode_info.comp_info.dsc_info.bpc * RGB_NUM_COMPONENTS;
+	sde_crtc->comp_ratio = mult_frac(1, src_bpp, target_bpp);
+end:
+	SDE_DEBUG("sde_crtc comp ratio: %d\n", sde_crtc->comp_ratio);
+}
 
 #endif /* _SDE_CRTC_H_ */

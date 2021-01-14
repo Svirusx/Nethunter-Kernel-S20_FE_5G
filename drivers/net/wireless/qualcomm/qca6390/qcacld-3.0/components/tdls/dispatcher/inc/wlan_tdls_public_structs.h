@@ -402,7 +402,6 @@ enum tdls_configured_external_control {
 	TDLS_LIBERAL_EXTERNAL_CONTROL = 2,
 };
 
-
 /**
  * enum tdls_feature_bit
  * @TDLS_FEATURE_OFF_CHANNEL: tdls off channel

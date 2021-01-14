@@ -39,10 +39,6 @@ config CNSS_ASYNC
 	  probe in parallel with other device drivers and will help to
 	  reduce kernel boot time.
 
-config SEC_SEPARATE_BDFILE
-	bool "Enable/disable SEC_SEPARATE_BDFILE"
-	depends on CNSS2
-
 config BUS_AUTO_SUSPEND
 	bool "Enable/Disable Runtime PM support for PCIe based WLAN Drivers"
 	depends on CNSS2
@@ -88,5 +84,8 @@ config CNSS_QCA6490
 	  CNSS QCA6490 chipset.
 	  These changes are needed to support the new hardware architecture
 	  for CNSS QCA6490 chipset.
-	  
-	  
+
+config SEC_SEPARATE_BDFILE
+	bool "Enable/disable SEC_SEPARATE_BDFILE"
+	depends on CNSS2
+	depends on CNSS_QCA6390 || CNSS_QCA6490

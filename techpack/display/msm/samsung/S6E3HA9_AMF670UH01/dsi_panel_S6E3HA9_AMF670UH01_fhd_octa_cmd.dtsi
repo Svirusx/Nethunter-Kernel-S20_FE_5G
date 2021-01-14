@@ -479,7 +479,7 @@
 		 */
 
 		/* WRITE */
-		
+
 		samsung,winbond_spi_wr_enable = [08 00 01 06];
 		samsung,winbond_spi_wr_page_program = [08 01 04 02 00 00 00
 			 01 02 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
@@ -498,7 +498,7 @@
 		samsung,winbond_spi_wr_status_reg1_end = [08 00 02 01 5E];
 		samsung,winbond_spi_wr_status_reg2_end = [08 00 02 31 02];
 
-		/* ERASE */		
+		/* ERASE */
 		samsung,winbond_spi_er = [08 00 04 00 00 00 00];
 
 		/* READ */
@@ -876,7 +876,7 @@
 				80 80 12 34 56 78 9A BC
 				DE F0 12 34 44 44 44 01
 				22 33 44 00 00 04 44 99
-				09 01 11 11 10 00	
+				09 01 11 11 10 00
 			29 01 00 00 00 00 03 F4 EB 28		/* VINT  set vint in ss_hbm_etc() */
 			29 01 00 00 00 00 07 B4 00 55 80 65 26 00 /* ACL */
 			29 01 00 00 00 00 02 55 02			/* ACL on/off, set value in ss_hbm_etc() */
@@ -956,7 +956,7 @@
 		samsung,mcd_on_tx_cmds_revA = [
 			29 01 00 00 00 00 03 F0 5A 5A
 			29 01 00 00 00 00 02 F4 FB
-			29 01 00 00 00 00 03 B1 00 14	
+			29 01 00 00 00 00 03 B1 00 14
 			29 01 00 00 00 00 4D CB				/* LTPS Setting */
 				44 00 01 01 09 67 89 09
 				00 00 00 00 00 00 00 00
@@ -1017,7 +1017,7 @@
 			29 01 00 00 00 00 03 B0 06 F6
 			29 01 00 00 00 00 02 F6 00
 			29 01 00 00 00 00 02 F7 03
-		
+
 			29 01 00 00 00 00 03 B0 05 F2
 			29 01 00 00 00 00 02 F2 00
 
@@ -1025,7 +1025,7 @@
 
 			29 01 00 00 00 00 03 B0 02 B5
 			29 01 00 00 00 00 02 B5 23
-			
+
 			29 01 00 00 00 00 03 B0 38 B5
 			29 01 00 00 00 00 02 B5 12
 
@@ -1053,8 +1053,7 @@
 			29 00 00 00 00 00 03 F0 5A 5A
 
 			29 01 00 00 00 00 03 B0 06 F6
-			29 01 00 00 00 00 02 F6 45
-			29 00 00 00 00 00 03 BF 33 25
+			29 01 00 00 00 00 02 F6 30
 
 			29 01 00 00 00 00 03 F0 A5 A5
 		];
@@ -1076,7 +1075,7 @@
 			29 01 00 00 01 00 02 CC 01	/* wait 1 ms */
 
 			29 01 00 00 00 00 03 B0 0E CD /* G para for read */
-			
+
 			29 01 00 00 00 00 03 F0 A5 A5
 		];
 
@@ -2217,16 +2216,16 @@
 
 			/* DBIST ON */
 			29 01 00 00 00 00 0A BF 01 07 00 00 00 10 00 00 00
-			
+
 			29 01 00 00 14 00 02 7A 00		/* self mask off */
 
 			/* delay 1frame */
 
-			/* side memory write */			
+			/* side memory write */
 			29 01 00 00 00 00 02 75 10
 
 			/* write self mask data (4C, 5C) */
-		
+
 			29 01 00 00 00 00 03 FC A5 A5	/* TEST KEY Disable */
 			29 01 00 00 00 00 03 F0 A5 A5	/* TEST KEY Disable */
 			29 01 00 00 00 00 03 9F 5A 5A	/* TEST KEY Enable */
@@ -2246,7 +2245,7 @@
 			29 01 00 00 00 00 03 F0 A5 A5	/* TEST KEY Disable */
 			29 01 00 00 00 00 03 9F 5A 5A	/* TEST KEY Enable */
 		];
-		
+
 		samsung,self_mask_check_rx_cmds_revA = [ 06 01 00 00 00 00 01 14 02 00];	/* read FB 1st ~ 2nd */
 
 		samsung,self_mask_check_tx_post_revA = [
@@ -2256,7 +2255,7 @@
 			29 01 00 00 00 00 10 7A				/* self mask & grid restore */
 								21 0A 50 0A E5 0A E6 0B 7B 09 0C
 								00 00 00 00
-			29 01 00 00 00 00 0A BF 00 07 FF 00 00 10 00 00 00	/* Exit DBIST */						
+			29 01 00 00 00 00 0A BF 00 07 FF 00 00 10 00 00 00	/* Exit DBIST */
 			29 01 00 00 00 00 03 FC A5 A5	/* TEST KEY Disable */
 			29 01 00 00 00 00 03 F0 A5 A5	/* TEST KEY Disable */
 			29 01 00 00 00 00 03 9F 5A 5A	/* TEST KEY Enable */
@@ -2271,7 +2270,7 @@
 		samsung,irc_size = <28>;
 
 		/* dsi / spi - default is dsi */
-		samsung,flash_read_intf = "dsi"; 
+		samsung,flash_read_intf = "dsi";
 		samsung,support_early_gamma_flash;
 
 		samsung,br_tables {
@@ -2416,7 +2415,7 @@
 					29 00 00 00 00 00 03 B0 3F B5	/* G para : offset 3F=63th */
 					29 00 00 00 00 00 02 B5 00		/* write B5h 64th 00 */
 					29 01 00 00 00 00 03 F0 A5 5A
-			
+
 					/* Display Setting */
 					29 00 00 00 00 00 03 F0 5A 5A
 					29 00 00 00 00 00 0A F2 83 0E 06 1E 55 87 93 3C D0	/* Porch, NL setting: 2636 Height */

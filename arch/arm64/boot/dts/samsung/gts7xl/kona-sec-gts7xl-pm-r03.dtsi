@@ -1,0 +1,64 @@
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&soc {
+	/* WIFI Thermistor table */
+	sec_thermistor@2 {
+		compatible = "samsung,sec-thermistor";
+		status = "okay";
+		thermistor_name = "sec-wf-thermistor";
+		id = <2>;
+
+		io-channels = <&pm8150l_vadc ADC_GPIO1_PU2>;
+		io-channel-names = "wf_therm";
+		io-channel-ranges;
+		use_iio_processed;
+
+		adc_array = <119411 142032
+				168416 200207
+				236582 281089
+				331673 390648
+				457841 534441
+				621097 723832
+				826568 929304
+				1032040 1147136
+				1251753 1356803
+				1449904
+				1532301 1603667
+				1662728 1711042>;
+
+		temp_array = <900 850 
+				800 750
+				700 650
+				600 550
+				500 450
+				400 350
+				300 250
+				200 150
+				100 50
+				0
+				(-50) (-100)
+				(-150) (-200)>;
+	};
+};
+
+&pm8150l_vadc {
+	wf_therm@52 {
+		reg = <ADC_GPIO1_PU2>;
+		label = "wf_therm";
+		qcom,ratiometric;
+		qcom,hw-settle-time = <200>;
+		qcom,pre-scaling = <1 1>;
+		qcom,decimation = <840>;
+		qcom,avg-samples = <8>;
+	};
+};

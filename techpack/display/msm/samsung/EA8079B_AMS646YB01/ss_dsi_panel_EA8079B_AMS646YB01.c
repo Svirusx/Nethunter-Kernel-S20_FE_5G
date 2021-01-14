@@ -572,12 +572,12 @@ static struct dsi_panel_cmd_set * ss_brightness_gamma_mode2_hbm(struct samsung_d
 	else
 		pcmds->cmds[0].msg.tx_buf[1] = 0x10;
 
-	pcmds->cmds[2].msg.tx_buf[6] = elvss_table_hbm[vdd->br_info.common_br.cd_idx];	/* ELVSS Value for HBM brgihtness */
-	pcmds->cmds[3].msg.tx_buf[1] = get_bit(vdd->br_info.common_br.gm2_wrdisbv, 8, 2);
-	pcmds->cmds[3].msg.tx_buf[2] = get_bit(vdd->br_info.common_br.gm2_wrdisbv, 0, 8);
+	pcmds->cmds[3].msg.tx_buf[6] = elvss_table_hbm[vdd->br_info.common_br.cd_idx];	/* ELVSS Value for HBM brgihtness */
+	pcmds->cmds[4].msg.tx_buf[1] = get_bit(vdd->br_info.common_br.gm2_wrdisbv, 8, 2);
+	pcmds->cmds[4].msg.tx_buf[2] = get_bit(vdd->br_info.common_br.gm2_wrdisbv, 0, 8);
 
 	/* ELVSS TSET */
-	pcmds->cmds[5].msg.tx_buf[1] = vdd->br_info.temperature > 0 ? vdd->br_info.temperature : (char)(BIT(7) | (-1*vdd->br_info.temperature));
+	pcmds->cmds[6].msg.tx_buf[1] = vdd->br_info.temperature > 0 ? vdd->br_info.temperature : (char)(BIT(7) | (-1*vdd->br_info.temperature));
 
 	*level_key = LEVEL1_KEY;
 	return pcmds;
@@ -1525,7 +1525,7 @@ static void samsung_panel_init(struct samsung_display_driver_data *vdd)
 	/* SAMSUNG_FINGERPRINT */
 	vdd->panel_hbm_entry_delay = 1;
 	vdd->panel_hbm_entry_after_te = 0;
-	vdd->panel_hbm_exit_delay = 1;
+	vdd->panel_hbm_exit_delay = 2;
 
 	/* Gamma compensation (Gamma Offset) */
 	vdd->panel_func.samsung_gm2_gamma_comp_init = ss_gm2_gamma_comp_init;

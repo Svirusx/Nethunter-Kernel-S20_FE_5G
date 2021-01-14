@@ -1,0 +1,138 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+#include "../drivers/audio_gts7xl_pinctrl_common.dtsi"
+#include "../drivers/kona-sec-gts7xl-input-pinctrl.dtsi"
+#include "../drivers/kona-sec-gts7xl-camera-sensor-pinctrl-r01.dtsi"
+#include "../drivers/kona-sec-gts7xl-grip-pinctrl-r00.dtsi"
+
+&tlmm {
+	cnss_pins {
+            qca6390_wlan_en_active: qca6390_wlan_en_active {
+                mux {
+                    pins = "gpio90";
+                    function = "gpio";
+                };
+
+                config {
+                        pins = "gpio90";
+                        drive-strength = <16>;
+                        output-high;
+                        bias-pull-up;
+                };
+            };
+
+            qca6390_wlan_en_sleep: qca6390_wlan_en_sleep {
+                mux {
+                    pins = "gpio90";
+                    function = "gpio";
+                };
+
+                config {
+                    pins = "gpio90";
+                    drive-strength = <2>;
+                    output-low;
+                    bias-pull-down;
+                };
+            };
+    };
+
+	s2dos06_i2c_sda {
+		s2dos06_i2c_sda_default: s2dos06_i2c_sda_default {
+			s2dos06_i2c_sda {
+				pins = "gpio62";
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+	};
+	s2dos06_i2c_scl {
+		s2dos06_i2c_scl_default: s2dos06_i2c_scl_default {
+			s2dos06_i2c_scl {
+				pins = "gpio63";
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+	};
+	s2dos06_irq {
+		s2dos06_irq_default: s2dos06_irq_default {
+			config {
+				pins = "gpio93";
+				drive-strength = <2>;
+				bias-disable;
+				input-enable;
+			};
+		};
+	};
+
+			/* pogo keyboard int pinctrl */
+	keypad_conn_active: keypad_conn_active {
+		mux {
+			pins = "gpio43";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio43";
+			drive-strength = <2>;
+			input-enable;
+			bias-pull-down;
+		};
+	};
+};
+
+&tlmm {
+	wakeup-disabled-gpios = <
+		4	/* I2C : PM3003A_SDA_1P8 */
+		11	/* NC : NC */
+		14	/* NC : NC */
+		23	/* SPI : BTP_SPI_CS_N */
+		24	/* I2C : OCTA_DCDC_SDA_1P8 */
+		27	/* NC : NC */
+		28	/* I2C : DIRECT_IF_PMIC_SDA_1P8 */
+		40	/* I2C : REDRIVER_SDA_1P8 */
+		43	/* NC : NC */
+		45	/* I2C : WIFI2_GRIP_SCL_1P8 */
+		59	/* NC : NC */
+		63	/* I2C : DISP_PMIC_SCL_1P8 */
+		83	/* NC : NC */
+		92	/* NC : NC */
+		100	/* NC : NC */
+		103	/* I2C : VTCAM_SDA_1P8 */
+		104	/* I2C : VTCAM_SCL_1P8 */
+		108	/* I2C : CAM_AF_EEP_SCL_1P8 */
+		112	/* I2C : MAIN1_GRIP_SDA_1P8 */
+		113	/* I2C : MAIN1_GRIP_SCL_1P8 */
+		124	/* NC : NC */
+		126	/* I2C : MCU_SCL_1P8 */
+		128	/* NC : NC */
+		150	/* NC : NC */
+		160	/* I2C : 6AXIS_I3C_SDA_1P8 */
+		162	/* I2C : MAGNETIC_SDA_1P8 */
+		164	/* NC : NC */
+		166	/* NC : NC */
+		167	/* NC : NC */
+		175	/* NC : NC */
+	>;
+};
+
+&pm8150l_gpios {
+	ap2mdm_errfatal2 {
+		ap2mdm_errfatal2_default: ap2mdm_errfatal2_default {
+	        pins = "gpio7";
+	        function = "normal";
+	        bias-disable;
+	        output-low;
+	        input-disable;
+	    };
+	};
+};

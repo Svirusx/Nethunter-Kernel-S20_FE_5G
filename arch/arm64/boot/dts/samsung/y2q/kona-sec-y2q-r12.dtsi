@@ -1,0 +1,33 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "kona-sec-y2q-r11.dtsi"
+#include "kona-sec-y2q-pinctrl-r12.dtsi"
+
+#include "../drivers/kona-sec-y2q-display-r01.dtsi"
+
+&soc {
+	i2c@22 {
+		gpios = <&tlmm 72 0 /* sda */
+			&tlmm 71 0 /* scl */
+		>;
+	};
+};
+
+&qupv3_se5_i2c {
+	touchscreen@48 {
+		pinctrl-0 = <&attn_irq>;
+		pinctrl-1 = <&attn_irq>;
+		pinctrl-2 = <&attn_irq>;
+	};
+};
+

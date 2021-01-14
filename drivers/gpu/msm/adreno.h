@@ -110,6 +110,20 @@
 /* The target supports ringbuffer level APRIV */
 #define ADRENO_APRIV BIT(21)
 /*
+ * Use SHMEM for page allocation. There will be no support
+ * for pools and higher order pages.
+ */
+#define ADRENO_USE_SHMEM BIT(22)
+/*
+ * Make pages available for reclaim. Process foreground/background
+ * activity is known through sysfs exposed per process. Based on
+ * this, pages are unpinned and made available to Per Process
+ * Reclaim (PPR). SHMEM is used for allocation of pages and
+ * support for pools is removed.
+ */
+#define ADRENO_PROCESS_RECLAIM BIT(23)
+
+/*
  * Adreno GPU quirks - control bits for various workarounds
  */
 
@@ -206,6 +220,7 @@ enum adreno_gpurev {
 	ADRENO_REV_A640 = 640,
 	ADRENO_REV_A650 = 650,
 	ADRENO_REV_A680 = 680,
+	ADRENO_REV_A702 = 702,
 };
 
 #define ADRENO_SOFT_FAULT BIT(0)
@@ -264,8 +279,8 @@ enum adreno_preempt_states {
 /**
  * struct adreno_preemption
  * @state: The current state of preemption
- * @counters: Memory descriptor for the memory where the GPU writes the
- * preemption counters on switch
+ * @scratch: Memory descriptor for the memory where the GPU writes the
+ * current ctxt record address and preemption counters on switch
  * @timer: A timer to make sure preemption doesn't stall
  * @work: A work struct for the preemption worker (for 5XX)
  * preempt_level: The level of preemption (for 6XX)
@@ -275,7 +290,7 @@ enum adreno_preempt_states {
  */
 struct adreno_preemption {
 	atomic_t state;
-	struct kgsl_memdesc counters;
+	struct kgsl_memdesc scratch;
 	struct timer_list timer;
 	struct work_struct work;
 	unsigned int preempt_level;
@@ -353,7 +368,6 @@ struct adreno_reglist {
  * @patchid: Match for the patch revision of the GPU
  * @features: Common adreno features supported by this core
  * @gpudev: Pointer to the GPU family specific functions for this core
- * @gmem_base: Base address of binning memory (GMEM/OCMEM)
  * @gmem_size: Amount of binning memory (GMEM/OCMEM) to reserve for the core
  * @busy_mask: mask to check if GPU is busy in RBBM_STATUS
  * @bus_width: Bytes transferred in 1 cycle
@@ -363,7 +377,6 @@ struct adreno_gpu_core {
 	unsigned int core, major, minor, patchid;
 	unsigned long features;
 	struct adreno_gpudev *gpudev;
-	unsigned long gmem_base;
 	size_t gmem_size;
 	unsigned int busy_mask;
 	u32 bus_width;
@@ -380,6 +393,7 @@ enum gpu_coresight_sources {
  * @dev: Reference to struct kgsl_device
  * @priv: Holds the private flags specific to the adreno_device
  * @chipid: Chip ID specific to the GPU
+ * @uche_gmem_base: Base address of GMEM for UCHE access
  * @cx_misc_len: Length of the CX MISC register block
  * @cx_misc_virt: Pointer where the CX MISC block is mapped
  * @rscc_base: Base physical address of the RSCC
@@ -464,6 +478,7 @@ struct adreno_device {
 	struct kgsl_device dev;    /* Must be first field in this struct */
 	unsigned long priv;
 	unsigned int chipid;
+	u64 uche_gmem_base;
 	unsigned long cx_dbgc_base;
 	unsigned int cx_dbgc_len;
 	void __iomem *cx_dbgc_virt;
@@ -882,6 +897,7 @@ struct adreno_gpudev {
 
 	struct adreno_irq *irq;
 	int num_prio_levels;
+	int cp_rb_cntl;
 	unsigned int vbif_xin_halt_ctrl0_mask;
 	unsigned int gbif_client_halt_mask;
 	unsigned int gbif_arb_halt_mask;
@@ -1110,6 +1126,7 @@ void adreno_rscc_regread(struct adreno_device *adreno_dev,
 		unsigned int offsetwords, unsigned int *value);
 void adreno_isense_regread(struct adreno_device *adreno_dev,
 		unsigned int offsetwords, unsigned int *value);
+u32 adreno_get_ucode_version(const u32 *data);
 
 
 #define ADRENO_TARGET(_name, _id) \
@@ -1162,8 +1179,9 @@ static inline int adreno_is_a505_or_a506(struct adreno_device *adreno_dev)
 
 static inline int adreno_is_a6xx(struct adreno_device *adreno_dev)
 {
-	return ADRENO_GPUREV(adreno_dev) >= 600 &&
-			ADRENO_GPUREV(adreno_dev) < 700;
+	int rev = ADRENO_GPUREV(adreno_dev);
+
+	return (rev >= 600 && rev < 700) || (rev == 702);
 }
 
 ADRENO_TARGET(a610, ADRENO_REV_A610)
@@ -1175,6 +1193,7 @@ ADRENO_TARGET(a630, ADRENO_REV_A630)
 ADRENO_TARGET(a640, ADRENO_REV_A640)
 ADRENO_TARGET(a650, ADRENO_REV_A650)
 ADRENO_TARGET(a680, ADRENO_REV_A680)
+ADRENO_TARGET(a702, ADRENO_REV_A702)
 
 /*
  * All the derived chipsets from A615 needs to be added to this
@@ -1382,7 +1401,7 @@ static inline void adreno_set_gpu_fault(struct adreno_device *adreno_dev,
 	int state)
 {
 	/* only set the fault bit w/o overwriting other bits */
-	atomic_add(state, &adreno_dev->dispatcher.fault);
+	atomic_or(state, &adreno_dev->dispatcher.fault);
 
 	/* make sure other CPUs see the update */
 	smp_wmb();
@@ -1737,8 +1756,9 @@ static inline int adreno_perfcntr_active_oob_get(struct kgsl_device *device)
 	if (!ret) {
 		ret = gmu_core_dev_oob_set(device, oob_perfcntr);
 		if (ret) {
+			gmu_core_snapshot(device);
 			adreno_set_gpu_fault(ADRENO_DEVICE(device),
-				ADRENO_GMU_FAULT);
+				ADRENO_GMU_FAULT_SKIP_SNAPSHOT);
 			adreno_dispatcher_schedule(device);
 			kgsl_active_count_put(device);
 		}

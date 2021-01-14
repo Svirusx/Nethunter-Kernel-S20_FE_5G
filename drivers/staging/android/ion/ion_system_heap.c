@@ -420,11 +420,13 @@ err_free_sg2:
 	buffer->private_flags |= ION_PRIV_FLAG_SHRINKER_FREE;
 
 	if (vmid > 0)
-		ion_hyp_unassign_sg(table, &vmid, 1, true, false);
+		if (ion_hyp_unassign_sg(table, &vmid, 1, true, false))
+			goto err_free_table_sync;
 
 	for_each_sg(table->sgl, sg, table->nents, i)
 		free_buffer_page(sys_heap, buffer, sg_page(sg),
 				 get_order(sg->length));
+err_free_table_sync:
 	if (nents_sync)
 		sg_free_table(&table_sync);
 err_free_sg:
@@ -759,8 +761,8 @@ static struct task_struct *ion_create_kworker(struct ion_page_pool **pools,
 	attr.sched_nice = ION_KTHREAD_NICE_VAL;
 	buf = cached ? "cached" : "uncached";
 
-	thread = kthread_create(ion_sys_heap_worker, pools,
-				"ion-pool-%s-worker", buf);
+	thread = kthread_run(ion_sys_heap_worker, pools,
+			     "ion-pool-%s-worker", buf);
 	if (IS_ERR(thread)) {
 		pr_err("%s: failed to create %s worker thread: %ld\n",
 		       __func__, buf, PTR_ERR(thread));

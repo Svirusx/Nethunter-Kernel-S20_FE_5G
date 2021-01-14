@@ -62,8 +62,6 @@
 #define TETH_AGGR_BYTE_LIMIT 24
 #define TETH_AGGR_DL_BYTE_LIMIT 16
 #define TRE_BUFF_SIZE 32768
-#define IPA_HOLB_TMR_EN 0x1
-#define IPA_HOLB_TMR_DIS 0x0
 #define RNDIS_IPA_DFLT_RT_HDL 0
 #define IPA_POLL_FOR_EMPTINESS_NUM 50
 #define IPA_POLL_FOR_EMPTINESS_SLEEP_USEC 20
@@ -686,12 +684,12 @@ static dma_addr_t ipa_mpm_smmu_map(void *va_addr,
 	} else {
 		if (dir == DMA_TO_HIPA)
 			iova = dma_map_single(ipa3_ctx->pdev, va_addr,
-					ipa3_ctx->mpm_ring_size_dl *
-					IPA_MPM_DESC_SIZE, dir);
+				ipa3_ctx->mpm_ring_size_dl *
+				IPA_MPM_DESC_SIZE, dir);
 		else
 			iova = dma_map_single(ipa3_ctx->pdev, va_addr,
-					ipa3_ctx->mpm_ring_size_ul *
-					IPA_MPM_DESC_SIZE, dir);
+				ipa3_ctx->mpm_ring_size_ul *
+				IPA_MPM_DESC_SIZE, dir);
 
 		if (dma_mapping_error(ipa3_ctx->pdev, iova)) {
 			IPA_MPM_ERR("dma_map_single failure for entry\n");
@@ -734,7 +732,6 @@ static void ipa_mpm_smmu_unmap(dma_addr_t carved_iova, int sz, int dir,
 
 	if (carved_iova <= 0) {
 		IPA_MPM_ERR("carved_iova is zero/negative\n");
-		WARN_ON(1);
 		return;
 	}
 
@@ -768,12 +765,12 @@ static void ipa_mpm_smmu_unmap(dma_addr_t carved_iova, int sz, int dir,
 	} else {
 		if (dir == DMA_TO_HIPA)
 			dma_unmap_single(ipa3_ctx->pdev, ap_cb_iova,
-					ipa3_ctx->mpm_ring_size_dl *
-					IPA_MPM_DESC_SIZE, dir);
+				ipa3_ctx->mpm_ring_size_dl *
+				IPA_MPM_DESC_SIZE, dir);
 		else
 			dma_unmap_single(ipa3_ctx->pdev, ap_cb_iova,
-					ipa3_ctx->mpm_ring_size_ul *
-					IPA_MPM_DESC_SIZE, dir);
+				ipa3_ctx->mpm_ring_size_ul *
+				IPA_MPM_DESC_SIZE, dir);
 	}
 }
 
@@ -984,6 +981,7 @@ static int ipa_mpm_connect_mhip_gsi_pipe(enum ipa_client_type mhip_client,
 		ring_size = ipa3_ctx->mpm_ring_size_dl;
 	else
 		ring_size = ipa3_ctx->mpm_ring_size_ul;
+
 	for (i = 1, k = 1; i < ring_size; i++, k++) {
 		buff_va = kzalloc(TRE_BUFF_SIZE, GFP_KERNEL);
 		if (!buff_va)
@@ -1324,6 +1322,7 @@ static void ipa_mpm_clean_mhip_chan(int mhi_idx,
 		ring_size = ipa3_ctx->mpm_ring_size_dl_cache;
 	else
 		ring_size = ipa3_ctx->mpm_ring_size_ul_cache;
+
 	for (i = 1; i < ring_size; i++) {
 		if (IPA_CLIENT_IS_PROD(mhip_client)) {
 			ipa_mpm_smmu_unmap(
@@ -1570,9 +1569,8 @@ static int ipa_mpm_vote_unvote_pcie_clk(enum ipa_mpm_clk_vote_type vote,
 		if ((atomic_read(
 			&ipa_mpm_ctx->md[probe_id].clk_cnt.pcie_clk_cnt)
 								== 0)) {
-			IPA_MPM_DBG("probe_id %d PCIE clock already devoted\n",
+			IPA_MPM_ERR("probe_id %d PCIE clock already devoted\n",
 				probe_id);
-			WARN_ON(1);
 			*is_acted = true;
 			return 0;
 		}
@@ -1608,9 +1606,8 @@ static void ipa_mpm_vote_unvote_ipa_clk(enum ipa_mpm_clk_vote_type vote,
 		if ((atomic_read
 			(&ipa_mpm_ctx->md[probe_id].clk_cnt.ipa_clk_cnt)
 								== 0)) {
-			IPA_MPM_DBG("probe_id %d IPA clock count < 0\n",
+			IPA_MPM_ERR("probe_id %d IPA clock count < 0\n",
 				probe_id);
-			WARN_ON(1);
 			return;
 		}
 		IPA_ACTIVE_CLIENTS_DEC_SPECIAL(ipa_mpm_mhip_chan_str[probe_id]);
@@ -2365,7 +2362,6 @@ static int ipa_mpm_mhi_probe_cb(struct mhi_device *mhi_dev,
 	ret = mhi_prepare_for_transfer(ipa_mpm_ctx->md[probe_id].mhi_dev);
 	if (ret) {
 		IPA_MPM_ERR("mhi_prepare_for_transfer failed %d\n", ret);
-		WARN_ON(1);
 		/*
 		 * WA to handle prepare_for_tx failures.
 		 * Though prepare for transfer fails, indicate success
@@ -2629,7 +2625,9 @@ static int ipa_mpm_mhi_probe_cb(struct mhi_device *mhi_dev,
 	ipa3_ctx->mpm_ring_size_dl_cache = ipa3_ctx->mpm_ring_size_dl;
 	IPA_MPM_DBG("Mpm ring size ul/dl %d / %d",
 		ipa3_ctx->mpm_ring_size_ul, ipa3_ctx->mpm_ring_size_dl);
+
 	IPA_MPM_FUNC_EXIT();
+
 	return 0;
 
 fail_gsi_setup:
@@ -2665,6 +2663,7 @@ static void ipa_mpm_init_mhip_channel_info(void)
 
 	IPA_MPM_DBG("Teth Aggregation byte limit =%d\n",
 		ipa3_ctx->mpm_teth_aggr_size);
+
 	/* IPA_MPM_MHIP_CH_ID_1 => MHIP RMNET PIPES */
 	ipa_mpm_pipes[IPA_MPM_MHIP_CH_ID_1].dl_cons.ipa_client =
 		IPA_CLIENT_MHI_PRIME_RMNET_PROD;
@@ -2797,13 +2796,7 @@ static void ipa_mpm_mhi_status_cb(struct mhi_device *mhi_dev,
 			IPA_MPM_DBG("Already out of lpm\n");
 		}
 		break;
-	case MHI_CB_EE_RDDM:
-	case MHI_CB_PENDING_DATA:
-	case MHI_CB_SYS_ERROR:
-	case MHI_CB_FATAL_ERROR:
-	case MHI_CB_BOOTUP_TIMEOUT:
-	case MHI_CB_EE_MISSION_MODE:
-	case MHI_CB_DTR_SIGNAL:
+	default:
 		IPA_MPM_ERR("unexpected event %d\n", mhi_cb);
 		break;
 	}
@@ -2936,6 +2929,7 @@ int ipa_mpm_mhip_xdci_pipe_enable(enum ipa_usb_teth_prot xdci_teth_prot)
 		/* Register for BW indication from Q6*/
 		if (!ipa3_qmi_reg_dereg_for_bw(true, BW_VOTE_XDCI_ENABLE))
 			IPA_MPM_DBG("Fail regst QMI BW Indctn,might be SSR");
+
 		pipe_idx = ipa3_get_ep_mapping(IPA_CLIENT_USB_PROD);
 
 		/* Lift the delay for rmnet USB prod pipe */
@@ -3086,7 +3080,7 @@ int ipa_mpm_mhip_xdci_pipe_disable(enum ipa_usb_teth_prot xdci_teth_prot)
 			IPA_MPM_ERR(
 				"Active tethe count is %d",
 				atomic_read(&ipa_mpm_ctx->active_teth_count));
-		}		
+		}
 		break;
 	case MHIP_STATUS_FAIL:
 	case MHIP_STATUS_BAD_STATE:
@@ -3433,7 +3427,6 @@ int ipa3_mpm_enable_adpl_over_odl(bool enable)
 			return ret;
 		}
 
-
 		/* start remote mhip-dpl ch */
 		ret = ipa_mpm_start_stop_remote_mhip_chan(IPA_MPM_MHIP_CH_ID_2,
 					MPM_MHIP_START, false);
@@ -3514,7 +3507,7 @@ int ipa3_mpm_enable_adpl_over_odl(bool enable)
 int ipa3_qmi_reg_dereg_for_bw(bool bw_reg, int bw_reg_dereg_type)
 {
 	int rt;
-	
+
 	mutex_lock(&ipa_mpm_ctx->mutex);
 	ipa_mpm_ctx->bw_reg_dereg_cache[
 		ipa_mpm_ctx->cache_index].bw_reg_dereg_type =
@@ -3542,8 +3535,9 @@ int ipa3_qmi_reg_dereg_for_bw(bool bw_reg, int bw_reg_dereg_type)
 			}
 			IPA_MPM_DBG("QMI BW regst success from %d",
 				ipa_mpm_ctx->bw_reg_dereg_cache[
-					ipa_mpm_ctx->cache_index -
-					1].bw_reg_dereg_type);
+					(ipa_mpm_ctx->cache_index -
+					1) % IPA_MAX_BW_REG_DEREG_CACHE].
+					bw_reg_dereg_type);
 		} else {
 			IPA_MPM_DBG("bw_change to %d no-op, teth_count = %d",
 				bw_reg,
@@ -3564,8 +3558,9 @@ int ipa3_qmi_reg_dereg_for_bw(bool bw_reg, int bw_reg_dereg_type)
 			}
 			IPA_MPM_DBG("QMI BW De-regst success %d",
 				ipa_mpm_ctx->bw_reg_dereg_cache[
-					ipa_mpm_ctx->cache_index -
-					1].bw_reg_dereg_type);
+					(ipa_mpm_ctx->cache_index -
+					1) % IPA_MAX_BW_REG_DEREG_CACHE].
+					bw_reg_dereg_type);
 		} else {
 			IPA_MPM_DBG("bw_change to %d no-op, teth_count = %d",
 				bw_reg,

@@ -2834,6 +2834,41 @@ static ssize_t mipi_samsung_poc_info_show(struct device *dev,
 	return strlen(buf);
 }
 
+static ssize_t ss_fw_update_store(struct device *dev,
+		struct device_attribute *attr, const char *buf, size_t size)
+{
+	int ret = 0;
+	int input;
+	struct samsung_display_driver_data *vdd =
+		(struct samsung_display_driver_data *)dev_get_drvdata(dev);
+
+	if (IS_ERR_OR_NULL(vdd)) {
+		LCD_ERR("no vdd");
+		return -ENODEV;
+	}
+
+	if (!ss_is_ready_to_send_cmd(vdd)) {
+		LCD_ERR("Panel is not ready. Panel State(%d)\n", vdd->panel_state);
+		return -EBUSY;
+	}
+
+	if (sscanf(buf, "%d ", &input) != 1)
+		return -EINVAL;
+
+	LCD_INFO("INPUT : (%d)\n", input);
+
+	if (input) {
+		if (IS_ERR_OR_NULL(vdd->panel_func.samsung_fw_up)) {
+			LCD_ERR("FW Update func is null\n");
+			ret = FW_UP_ERR_UPDATE_FAIL;
+		} else {
+			ret = vdd->panel_func.samsung_fw_up(vdd);
+		}
+	}
+
+	return (size_t)ret;
+}
+
 static ssize_t xtalk_store(struct device *dev,
 		struct device_attribute *attr, const char *buf, size_t size)
 {
@@ -5027,6 +5062,46 @@ end:
 	return size;
 }
 
+static ssize_t ss_tcon_pre_emp_show(struct device *dev,
+	struct device_attribute *attr, char *buf)
+{
+	int len = 0;
+
+	len = sprintf(buf, "nothing to show.\n");
+	LCD_INFO("nothing to show.\n");
+	return len;
+}
+
+static ssize_t ss_tcon_pre_emp_store(struct device *dev,
+	struct device_attribute *attr, const char *buf, size_t size)
+{
+	struct samsung_display_driver_data *vdd =
+		(struct samsung_display_driver_data *)dev_get_drvdata(dev);
+	int input;
+
+	if (IS_ERR_OR_NULL(vdd)) {
+		LCD_ERR("no vdd");
+		return size;
+	}
+	if (!ss_is_ready_to_send_cmd(vdd)) {
+		LCD_ERR("Panel is not ready. Panel State(%d)\n", vdd->panel_state);
+		return size;
+	}
+
+	if (sscanf(buf, "%d", &input) != 1)
+		return size;
+
+	LCD_INFO("(%d)\n", input);
+
+	if (input)
+		ss_send_cmd(vdd, TX_TCON_PE_ON);
+	else
+		ss_send_cmd(vdd, TX_TCON_PE_OFF);
+
+	return size;
+}
+
+
 static DEVICE_ATTR(lcd_type, S_IRUGO, ss_disp_lcdtype_show, NULL);
 static DEVICE_ATTR(cell_id, S_IRUGO, ss_disp_cell_id_show, NULL);
 static DEVICE_ATTR(octa_id, S_IRUGO, ss_disp_octa_id_show, NULL);
@@ -5062,6 +5137,7 @@ static DEVICE_ATTR(mst, S_IRUGO | S_IWUSR | S_IWGRP, NULL, mipi_samsung_mst_stor
 static DEVICE_ATTR(poc, S_IRUGO | S_IWUSR | S_IWGRP, mipi_samsung_poc_show, mipi_samsung_poc_store);
 static DEVICE_ATTR(poc_mca, S_IRUGO | S_IWUSR | S_IWGRP, mipi_samsung_poc_mca_show, NULL);
 static DEVICE_ATTR(poc_info, S_IRUGO | S_IWUSR | S_IWGRP, mipi_samsung_poc_info_show, NULL);
+static DEVICE_ATTR(fw_up, S_IRUGO | S_IWUSR | S_IWGRP, NULL, ss_fw_update_store);
 static DEVICE_ATTR(irc_mode, S_IRUGO | S_IWUSR | S_IWGRP, ss_irc_mode_show, ss_irc_mode_store);
 //static DEVICE_ATTR(ldu_correction, S_IRUGO | S_IWUSR | S_IWGRP, ss_ldu_correction_show, ss_ldu_correction_store);
 static DEVICE_ATTR(adaptive_control, S_IRUGO | S_IWUSR | S_IWGRP, NULL, ss_adaptive_control_store);
@@ -5114,6 +5190,7 @@ static DEVICE_ATTR(swing, S_IRUGO|S_IWUSR|S_IWGRP, ss_swing_show, ss_swing_store
 static DEVICE_ATTR(emphasis, S_IRUGO|S_IWUSR|S_IWGRP, ss_emphasis_show, ss_emphasis_store);
 static DEVICE_ATTR(ioctl_power_ctrl, S_IRUGO|S_IWUSR|S_IWGRP, ss_ioctl_power_ctrl_show, NULL);
 static DEVICE_ATTR(window_color, S_IRUGO | S_IWUSR | S_IWGRP, ss_window_color_show, ss_window_color_store);
+static DEVICE_ATTR(tcon_pe, S_IRUGO | S_IWUSR | S_IWGRP, ss_tcon_pre_emp_show, ss_tcon_pre_emp_store);
 
 static struct attribute *panel_sysfs_attributes[] = {
 	&dev_attr_lcd_type.attr,
@@ -5169,6 +5246,7 @@ static struct attribute *panel_sysfs_attributes[] = {
 	&dev_attr_poc.attr,
 	&dev_attr_poc_mca.attr,
 	&dev_attr_poc_info.attr,
+	&dev_attr_fw_up.attr,
 	&dev_attr_dpui.attr,
 	&dev_attr_dpui_dbg.attr,
 	&dev_attr_dpci.attr,
@@ -5194,6 +5272,7 @@ static struct attribute *panel_sysfs_attributes[] = {
 	&dev_attr_vrr_lfd.attr,
 	&dev_attr_ioctl_power_ctrl.attr,
 	&dev_attr_window_color.attr,
+	&dev_attr_tcon_pe.attr,
 	NULL
 };
 static const struct attribute_group panel_sysfs_group = {

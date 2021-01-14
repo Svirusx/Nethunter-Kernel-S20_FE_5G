@@ -45,6 +45,9 @@ int main(void)
 #ifdef CONFIG_ARM64_SW_TTBR0_PAN
   DEFINE(TSK_TI_TTBR0,		offsetof(struct task_struct, thread_info.ttbr0));
 #endif
+#ifdef CONFIG_SHADOW_CALL_STACK
+  DEFINE(TSK_TI_SCS,		offsetof(struct task_struct, thread_info.shadow_call_stack));
+#endif
 #ifdef CONFIG_CFP_ROPP
   DEFINE(TSK_TI_RRK,		offsetof(struct task_struct, thread_info.rrk));
 #endif

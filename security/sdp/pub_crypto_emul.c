@@ -24,7 +24,7 @@
 #include <linux/module.h>
 #include <linux/string.h>
 #include <linux/interrupt.h>
-#include <linux/wakelock.h>
+//#include <linux/wakelock.h>
 #include <linux/sched.h>
 #include <linux/netlink.h>
 #include <linux/net.h>

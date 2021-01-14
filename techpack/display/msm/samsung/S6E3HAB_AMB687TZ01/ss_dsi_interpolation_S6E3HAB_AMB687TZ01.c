@@ -709,9 +709,9 @@ static int table_parsing_data_S6E3HAB_AMB687TZ01(struct samsung_display_driver_d
 		normal_table = (struct normal_table_format *)table_normal_br_info_120hs;
 	}
 
-	hbm_step = sizeof(table_hbm_br_info) / sizeof(struct hbm_table_format);
-	normal_step = sizeof(table_normal_br_info) / sizeof(struct normal_table_format);
-	hmd_step = sizeof(table_hmd_br_info) / sizeof(struct hmd_table_format);
+	hbm_step = (int)sizeof(table_hbm_br_info) / (int)sizeof(struct hbm_table_format);
+	normal_step = (int)sizeof(table_normal_br_info) / (int)sizeof(struct normal_table_format);
+	hmd_step = (int)sizeof(table_hmd_br_info) / (int)sizeof(struct hmd_table_format);
 
 	input_table_size = sizeof(table_hbm_br_info) + sizeof(table_normal_br_info) + sizeof(table_hmd_br_info);
 
@@ -780,7 +780,7 @@ static int table_parsing_data_hmd_S6E3HAB_AMB687TZ01(struct samsung_display_driv
 	}
 
 	hmd_table = (struct hmd_table_format *)table_hmd_br_info;
-	hmd_step = sizeof(table_hmd_br_info) / sizeof(struct hmd_table_format);
+	hmd_step = (int)sizeof(table_hmd_br_info) / (int)sizeof(struct hmd_table_format);
 
 	LCD_INFO("hbm_step : hmd_step : %d", hmd_step);
 
@@ -1051,7 +1051,7 @@ int flash_gamma_support_S6E3HAB_AMB687TZ01(struct samsung_display_driver_data *v
 /*
  * convert_GAMMA_to_V : convert CA gamma reg to V format
  * src : packed gamma value (CAh)
- * dst : extened V values (V255 ~ VT)
+ * dst : extended V values (V255 ~ VT)
  */
 void convert_GAMMA_to_V(unsigned char* src, unsigned int *dst)
 {
@@ -1106,7 +1106,7 @@ void convert_GAMMA_to_V(unsigned char* src, unsigned int *dst)
 
 /*
  * convert_V_to_GAMMA : convert V format to CAh gamma reg
- * src : extened V values (V255 ~ VT)
+ * src : extended V values (V255 ~ VT)
  * dst : packed gamma values (CAh)
  */
 void convert_V_to_GAMMA(unsigned int *src, unsigned char* dst)

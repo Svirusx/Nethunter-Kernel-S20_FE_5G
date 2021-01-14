@@ -962,6 +962,13 @@ static void ss_copr_panel_init(struct samsung_display_driver_data *vdd)
 static int samsung_panel_off_pre(struct samsung_display_driver_data *vdd)
 {
 	int rc = 0;
+	int rddpm;
+
+	rddpm = ss_read_rddpm(vdd);
+
+	SS_XLOG(rddpm);
+	LCD_INFO("panel dbg rddpm: %x\n", rddpm);
+
 	return rc;
 }
 

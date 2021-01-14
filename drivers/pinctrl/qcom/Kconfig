@@ -201,6 +201,15 @@ config PINCTRL_SCUBA
 	  Qualcomm Technologies Inc TLMM block found on the Qualcomm
 	  Technologies Inc SCUBA platform.
 
+config PINCTRL_SDM660
+	tristate "Qualcomm Technologies, Inc SDM660 pin controller driver"
+	depends on GPIOLIB && OF
+	select PINCTRL_MSM
+	help
+	 This is the pinctrl, pinmux, pinconf and gpiolib driver for
+	 the Qualcomm Technologies Inc TLMM block found in the
+	 Qualcomm Technologies, Inc. SDM660 platform.
+
 config SENSORS_FP_SPI_GPIO_START
     depends on SENSORS_FINGERPRINT
 	int "Fingerprint spi gpio number start"

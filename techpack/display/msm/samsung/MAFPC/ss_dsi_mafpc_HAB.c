@@ -13,6 +13,8 @@
 #include "ss_dsi_panel_common.h"
 #include "ss_dsi_mafpc_HAB.h"
 
+static bool is_mafpc_img_sent;
+
 /*
  * make dsi_panel_cmds using image data
  */
@@ -271,7 +273,7 @@ static void ss_mafpc_img_write(struct samsung_display_driver_data *vdd, bool is_
 		return;
 	}
 
-	LCD_ERR("++(%d)\n", is_instant);
+	LCD_INFO("++(%d)\n", is_instant);
 
 	mutex_lock(&vdd->self_disp.vdd_self_display_ioctl_lock);
 
@@ -378,7 +380,8 @@ static void ss_mafpc_img_write(struct samsung_display_driver_data *vdd, bool is_
 	ss_brightness_dcs(vdd, USE_CURRENT_BL_LEVEL, BACKLIGHT_NORMAL);
 	mutex_unlock(&vdd->self_disp.vdd_self_display_ioctl_lock);
 
-	LCD_ERR("--(%d)\n", is_instant);
+	is_mafpc_img_sent = true;
+	LCD_INFO("--(%d)\n", is_instant);
 }
 
 static void ss_mafpc_enable(struct samsung_display_driver_data *vdd, int enable)
@@ -414,7 +417,7 @@ static void ss_mafpc_enable(struct samsung_display_driver_data *vdd, int enable)
 
 	mutex_unlock(&vdd->mafpc.vdd_mafpc_lock);
 
-	LCD_ERR("%s\n", enable ? "Enable" : "Disable");
+	LCD_INFO("%s\n", enable ? "Enable" : "Disable");
 
 	return;
 }
@@ -448,7 +451,43 @@ static int ss_mafpc_crc_check(struct samsung_display_driver_data *vdd)
 		}
 	}
 
-	LCD_ERR("++ \n");
+	LCD_INFO("++\n");
+
+	/* GCT triggers panel soft reset, but HAB DDI fails to receive mafpc image data.
+	 * In result, it causes mafpc crc check failure..
+	 * To aoivd above cases, always reset panel in every mafpc check.
+	 */
+	is_mafpc_img_sent = false;
+
+	if (!is_mafpc_img_sent) {
+		int timeout_ms = 3000;
+		struct sde_connector *conn = GET_SDE_CONNECTOR(vdd);
+
+		/* reset dispaly to send mafpc img data
+		 * HAB DDI has limitation to receive mafpc image data before any frame update.
+		 * In continuous splash booting mode, DDI already received image frame from bootloader,
+		 * and it doesn't allow to transmit mafpc image data until next display reset.
+		 * Without display reset, and without mafpc image data update, it causes crc check error..
+		 * To prevent above issue, reset display panel if mafpc image data is not sent yet
+		 */
+		if (!conn) {
+			LCD_ERR("fail to get sde_con\n");
+			return -ENODEV;
+		}
+		LCD_INFO("reset display to transmit mafpc img data\n");
+		vdd->esd_recovery.esd_irq_enable(false, true, (void *)vdd);
+		vdd->panel_lpm.esd_recovery = true;
+		schedule_work(&conn->status_work.work);
+
+		while (!is_mafpc_img_sent && --timeout_ms)
+			usleep_range(1000, 1000);
+
+		if (!timeout_ms) {
+			LCD_ERR("fail to reset display (%d)\n", is_mafpc_img_sent);
+			return -ETIMEDOUT;
+		}
+	}
+
 	mutex_lock(&vdd->mafpc.vdd_mafpc_crc_check_lock);
 
 	/* prevent sw reset to trigger esd recovery */
@@ -505,7 +544,7 @@ static int ss_mafpc_crc_check(struct samsung_display_driver_data *vdd)
 		vdd->esd_recovery.esd_irq_enable(true, true, (void *)vdd);
 
 	mutex_unlock(&vdd->mafpc.vdd_mafpc_crc_check_lock);
-	LCD_ERR("-- \n");
+	LCD_INFO("--\n");
 
 	return ret;
 }

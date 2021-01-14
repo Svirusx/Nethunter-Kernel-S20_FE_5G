@@ -1,0 +1,26 @@
+#
+# Samsung Tabs7l Projects
+#
+config MACH_GTS7L_EUR_OPEN
+	default n
+	bool "Samsung GTS7L EUR OPEN"
+	help
+	  Support for Samsung GTS7L EUR OPEN device.
+
+config MACH_GTS7LWIFI_EUR_OPEN
+	default n
+	bool "Samsung GTS7LWIFI EUR OPEN"
+	help
+	  Support for Samsung GTS7LWIFI EUR OPEN device.
+
+config MACH_GTS7L_KOR_OPEN
+	default n
+	bool "Samsung GTS7L KOR OPEN"
+	help
+	  Support for Samsung GTS7L KOR OPEN device.
+
+config MACH_GTS7L_USA_SINGLE
+	default n
+	bool "Samsung GTS7L USA SINGLE"
+	help
+	  Support for Samsung GTS7L USA SINGLE device.

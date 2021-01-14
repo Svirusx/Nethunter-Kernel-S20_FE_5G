@@ -710,9 +710,9 @@ static int table_parsing_data_S6E3HAB_AMB677TY01(struct samsung_display_driver_d
 		normal_table = (struct normal_table_format *)table_normal_br_info_120hs;
 	}
 
-	hbm_step = sizeof(table_hbm_br_info) / sizeof(struct hbm_table_format);
-	normal_step = sizeof(table_normal_br_info) / sizeof(struct normal_table_format);
-	hmd_step = sizeof(table_hmd_br_info) / sizeof(struct hmd_table_format);
+	hbm_step = (int)sizeof(table_hbm_br_info) / (int)sizeof(struct hbm_table_format);
+	normal_step = (int)sizeof(table_normal_br_info) / (int)sizeof(struct normal_table_format);
+	hmd_step = (int)sizeof(table_hmd_br_info) / (int)sizeof(struct hmd_table_format);
 
 	input_table_size = sizeof(table_hbm_br_info) + sizeof(table_normal_br_info) + sizeof(table_hmd_br_info);
 
@@ -781,7 +781,7 @@ static int table_parsing_data_hmd_S6E3HAB_AMB677TY01(struct samsung_display_driv
 	}
 
 	hmd_table = (struct hmd_table_format *)table_hmd_br_info;
-	hmd_step = sizeof(table_hmd_br_info) / sizeof(struct hmd_table_format);
+	hmd_step = (int)sizeof(table_hmd_br_info) / (int)sizeof(struct hmd_table_format);
 
 	LCD_INFO("hmd_step : %d", hmd_step);
 

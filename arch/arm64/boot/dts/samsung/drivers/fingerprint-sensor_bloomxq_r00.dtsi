@@ -1,0 +1,152 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&apps_rsc {
+	rpmh-regulator-ldoc11 {
+		L11C: pm8150a_l11: regulator-pm8150a-l11 {
+			/delete-property/ qcom,proxy-consumer-enable;
+		};
+		L11C_BTP: pm8150a_l11_btp: regulator-pm8150a-l11-btp {
+			regulator-name = "VDD_BTP_3P3";
+			qcom,set = <RPMH_REGULATOR_SET_ALL>;
+			/delete-property/ qcom,proxy-consumer-enable;
+			regulator-min-microvolt = <3300000>;
+			regulator-max-microvolt = <3380000>;
+			qcom,init-voltage = <3300000>;
+			qcom,init-mode = <RPMH_REGULATOR_MODE_HPM>;
+		};
+	};
+};
+
+&aliases {
+	spi7 = "/soc/spi@99c000";
+};
+
+&tlmm {
+	fps_irq {
+		fps_irq_active: fps_irq_active {
+			mux {
+				pins = "gpio124";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio124";
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+
+		fps_irq_suspend: fps_irq_suspend {
+			mux {
+				pins = "gpio124";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio124";
+				drive-strength = <2>;
+				bias-pull-down;
+			};
+		};
+
+	};
+
+	fps_rst: fps_rst {
+		mux {
+			pins = "gpio92";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio92";
+			bias-pull-down;
+		};
+	};
+
+	fps_spi_pins: fps_spi_pins {
+		fps_spi_active: fps_spi_active {
+			mux {
+				pins = "gpio20", "gpio21", "gpio22",
+							"gpio23";
+				function = "qup7";
+			};
+			config {
+				pins = "gpio20", "gpio21", "gpio22",
+							"gpio23";
+				drive-strength = <6>;
+				bias-disable;
+			};
+		};
+		fps_spi_sleep: fps_spi_sleep {
+			mux {
+				pins = "gpio20", "gpio21", "gpio22";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio20", "gpio21", "gpio22";
+				drive-strength = <6>;
+				bias-pull-down;
+				input-enable;
+			};
+		};
+		fps_spi_cs_sleep: fps_spi_cs_sleep {
+			mux {
+				pins = "gpio23";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio23";
+				drive-strength = <6>;
+				bias-pull-up;
+				output-high;
+			};
+		};
+	};
+};
+
+&qupv3_se7_spi {
+	compatible = "qcom,spi-geni";
+	#address-cells = <1>;
+	#size-cells = <0>;
+	reg = <0x99c000 0x4000>;
+	reg-names = "se_phys";
+	clock-names = "se-clk", "m-ahb", "s-ahb";
+	clocks = <&clock_gcc GCC_QUPV3_WRAP0_S7_CLK>,
+		<&clock_gcc GCC_QUPV3_WRAP_0_M_AHB_CLK>,
+		<&clock_gcc GCC_QUPV3_WRAP_0_S_AHB_CLK>;
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&fps_spi_active>;
+	pinctrl-1 = <&fps_spi_sleep &fps_spi_cs_sleep>;
+	interrupts = <GIC_SPI 608 IRQ_TYPE_LEVEL_HIGH>;
+	spi-max-frequency = <12500000>;
+	qcom,wrapper-core = <&qupv3_0>;
+	dmas = <&gpi_dma0 0 7 1 64 0>,
+		<&gpi_dma0 1 7 1 64 0>;
+	dma-names = "tx", "rx";
+	status = "ok";
+	etspi-spi@0 {
+		compatible = "etspi,et5xx";
+		reg = <0>;
+		spi-max-frequency = <12500000>;
+		etspi-min_cpufreq_limit = <2169600>;
+		pinctrl-names = "default", "sleep", "idle";
+		pinctrl-0 = <&fps_irq_suspend &fps_rst>;
+		pinctrl-1 = <&fps_irq_suspend>;
+		pinctrl-2 = <&fps_irq_active>;
+
+		gpio-controller;
+		#gpio-cells = <2>;
+
+		etspi-sleepPin = <&tlmm 92 0>;
+		etspi-drdyPin = <&tlmm 124 0x01>;
+		etspi-regulator = "VDD_BTP_3P3";
+		etspi-chipid = "ET523";
+		etspi-orient = <2>; // need to check after TZ bring-up
+	};
+};

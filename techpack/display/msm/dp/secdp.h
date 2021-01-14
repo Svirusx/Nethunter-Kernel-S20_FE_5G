@@ -37,7 +37,6 @@ extern unsigned int lpcharge;
 #define MPA3_PRODUCT_ID		0xA056	/* EE-P3200 */
 
 #define SECDP_ENUM_STR(x)	#x
-#define dim(x)			((sizeof(x))/(sizeof(x[0])))
 
 /*#define SECDP_HDCP_DISABLE*/
 #define SECDP_USB_CONCURRENCY
@@ -47,14 +46,13 @@ extern unsigned int lpcharge;
 /*#define SECDP_AUDIO_CTS*/
 /*#define SECDP_SUPPORT_ODYSSEY*/
 /*#define SECDP_TEST_HDCP2P2_REAUTH*/
-
-/*#define SECDP_CALIBRATE_VXPX*/	/* for calibration of v_level, p_level*/
 #define SECDP_OPTIMAL_LINK_RATE		/* use optimum link_rate, not max link_rate*/
+/*#define SECDP_IGNORE_PREFER_IF_DEX_RES_EXIST*/
+#define SECDP_EVENT_THREAD
 
 #define SECDP_WIDE_21_9_SUPPORT		/* support ultra-wide 21:9 resolution*/
 #define SECDP_WIDE_32_9_SUPPORT		/* support ultra-wide 32:9 resolution*/
 #define SECDP_WIDE_32_10_SUPPORT	/* support ultra-wide 32:10 resolution*/
-/*#define SECDP_HIGH_REFRESH_SUPPORT*/	/* support high refresh rate (g.t.60hz)*/
 
 #define LEN_BRANCH_REVISION		3
 #define		DPCD_BRANCH_HW_REVISION         0x509
@@ -112,6 +110,10 @@ int *secdp_self_test_get_arg(int cmd);
 /* monitor aspect ratio */
 enum mon_aspect_ratio_t {
 	MON_RATIO_NA = -1,
+	MON_RATIO_3_2,
+	MON_RATIO_4_3,
+	MON_RATIO_5_3,
+	MON_RATIO_5_4,
 	MON_RATIO_16_9,
 	MON_RATIO_16_10,
 	MON_RATIO_21_9,
@@ -122,13 +124,14 @@ enum mon_aspect_ratio_t {
 /* dex supported resolutions */
 enum dex_support_res_t {
 	DEX_RES_NOT_SUPPORT = 0,
+	DEX_RES_1600X900,  /* HD+ */
 	DEX_RES_1920X1080, /* FHD */
 	DEX_RES_1920X1200, /* WUXGA */
 	DEX_RES_2560X1080, /* UW-UXGA */
 	DEX_RES_2560X1440, /* QHD */
 	DEX_RES_2560X1600, /* WQXGA */
 	DEX_RES_3440X1440, /* UW-QHD */
-	DEX_RES_3840X2160, /* UHD */
+	DEX_RES_MAX,
 };
 #define DEX_RES_DFT	DEX_RES_1920X1080   /* DeX default resolution */
 #define DEX_RES_MAX	DEX_RES_3440X1440   /* DeX max resolution */
@@ -152,8 +155,6 @@ static inline char *secdp_dex_res_to_string(int res)
 		return DP_ENUM_STR(DEX_RES_2560X1600);
 	case DEX_RES_3440X1440:
 		return DP_ENUM_STR(DEX_RES_3440X1440);
-	case DEX_RES_3840X2160:
-		return DP_ENUM_STR(DEX_RES_3840X2160);
 	default:
 		return "unknown";
 	}
@@ -184,13 +185,23 @@ struct secdp_sink_dev {
 struct secdp_dex {
 	struct class		*sysfs_class;
 
-	int  prev;		/*previously known as "dex_now"*/
-	int  curr;		/*previously known as "dex_en"*/
+	enum DEX_STATUS prev;	/*previously known as "dex_now"*/
+	enum DEX_STATUS curr;	/*previously known as "dex_en"*/
 	int  setting_ui;	/*"dex_set", true if setting has Dex mode*/
+	/*
+	 * 2 if resolution is changed during dex mode change.
+	 * And once dex framework reads the dex_node_stauts using dex node,
+	 * it's assigned to same value with curr.
+	 */
+	enum DEX_STATUS status; /*previously known as "dex_node_status"*/
 
 	enum dex_support_res_t res;	/*dex supported resolution*/
-	char fw_ver[10];	/*firmware ver, 0:h/w, 1:s/w major, 2:s/w minor*/
-	int  reconnecting;	/*it's 1 during dex reconnecting*/
+	char fw_ver[10];      /*firmware ver, 0:h/w, 1:s/w major, 2:s/w minor*/
+	bool reconnecting;    /* true if dex is under reconnecting */
+
+#ifdef SECDP_IGNORE_PREFER_IF_DEX_RES_EXIST
+	bool res_exist;		/*true if dex resolution exists*/
+#endif
 };
 
 struct secdp_debug {
@@ -229,7 +240,7 @@ struct secdp_misc {
 	int  max_mir_res_idx;	/*Index of max resolution by sink(mirror mode)*/
 	int  max_dex_res_idx;	/*Index of max resolution by dex mode*/
 	int  prefer_res_idx;	/*Index of preferred resolution*/
-	int  ignore_ratio;
+	bool ignore_ratio;
 
 	struct secdp_sink_dev  *hmd_list;  /*list of supported HMD device*/
 	struct mutex		hmd_lock;
@@ -242,16 +253,16 @@ struct secdp_misc {
 	int  hdcp_retry;	/*count if dp link is unstable during hdcp*/
 
 	bool has_prefer;	/*true if preferred resolution*/
+	bool ignore_prefer;	/*true if larger refresh rate exists*/
 	int  prefer_hdisp;	/*horizontal pixel of preferred resolution*/
 	int  prefer_vdisp;	/*vertical pixel of preferred resolution*/
 	int  prefer_refresh;	/*refresh rate of preferred resolution*/
-	bool ignore_prefer;	/*true if larger refresh rate exists*/
 	enum mon_aspect_ratio_t	prefer_ratio;
 
 	struct mutex		notifier_lock;
 
 #ifdef SECDP_USE_WAKELOCK
-	struct wakeup_source	ws;
+	struct wakeup_source	*ws;
 #endif
 };
 
@@ -335,10 +346,7 @@ enum plug_orientation secdp_get_plug_orientation(void);
 bool secdp_get_reboot_status(void);
 
 bool secdp_check_hmd_dev(const char *name_to_search);
-int  secdp_store_hmd_dev(char* buf, size_t len, int num);
-#ifdef CONFIG_SEC_DISPLAYPORT_ENG
-int  secdp_show_hmd_dev(char *buf);
-#endif
+int  secdp_store_hmd_dev(char *buf, size_t len, int num);
 
 void secdp_dex_res_init(void);
 void secdp_dex_do_reconnecting(void);
@@ -351,33 +359,83 @@ void secdp_reset_link_status(struct dp_link *dp_link);
 bool secdp_check_link_stable(struct dp_link *dp_link);
 
 bool secdp_panel_hdr_supported(void);
-bool secdp_find_supported_resolution(struct dp_panel_info *timing);
 
-#ifdef SECDP_CALIBRATE_VXPX
+#ifdef CONFIG_SEC_DISPLAYPORT_ENG
+enum secdp_hw_preshoot_t {
+	DP_HW_PRESHOOT_0,
+	DP_HW_PRESHOOT_1,
+	DP_HW_PRESHOOT_MAX,
+};
+
+static inline char *secdp_preshoot_to_string(int hw)
+{
+	switch (hw) {
+	case DP_HW_PRESHOOT_0:
+		return DP_ENUM_STR(DP_HW_PRESHOOT_0);
+	case DP_HW_PRESHOOT_1:
+		return DP_ENUM_STR(DP_HW_PRESHOOT_1);
+	default:
+		return "unknown";
+	}
+}
+
+enum secdp_hw_ver_t {
+	DP_HW_LEGACY,
+	DP_HW_V123_HBR2_HBR3,
+	DP_HW_V123_HBR_RBR,
+	DP_HW_MAX,
+};
+
+static inline char *secdp_hw_to_string(int hw)
+{
+	switch (hw) {
+	case DP_HW_LEGACY:
+		return DP_ENUM_STR(DP_HW_LEGACY);
+	case DP_HW_V123_HBR2_HBR3:
+		return DP_ENUM_STR(DP_HW_V123_HBR2_HBR3);
+	case DP_HW_V123_HBR_RBR:
+		return DP_ENUM_STR(DP_HW_V123_HBR_RBR);
+	default:
+		return "unknown";
+	}
+}
+
+enum secdp_phy_param_t {
+	DP_PARAM_VX,	/* voltage swing */
+	DP_PARAM_PX,	/* pre-emphasis */
+	DP_PARAM_MAX,
+};
+
+static inline char *secdp_phy_type_to_string(int param)
+{
+	switch (param) {
+	case DP_PARAM_VX:
+		return DP_ENUM_STR(DP_PARAM_VX);
+	case DP_PARAM_PX:
+		return DP_ENUM_STR(DP_PARAM_PX);
+	default:
+		return "unknown";
+	}
+}
+
+int  secdp_show_hmd_dev(char *buf);
+int  secdp_show_phy_param(char *buf);
+
 /* preshoot adjustment */
-int  secdp_catalog_prsht0_show(char *val);
-int  secdp_catalog_prsht0_store(char val);
-int  secdp_catalog_prsht1_show(char *val);
-int  secdp_catalog_prsht1_store(char val);
+int  secdp_catalog_preshoot_show(char *buf);
+void secdp_catalog_preshoot_store(char *buf);
 
-/* legacy */
-int  secdp_catalog_vx_show(char *buf, int len);
-int  secdp_catalog_vx_store(int *val, int size);
-int  secdp_catalog_px_show(char *buf, int len);
-int  secdp_catalog_px_store(int *val, int size);
+/* voltage swing, pre-emphasis */
+int  secdp_parse_vxpx_show(enum secdp_hw_ver_t hw,
+				enum secdp_phy_param_t vxpx, char *buf);
+int  secdp_parse_vxpx_store(enum secdp_hw_ver_t hw,
+				enum secdp_phy_param_t vxpx, char *buf);
 
-/* HBR2, HBR3 */
-int  secdp_catalog_vx_hbr2_hbr3_show(char *buf, int len);
-int  secdp_catalog_vx_hbr2_hbr3_store(int *val, int size);
-int  secdp_catalog_px_hbr2_hbr3_show(char *buf, int len);
-int  secdp_catalog_px_hbr2_hbr3_store(int *val, int size);
+/* AUX configuration */
+int  secdp_aux_cfg_show(char *buf);
+int  secdp_aux_cfg_store(char *buf);
 
-/* RBR, HBR */
-int  secdp_catalog_vx_hbr_rbr_show(char *buf, int len);
-int  secdp_catalog_vx_hbr_rbr_store(int *val, int size);
-int  secdp_catalog_px_hbr_rbr_show(char *buf, int len);
-int  secdp_catalog_px_hbr_rbr_store(int *val, int size);
-
+/* preferred resolution debug */
 int  secdp_debug_prefer_skip_show(void);
 void secdp_debug_prefer_skip_store(bool skip);
 int  secdp_debug_prefer_ratio_show(void);

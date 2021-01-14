@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2017-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
  */
 
 #include <linux/delay.h>
@@ -61,23 +61,6 @@
 	catalog->write(catalog, io_data, x, y); \
 })
 
-#if 0/*def SECDP_CALIBRATE_VXPX*/
-/* table for calibraton - DO NOT USE IN MARKET BINARY */
-u8 vm_pre_emphasis[4][4] = {
-	{0x00, 0x0B, 0x12, 0xFF},       /* pe0, 0 db */
-	{0x00, 0x0A, 0x12, 0xFF},       /* pe1, 3.5 db */
-	{0x00, 0x0C, 0xFF, 0xFF},       /* pe2, 6.0 db */
-	{0xFF, 0xFF, 0xFF, 0xFF}        /* pe3, 9.5 db */
-};
-
-/* voltage swing, 0.2v and 1.0v are not support */
-u8 vm_voltage_swing[4][4] = {
-	{0x07, 0x0F, 0x14, 0xFF}, /* sw0, 0.4v  */
-	{0x11, 0x1D, 0x1F, 0xFF}, /* sw1, 0.6 v */
-	{0x18, 0x1F, 0xFF, 0xFF}, /* sw1, 0.8 v */
-	{0xFF, 0xFF, 0xFF, 0xFF}  /* sw1, 1.2 v, optional */
-};
-#else
 static u8 const vm_pre_emphasis[4][4] = {
 	{0x00, 0x0B, 0x12, 0xFF},       /* pe0, 0 db */
 	{0x00, 0x0A, 0x12, 0xFF},       /* pe1, 3.5 db */
@@ -92,7 +75,34 @@ static u8 const vm_voltage_swing[4][4] = {
 	{0x18, 0x1F, 0xFF, 0xFF}, /* sw1, 0.8 v */
 	{0xFF, 0xFF, 0xFF, 0xFF}  /* sw1, 1.2 v, optional */
 };
-#endif
+
+static u8 const vm_pre_emphasis_hbr3_hbr2[4][4] = {
+	{0x00, 0x0C, 0x15, 0x1A},
+	{0x02, 0x0E, 0x16, 0xFF},
+	{0x02, 0x11, 0xFF, 0xFF},
+	{0x04, 0xFF, 0xFF, 0xFF}
+};
+
+static u8 const vm_voltage_swing_hbr3_hbr2[4][4] = {
+	{0x02, 0x12, 0x16, 0x1A},
+	{0x09, 0x19, 0x1F, 0xFF},
+	{0x10, 0x1F, 0xFF, 0xFF},
+	{0x1F, 0xFF, 0xFF, 0xFF}
+};
+
+static u8 const vm_pre_emphasis_hbr_rbr[4][4] = {
+	{0x00, 0x0C, 0x14, 0x19},
+	{0x00, 0x0B, 0x12, 0xFF},
+	{0x00, 0x0B, 0xFF, 0xFF},
+	{0x04, 0xFF, 0xFF, 0xFF}
+};
+
+static u8 const vm_voltage_swing_hbr_rbr[4][4] = {
+	{0x08, 0x0F, 0x16, 0x1F},
+	{0x11, 0x1E, 0x1F, 0xFF},
+	{0x19, 0x1F, 0xFF, 0xFF},
+	{0x1F, 0xFF, 0xFF, 0xFF}
+};
 
 enum dp_flush_bit {
 	DP_PPS_FLUSH,
@@ -473,107 +483,11 @@ static void dp_catalog_aux_get_irq(struct dp_catalog_aux *aux, bool cmd_busy)
 	dp_write(DP_INTR_STATUS, ack);
 }
 
-static bool dp_catalog_ctrl_wait_for_phy_ready(
-		struct dp_catalog_private *catalog)
-{
-	u32 reg = DP_PHY_STATUS, state;
-	void __iomem *base = catalog->io.dp_phy->io.base;
-	bool success = true;
-	u32 const poll_sleep_us = 500;
-	u32 const pll_timeout_us = 10000;
-
-	if (readl_poll_timeout_atomic((base + reg), state,
-			((state & DP_PHY_READY) > 0),
-			poll_sleep_us, pll_timeout_us)) {
-		DP_ERR("PHY status failed, status=%x\n", state);
-
-		success = false;
-	}
-
-	return success;
-}
-
 /* controller related catalog functions */
 static int dp_catalog_ctrl_late_phy_init(struct dp_catalog_ctrl *ctrl,
 					u8 lane_cnt, bool flipped)
 {
-	int rc = 0;
-	u32 bias0_en, drvr0_en, bias1_en, drvr1_en;
-	struct dp_catalog_private *catalog;
-	struct dp_io_data *io_data;
-
-	if (!ctrl) {
-		DP_ERR("invalid input\n");
-		return -EINVAL;
-	}
-
-	catalog = dp_catalog_get_priv(ctrl);
-
-	switch (lane_cnt) {
-	case 1:
-		drvr0_en = flipped ? 0x13 : 0x10;
-		bias0_en = flipped ? 0x3E : 0x15;
-		drvr1_en = flipped ? 0x10 : 0x13;
-		bias1_en = flipped ? 0x15 : 0x3E;
-		break;
-	case 2:
-		drvr0_en = flipped ? 0x10 : 0x10;
-		bias0_en = flipped ? 0x3F : 0x15;
-		drvr1_en = flipped ? 0x10 : 0x10;
-		bias1_en = flipped ? 0x15 : 0x3F;
-		break;
-	case 4:
-	default:
-		drvr0_en = 0x10;
-		bias0_en = 0x3F;
-		drvr1_en = 0x10;
-		bias1_en = 0x3F;
-		break;
-	}
-
-	io_data = catalog->io.dp_ln_tx0;
-	dp_write(TXn_HIGHZ_DRVR_EN_V420, drvr0_en);
-	dp_write(TXn_TRANSCEIVER_BIAS_EN_V420, bias0_en);
-
-	io_data = catalog->io.dp_ln_tx1;
-	dp_write(TXn_HIGHZ_DRVR_EN_V420, drvr1_en);
-	dp_write(TXn_TRANSCEIVER_BIAS_EN_V420, bias1_en);
-
-	io_data = catalog->io.dp_phy;
-	dp_write(DP_PHY_CFG, 0x18);
-	/* add hardware recommended delay */
-	udelay(2000);
-	dp_write(DP_PHY_CFG, 0x19);
-
-	/*
-	 * Make sure all the register writes are completed before
-	 * doing any other operation
-	 */
-	wmb();
-
-	if (!dp_catalog_ctrl_wait_for_phy_ready(catalog)) {
-		rc = -EINVAL;
-		goto lock_err;
-	}
-
-	io_data = catalog->io.dp_ln_tx0;
-	dp_write(TXn_TX_POL_INV_V420, 0x0a);
-	io_data = catalog->io.dp_ln_tx1;
-	dp_write(TXn_TX_POL_INV_V420, 0x0a);
-
-	io_data = catalog->io.dp_ln_tx0;
-	dp_write(TXn_TX_DRV_LVL_V420, 0x27);
-	io_data = catalog->io.dp_ln_tx1;
-	dp_write(TXn_TX_DRV_LVL_V420, 0x27);
-
-	io_data = catalog->io.dp_ln_tx0;
-	dp_write(TXn_TX_EMP_POST1_LVL, 0x20);
-	io_data = catalog->io.dp_ln_tx1;
-	dp_write(TXn_TX_EMP_POST1_LVL, 0x20);
-	/* Make sure the PHY register writes are done */
-	wmb();
-lock_err:
-	return rc;
+	return 0;
 }
 
 static u32 dp_catalog_ctrl_read_hdcp_status(struct dp_catalog_ctrl *ctrl)
@@ -1783,6 +1697,7 @@ static void dp_catalog_ctrl_update_vx_px(struct dp_catalog_ctrl *ctrl,
 	struct dp_catalog_private *catalog;
 	struct dp_io_data *io_data;
 	u8 value0, value1;
+	u32 version;
 
 	if (!ctrl) {
 		DP_ERR("invalid input\n");
@@ -1793,8 +1708,22 @@ static void dp_catalog_ctrl_update_vx_px(struct dp_catalog_ctrl *ctrl,
 
 	DP_DEBUG("hw: v=%d p=%d\n", v_level, p_level);
 
-	value0 = vm_voltage_swing[v_level][p_level];
-	value1 = vm_pre_emphasis[v_level][p_level];
+	io_data = catalog->io.dp_ahb;
+	version = dp_read(DP_HW_VERSION);
+
+	if (version == 0x10020004) {
+		if (high) {
+			value0 = vm_voltage_swing_hbr3_hbr2[v_level][p_level];
+			value1 = vm_pre_emphasis_hbr3_hbr2[v_level][p_level];
+		} else {
+			value0 = vm_voltage_swing_hbr_rbr[v_level][p_level];
+			value1 = vm_pre_emphasis_hbr_rbr[v_level][p_level];
+		}
+	} else {
+		value0 = vm_voltage_swing[v_level][p_level];
+		value1 = vm_pre_emphasis[v_level][p_level];
+	}
+
 #ifdef SECDP_SELF_TEST
 	if (secdp_self_test_status(ST_VOLTAGE_TUN) >= 0) {
 		u8 val = secdp_self_test_get_arg(ST_VOLTAGE_TUN)[v_level*4 + p_level];
@@ -1842,98 +1771,6 @@ static void dp_catalog_ctrl_update_vx_px(struct dp_catalog_ctrl *ctrl,
 			v_level, value0, p_level, value1);
 	}
 }
-
-#if 0/*def SECDP_CALIBRATE_VXPX*/
-void secdp_catalog_vx_show(void)
-{
-	u8 value0, value1, value2, value3;
-	int i;
-
-	DP_DEBUG("+++\n");
-
-	for (i = 0; i < 4; i++) {
-		value0 = vm_voltage_swing[i][0];
-		value1 = vm_voltage_swing[i][1];
-		value2 = vm_voltage_swing[i][2];
-		value3 = vm_voltage_swing[i][3];
-		DP_INFO("%02x,%02x,%02x,%02x\n", value0, value1, value2, value3);
-	}
-}
-
-int secdp_catalog_vx_store(int *val, int size)
-{
-	int rc = 0;
-
-	DP_DEBUG("+++\n");
-
-	vm_voltage_swing[0][0] = val[0];
-	vm_voltage_swing[0][1] = val[1];
-	vm_voltage_swing[0][2] = val[2];
-	vm_voltage_swing[0][3] = val[3];
-
-	vm_voltage_swing[1][0] = val[4];
-	vm_voltage_swing[1][1] = val[5];
-	vm_voltage_swing[1][2] = val[6];
-	vm_voltage_swing[1][3] = val[7];
-
-	vm_voltage_swing[2][0] = val[8];
-	vm_voltage_swing[2][1] = val[9];
-	vm_voltage_swing[2][2] = val[10];
-	vm_voltage_swing[2][3] = val[11];
-
-	vm_voltage_swing[3][0] = val[12];
-	vm_voltage_swing[3][1] = val[13];
-	vm_voltage_swing[3][2] = val[14];
-	vm_voltage_swing[3][3] = val[15];
-
-	return rc;
-}
-
-void secdp_catalog_px_show(void)
-{
-	u8 value0, value1, value2, value3;
-	int i;
-
-	DP_DEBUG("+++\n");
-
-	for (i = 0; i < 4; i++) {
-		value0 = vm_pre_emphasis[i][0];
-		value1 = vm_pre_emphasis[i][1];
-		value2 = vm_pre_emphasis[i][2];
-		value3 = vm_pre_emphasis[i][3];
-		DP_INFO("%02x,%02x,%02x,%02x\n", value0, value1, value2, value3);
-	}
-}
-
-int secdp_catalog_px_store(int *val, int size)
-{
-	int rc = 0;
-
-	DP_DEBUG("+++\n");
-
-	vm_pre_emphasis[0][0] = val[0];
-	vm_pre_emphasis[0][1] = val[1];
-	vm_pre_emphasis[0][2] = val[2];
-	vm_pre_emphasis[0][3] = val[3];
-
-	vm_pre_emphasis[1][0] = val[4];
-	vm_pre_emphasis[1][1] = val[5];
-	vm_pre_emphasis[1][2] = val[6];
-	vm_pre_emphasis[1][3] = val[7];
-
-	vm_pre_emphasis[2][0] = val[8];
-	vm_pre_emphasis[2][1] = val[9];
-	vm_pre_emphasis[2][2] = val[10];
-	vm_pre_emphasis[2][3] = val[11];
-
-	vm_pre_emphasis[3][0] = val[12];
-	vm_pre_emphasis[3][1] = val[13];
-	vm_pre_emphasis[3][2] = val[14];
-	vm_pre_emphasis[3][3] = val[15];
-
-	return rc;
-}
-#endif
 
 static void dp_catalog_ctrl_send_phy_pattern(struct dp_catalog_ctrl *ctrl,
 			u32 pattern)
@@ -2860,6 +2697,10 @@ static int dp_catalog_init(struct device *dev, struct dp_catalog *dp_catalog,
 	int rc = 0;
 	struct dp_catalog_private *catalog = container_of(dp_catalog,
 				struct dp_catalog_private, dp_catalog);
+
+#ifdef CONFIG_SEC_DISPLAYPORT
+	dp_catalog->parser = parser;
+#endif
 
 	switch (parser->hw_cfg.phy_version) {
 	case DP_PHY_VERSION_4_2_0:

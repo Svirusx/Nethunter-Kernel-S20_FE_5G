@@ -738,9 +738,9 @@
 		L10C: pm8150a_l10: regulator-pm8150a-l10 {
 			regulator-name = "pm8150a_l10";
 			qcom,set = <RPMH_REGULATOR_SET_ALL>;
-			regulator-min-microvolt = <1800000>;
-			regulator-max-microvolt = <1800000>;
-			qcom,init-voltage = <1800000>;
+			regulator-min-microvolt = <3000000>;
+			regulator-max-microvolt = <3312000>;
+			qcom,init-voltage = <3000000>;
 			qcom,init-mode = <RPMH_REGULATOR_MODE_LPM>;
 		};
 	};

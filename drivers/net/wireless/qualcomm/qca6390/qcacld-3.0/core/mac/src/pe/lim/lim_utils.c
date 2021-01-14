@@ -5653,51 +5653,95 @@ end:
 }
 
 /**
- * lim_send_ies_per_band() - gets ht and vht capability and send to firmware via
- * wma
+ * is_dot11mode_support_ht_cap() - Check dot11mode supports HT capability
+ * @dot11mode: dot11mode
+ *
+ * This function checks whether dot11mode support HT capability or not
+ *
+ * Return: True, if supports. False otherwise
+ */
+static bool is_dot11mode_support_ht_cap(enum csr_cfgdot11mode dot11mode)
+{
+	if ((dot11mode == eCSR_CFG_DOT11_MODE_AUTO) ||
+	    (dot11mode == eCSR_CFG_DOT11_MODE_11N) ||
+	    (dot11mode == eCSR_CFG_DOT11_MODE_11AC) ||
+	    (dot11mode == eCSR_CFG_DOT11_MODE_11N_ONLY) ||
+	    (dot11mode == eCSR_CFG_DOT11_MODE_11AC_ONLY) ||
+	    (dot11mode == eCSR_CFG_DOT11_MODE_11AX) ||
+	    (dot11mode == eCSR_CFG_DOT11_MODE_11AX_ONLY)) {
+		return true;
+	}
+
+	return false;
+}
+
+/**
+ * is_dot11mode_support_vht_cap() - Check dot11mode supports VHT capability
+ * @dot11mode: dot11mode
+ *
+ * This function checks whether dot11mode support VHT capability or not
+ *
+ * Return: True, if supports. False otherwise
+ */
+static bool is_dot11mode_support_vht_cap(enum csr_cfgdot11mode dot11mode)
+{
+	if ((dot11mode == eCSR_CFG_DOT11_MODE_AUTO) ||
+	    (dot11mode == eCSR_CFG_DOT11_MODE_11AC) ||
+	    (dot11mode == eCSR_CFG_DOT11_MODE_11AC_ONLY) ||
+	    (dot11mode == eCSR_CFG_DOT11_MODE_11AX) ||
+	    (dot11mode == eCSR_CFG_DOT11_MODE_11AX_ONLY)) {
+		return true;
+	}
+
+	return false;
+}
+
+/**
+ * is_dot11mode_support_he_cap() - Check dot11mode supports HE capability
+ * @dot11mode: dot11mode
+ *
+ * This function checks whether dot11mode support HE capability or not
+ *
+ * Return: True, if supports. False otherwise
+ */
+static bool is_dot11mode_support_he_cap(enum csr_cfgdot11mode dot11mode)
+{
+	if ((dot11mode == eCSR_CFG_DOT11_MODE_AUTO) ||
+	    (dot11mode == eCSR_CFG_DOT11_MODE_11AX) ||
+	    (dot11mode == eCSR_CFG_DOT11_MODE_11AX_ONLY)) {
+		return true;
+	}
+
+	return false;
+}
+
+/**
+ * lim_send_ht_caps_ie() - gets HT capability and send to firmware via wma
  * @mac_ctx: global mac context
  * @session: pe session. This can be NULL. In that case self cap will be sent
+ * @device_mode: VDEV op mode
  * @vdev_id: vdev for which IE is targeted
  *
- * This funciton gets ht and vht capability and send to firmware via wma
+ * This function gets HT capability and send to firmware via wma
  *
- * Return: status of operation
+ * Return: QDF_STATUS
  */
-QDF_STATUS lim_send_ies_per_band(struct mac_context *mac_ctx,
-				 struct pe_session *session,
-				 uint8_t vdev_id)
+static QDF_STATUS lim_send_ht_caps_ie(struct mac_context *mac_ctx,
+				      struct pe_session *session,
+				      enum QDF_OPMODE device_mode,
+				      uint8_t vdev_id)
 {
 	uint8_t ht_caps[DOT11F_IE_HTCAPS_MIN_LEN + 2] = {0};
-	uint8_t vht_caps[DOT11F_IE_VHTCAPS_MAX_LEN + 2] = {0};
 	tHtCaps *p_ht_cap = (tHtCaps *)(&ht_caps[2]);
-	tSirMacVHTCapabilityInfo *p_vht_cap =
-			(tSirMacVHTCapabilityInfo *)(&vht_caps[2]);
-	QDF_STATUS status;
-	struct wlan_objmgr_vdev *vdev;
-	enum QDF_OPMODE device_mode;
+	QDF_STATUS status_5g, status_2g;
 
-	vdev = wlan_objmgr_get_vdev_by_id_from_psoc(
-			mac_ctx->psoc, vdev_id,
-			WLAN_LEGACY_MAC_ID);
-	if (!vdev) {
-		pe_err("vdev is NULL");
-		return QDF_STATUS_E_FAILURE;
-	}
-	device_mode = wlan_vdev_mlme_get_opmode(vdev);
-	wlan_objmgr_vdev_release_ref(vdev, WLAN_LEGACY_MAC_ID);
-
-
-	/*
-	 * Note: Do not use Dot11f VHT structure, since 1 byte present flag in
-	 * it is causing weird padding errors. Instead use Sir Mac VHT struct
-	 * to send IE to wma.
-	 */
 	ht_caps[0] = DOT11F_EID_HTCAPS;
 	ht_caps[1] = DOT11F_IE_HTCAPS_MIN_LEN;
 	lim_set_ht_caps(mac_ctx, session, ht_caps,
 			DOT11F_IE_HTCAPS_MIN_LEN + 2);
 	/* Get LDPC and over write for 2G */
-	p_ht_cap->advCodingCap = lim_get_rx_ldpc(mac_ctx, CHAN_ENUM_2437);
+	p_ht_cap->advCodingCap = lim_get_rx_ldpc(mac_ctx,
+						 CHAN_ENUM_2437);
 	/* Get self cap for HT40 support in 2G */
 	if (mac_ctx->roam.configParam.channelBondingMode24GHz) {
 		p_ht_cap->supportedChannelWidthSet = 1;
@@ -5715,8 +5759,9 @@ QDF_STATUS lim_send_ies_per_band(struct mac_context *mac_ctx,
 		p_ht_cap->explicitCSITxBF = 0;
 	}
 
-	lim_send_ie(mac_ctx, vdev_id, DOT11F_EID_HTCAPS,
-		CDS_BAND_2GHZ, &ht_caps[2], DOT11F_IE_HTCAPS_MIN_LEN);
+	status_2g = lim_send_ie(mac_ctx, vdev_id, DOT11F_EID_HTCAPS,
+				CDS_BAND_2GHZ, &ht_caps[2],
+				DOT11F_IE_HTCAPS_MIN_LEN);
 	/*
 	 * Get LDPC and over write for 5G - using channel 64 because it
 	 * is available in all reg domains.
@@ -5732,30 +5777,63 @@ QDF_STATUS lim_send_ies_per_band(struct mac_context *mac_ctx,
 	}
 	lim_populate_mcs_set_ht_per_vdev(mac_ctx, p_ht_cap, vdev_id,
 					 NSS_CHAINS_BAND_5GHZ);
-	lim_send_ie(mac_ctx, vdev_id, DOT11F_EID_HTCAPS,
-		CDS_BAND_5GHZ, &ht_caps[2], DOT11F_IE_HTCAPS_MIN_LEN);
+	status_5g = lim_send_ie(mac_ctx, vdev_id, DOT11F_EID_HTCAPS,
+				CDS_BAND_5GHZ, &ht_caps[2],
+				DOT11F_IE_HTCAPS_MIN_LEN);
+
+	if (QDF_IS_STATUS_SUCCESS(status_2g) &&
+	    QDF_IS_STATUS_SUCCESS(status_5g))
+		return QDF_STATUS_SUCCESS;
+
+	return QDF_STATUS_E_FAILURE;
+}
+
+/**
+ * lim_send_vht_caps_ie() - gets VHT capability and send to firmware via wma
+ * @mac_ctx: global mac context
+ * @session: pe session. This can be NULL. In that case self cap will be sent
+ * @device_mode: VDEV op mode
+ * @vdev_id: vdev for which IE is targeted
+ *
+ * This function gets VHT capability and send to firmware via wma
+ *
+ * Return: QDF_STATUS
+ */
+static QDF_STATUS lim_send_vht_caps_ie(struct mac_context *mac_ctx,
+				       struct pe_session *session,
+				       enum QDF_OPMODE device_mode,
+				       uint8_t vdev_id)
+{
+	uint8_t vht_caps[DOT11F_IE_VHTCAPS_MAX_LEN + 2] = {0};
+	tSirMacVHTCapabilityInfo *p_vht_cap =
+			(tSirMacVHTCapabilityInfo *)(&vht_caps[2]);
+	QDF_STATUS status_5g, status_2g;
 
 	vht_caps[0] = DOT11F_EID_VHTCAPS;
 	vht_caps[1] = DOT11F_IE_VHTCAPS_MAX_LEN;
 	lim_set_vht_caps(mac_ctx, session, vht_caps,
-			 DOT11F_IE_VHTCAPS_MIN_LEN + 2);
+			DOT11F_IE_VHTCAPS_MIN_LEN + 2);
 	/*
 	 * Get LDPC and over write for 5G - using channel 64 because it
 	 * is available in all reg domains.
 	 */
 	p_vht_cap->ldpcCodingCap = lim_get_rx_ldpc(mac_ctx, CHAN_ENUM_5320);
-	lim_populate_mcs_set_vht_per_vdev(mac_ctx, vht_caps,
-					  vdev_id, NSS_CHAINS_BAND_5GHZ);
+	lim_populate_mcs_set_vht_per_vdev(mac_ctx, vht_caps, vdev_id,
+					  NSS_CHAINS_BAND_5GHZ);
 
-	if(device_mode == QDF_NDI_MODE) {
+	if (device_mode == QDF_NDI_MODE) {
 		p_vht_cap->muBeamformeeCap = 0;
 		p_vht_cap->muBeamformerCap = 0;
 		p_vht_cap->suBeamformeeCap = 0;
 		p_vht_cap->suBeamFormerCap = 0;
 	}
-	/* Self VHT channel width for 5G is already negotiated with FW */
-	lim_send_ie(mac_ctx, vdev_id, DOT11F_EID_VHTCAPS,
-			CDS_BAND_5GHZ, &vht_caps[2], DOT11F_IE_VHTCAPS_MIN_LEN);
+	/*
+	 * Self VHT channel width for 5G is already negotiated
+	 * with FW
+	 */
+	status_5g = lim_send_ie(mac_ctx, vdev_id, DOT11F_EID_VHTCAPS,
+				CDS_BAND_5GHZ, &vht_caps[2],
+				DOT11F_IE_VHTCAPS_MIN_LEN);
 
 	/* Get LDPC and over write for 2G */
 	p_vht_cap->ldpcCodingCap = lim_get_rx_ldpc(mac_ctx, CHAN_ENUM_2437);
@@ -5763,17 +5841,57 @@ QDF_STATUS lim_send_ies_per_band(struct mac_context *mac_ctx,
 	p_vht_cap->supportedChannelWidthSet = 0;
 	p_vht_cap->shortGI80MHz = 0;
 	p_vht_cap->shortGI160and80plus80MHz = 0;
-	lim_populate_mcs_set_vht_per_vdev(mac_ctx, vht_caps,
-					  vdev_id, NSS_CHAINS_BAND_2GHZ);
-	lim_send_ie(mac_ctx, vdev_id, DOT11F_EID_VHTCAPS,
-			CDS_BAND_2GHZ, &vht_caps[2], DOT11F_IE_VHTCAPS_MIN_LEN);
+	lim_populate_mcs_set_vht_per_vdev(mac_ctx, vht_caps, vdev_id,
+					  NSS_CHAINS_BAND_2GHZ);
+	status_2g = lim_send_ie(mac_ctx, vdev_id, DOT11F_EID_VHTCAPS,
+				CDS_BAND_2GHZ, &vht_caps[2],
+				DOT11F_IE_VHTCAPS_MIN_LEN);
 
-	status = lim_send_he_caps_ie(mac_ctx, session, vdev_id);
+	if (QDF_IS_STATUS_SUCCESS(status_2g) &&
+	    QDF_IS_STATUS_SUCCESS(status_5g))
+		return QDF_STATUS_SUCCESS;
 
-	if (QDF_IS_STATUS_SUCCESS(status))
-		status = lim_send_he_6g_band_caps_ie(mac_ctx, session, vdev_id);
+	return QDF_STATUS_E_FAILURE;
+}
 
-	return status;
+QDF_STATUS lim_send_ies_per_band(struct mac_context *mac_ctx,
+				 struct pe_session *session, uint8_t vdev_id,
+				 enum csr_cfgdot11mode dot11_mode,
+				 enum QDF_OPMODE device_mode)
+{
+	QDF_STATUS status_ht = QDF_STATUS_SUCCESS;
+	QDF_STATUS status_vht = QDF_STATUS_SUCCESS;
+	QDF_STATUS status_he = QDF_STATUS_SUCCESS;
+
+	/*
+	 * Note: Do not use Dot11f VHT structure, since 1 byte present flag in
+	 * it is causing weird padding errors. Instead use Sir Mac VHT struct
+	 * to send IE to wma.
+	 */
+	if (is_dot11mode_support_ht_cap(dot11_mode))
+		status_ht = lim_send_ht_caps_ie(mac_ctx, session,
+						device_mode, vdev_id);
+
+	if (is_dot11mode_support_vht_cap(dot11_mode))
+		status_vht = lim_send_vht_caps_ie(mac_ctx, session,
+						  device_mode, vdev_id);
+
+	if (is_dot11mode_support_he_cap(dot11_mode)) {
+		status_he = lim_send_he_caps_ie(mac_ctx, session,
+						device_mode, vdev_id);
+
+		if (QDF_IS_STATUS_SUCCESS(status_he))
+			status_he = lim_send_he_6g_band_caps_ie(mac_ctx,
+								session,
+								vdev_id);
+	}
+
+	if (QDF_IS_STATUS_SUCCESS(status_ht) &&
+	    QDF_IS_STATUS_SUCCESS(status_vht) &&
+	    QDF_IS_STATUS_SUCCESS(status_he))
+		return QDF_STATUS_SUCCESS;
+
+	return QDF_STATUS_E_FAILURE;
 }
 
 /**
@@ -6809,8 +6927,70 @@ void lim_update_he_6gop_assoc_resp(struct bss_params *pAddBssParams,
 	pAddBssParams->staContext.ch_width = pAddBssParams->ch_width;
 }
 
+static bool lim_check_is_bss_greater_than_4_nss_supp(struct pe_session *
+session,
+						     tDot11fIEhe_cap *he_cap)
+{
+	uint8_t i;
+	uint16_t mcs_map;
+#define NSS_4 4
+#define NSS_8 8
+
+	if (!session->he_capable || !he_cap->present)
+		return false;
+	mcs_map = he_cap->rx_he_mcs_map_lt_80;
+	for (i = NSS_4; i < NSS_8; i++) {
+		if (((mcs_map >> (i * 2)) & 0x3) != 0x3)
+			return true;
+	}
+
+	return false;
+}
+
+static bool lim_check_he_80_mcs11_supp(struct pe_session *session,
+				       tDot11fIEhe_cap *he_cap)
+{
+	uint16_t rx_mcs_map;
+	uint16_t tx_mcs_map;
+
+	rx_mcs_map = he_cap->rx_he_mcs_map_lt_80;
+	tx_mcs_map = he_cap->tx_he_mcs_map_lt_80;
+	if ((session->nss == NSS_1x1_MODE) &&
+	    ((HE_GET_MCS_4_NSS(rx_mcs_map, 1) == HE_MCS_0_11) ||
+	     (HE_GET_MCS_4_NSS(tx_mcs_map, 1) == HE_MCS_0_11)))
+		return true;
+
+	if ((session->nss == NSS_2x2_MODE) &&
+	    ((HE_GET_MCS_4_NSS(rx_mcs_map, 2) == HE_MCS_0_11) ||
+	     (HE_GET_MCS_4_NSS(tx_mcs_map, 2) == HE_MCS_0_11)))
+		return true;
+
+	return false;
+}
+
+/**
+ * lim_check_he_ldpc_cap() - set he ladpc coding to one if
+ * channel width is > 20 or mcs 10/11 bit are supported or
+ * nss is greater than 4.
+ * @beacon_struct: beacon structure
+ * @session: A pointer to session entry.
+ *
+ * Return: None
+ */
+
+static void lim_check_and_force_he_ldpc_cap(struct pe_session *session,
+					    tDot11fIEhe_cap *he_cap)
+{
+	if (!he_cap->ldpc_coding &&
+	    (session->ch_width > CH_WIDTH_20MHZ ||
+	     lim_check_he_80_mcs11_supp(session, he_cap) ||
+	     lim_check_is_bss_greater_than_4_nss_supp(session, he_cap)))
+		he_cap->ldpc_coding = 1;
+}
+
 void lim_update_stads_he_caps(tpDphHashNode sta_ds, tpSirAssocRsp assoc_rsp,
-			      struct pe_session *session_entry)
+			      struct pe_session *session_entry,
+			      tSchBeaconStruct *beacon)
 {
 	tDot11fIEhe_cap *he_cap;
 
@@ -6820,8 +7000,13 @@ void lim_update_stads_he_caps(tpDphHashNode sta_ds, tpSirAssocRsp assoc_rsp,
 	if (!he_cap->present)
 		return;
 
+	/* setting lpdc_coding if any of assoc_rsp or beacon has ladpc_coding
+	 * enabled
+	 */
+	if (beacon)
+		he_cap->ldpc_coding |= beacon->he_cap.ldpc_coding;
+	lim_check_and_force_he_ldpc_cap(session_entry, he_cap);
 	qdf_mem_copy(&sta_ds->he_config, he_cap, sizeof(*he_cap));
-
 }
 
 void lim_update_stads_he_6ghz_op(struct pe_session *session,
@@ -7339,27 +7524,17 @@ void lim_set_he_caps(struct mac_context *mac, struct pe_session *session,
 }
 
 QDF_STATUS lim_send_he_caps_ie(struct mac_context *mac_ctx,
-			       struct pe_session *session, uint8_t vdev_id)
+			       struct pe_session *session,
+			       enum QDF_OPMODE device_mode,
+			       uint8_t vdev_id)
 {
 	uint8_t he_caps[SIR_MAC_HE_CAP_MIN_LEN + HE_CAP_OUI_LEN +
 			HE_CAP_160M_MCS_MAP_LEN + HE_CAP_80P80_MCS_MAP_LEN];
 	struct he_capability_info *he_cap;
 	QDF_STATUS status_5g, status_2g;
-	struct wlan_objmgr_vdev *vdev;
-	enum QDF_OPMODE device_mode;
 	uint8_t he_cap_total_len = SIR_MAC_HE_CAP_MIN_LEN + HE_CAP_OUI_LEN +
 				   HE_CAP_160M_MCS_MAP_LEN +
 				   HE_CAP_80P80_MCS_MAP_LEN;
-
-	vdev = wlan_objmgr_get_vdev_by_id_from_psoc(
-			mac_ctx->psoc, vdev_id,
-			WLAN_LEGACY_MAC_ID);
-	if (!vdev) {
-		pe_err("vdev is NULL");
-		return QDF_STATUS_E_FAILURE;
-	}
-	device_mode = wlan_vdev_mlme_get_opmode(vdev);
-	wlan_objmgr_vdev_release_ref(vdev, WLAN_LEGACY_MAC_ID);
 
 	/* Sending only minimal info(no PPET) to FW now, update if required */
 	qdf_mem_zero(he_caps, he_cap_total_len);

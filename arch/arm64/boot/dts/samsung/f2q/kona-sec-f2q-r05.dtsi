@@ -1,0 +1,83 @@
+/* Copyright (c) 2020, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "kona-sec-f2q-r04.dtsi"
+#include "kona-sec-f2q-pinctrl-r05.dtsi"
+#include "kona-sec-f2q-pm-r05.dtsi"
+#include "../drivers/bluetooth_f2q_r05.dtsi"
+#include "../drivers/camera_sensor_f2q_r05.dtsi"
+
+&soc {
+
+};
+
+&pcie0 {
+	esoc-name = "wlan";
+	oops-after-ready;
+	subpcb-ep-gpio = <&tlmm 38 0>;
+	wake-gpio = <&tlmm 81 0>;
+    pinctrl-0 = <&pcie0_clkreq_default
+            &pcie0_perst_default
+            &pcie0_wake_default>;
+    pinctrl-1 = <&pcie0_clkreq_sleep
+            &pcie0_perst_default
+            &pcie0_wake_default>;
+	qcom,target-link-speed = <0x1>;
+};
+
+&kona_snd {
+    qcom,wcn-bt = <1>;
+    qcom,quat-mi2s-gpios = <>;
+};
+
+&quat_mi2s_gpios {
+    status = "disabled";
+};
+
+&samsung_q6audio_adaptation {
+	adaptation,bt-rx-port-id = <0x400e>;
+};
+
+&slim_aud {
+	status = "ok";
+};
+
+&bt_driver {
+	status = "disabled";
+};
+
+&bt_bluesleep {
+	status = "disabled";
+};
+
+&bcmdhd_default {
+	status = "disabled";
+};
+&cnss_pci {
+	status = "ok";
+};
+&wlan {
+	wlan-en-gpio = <&tlmm 90 0>;
+	pinctrl-0 = <&qca6390_wlan_en_active>;
+	pinctrl-1 = <&qca6390_wlan_en_sleep>;
+	vdd-wlan-aon-supply = <>;
+	qcom,vdd-wlan-aon-config = <>;
+	vdd-wlan-dig-supply = <>;
+	qcom,vdd-wlan-dig-config = <>;
+	vdd-wlan-rfa1-supply = <>;
+	qcom,vdd-wlan-rfa1-config = <>;
+	vdd-wlan-rfa2-supply = <>;
+	qcom,vdd-wlan-rfa2-config = <>;
+	status = "ok";
+};
+
+

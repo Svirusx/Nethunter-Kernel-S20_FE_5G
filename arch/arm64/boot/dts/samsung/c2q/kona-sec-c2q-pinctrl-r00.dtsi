@@ -1,0 +1,139 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "../drivers/audio_canvas_pinctrl_common.dtsi"
+#include "../drivers/kona-sec-canvas-tsp-pinctrl.dtsi"
+#include "../drivers/kona-sec-c2q-mfc-pinctrl.dtsi"
+#include "../drivers/bluetooth_canvas_pinctrl_common.dtsi"
+#include "../drivers/kona-sec-c2q-camera-sensor-pinctrl-r00.dtsi"
+#include "../drivers/kona-sec-hubble-interposer.dtsi"
+
+&tlmm {
+
+	bt_wake_default: bt_wake_default {
+		mux {
+			pins = "gpio133";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio133";
+			drive-strength = <2>;
+			bias-pull-down;
+		};
+	};
+
+	bt_hostwake_default: bt_hostwake_default {
+		mux {
+			pins = "gpio126";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio126";
+			drive-strength = <2>;
+			bias-pull-down;
+		};
+	};
+
+	bcmdhd_default: bcmdhd_default {
+		mux {
+			pins = "gpio150";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio150";
+			drive-strength = <2>;   /* 2 mA */
+			bias-pull-down;         /* PULL DOWN */
+		};
+	};
+
+	bcmdhd_wlan_en: bcmdhd_wlan_en {
+		mux {
+			pins = "gpio90";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio90";
+			drive-strength = <2>;   /* 2 mA */
+			bias-pull-down;         /* PULL DOWN */
+		};
+	};
+
+	grip_i2c_active: grip_i2c_active {
+		mux {
+			pins = "gpio112", "gpio113";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio112", "gpio113";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+
+	grip_int_active: grip_int_active {
+		mux {
+			pins = "gpio111";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio111";
+			drive-strength = <2>;
+			bias-disable;
+		};
+	};
+
+};
+
+&pm8150l_gpios {
+    ap2mdm_errfatal2_default: ap2mdm_errfatal2_default {
+        pins = "gpio7";
+        function = "normal";
+        power-source = <1>; 
+        bias-disable;
+        output-low;
+        input-disable;
+    };
+};
+
+&tlmm {
+	wakeup-disabled-gpios = <
+		4	/* I2C : PM3003A_SDA_1P8 */
+		23	/* SPI : BTP_SPI_CS_N */
+		27	/* NC : NC */
+		28	/* I2C : DIRECT_IF_PMIC_SDA_1P8 */
+		40	/* I2C : AP_MCU_SDA_1P8 */
+		45	/* I2C : NFC_FLICKER_SCL_1P8 */
+		51	/* SPI : ESE_SPI_CS_N */
+		55	/* SPI : UWB_SPI_CS */
+		63	/* I2C : DISP_SCL_1P8 */
+		81	/* NC : NC */
+		83	/* NC : NC */
+		100	/* NC : NC */
+		103	/* I2C : VTCAM_TELE_SDA_1P8 */
+		104	/* I2C : VTCAM_TELE_SCL_1P8 */
+		108	/* I2C : WT_EEP_WIDE_AF_SCL_1P8 */
+		112	/* I2C : GRIP_SDA_1P8 */
+		113	/* I2C : GRIP_SCL_1P8 */
+		121	/* SPI : POC_SPI_CLK */
+		122	/* SPI : POC_SPI_CS_N */
+		128	/* NC : NC */
+		129	/* I2C : MOTOR_SDA_1P8 */
+		142	/* I2C : SUB_PMIC2_TOFBB_SDA_1P8 */
+		143	/* I2C : SUB_PMIC2_TOFBB_SCL_1P8 */
+		160	/* I2C : 6AXIS_I3C_SDA_1P8 */
+		162	/* I2C : MAGNETIC_SDA_1P8 */
+		164	/* SPI : COPR_MISO */
+		166	/* SPI : COPR_SCLK */
+		167	/* SPI : COPR_SS */
+		177	/* I2C : BT_SLPI_SCL_RXD */
+	>;
+};

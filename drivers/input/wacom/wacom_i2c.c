@@ -104,6 +104,7 @@ int wacom_i2c_send_sel(struct wacom_i2c *wac_i2c, const char *buf, int count, bo
 
 	memcpy(buff, buf, count);
 
+	reinit_completion(&wac_i2c->i2c_done);
 	do {
 		if (!wac_i2c->power_enable) {
 			input_err(true, &client->dev, "%s: Power status off\n", __func__);
@@ -124,6 +125,7 @@ int wacom_i2c_send_sel(struct wacom_i2c *wac_i2c, const char *buf, int count, bo
 	} while (--retry);
 
 out:
+	complete_all(&wac_i2c->i2c_done);
 	mutex_unlock(&wac_i2c->i2c_mutex);
 
 	if (wac_i2c->debug_flag & WACOM_DEBUG_PRINT_I2C_WRITE_CMD) {
@@ -166,6 +168,7 @@ int wacom_i2c_recv_sel(struct wacom_i2c *wac_i2c, char *buf, int count, bool mod
 
 	mutex_lock(&wac_i2c->i2c_mutex);
 
+	reinit_completion(&wac_i2c->i2c_done);
 	do {
 		if (!wac_i2c->power_enable) {
 			input_err(true, &client->dev, "%s: Power status off\n",	__func__);
@@ -195,6 +198,7 @@ int wacom_i2c_recv_sel(struct wacom_i2c *wac_i2c, char *buf, int count, bool mod
 	}
 
 out:
+	complete_all(&wac_i2c->i2c_done);
 	mutex_unlock(&wac_i2c->i2c_mutex);
 
 	kfree(buff);
@@ -2965,6 +2969,11 @@ static int wacom_i2c_probe(struct i2c_client *client,
 	i2c_set_clientdata(client, wac_i2c);
 	i2c_set_clientdata(wac_i2c->client_boot, wac_i2c);
 
+	init_completion(&wac_i2c->i2c_done);
+	complete_all(&wac_i2c->i2c_done);
+	init_completion(&wac_i2c->resume_done);
+	complete_all(&wac_i2c->resume_done);
+
 	/* Power on */
 	if (gpio_get_value(pdata->fwe_gpio) == 1) {
 		input_info(true, &client->dev, "%s: fwe gpio is high, change low and reset device\n", __func__);
@@ -2997,8 +3006,6 @@ static int wacom_i2c_probe(struct i2c_client *client,
 	wake_lock_init(&wac_i2c->wakelock, WAKE_LOCK_SUSPEND, "wacom_wakelock");
 
 	INIT_DELAYED_WORK(&wac_i2c->work_print_info, wacom_print_info_work);
-
-	init_completion(&wac_i2c->resume_done);
 
 	ret = wacom_fw_update_on_probe(wac_i2c);
 	if (ret)
@@ -3090,9 +3097,20 @@ err_register_input_dev:
 static int wacom_i2c_suspend(struct device *dev)
 {
 	struct wacom_i2c *wac_i2c = dev_get_drvdata(dev);
+	int ret;
+
+	if (wac_i2c->i2c_done.done == 0) {
+		/* completion.done == 0 :: initialized
+		 * completion.done > 0 :: completeted
+		 */
+		ret = wait_for_completion_interruptible_timeout(&wac_i2c->i2c_done, msecs_to_jiffies(500));
+		if (ret <= 0)
+			input_err(true, &wac_i2c->client->dev, "%s: completion expired, %d\n", __func__, ret);
+	}
 
 	wac_i2c->pm_suspend = true;
 	reinit_completion(&wac_i2c->resume_done);
+
 #ifndef USE_OPEN_CLOSE
 	if (wac_i2c->input_dev->users)
 		wacom_sleep_sequence(wac_i2c);

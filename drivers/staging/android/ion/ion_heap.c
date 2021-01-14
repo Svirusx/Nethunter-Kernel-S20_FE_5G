@@ -331,8 +331,12 @@ struct ion_heap *ion_heap_create(struct ion_platform_heap *heap_data)
 	int heap_type = heap_data->type;
 
 #ifdef CONFIG_ION_RBIN_HEAP
-	if (heap_type == ION_HEAP_TYPE_RBIN && !need_ion_rbin_heap())
-		heap_type = ION_HEAP_TYPE_CARVEOUT;
+	if (heap_type == ION_HEAP_TYPE_RBIN) {
+		if (heap_data->base == 0 && heap_data->size == 0)
+			return ERR_PTR(-EINVAL);
+		if (!need_ion_rbin_heap())
+			heap_type = ION_HEAP_TYPE_CARVEOUT;
+	}
 #endif
 	switch (heap_type) {
 	case ION_HEAP_TYPE_SYSTEM_CONTIG:

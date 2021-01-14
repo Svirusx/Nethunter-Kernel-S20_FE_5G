@@ -123,9 +123,7 @@ struct subsys_desc {
 #ifdef CONFIG_SETUP_SSR_NOTIF_TIMEOUTS
 	struct subsys_notif_timeout timeout_data;
 #endif /* CONFIG_SETUP_SSR_NOTIF_TIMEOUTS */
-#ifdef CONFIG_SENSORS_SSC
 	bool run_fssr;
-#endif
 #ifdef CONFIG_SUPPORT_AK0997X
 	int d_hall_rst_gpio;
 #endif
@@ -156,7 +154,6 @@ extern int subsystem_restart(const char *name);
 extern int subsystem_crashed(const char *name);
 extern void subsys_set_modem_silent_ssr(bool value);
 extern void subsys_set_modem_crash_id(int value);
-extern void subsys_set_adsp_silent_ssr(bool value);
 extern void subsys_set_cdsp_silent_ssr(bool value);
 
 extern void *subsystem_get(const char *name);

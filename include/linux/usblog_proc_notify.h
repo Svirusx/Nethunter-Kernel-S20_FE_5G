@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
- * Copyright (C) 2019 Samsung Electronics Co. Ltd.
+ * Copyright (C) 2016-2020 Samsung Electronics Co. Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  */
 
-  /* usb notify layer v3.4 */
+  /* usb notify layer v3.5 */
 
 #ifndef __LINUX_USBLOG_PROC_NOTIFY_H__
 #define __LINUX_USBLOG_PROC_NOTIFY_H__
@@ -55,6 +55,13 @@ enum usblog_state {
 	NOTIFY_VBUS_DIS_FAIL,
 	NOTIFY_HIGH,
 	NOTIFY_SUPER,
+	NOTIFY_GET_DES,
+	NOTIFY_SET_CON,
+	NOTIFY_CONNDONE_SSP,
+	NOTIFY_CONNDONE_SS,
+	NOTIFY_CONNDONE_HS,
+	NOTIFY_CONNDONE_FS,
+	NOTIFY_CONNDONE_LS,
 };
 
 enum usblog_status {
@@ -173,6 +180,10 @@ enum extra {
 	NOTIFY_EXTRA_CCOPEN_REQ_CLEAR,
 	NOTIFY_EXTRA_USB_ANALOGAUDIO,
 	NOTIFY_EXTRA_USBHOST_OVERCURRENT,
+	NOTIFY_EXTRA_ROOTHUB_SUSPEND_FAIL,
+	NOTIFY_EXTRA_PORT_SUSPEND_FAIL,
+	NOTIFY_EXTRA_PORT_SUSPEND_WAKEUP_FAIL,
+	NOTIFY_EXTRA_PORT_SUSPEND_LTM_FAIL,
 };
 
 #define ALTERNATE_MODE_NOT_READY	(1 << 0)

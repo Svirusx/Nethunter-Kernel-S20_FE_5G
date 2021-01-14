@@ -148,9 +148,24 @@ enum quest_enum_item {
 enum quest_enum_smd_subitem {
 	SUBITEM_NONE = 0,
 	SUBITEM_DDRSCANLOADER,
+#if defined(CONFIG_SEC_QUEST_EDL)
+	SUBITEM_QUESTSUEFI_GROUP1,
+	SUBITEM_QUESTSUEFI_GROUP2,
+	SUBITEM_QUESTSUEFI_GROUP3,
+	SUBITEM_QUESTSUEFI_GROUP4,
+	SUBITEM_QUESTSUEFI_GROUP5,
+	SUBITEM_QUESTQUEFI_GROUP1,
+	SUBITEM_QUESTQUEFI_GROUP2,
+	SUBITEM_QUESTQUEFI_GROUP3,
+	SUBITEM_QUESTQUEFI_GROUP4,
+	SUBITEM_QUESTQUEFI_GROUP5,
+	SUBITEM_QUESTQUEFI_GROUP6,
+	SUBITEM_QUESTQUEFI_GROUP7,
+#else
 	SUBITEM_QUESTQUEFI,
 	SUBITEM_QUESTSUEFILIGHTCRYPTO,
 	SUBITEM_QUESTSUEFILIGHTCOMPLEX,
+#endif
 #if defined(CONFIG_SEC_QUEST_HLOS_DUMMY_SMD)
 	SUBITEM_QUESTHLOSDUMMY,
 #elif defined(CONFIG_SEC_QUEST_HLOS_NATURESCENE_SMD)
@@ -295,6 +310,9 @@ struct param_quest_t {
 	uint32_t smd_ns_repeats_first;
 	uint32_t smd_quefi_rework;
 	uint32_t smd_suefi_rework;
+
+	uint32_t smd_quefi_total_pause_time;
+	uint32_t smd_quefi_total_pause_time_first;
 	/* smddl information */
 
 	struct param_quest_cpr_t smd_cx_cpr[8];

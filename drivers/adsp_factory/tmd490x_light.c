@@ -77,6 +77,7 @@ int get_light_sidx(struct adsp_data *data)
 	switch (data->fac_fstate) {
 	case FSTATE_INACTIVE:
 	case FSTATE_FAC_INACTIVE:
+	case FSTATE_FAC_INACTIVE_2:
 		ret = MSG_LIGHT;
 		break;
 	case FSTATE_ACTIVE:
@@ -300,6 +301,10 @@ int light_panel_data_notify(struct notifier_block *nb,
 #ifdef CONFIG_SUPPORT_DUAL_OPTIC
 		adsp_unicast(brightness_data, sizeof(brightness_data),
 			MSG_VIR_OPTIC, 0, MSG_TYPE_SET_CAL_DATA);
+#ifdef CONFIG_SUPPORT_DUAL_DDI_COPR_FOR_LIGHT_SENSOR
+		adsp_unicast(brightness_data, sizeof(brightness_data),
+			MSG_DDI, 0, MSG_TYPE_SET_CAL_DATA);
+#endif
 #else
 		schedule_work(&data->light_br_work);
 #endif
@@ -379,11 +384,25 @@ static ssize_t light_lcd_onoff_store(struct device *dev,
 	msg_buf[0] = OPTION_TYPE_LCD_ONOFF;
 	msg_buf[1] = new_value;
 
+#if defined(CONFIG_SEC_C1Q_PROJECT) || defined(CONFIG_SEC_C2Q_PROJECT)
+	if (new_value == 1) {
+		schedule_delayed_work(&data->light_copr_debug_work,
+			msecs_to_jiffies(1000));
+		data->light_copr_debug_count = 0;
+	} else {
+		cancel_delayed_work_sync(&data->light_copr_debug_work);
+	}
+#endif
+
 	mutex_lock(&data->light_factory_mutex);
 	adsp_unicast(msg_buf, sizeof(msg_buf),
 		light_idx, 0, MSG_TYPE_OPTION_DEFINE);
 	adsp_unicast(msg_buf, sizeof(msg_buf),
 		MSG_SSC_CORE, 0, MSG_TYPE_OPTION_DEFINE);
+#ifdef CONFIG_SUPPORT_DUAL_DDI_COPR_FOR_LIGHT_SENSOR
+	adsp_unicast(msg_buf, sizeof(msg_buf),
+		MSG_DDI, 0, MSG_TYPE_OPTION_DEFINE);
+#endif
 	mutex_unlock(&data->light_factory_mutex);
 
 	return size;
@@ -408,6 +427,17 @@ static ssize_t light_circle_show(struct device *dev,
 	return snprintf(buf, PAGE_SIZE, "45.2 7.3 2.5\n");
 #elif defined(CONFIG_SEC_BLOOMXQ_PROJECT)
 	return snprintf(buf, PAGE_SIZE, "34.1 11.6 2.4\n");
+#elif defined(CONFIG_SEC_F2Q_PROJECT)
+#ifdef CONFIG_SUPPORT_DUAL_OPTIC
+	struct adsp_data *data = dev_get_drvdata(dev);
+	if (data->fac_fstate == FSTATE_INACTIVE || data->fac_fstate == FSTATE_FAC_INACTIVE || data->fac_fstate == FSTATE_FAC_INACTIVE_2)
+		return snprintf(buf, PAGE_SIZE, "78.226 4.775 1.9 19.569 143.246 2.4\n");
+	else
+		return snprintf(buf, PAGE_SIZE, "45.647 4.801 3\n");
+#else
+	return snprintf(buf, PAGE_SIZE, "78.226 4.775 1.9\n");
+#endif
+
 #else
 	return snprintf(buf, PAGE_SIZE, "0 0 0\n");
 #endif
@@ -554,6 +584,9 @@ static ssize_t light_ddi_spi_check_show(struct device *dev,
 	uint16_t light_idx = get_light_sidx(data);
 	uint8_t cnt = 0;
 
+#ifdef CONFIG_SUPPORT_DUAL_DDI_COPR_FOR_LIGHT_SENSOR
+	light_idx = MSG_DDI;
+#endif
 	mutex_lock(&data->light_factory_mutex);
 	adsp_unicast(&cmd, sizeof(cmd), light_idx, 0, MSG_TYPE_GET_CAL_DATA);
 
@@ -811,6 +844,45 @@ int ams_save_ub_cell_id_to_efs(char *data_str, bool first_booting)
 
 	return ret;
 }
+
+#if defined(CONFIG_SEC_C1Q_PROJECT) || defined(CONFIG_SEC_C2Q_PROJECT)
+void light_copr_debug_work_func(struct work_struct *work)
+{
+	struct adsp_data *data = container_of((struct delayed_work *)work,
+		struct adsp_data, light_copr_debug_work);
+	uint16_t light_idx = get_light_sidx(data);
+	uint8_t cnt = 0;
+
+	mutex_lock(&data->light_factory_mutex);
+	adsp_unicast(NULL, 0, light_idx, 0, MSG_TYPE_GET_DUMP_REGISTER);
+
+	while (!(data->ready_flag[MSG_TYPE_GET_DUMP_REGISTER] & 1 << light_idx)
+		&& cnt++ < TIMEOUT_CNT)
+		usleep_range(500, 550);
+
+	data->ready_flag[MSG_TYPE_GET_DUMP_REGISTER] &= ~(1 << light_idx);
+
+	if (cnt >= TIMEOUT_CNT) {
+		pr_err("[SSC_FAC] %s: Timeout!!!\n", __func__);
+		mutex_unlock(&data->light_factory_mutex);
+		return;
+	}
+
+	pr_info("[SSC_FAC] %s: %d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n", __func__,
+		data->msg_buf[light_idx][0], data->msg_buf[light_idx][1],
+		data->msg_buf[light_idx][2], data->msg_buf[light_idx][3],
+		data->msg_buf[light_idx][4], data->msg_buf[light_idx][5],
+		data->msg_buf[light_idx][6], data->msg_buf[light_idx][7],
+		data->msg_buf[light_idx][8], data->msg_buf[light_idx][9],
+		data->msg_buf[light_idx][10], data->msg_buf[light_idx][11]);
+
+	mutex_unlock(&data->light_factory_mutex);
+
+	if (data->light_copr_debug_count++ < 5)
+		schedule_delayed_work(&data->light_copr_debug_work,
+			msecs_to_jiffies(1000));
+}
+#endif
 
 void light_cal_read_work_func(struct work_struct *work)
 {

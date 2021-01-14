@@ -23,7 +23,7 @@
 #include <linux/wakelock.h>
 
 
-extern struct device *sec_key;
+extern struct device *hall_ic;
 
 struct hall_drvdata {
 #ifdef CONFIG_WACOM_HALL_SUPPORT_COVER_DETECT
@@ -227,7 +227,7 @@ static int hall_wacom_probe(struct platform_device *pdev)
 
 	init_hall_ic_wacom_irq(ddata);
 
-	error = device_create_file(sec_key, &dev_attr_hall_wacom_detect);
+	error = device_create_file(hall_ic, &dev_attr_hall_wacom_detect);
 	if (error < 0) {
 		pr_err("Failed to create device file(%s)!, error: %d\n",
 		dev_attr_hall_wacom_detect.attr.name, error);

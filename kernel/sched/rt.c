@@ -9,6 +9,8 @@
 
 #include <linux/interrupt.h>
 
+#include <trace/events/sched.h>
+
 #include "walt.h"
 
 int sched_rr_timeslice = RR_TIMESLICE;
@@ -927,9 +929,10 @@ static void dump_throttled_rt_tasks(struct rt_rq *rt_rq)
 		rt_rq, cpu_of(rq_of_rt_rq(rt_rq)));
 
 	pos += snprintf(pos, end - pos,
-			"rt_period_timer: expires=%lld now=%llu period=%llu\n",
+			"rt_period_timer: expires=%lld now=%llu runtime=%llu period=%llu\n",
 			hrtimer_get_expires_ns(&rt_b->rt_period_timer),
-			ktime_get_ns(), sched_rt_period(rt_rq));
+			ktime_get_ns(), sched_rt_runtime(rt_rq),
+			sched_rt_period(rt_rq));
 
 	if (bitmap_empty(array->bitmap, MAX_RT_PRIO))
 		goto out;
@@ -1808,6 +1811,9 @@ retry:
 		}
 
 		for_each_cpu_and(cpu, lowest_mask, sched_group_span(sg)) {
+
+			trace_sched_cpu_util(cpu);
+
 			if (cpu_isolated(cpu))
 				continue;
 
@@ -1821,11 +1827,11 @@ retry:
 					continue;
 				}
 			}else{
-				if (__cpu_overutilized(cpu, util + tutil))
+				if (__cpu_overutilized(cpu, tutil))
 					continue;
 			}
 #else
-			if (__cpu_overutilized(cpu, util + tutil))
+			if (__cpu_overutilized(cpu, tutil))
 				continue;
 #endif
 
@@ -2666,6 +2672,10 @@ const struct sched_class rt_sched_class = {
 	.update_curr		= update_curr_rt,
 #ifdef CONFIG_SCHED_WALT
 	.fixup_walt_sched_stats	= fixup_walt_sched_stats_common,
+#endif
+
+#ifdef CONFIG_UCLAMP_TASK
+	.uclamp_enabled		= 1,
 #endif
 };
 

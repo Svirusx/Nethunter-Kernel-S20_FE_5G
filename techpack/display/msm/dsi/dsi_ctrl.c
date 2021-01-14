@@ -85,6 +85,7 @@ static const struct of_device_id msm_dsi_of_match[] = {
 	{}
 };
 
+#ifdef CONFIG_DEBUG_FS
 static ssize_t debugfs_state_info_read(struct file *file,
 				       char __user *buff,
 				       size_t count,
@@ -211,6 +212,11 @@ static int dsi_ctrl_debugfs_init(struct dsi_ctrl *dsi_ctrl,
 	struct dentry *dir, *state_file, *reg_dump;
 	char dbg_name[DSI_DEBUG_NAME_LEN];
 
+	if (!dsi_ctrl || !parent) {
+		DSI_CTRL_ERR(dsi_ctrl, "Invalid params\n");
+		return -EINVAL;
+	}
+
 	dir = debugfs_create_dir(dsi_ctrl->name, parent);
 	if (IS_ERR_OR_NULL(dir)) {
 		rc = PTR_ERR(dir);
@@ -258,6 +264,17 @@ static int dsi_ctrl_debugfs_deinit(struct dsi_ctrl *dsi_ctrl)
 	debugfs_remove(dsi_ctrl->debugfs_root);
 	return 0;
 }
+#else
+static int dsi_ctrl_debugfs_init(struct dsi_ctrl *dsi_ctrl,
+				 struct dentry *parent)
+{
+	return 0;
+}
+static int dsi_ctrl_debugfs_deinit(struct dsi_ctrl *dsi_ctrl)
+{
+	return 0;
+}
+#endif /* CONFIG_DEBUG_FS */
 
 static inline struct msm_gem_address_space*
 dsi_ctrl_get_aspace(struct dsi_ctrl *dsi_ctrl,
@@ -369,7 +386,7 @@ static int dsi_ctrl_check_state(struct dsi_ctrl *dsi_ctrl,
 	int rc = 0;
 	struct dsi_ctrl_state_info *state = &dsi_ctrl->current_state;
 
-	SDE_EVT32(dsi_ctrl->cell_index, op);
+	SDE_EVT32(dsi_ctrl->cell_index, op, op_state);
 
 	switch (op) {
 	case DSI_CTRL_OP_POWER_STATE_CHANGE:
@@ -999,6 +1016,7 @@ static int dsi_ctrl_update_link_freqs(struct dsi_ctrl *dsi_ctrl,
 	DSI_CTRL_DEBUG(dsi_ctrl, "byte_clk_rate = %llu, byte_intf_clk = %llu\n",
 		  byte_clk_rate, byte_intf_clk_rate);
 	DSI_CTRL_DEBUG(dsi_ctrl, "pclk_rate = %llu\n", pclk_rate);
+	SDE_EVT32(dsi_ctrl->cell_index, bit_rate, byte_clk_rate, pclk_rate);
 
 	dsi_ctrl->clk_freq.byte_clk_rate = byte_clk_rate;
 	dsi_ctrl->clk_freq.byte_intf_clk_rate = byte_intf_clk_rate;
@@ -1186,6 +1204,7 @@ void dsi_message_setup_tx_mode(struct dsi_ctrl *dsi_ctrl,
 	 * override cmd fetch mode during secure session
 	 */
 	if (dsi_ctrl->secure_mode) {
+		SDE_EVT32(dsi_ctrl->cell_index, SDE_EVTLOG_FUNC_CASE1);
 		*flags &= ~DSI_CTRL_CMD_FETCH_MEMORY;
 		*flags |= DSI_CTRL_CMD_FIFO_STORE;
 		DSI_CTRL_DEBUG(dsi_ctrl,
@@ -1256,7 +1275,8 @@ static void dsi_kickoff_msg_tx(struct dsi_ctrl *dsi_ctrl,
 	struct dsi_mode_info *timing;
 	struct dsi_ctrl_hw_ops dsi_hw_ops = dsi_ctrl->hw.ops;
 
-	SDE_EVT32(dsi_ctrl->cell_index, SDE_EVTLOG_FUNC_ENTRY, flags);
+	SDE_EVT32(dsi_ctrl->cell_index, SDE_EVTLOG_FUNC_ENTRY, flags,
+		msg->flags);
 	/* check if custom dma scheduling line needed */
 	if ((dsi_ctrl->host_config.panel_mode == DSI_OP_VIDEO_MODE) &&
 		(flags & DSI_CTRL_CMD_CUSTOM_DMA_SCHED))
@@ -1311,9 +1331,7 @@ static void dsi_kickoff_msg_tx(struct dsi_ctrl *dsi_ctrl,
 
 	if (!(flags & DSI_CTRL_CMD_DEFER_TRIGGER)) {
 		dsi_ctrl_wait_for_video_done(dsi_ctrl);
-		if (dsi_hw_ops.mask_error_intr)
-			dsi_hw_ops.mask_error_intr(&dsi_ctrl->hw,
-					BIT(DSI_FIFO_OVERFLOW), true);
+		dsi_ctrl_mask_overflow(dsi_ctrl, true);
 
 		atomic_set(&dsi_ctrl->dma_irq_trig, 0);
 		dsi_ctrl_enable_status_interrupt(dsi_ctrl,
@@ -1358,9 +1376,8 @@ static void dsi_kickoff_msg_tx(struct dsi_ctrl *dsi_ctrl,
 			SDE_ATRACE_END("dsi_message_tx_wait");
 #endif
 
-		if (dsi_hw_ops.mask_error_intr && !dsi_ctrl->esd_check_underway)
-			dsi_hw_ops.mask_error_intr(&dsi_ctrl->hw,
-					BIT(DSI_FIFO_OVERFLOW), false);
+		dsi_ctrl_mask_overflow(dsi_ctrl, false);
+
 		dsi_hw_ops.reset_cmd_fifo(&dsi_ctrl->hw);
 
 		/*
@@ -2236,7 +2253,7 @@ int dsi_ctrl_drv_init(struct dsi_ctrl *dsi_ctrl, struct dentry *parent)
 {
 	int rc = 0;
 
-	if (!dsi_ctrl || !parent) {
+	if (!dsi_ctrl) {
 		DSI_CTRL_ERR(dsi_ctrl, "Invalid params\n");
 		return -EINVAL;
 	}
@@ -2578,6 +2595,7 @@ static bool dsi_ctrl_check_for_spurious_error_interrupts(
 	if ((jiffies_now - dsi_ctrl->jiffies_start) < intr_check_interval) {
 		if (dsi_ctrl->error_interrupt_count > interrupt_threshold) {
 			DSI_CTRL_WARN(dsi_ctrl, "Detected spurious interrupts on dsi ctrl\n");
+			SDE_EVT32_IRQ(dsi_ctrl->error_interrupt_count);
 			return true;
 		}
 	} else {
@@ -2846,6 +2864,7 @@ void dsi_ctrl_enable_status_interrupt(struct dsi_ctrl *dsi_ctrl,
 			intr_idx >= DSI_STATUS_INTERRUPT_COUNT)
 		return;
 
+	SDE_EVT32(dsi_ctrl->cell_index, SDE_EVTLOG_FUNC_ENTRY, intr_idx);
 	spin_lock_irqsave(&dsi_ctrl->irq_info.irq_lock, flags);
 
 	if (dsi_ctrl->irq_info.irq_stat_refcount[intr_idx] == 0) {
@@ -2875,10 +2894,10 @@ void dsi_ctrl_disable_status_interrupt(struct dsi_ctrl *dsi_ctrl,
 {
 	unsigned long flags;
 
-	if (!dsi_ctrl || dsi_ctrl->irq_info.irq_num == -1 ||
-			intr_idx >= DSI_STATUS_INTERRUPT_COUNT)
+	if (!dsi_ctrl || intr_idx >= DSI_STATUS_INTERRUPT_COUNT)
 		return;
 
+	SDE_EVT32_IRQ(dsi_ctrl->cell_index, SDE_EVTLOG_FUNC_ENTRY, intr_idx);
 	spin_lock_irqsave(&dsi_ctrl->irq_info.irq_lock, flags);
 
 	if (dsi_ctrl->irq_info.irq_stat_refcount[intr_idx])
@@ -2888,7 +2907,8 @@ void dsi_ctrl_disable_status_interrupt(struct dsi_ctrl *dsi_ctrl,
 					dsi_ctrl->irq_info.irq_stat_mask);
 
 			/* don't need irq if no lines are enabled */
-			if (dsi_ctrl->irq_info.irq_stat_mask == 0)
+			if (dsi_ctrl->irq_info.irq_stat_mask == 0 &&
+				dsi_ctrl->irq_info.irq_num != -1)
 				disable_irq_nosync(dsi_ctrl->irq_info.irq_num);
 		}
 
@@ -3333,6 +3353,11 @@ error:
 	return rc;
 }
 
+/**
+ * dsi_ctrl_mask_overflow() -	API to mask/unmask overflow error.
+ * @dsi_ctrl:			DSI controller handle.
+ * @enable:			variable to control masking/unmasking.
+ */
 void dsi_ctrl_mask_overflow(struct dsi_ctrl *dsi_ctrl, bool enable)
 {
 	struct dsi_ctrl_hw_ops dsi_hw_ops;
@@ -3350,7 +3375,12 @@ void dsi_ctrl_mask_overflow(struct dsi_ctrl *dsi_ctrl, bool enable)
 	}
 }
 
-int dsi_ctrl_cmd_clear_interrupt(struct dsi_ctrl *dsi_ctrl, u32 flags)
+/**
+ * dsi_ctrl_clear_slave_dma_status -   API to clear slave DMA status
+ * @dsi_ctrl:                   DSI controller handle.
+ * @flags:                      Modifiers
+ */
+int dsi_ctrl_clear_slave_dma_status(struct dsi_ctrl *dsi_ctrl, u32 flags)
 {
 	struct dsi_ctrl_hw_ops dsi_hw_ops;
 	u32 status;
@@ -3377,7 +3407,7 @@ int dsi_ctrl_cmd_clear_interrupt(struct dsi_ctrl *dsi_ctrl, u32 flags)
 		if (status & mask) {
 			status |= (DSI_CMD_MODE_DMA_DONE | DSI_BTA_DONE);
 			dsi_hw_ops.clear_interrupt_status(&dsi_ctrl->hw,
-					status);
+				status);
 			SDE_EVT32(dsi_ctrl->cell_index, status);
 			wait_for_done = 1;
 			break;
@@ -3704,6 +3734,7 @@ int dsi_ctrl_set_host_engine_state(struct dsi_ctrl *dsi_ctrl,
 	else
 		dsi_ctrl->hw.ops.ctrl_en(&dsi_ctrl->hw, false);
 
+	SDE_EVT32(dsi_ctrl->cell_index, state);
 	DSI_CTRL_DEBUG(dsi_ctrl, "Set host engine state = %d\n", state);
 	dsi_ctrl_update_state(dsi_ctrl, DSI_CTRL_OP_HOST_ENGINE, state);
 error:
@@ -3743,6 +3774,7 @@ int dsi_ctrl_set_cmd_engine_state(struct dsi_ctrl *dsi_ctrl,
 	else
 		dsi_ctrl->hw.ops.cmd_engine_en(&dsi_ctrl->hw, false);
 
+	SDE_EVT32(dsi_ctrl->cell_index, state);
 	DSI_CTRL_DEBUG(dsi_ctrl, "Set cmd engine state = %d\n", state);
 	dsi_ctrl_update_state(dsi_ctrl, DSI_CTRL_OP_CMD_ENGINE, state);
 error:
@@ -3786,6 +3818,7 @@ int dsi_ctrl_set_vid_engine_state(struct dsi_ctrl *dsi_ctrl,
 	if (!on && dsi_ctrl->version < DSI_CTRL_VERSION_1_3)
 		dsi_ctrl->hw.ops.soft_reset(&dsi_ctrl->hw);
 
+	SDE_EVT32(dsi_ctrl->cell_index, state);
 	DSI_CTRL_DEBUG(dsi_ctrl, "Set video engine state = %d\n", state);
 	dsi_ctrl_update_state(dsi_ctrl, DSI_CTRL_OP_VID_ENGINE, state);
 error:

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0-only
 
 /*
- * Copyright (c) 2017-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
  */
 
 #define pr_fmt(fmt) "%s: " fmt, KBUILD_MODNAME
@@ -19,12 +19,6 @@
 #include <linux/soc/qcom/smem.h>
 #include <asm/arch_timer.h>
 #include "rpmh_master_stat.h"
-#ifdef CONFIG_DSP_SLEEP_RECOVERY
-#include <linux/adsp/adsp-loader.h>
-#include <linux/adsp/slpi-loader.h>
-#include <linux/cdsp-loader.h>
-#include <linux/rtc.h>
-#endif /* CONFIG_DSP_SLEEP_RECOVERY */
 
 #define UNIT_DIST 0x14
 #define REG_VALID 0x0
@@ -106,35 +100,6 @@ static struct msm_rpmh_master_stats apss_master_stats;
 static void __iomem *rpmh_unit_base;
 
 static DEFINE_MUTEX(rpmh_stats_mutex);
-#ifdef CONFIG_DSP_SLEEP_RECOVERY
-#ifdef CONFIG_DSP_SLEEP_DEBUG
-#define MAX_COUNT 5
-/* It is UTC time KST+24-9 */
-#define START_H 0
-#define END_H 24
-#else
-#define MAX_COUNT 60
-/* It is UTC time KST+24-9 */
-#define START_H 17
-#define END_H 20
-#endif
-
-extern unsigned int tx_mck;
-extern unsigned int tx_mck_div;
-extern bool voice_activated;
-
-struct _dsp_entry {
-	char name[4];
-	uint64_t entry_sec;
-	uint64_t entry_msec;
-	uint64_t prev_sec;
-	uint64_t prev_msec;
-	uint64_t error_count;
-	uint64_t ssr_count;
-	struct rtc_time tm_chk;
-	int (*ssr)(void);
-} DSP_ENTRY[3]; // 0 : ADSP, 1 : CDSP, 2 : SLPI
-#endif
 
 #ifdef CONFIG_SEC_PM
 void debug_masterstats_show(char *annotation)
@@ -146,10 +111,6 @@ void debug_masterstats_show(char *annotation)
 	unsigned int duration_sec, duration_msec;
 	char buf[256];
 	char *buf_ptr = buf;
-#ifdef CONFIG_DSP_SLEEP_RECOVERY
-	struct timespec ts;
-	struct _dsp_entry *dsp_entry;
-#endif
 
 	mutex_lock(&rpmh_stats_mutex);
 
@@ -173,43 +134,9 @@ void debug_masterstats_show(char *annotation)
 			duration_sec = GET_SEC(accumulated_duration);
 			duration_msec = GET_MSEC(accumulated_duration);
 #ifdef CONFIG_DSP_SLEEP_RECOVERY
-			dsp_entry = (!strcmp(rpmh_masters[i].master_name, "ADSP")) ? &DSP_ENTRY[0] :
-				(!strcmp(rpmh_masters[i].master_name, "CDSP")) ? &DSP_ENTRY[1] :
-				(!strcmp(rpmh_masters[i].master_name, "SLPI")) ? &DSP_ENTRY[2] : NULL;
-
-			if (dsp_entry != NULL) {
-				if(!strcmp(annotation, "entry")) {
-					dsp_entry->entry_sec = duration_sec;
-					dsp_entry->entry_msec = duration_msec;
-				} else if(!strcmp(annotation, "exit")) {
-					getnstimeofday(&ts);
-					rtc_time_to_tm(ts.tv_sec, &dsp_entry->tm_chk);
-
-					if ((!voice_activated && !strncmp(dsp_entry->name, "adsp", 4)) ||
-						!strncmp(dsp_entry->name, "cdsp", 4) ||
-						!strncmp(dsp_entry->name, "slpi", 4)) {
-						/* Error detected if exit duration is same as entry */
-						if ((duration_sec == dsp_entry->entry_sec &&
-											duration_msec == dsp_entry->entry_msec)) {
-							/* increase count if entry duration is same as prev exit */
-							if (dsp_entry->prev_sec == dsp_entry->entry_sec &&
-											dsp_entry->prev_msec == dsp_entry->entry_msec)
-								dsp_entry->error_count++;
-							/* set count as 1 when aDSP entered sleep just before */
-							else
-								dsp_entry->error_count = 1;
-
-							pr_info("%s non-sleep count %d, tx_mck %d, tx_mck_div %d, ssr count %d\n",
-								rpmh_masters[i].master_name, dsp_entry->error_count, tx_mck, tx_mck_div,
-								dsp_entry->ssr_count);
-						} else {
-							dsp_entry->error_count = 0;
-						}
-					}
-					dsp_entry->prev_sec = duration_sec;
-					dsp_entry->prev_msec = duration_msec;
-				}
-			}
+			subsystem_update_sleep_time(annotation,
+				rpmh_masters[i].master_name,
+				accumulated_duration);
 #endif
 			buf_ptr += sprintf(buf_ptr, "%s(%d, %u.%u), ",
 					rpmh_masters[i].master_name,
@@ -226,32 +153,8 @@ void debug_masterstats_show(char *annotation)
 	mutex_unlock(&rpmh_stats_mutex);
 
 	printk(KERN_INFO "%s", buf);
-
 #ifdef CONFIG_DSP_SLEEP_RECOVERY
-	// 0 : ADSP, 1 : CDSP, 2 : SLPI
-	for (i = 0; i < sizeof(DSP_ENTRY) / sizeof(struct _dsp_entry); i++) {
-		dsp_entry = &DSP_ENTRY[i];
-
-		if(dsp_entry->error_count > MAX_COUNT) {
-#ifdef CONFIG_DSP_SLEEP_RECOVERY_FOR_ADSP
-			if(dsp_entry->tm_chk.tm_hour >= START_H &&
-					dsp_entry->tm_chk.tm_hour < END_H &&
-					!(strncmp(dsp_entry->name, "adsp", 4)))
-				dsp_entry->ssr = &adsp_ssr;
-#endif
-
-			if (!strncmp(dsp_entry->name, "cdsp", 4))
-				dsp_entry->ssr = &cdsp_ssr;
-
-			if (!strncmp(dsp_entry->name, "slpi", 4))
-				dsp_entry->ssr = &slpi_ssr;
-
-			if (dsp_entry->ssr)
-				dsp_entry->ssr();
-			dsp_entry->ssr_count++;
-			dsp_entry->error_count = 0;
-		}
-	}
+	subsystem_monitor_sleep_issue();
 #endif
 }
 EXPORT_SYMBOL(debug_masterstats_show);
@@ -288,7 +191,6 @@ static ssize_t msm_rpmh_master_stats_show(struct kobject *kobj,
 {
 	ssize_t length;
 	int i = 0;
-	size_t size = 0;
 	struct msm_rpmh_master_stats *record = NULL;
 
 	mutex_lock(&rpmh_stats_mutex);
@@ -303,7 +205,7 @@ static ssize_t msm_rpmh_master_stats_show(struct kobject *kobj,
 	for (i = 0; i < ARRAY_SIZE(rpmh_masters); i++) {
 		record = (struct msm_rpmh_master_stats *) qcom_smem_get(
 					rpmh_masters[i].pid,
-					rpmh_masters[i].smem_id, &size);
+					rpmh_masters[i].smem_id, NULL);
 		if (!IS_ERR_OR_NULL(record) && (PAGE_SIZE - length > 0))
 			length += msm_rpmh_master_stats_print_data(
 					buf + length, PAGE_SIZE - length,
@@ -398,11 +300,6 @@ static int msm_rpmh_master_stats_probe(struct platform_device *pdev)
 	apss_master_stats.version_id = 0x1;
 	platform_set_drvdata(pdev, prvdata);
 
-#ifdef CONFIG_DSP_SLEEP_RECOVERY
-	strncpy(DSP_ENTRY[0].name, "adsp", 4);
-	strncpy(DSP_ENTRY[1].name, "cdsp", 4);
-	strncpy(DSP_ENTRY[2].name, "slpi", 4);
-#endif
 	return ret;
 
 fail_iomap:

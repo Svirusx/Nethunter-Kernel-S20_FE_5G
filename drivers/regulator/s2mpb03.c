@@ -602,12 +602,13 @@ static struct of_device_id s2mpb03_i2c_dt_ids[] = {
 
 static int s2mpb03_pmic_remove(struct i2c_client *i2c)
 {
+#ifdef CONFIG_DRV_SAMSUNG_PMIC
 	struct s2mpb03_data *info = i2c_get_clientdata(i2c);
 
-	dev_info(&i2c->dev, "%s\n", __func__);
-#ifdef CONFIG_DRV_SAMSUNG_PMIC
 	pmic_device_destroy(info->dev->devt);
 #endif
+	dev_info(&i2c->dev, "%s\n", __func__);
+	
 	return 0;
 }
 

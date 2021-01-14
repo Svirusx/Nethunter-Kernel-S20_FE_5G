@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2010-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2010-2020, The Linux Foundation. All rights reserved.
  */
 
 #include <linux/msm-bus.h>
@@ -15,6 +15,7 @@
 #include "kgsl_device.h"
 #include "kgsl_pwrscale.h"
 #include "kgsl_trace.h"
+#include "kgsl_trace_power.h"
 
 #define KGSL_PWRFLAGS_POWER_ON 0
 #define KGSL_PWRFLAGS_CLK_ON   1
@@ -315,6 +316,22 @@ void kgsl_pwrctrl_buslevel_update(struct kgsl_device *device,
 EXPORT_SYMBOL(kgsl_pwrctrl_buslevel_update);
 
 #if IS_ENABLED(CONFIG_QCOM_CX_IPEAK)
+static int kgsl_pwr_cx_ipeak_freq_limit(void *ptr, unsigned int freq)
+{
+	struct kgsl_pwr_limit *cx_ipeak_pwr_limit = ptr;
+
+	if (IS_ERR_OR_NULL(cx_ipeak_pwr_limit))
+		return -EINVAL;
+
+	/* CX-ipeak safe interrupt to remove freq limit */
+	if (freq == 0) {
+		kgsl_pwr_limits_set_default(cx_ipeak_pwr_limit);
+		return 0;
+	}
+
+	return kgsl_pwr_limits_set_freq(cx_ipeak_pwr_limit, freq);
+}
+
 static int kgsl_pwrctrl_cx_ipeak_vote(struct kgsl_device *device,
 		u64 old_freq, u64 new_freq)
 {
@@ -425,6 +442,30 @@ static int kgsl_pwrctrl_cx_ipeak_init(struct kgsl_device *device)
 		}
 
 		++i;
+	}
+
+	/* cx_ipeak limits for GPU freq throttling */
+	pwr->cx_ipeak_pwr_limit = kgsl_pwr_limits_add(KGSL_DEVICE_3D0);
+	if (IS_ERR_OR_NULL(pwr->cx_ipeak_pwr_limit)) {
+		dev_err(device->dev,
+				"Failed to get cx_ipeak power limit\n");
+		ret = -EINVAL;
+		goto error;
+	}
+
+	cx_ipeak_client = &pwr->gpu_ipeak_client[0];
+	if (!IS_ERR_OR_NULL(cx_ipeak_client->client)) {
+		ret = cx_ipeak_victim_register(cx_ipeak_client->client,
+				kgsl_pwr_cx_ipeak_freq_limit,
+				pwr->cx_ipeak_pwr_limit);
+		if (ret) {
+			kgsl_pwr_limits_del(pwr->cx_ipeak_pwr_limit);
+			if (ret != -ENOENT) {
+				dev_err(device->dev,
+					"Failed to register GPU-CX-Ipeak victim\n");
+				goto error;
+			}
+		}
 	}
 
 	of_node_put(node);
@@ -618,6 +659,8 @@ void kgsl_pwrctrl_pwrlevel_change(struct kgsl_device *device,
 			pwr->active_pwrlevel, pwrlevel->gpu_freq,
 			pwr->previous_pwrlevel,
 			pwr->pwrlevels[old_level].gpu_freq);
+
+	trace_gpu_frequency(pwrlevel->gpu_freq/1000, 0);
 
 	/*
 	 * Some targets do not support the bandwidth requirement of
@@ -2379,6 +2422,9 @@ int kgsl_pwrctrl_init(struct kgsl_device *device)
 		}
 	}
 
+	INIT_LIST_HEAD(&pwr->limits);
+	spin_lock_init(&pwr->limits_lock);
+
 	result = kgsl_pwrctrl_cx_ipeak_init(device);
 	if (result)
 		goto error_cleanup_bus_ib;
@@ -2386,8 +2432,6 @@ int kgsl_pwrctrl_init(struct kgsl_device *device)
 	INIT_WORK(&pwr->thermal_cycle_ws, kgsl_thermal_cycle);
 	timer_setup(&pwr->thermal_timer, kgsl_thermal_timer, 0);
 
-	INIT_LIST_HEAD(&pwr->limits);
-	spin_lock_init(&pwr->limits_lock);
 	pwr->sysfs_pwr_limit = kgsl_pwr_limits_add(KGSL_DEVICE_3D0);
 
 	kgsl_pwrctrl_vbif_init(device);
@@ -2417,6 +2461,12 @@ void kgsl_pwrctrl_close(struct kgsl_device *device)
 {
 	struct kgsl_pwrctrl *pwr = &device->pwrctrl;
 	int i;
+
+	kgsl_pwr_limits_del(pwr->cx_ipeak_pwr_limit);
+	pwr->cx_ipeak_pwr_limit = NULL;
+
+	if (!IS_ERR_OR_NULL(pwr->gpu_ipeak_client[0].client))
+		cx_ipeak_victim_unregister(pwr->gpu_ipeak_client[0].client);
 
 	for (i = 0; i < ARRAY_SIZE(pwr->gpu_ipeak_client); i++) {
 		if (!IS_ERR_OR_NULL(pwr->gpu_ipeak_client[i].client)) {
@@ -2635,12 +2685,22 @@ static int _init(struct kgsl_device *device)
 	int status = 0;
 
 	switch (device->state) {
+	case KGSL_STATE_RESET:
+		if (gmu_core_isenabled(device)) {
+			/*
+			 * If we fail a INIT -> AWARE transition, we will
+			 * transition back to INIT. However, we must hard reset
+			 * the GMU as we go back to INIT. This is done by
+			 * forcing a RESET -> INIT transition.
+			 */
+			gmu_core_suspend(device);
+			kgsl_pwrctrl_set_state(device, KGSL_STATE_INIT);
+		}
+		break;
 	case KGSL_STATE_NAP:
 		/* Force power on to do the stop */
 		status = kgsl_pwrctrl_enable(device);
 	case KGSL_STATE_ACTIVE:
-		/* fall through */
-	case KGSL_STATE_RESET:
 		kgsl_pwrctrl_irq(device, KGSL_PWRFLAGS_OFF);
 		del_timer_sync(&device->idle_timer);
 		kgsl_pwrscale_midframe_timer_cancel(device);
@@ -2667,6 +2727,7 @@ static int _wake(struct kgsl_device *device)
 {
 	struct kgsl_pwrctrl *pwr = &device->pwrctrl;
 	int status = 0;
+	unsigned int state = device->state;
 
 	switch (device->state) {
 	case KGSL_STATE_SUSPEND:
@@ -2693,6 +2754,9 @@ static int _wake(struct kgsl_device *device)
 		/* Turn on the core clocks */
 		kgsl_pwrctrl_clk(device, KGSL_PWRFLAGS_ON, KGSL_STATE_ACTIVE);
 
+		if (state == KGSL_STATE_SLUMBER || state == KGSL_STATE_SUSPEND)
+			trace_gpu_frequency(
+			pwr->pwrlevels[pwr->active_pwrlevel].gpu_freq/1000, 0);
 		/*
 		 * No need to turn on/off irq here as it no longer affects
 		 * power collapse
@@ -2743,7 +2807,6 @@ static int
 _aware(struct kgsl_device *device)
 {
 	int status = 0;
-	unsigned int state = device->state;
 
 	switch (device->state) {
 	case KGSL_STATE_RESET:
@@ -2753,12 +2816,6 @@ _aware(struct kgsl_device *device)
 		status = gmu_core_start(device);
 		break;
 	case KGSL_STATE_INIT:
-		/* if GMU already in FAULT */
-		if (gmu_core_isenabled(device) &&
-			test_bit(GMU_FAULT, &device->gmu_core.flags)) {
-			status = -EINVAL;
-			break;
-		}
 		status = kgsl_pwrctrl_enable(device);
 		break;
 	/* The following 3 cases shouldn't occur, but don't panic. */
@@ -2770,65 +2827,26 @@ _aware(struct kgsl_device *device)
 		kgsl_pwrscale_midframe_timer_cancel(device);
 		break;
 	case KGSL_STATE_SLUMBER:
-		/* if GMU already in FAULT */
-		if (gmu_core_isenabled(device) &&
-			test_bit(GMU_FAULT, &device->gmu_core.flags)) {
-			status = -EINVAL;
-			break;
-		}
-
 		status = kgsl_pwrctrl_enable(device);
 		break;
 	default:
 		status = -EINVAL;
 	}
 
-	if (status) {
-		if (gmu_core_isenabled(device)) {
-			/* GMU hang recovery */
-			kgsl_pwrctrl_set_state(device, KGSL_STATE_RESET);
-			set_bit(GMU_FAULT, &device->gmu_core.flags);
-			status = kgsl_pwrctrl_enable(device);
-			/* Cannot recover GMU failure GPU will not power on */
-
-			if (WARN_ONCE(status, "Failed to recover GMU\n")) {
-				if (device->snapshot)
-					device->snapshot->recovered = false;
-				/*
-				 * On recovery failure, we are clearing
-				 * GMU_FAULT bit and also not keeping
-				 * the state as RESET to make sure any
-				 * attempt to wake GMU/GPU after this
-				 * is treated as a fresh start. But on
-				 * recovery failure, GMU HS, clocks and
-				 * IRQs are still ON/enabled because of
-				 * which next GMU/GPU wakeup results in
-				 * multiple warnings from GMU start as HS,
-				 * clocks and IRQ were ON while doing a
-				 * fresh start i.e. wake from SLUMBER.
-				 *
-				 * Suspend the GMU on recovery failure
-				 * to make sure next attempt to wake up
-				 * GMU/GPU is indeed a fresh start.
-				 */
-				kgsl_pwrctrl_irq(device, KGSL_PWRFLAGS_OFF);
-				gmu_core_suspend(device);
-				kgsl_pwrctrl_set_state(device, state);
-			} else {
-				if (device->snapshot)
-					device->snapshot->recovered = true;
-				kgsl_pwrctrl_set_state(device,
-					KGSL_STATE_AWARE);
-			}
-
-			clear_bit(GMU_FAULT, &device->gmu_core.flags);
-			return status;
-		}
-
-		kgsl_pwrctrl_request_state(device, KGSL_STATE_NONE);
-	} else {
+	if (status && gmu_core_isenabled(device))
+	/*
+	 * If a SLUMBER/INIT -> AWARE fails, we transition back to
+	 * SLUMBER/INIT state. We must hard reset the GMU while
+	 * transitioning back to SLUMBER/INIT. A RESET -> AWARE
+	 * transition is different. It happens when dispatcher is
+	 * attempting reset/recovery as part of fault handling. If it
+	 * fails, we should still transition back to RESET in case
+	 * we want to attempt another reset/recovery.
+	 */
+		kgsl_pwrctrl_set_state(device, KGSL_STATE_RESET);
+	else
 		kgsl_pwrctrl_set_state(device, KGSL_STATE_AWARE);
-	}
+
 	return status;
 }
 
@@ -2898,6 +2916,7 @@ _slumber(struct kgsl_device *device)
 		kgsl_pwrctrl_clk_set_options(device, false);
 		kgsl_pwrctrl_disable(device);
 		kgsl_pwrscale_sleep(device);
+		trace_gpu_frequency(0, 0);
 		kgsl_pwrctrl_set_state(device, KGSL_STATE_SLUMBER);
 		pm_qos_update_request(&device->pwrctrl.pm_qos_req_dma,
 						PM_QOS_DEFAULT_VALUE);
@@ -2913,7 +2932,15 @@ _slumber(struct kgsl_device *device)
 		break;
 	case KGSL_STATE_AWARE:
 		kgsl_pwrctrl_disable(device);
+		trace_gpu_frequency(0, 0);
 		kgsl_pwrctrl_set_state(device, KGSL_STATE_SLUMBER);
+		break;
+	case KGSL_STATE_RESET:
+		if (gmu_core_isenabled(device)) {
+			 /* Reset the GMU if we failed to boot the GMU */
+			gmu_core_suspend(device);
+			kgsl_pwrctrl_set_state(device, KGSL_STATE_SLUMBER);
+		}
 		break;
 	default:
 		kgsl_pwrctrl_request_state(device, KGSL_STATE_NONE);
@@ -3306,6 +3333,41 @@ int kgsl_pwr_limits_set_freq(void *limit_ptr, unsigned int freq)
 	return 0;
 }
 EXPORT_SYMBOL(kgsl_pwr_limits_set_freq);
+
+/**
+ * kgsl_pwr_limits_set_gpu_fmax() - Set the requested limit for the
+ * client, if requested freq value is larger than fmax supported
+ * function returns with success.
+ * @limit_ptr: Client handle
+ * @freq: Client requested frequency
+ *
+ * Set the new limit for the client and adjust the clocks
+ */
+int kgsl_pwr_limits_set_gpu_fmax(void *limit_ptr, unsigned int freq)
+{
+	struct kgsl_pwrctrl *pwr;
+	struct kgsl_pwr_limit *limit = limit_ptr;
+	int level;
+
+	if (IS_ERR_OR_NULL(limit))
+		return -EINVAL;
+
+	pwr = &limit->device->pwrctrl;
+
+	/*
+	 * When requested frequency is greater than fmax,
+	 * requested limit is implicit, return success here.
+	 */
+	if (freq >= pwr->pwrlevels[0].gpu_freq)
+		return 0;
+
+	level = _get_nearest_pwrlevel(pwr, freq);
+	if (level < 0)
+		return -EINVAL;
+	_update_limits(limit, KGSL_PWR_SET_LIMIT, level);
+	return 0;
+}
+EXPORT_SYMBOL(kgsl_pwr_limits_set_gpu_fmax);
 
 /**
  * kgsl_pwr_limits_set_default() - Set the default thermal limit for the client

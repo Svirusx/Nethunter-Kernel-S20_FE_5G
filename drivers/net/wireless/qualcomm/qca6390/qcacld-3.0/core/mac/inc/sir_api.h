@@ -2998,6 +2998,7 @@ struct roam_offload_synch_ind {
 	uint16_t hlp_data_len;
 	uint8_t hlp_data[FILS_MAX_HLP_DATA_LEN];
 	bool is_ft_im_roam;
+	enum wlan_phymode phy_mode; /*phy mode sent by fw */
 };
 
 #ifdef WLAN_FEATURE_ROAM_OFFLOAD
@@ -3420,6 +3421,8 @@ struct sir_set_vdev_ies_per_band {
 	uint16_t msg_type;
 	uint16_t len;
 	uint32_t vdev_id;
+	uint16_t dot11_mode;
+	enum QDF_OPMODE device_mode;
 };
 
 /**

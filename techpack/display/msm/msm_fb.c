@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2018-2020, The Linux Foundation. All rights reserved.
  * Copyright (C) 2013 Red Hat
  * Author: Rob Clark <robdclark@gmail.com>
  *
@@ -18,6 +18,7 @@
 
 #include <linux/dma-mapping.h>
 #include <linux/dma-buf.h>
+#include <linux/msm_ion.h>
 #include <drm/drm_crtc.h>
 #include <drm/drm_crtc_helper.h>
 #include <drm/drm_gem_framebuffer_helper.h>
@@ -37,9 +38,74 @@ struct msm_framebuffer {
 };
 #define to_msm_framebuffer(x) container_of(x, struct msm_framebuffer, base)
 
+int msm_framebuffer_dirty(struct drm_framebuffer *fb,
+		struct drm_file *file_priv, unsigned int flags,
+		unsigned int color, struct drm_clip_rect *clips,
+		unsigned int num_clips)
+{
+	struct drm_modeset_acquire_ctx ctx;
+	struct drm_atomic_state *state;
+	struct drm_plane *plane;
+	int ret = 0;
+
+	if (!num_clips || !clips)
+		return 0;
+
+	drm_modeset_acquire_init(&ctx,
+			file_priv ? DRM_MODESET_ACQUIRE_INTERRUPTIBLE : 0);
+
+	state = drm_atomic_state_alloc(fb->dev);
+	if (!state) {
+		ret = -ENOMEM;
+		goto out_drop_locks;
+	}
+	state->acquire_ctx = &ctx;
+
+retry:
+	drm_for_each_plane(plane, fb->dev) {
+		struct drm_plane_state *plane_state;
+
+		ret = drm_modeset_lock(&plane->mutex, state->acquire_ctx);
+		if (ret)
+			goto out;
+
+		if (plane->state->fb != fb) {
+			drm_modeset_unlock(&plane->mutex);
+			continue;
+		}
+
+		plane_state = drm_atomic_get_plane_state(state, plane);
+		if (IS_ERR(plane_state)) {
+			ret = PTR_ERR(plane_state);
+			goto out;
+		}
+
+		plane_state->visible = true;
+	}
+
+	ret = drm_atomic_commit(state);
+
+out:
+	if (ret == -EDEADLK) {
+		drm_atomic_state_clear(state);
+		ret = drm_modeset_backoff(&ctx);
+		if (!ret)
+			goto retry;
+	}
+
+	drm_atomic_state_put(state);
+
+out_drop_locks:
+	drm_modeset_drop_locks(&ctx);
+	drm_modeset_acquire_fini(&ctx);
+
+	return ret;
+}
+
 static const struct drm_framebuffer_funcs msm_framebuffer_funcs = {
 	.create_handle = drm_gem_fb_create_handle,
 	.destroy = drm_gem_fb_destroy,
+	.dirty = msm_framebuffer_dirty,
 };
 
 #ifdef CONFIG_DEBUG_FS
@@ -461,4 +527,32 @@ msm_alloc_stolen_fb(struct drm_device *dev, int w, int h, int p, uint32_t format
 	}
 
 	return fb;
+}
+
+int msm_fb_obj_get_attrs(struct drm_gem_object *obj, int *fb_ns,
+	 int *fb_sec, int *fb_sec_dir, unsigned long *flags)
+{
+
+	int ret = 0;
+
+	if (!obj->import_attach) {
+		DRM_ERROR("NULL attachment in drm gem object\n");
+		return -EINVAL;
+	}
+
+	ret = dma_buf_get_flags(obj->import_attach->dmabuf, flags);
+	if (ret) {
+		DRM_ERROR("dma_buf_get_flags failure, err=%d\n", ret);
+		return ret;
+	}
+
+	if (!(*flags & ION_FLAG_SECURE))
+		*fb_ns = 1;
+	else if (*flags & ION_FLAG_CP_PIXEL)
+		*fb_sec = 1;
+	else if (*flags & (ION_FLAG_CP_SEC_DISPLAY |
+			ION_FLAG_CP_CAMERA_PREVIEW))
+		*fb_sec_dir = 1;
+
+	return ret;
 }

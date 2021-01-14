@@ -333,6 +333,10 @@ int cam_flash_pmic_flush_request(struct cam_flash_ctrl *fctrl,
 	if (type == FLUSH_ALL) {
 	/* flush all requests*/
 		for (i = 0; i < MAX_PER_FRAME_ARRAY; i++) {
+			if (fctrl->per_frame[i].opcode == CAMERA_SENSOR_FLASH_OP_OFF &&
+				fctrl->per_frame[i].cmn_attr.is_settings_valid == true) {
+				cam_flash_pmic_apply_setting(fctrl, fctrl->per_frame[i].cmn_attr.request_id);
+			}
 			fctrl->per_frame[i].cmn_attr.request_id = 0;
 			fctrl->per_frame[i].cmn_attr.is_settings_valid = false;
 			fctrl->per_frame[i].cmn_attr.count = 0;
@@ -497,8 +501,10 @@ static int cam_flash_high(
 	}
 	else {
 #if defined(CONFIG_SEC_GTS7L_PROJECT) || defined(CONFIG_SEC_GTS7XL_PROJECT)
+		CAM_INFO(CAM_FLASH, "CAM Low cam_flash_high 1200mA\n");
 		rc = s2mpb02_led_en(S2MPB02_FLASH_LED_1, S2MPB02_FLASH_OUT_I_1200MA, S2MPB02_LED_TURN_WAY_I2C);/* low, on */
 #else
+		CAM_INFO(CAM_FLASH, "CAM Low cam_flash_high 1400mA\n");
 		rc = s2mpb02_led_en(S2MPB02_FLASH_LED_1, S2MPB02_FLASH_OUT_I_1400MA, S2MPB02_LED_TURN_WAY_I2C);/* low, on */
 #endif
 	}

@@ -1,0 +1,32 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "kona-sec-x1q-r09.dtsi"
+#include "kona-sec-x1q-pinctrl-r12.dtsi"
+
+/* CAUTION:
+   X1 hwid 12 DT should be overrided from hwid 09
+   since hwid 10 is only for japan model.
+*/
+
+&soc {
+
+};
+
+&qupv3_se5_i2c {
+	touchscreen@48 {
+		pinctrl-0 = <&attn_irq>;
+		pinctrl-1 = <&attn_irq>;
+		pinctrl-2 = <&attn_irq>;
+	};
+};
+

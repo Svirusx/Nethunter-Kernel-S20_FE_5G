@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2002,2007-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2002,2007-2020, The Linux Foundation. All rights reserved.
  */
 
 #include <linux/sched/clock.h>
@@ -74,6 +74,8 @@ static void adreno_get_submit_time(struct adreno_device *adreno_dev,
 static void adreno_ringbuffer_wptr(struct adreno_device *adreno_dev,
 		struct adreno_ringbuffer *rb)
 {
+	struct kgsl_device *device = KGSL_DEVICE(adreno_dev);
+	struct adreno_gpudev *gpudev = ADRENO_GPU_DEVICE(adreno_dev);
 	unsigned long flags;
 	int ret = 0;
 
@@ -85,7 +87,18 @@ static void adreno_ringbuffer_wptr(struct adreno_device *adreno_dev,
 			 * Let the pwrscale policy know that new commands have
 			 * been submitted.
 			 */
-			kgsl_pwrscale_busy(KGSL_DEVICE(adreno_dev));
+			kgsl_pwrscale_busy(device);
+
+			/*
+			 * There could be a situation where GPU comes out of
+			 * ifpc after a fenced write transaction but before
+			 * reading AHB_FENCE_STATUS from KMD, it goes back to
+			 * ifpc due to inactivity (kernel scheduler plays a
+			 * role here). Put a keep alive vote to avoid such
+			 * unlikely scenario.
+			 */
+			if (gpudev->gpu_keepalive)
+				gpudev->gpu_keepalive(adreno_dev, true);
 
 			/*
 			 * Ensure the write posted after a possible
@@ -95,6 +108,9 @@ static void adreno_ringbuffer_wptr(struct adreno_device *adreno_dev,
 				ADRENO_REG_CP_RB_WPTR, rb->_wptr,
 				FENCE_STATUS_WRITEDROPPED0_MASK);
 			rb->skip_inline_wptr = false;
+			if (gpudev->gpu_keepalive)
+				gpudev->gpu_keepalive(adreno_dev, false);
+
 		}
 	} else {
 		/*
@@ -110,9 +126,14 @@ static void adreno_ringbuffer_wptr(struct adreno_device *adreno_dev,
 	spin_unlock_irqrestore(&rb->preempt_lock, flags);
 
 	if (ret) {
-		/* If WPTR update fails, set the fault and trigger recovery */
-		adreno_set_gpu_fault(adreno_dev, ADRENO_GMU_FAULT);
-		adreno_dispatcher_schedule(KGSL_DEVICE(adreno_dev));
+		/*
+		 * If WPTR update fails, take inline snapshot and trigger
+		 * recovery.
+		 */
+		gmu_core_snapshot(device);
+		adreno_set_gpu_fault(adreno_dev,
+			ADRENO_GMU_FAULT_SKIP_SNAPSHOT);
+		adreno_dispatcher_schedule(device);
 	}
 }
 
@@ -174,13 +195,47 @@ void adreno_ringbuffer_submit(struct adreno_ringbuffer *rb,
 	adreno_ringbuffer_wptr(adreno_dev, rb);
 }
 
-int adreno_ringbuffer_submit_spin(struct adreno_ringbuffer *rb,
+int adreno_ringbuffer_submit_spin_nosync(struct adreno_ringbuffer *rb,
 		struct adreno_submit_time *time, unsigned int timeout)
 {
 	struct adreno_device *adreno_dev = ADRENO_RB_DEVICE(rb);
 
 	adreno_ringbuffer_submit(rb, time);
 	return adreno_spin_idle(adreno_dev, timeout);
+}
+
+/*
+ * adreno_ringbuffer_submit_spin() - Submit the cmds and wait until GPU is idle
+ * @rb: Pointer to ringbuffer
+ * @time: Pointer to adreno_submit_time
+ * @timeout: timeout value in ms
+ *
+ * Add commands to the ringbuffer and wait until GPU goes to idle. This routine
+ * inserts a WHERE_AM_I packet to trigger a shadow rptr update. So, use
+ * adreno_ringbuffer_submit_spin_nosync() if the previous cmd in the RB is a
+ * CSY packet because CSY followed by WHERE_AM_I is not legal.
+ */
+int adreno_ringbuffer_submit_spin(struct adreno_ringbuffer *rb,
+		struct adreno_submit_time *time, unsigned int timeout)
+{
+	struct adreno_device *adreno_dev = ADRENO_RB_DEVICE(rb);
+	struct kgsl_device *device = KGSL_DEVICE(adreno_dev);
+	unsigned int *cmds;
+
+	/* GPUs which support APRIV feature doesn't require a WHERE_AM_I */
+	if (ADRENO_FEATURE(adreno_dev, ADRENO_APRIV) ||
+			adreno_is_a3xx(adreno_dev))
+		return adreno_ringbuffer_submit_spin_nosync(rb, time, timeout);
+
+	cmds = adreno_ringbuffer_allocspace(rb, 3);
+	if (IS_ERR(cmds))
+		return PTR_ERR(cmds);
+
+	*cmds++ = cp_packet(adreno_dev, CP_WHERE_AM_I, 2);
+	cmds += cp_gpuaddr(adreno_dev, cmds,
+			SCRATCH_RPTR_GPU_ADDR(device, rb->id));
+
+	return adreno_ringbuffer_submit_spin_nosync(rb, time, timeout);
 }
 
 unsigned int *adreno_ringbuffer_allocspace(struct adreno_ringbuffer *rb,
@@ -311,11 +366,8 @@ int adreno_ringbuffer_probe(struct adreno_device *adreno_dev)
 	int status = -ENOMEM;
 
 	if (!adreno_is_a3xx(adreno_dev)) {
-		unsigned int priv = KGSL_MEMDESC_RANDOM;
-
-		/* For targets that support it, make the scratch privileged */
-		if (ADRENO_FEATURE(adreno_dev, ADRENO_APRIV))
-			priv |= KGSL_MEMDESC_PRIVILEGED;
+		unsigned int priv =
+			KGSL_MEMDESC_RANDOM | KGSL_MEMDESC_PRIVILEGED;
 
 		status = kgsl_allocate_global(device, &device->scratch,
 				PAGE_SIZE, 0, priv, "scratch");
@@ -518,6 +570,9 @@ adreno_ringbuffer_addcmds(struct adreno_ringbuffer *rb,
 	if (gpudev->preemption_post_ibsubmit &&
 			adreno_is_preemption_enabled(adreno_dev))
 		total_sizedwords += 10;
+	else if (!adreno_is_a3xx(adreno_dev) &&
+			!ADRENO_FEATURE(adreno_dev, ADRENO_APRIV))
+		total_sizedwords += 3;
 
 	/*
 	 * a5xx uses 64 bit memory address. pm4 commands that involve read/write
@@ -724,6 +779,12 @@ adreno_ringbuffer_addcmds(struct adreno_ringbuffer *rb,
 				adreno_is_preemption_enabled(adreno_dev))
 		ringcmds += gpudev->preemption_post_ibsubmit(adreno_dev,
 			ringcmds);
+	else if (!adreno_is_a3xx(adreno_dev) &&
+			!ADRENO_FEATURE(adreno_dev, ADRENO_APRIV)) {
+		*ringcmds++ = cp_packet(adreno_dev, CP_WHERE_AM_I, 2);
+		ringcmds += cp_gpuaddr(adreno_dev, ringcmds,
+				SCRATCH_RPTR_GPU_ADDR(device, rb->id));
+	}
 
 	/*
 	 * If we have more ringbuffer commands than space reserved

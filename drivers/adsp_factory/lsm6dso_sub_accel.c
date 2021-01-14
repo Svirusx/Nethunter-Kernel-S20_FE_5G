@@ -52,6 +52,7 @@ struct sub_accel_data {
 	struct adsp_data *dev_data;
 	bool is_complete_cal;
 	bool lpf_onoff;
+	bool st_complete;
 	int32_t raw_data[ACCEL_RAW_DATA_CNT];
 	int32_t avg_data[ACCEL_RAW_DATA_CNT];
 };
@@ -244,6 +245,7 @@ static ssize_t sub_accel_selftest_show(struct device *dev,
 	uint8_t cnt = 0;
 	int retry = 0;
 
+	pdata->st_complete = false;
 RETRY_ACCEL_SELFTEST:
 	adsp_unicast(NULL, 0, MSG_ACCEL_SUB, 0, MSG_TYPE_ST_SHOW_DATA);
 
@@ -283,6 +285,8 @@ RETRY_ACCEL_SELFTEST:
 		}
 	}
 
+	pdata->st_complete = true;
+
 	return snprintf(buf, PAGE_SIZE, "%d,%d,%d,%d,%d,%d,%d\n",
 			data->msg_buf[MSG_ACCEL_SUB][1],
 			(int)abs(data->msg_buf[MSG_ACCEL_SUB][2]),
@@ -300,6 +304,12 @@ static ssize_t sub_accel_raw_data_show(struct device *dev,
 	int32_t raw_data[ACCEL_RAW_DATA_CNT] = {0, };
 	static int32_t prev_raw_data[ACCEL_RAW_DATA_CNT] = {0, };
 	int ret = 0;
+
+	if (pdata->st_complete == false) {
+		pr_info("[FACTORY] %s: selftest is running\n", __func__);
+		return snprintf(buf, PAGE_SIZE, "%d,%d,%d\n",
+			raw_data[0], raw_data[1], raw_data[2]);
+	}
 
 	mutex_lock(&data->accel_factory_mutex);
 	ret = get_sub_accel_raw_data(raw_data);
@@ -622,6 +632,7 @@ static int __init lsm6dso_sub_accel_factory_init(void)
 	INIT_WORK(&pdata->work_accel, sub_accel_work_func);
 
 	pdata->lpf_onoff = true;
+	pdata->st_complete = true;
 	pr_info("[FACTORY] %s\n", __func__);
 
 	return 0;

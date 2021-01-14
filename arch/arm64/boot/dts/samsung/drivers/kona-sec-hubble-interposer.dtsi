@@ -1,0 +1,31 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&tlmm {
+	kona_hubble_interposer_det3: kona_hubble_interposer_det3 {
+		mux {
+			pins = "gpio32";
+			function = "gpio";
+		};
+
+		config {
+			pins = "gpio32";
+			bias-disable;
+			input-enable;
+		};
+	};
+};
+
+&wcd938x_rst_gpio {
+	pinctrl-0 = <&kona_hubble_interposer_det3>;
+	pinctrl-1 = <&kona_hubble_interposer_det3>;
+};

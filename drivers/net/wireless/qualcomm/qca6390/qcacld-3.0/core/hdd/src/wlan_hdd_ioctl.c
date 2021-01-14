@@ -7738,6 +7738,253 @@ static int drv_cmd_get_disable_chan_list(struct hdd_adapter *adapter,
 }
 #endif
 
+#ifdef SEC_CONFIG_POWER_BACKOFF
+
+#define WLAN_HDD_UI_SET_GRIP_TX_PWR_VALUE_OFFSET 21
+int cur_sec_sar_index = 0;
+
+#ifdef SEC_CONFIG_WLAN_BEACON_CHECK
+int hdd_set_bmiss_count_check(hdd_adapter_t *adapter,
+			      hdd_context_t *hdd_ctx, bool enable) {
+	uint8_t ret_val;
+	mac_handle_t mac_handle = hdd_ctx->mac_handle;
+	struct mac_context *mac = MAC_CONTEXT(mac_handle);
+
+	if (enable) {
+		// set bmiss first / final to 30
+		// set kickout count to 2048
+		hdd_err("hdd_set_bmiss_count_check enabled");
+		hdd_debug("Bmiss first cnt(10), Bmiss final cnt(50)");
+		ret_val = sme_set_roam_bmiss_final_bcnt(mac_handle,
+			0, 50);
+
+
+		if (ret_val) {
+			hdd_err("Failed to set bmiss final Bcnt");
+			return ret_val;
+		}
+
+		ret_val = sme_set_bmiss_bcnt(adapter->sessionId, 10, 50);
+		if (ret_val) {
+			hdd_err("Failed to set bmiss Bcnt");
+			return ret_val;
+		}
+
+		hdd_debug("tx fail count 2048");
+		ret_val = sme_update_tx_fail_cnt_threshold(mac_handle,
+							   adapter->sessionId, 2048);
+		if (ret_val) {
+			hdd_err("Failed to set kickout count");
+			return ret_val;
+		}
+	} else {
+		// set to default value.
+		hdd_err("hdd_set_bmiss_count_check default");
+		hdd_debug("Bmiss first cnt(%d), Bmiss final cnt(%d)",
+			mac->mlme_cfg->lfr.roam_bmiss_first_bcnt,
+			mac->mlme_cfg->lfr.roam_bmiss_final_bcnt);
+		ret_val = sme_set_roam_bmiss_final_bcnt(mac_handle,
+			0, mac->mlme_cfg->lfr.roam_bmiss_final_bcnt);
+		if (ret_val) {
+			hdd_err("Failed to set bmiss final Bcnt");
+			return ret_val;
+		}
+
+		ret_val = sme_set_bmiss_bcnt(adapter->sessionId,
+			mac->mlme_cfg->lfr.roam_bmiss_first_bcnt,
+			mac->mlme_cfg->lfr.roam_bmiss_final_bcnt);
+		if (ret_val) {
+			hdd_err("Failed to set bmiss Bcnt");
+			return ret_val;
+		}
+
+		hdd_debug("tx fail count to %d",
+			  mac->mlme_cfg->gen.dropped_pkt_disconnect_thresh);
+		ret_val = sme_update_tx_fail_cnt_threshold(mac_handle,
+				   adapter->sessionId,
+				   mac->mlme_cfg->gen.dropped_pkt_disconnect_thresh);
+		if (ret_val) {
+			hdd_err("Failed to set kickout count");
+			return ret_val;
+		}
+	}
+	return ret_val;
+}
+
+void hdd_skip_bmiss_set_timer_handler(void *data)
+{
+	hdd_context_t *hdd_ctx = (hdd_context_t *) data;
+	hdd_adapter_t *adapter = NULL;
+
+	hdd_debug("Skip Bmiss set timer expired");
+
+	adapter = hdd_get_adapter(hdd_ctx, QDF_STA_MODE);
+	if (!adapter) {
+		hdd_err("No adapter for STA mode");
+		return;
+	}
+
+	hdd_set_bmiss_count_check(adapter, hdd_ctx, hdd_ctx->bmiss_set_last);
+	return;
+}
+#endif
+
+int hdd_set_sar_power_limit(struct hdd_context *hdd_ctx, int8_t index)
+{
+	int status = 0;
+	struct sar_limit_cmd_params sar_limit_cmd = {0};
+	mac_handle_t mac_handle;
+
+	/* Vendor command manadates all SAR Specs in single call */
+	sar_limit_cmd.commit_limits = 1;
+	sar_limit_cmd.num_limit_rows = 0;
+
+	switch (index) {
+		case HEAD_SAR_BACKOFF_ENABLED:
+			sar_limit_cmd.sar_enable = WMI_SAR_FEATURE_ON_SET_0;
+			break;
+		case BODY_SAR_BACKOFF_ENABLED:
+			sar_limit_cmd.sar_enable = WMI_SAR_FEATURE_ON_SET_2;
+			break;
+		case NR_MMWAVE_SAR_BACKOFF_ENABLED:
+			sar_limit_cmd.sar_enable = WMI_SAR_FEATURE_ON_SET_4;
+			break;
+		case HEAD_SAR_BACKOFF_DISABLED:
+		case BODY_SAR_BACKOFF_DISABLED:
+		case NR_MMWAVE_SAR_BACKOFF_DISABLED:
+		case SAR_BACKOFF_DISABLE_ALL:
+			sar_limit_cmd.sar_enable = WMI_SAR_FEATURE_OFF;
+			break;
+		default:
+			hdd_warn("Invalid index %d - Set to diable back off", index);
+			sar_limit_cmd.sar_enable = WMI_SAR_FEATURE_OFF;
+			break;
+	}
+
+	cur_sec_sar_index = index;
+	hdd_info("cur_sec_sar_index = %d, sar_enable = %d",cur_sec_sar_index ,sar_limit_cmd.sar_enable);
+
+	mac_handle = hdd_ctx->mac_handle;
+	status = sme_set_sar_power_limits(mac_handle, &sar_limit_cmd);
+	if (status < 0)
+		hdd_err("Failed to sme_set_sar_power_limits status %d", status);
+
+	return status;
+}
+
+static int drv_cmd_grip_power_set_tx_power_calling(struct hdd_adapter *adapter,
+			 struct hdd_context *hdd_ctx,
+			 uint8_t *command,
+			 uint8_t command_len,
+			 struct hdd_priv_data *priv_data)
+{
+	int status = 0;
+	int8_t set_value;
+
+	hdd_info("command %s UL %d, TL %d", command, priv_data->used_len,
+		 priv_data->total_len);
+
+	/* convert the value from ascii to integer */
+	set_value = command[WLAN_HDD_UI_SET_GRIP_TX_PWR_VALUE_OFFSET] - '0';
+	if (set_value < 0)
+		set_value = -1;
+
+	//HEAD_SAR_BACKOFF_ENABLED
+	//If NR_MMWAVE_SAR_BACKOFF_ENABLED was enabled, set MMW_HEAD_SAR_BACKOFF_ENABLED
+	if (set_value == HEAD_SAR_BACKOFF_ENABLED) {
+		if (cur_sec_sar_index == NR_MMWAVE_SAR_BACKOFF_ENABLED || cur_sec_sar_index == MMW_HEAD_SAR_BACKOFF_ENABLED) {
+			cur_sec_sar_index = MMW_HEAD_SAR_BACKOFF_ENABLED;
+			hdd_info("Ignored - cur_sec_sar_index is [NR_MMWAVE_SAR_BACKOFF_ENABLED]");
+			return -EBUSY;
+		}
+		hdd_set_sar_power_limit(hdd_ctx, set_value);
+#ifdef SEC_CONFIG_WLAN_BEACON_CHECK
+		hdd_ctx->bmiss_set_last = TRUE;
+#endif /* SEC_CONFIG_WLAN_BEACON_CHECK */
+	//BODY_SAR_BACKOFF_ENABLED
+	//If NR_MMWAVE_SAR_BACKOFF_ENABLED was enabled, set MMW_BODY_SAR_BACKOFF_ENABLED
+	} else if (set_value == BODY_SAR_BACKOFF_ENABLED) {
+		if (cur_sec_sar_index == NR_MMWAVE_SAR_BACKOFF_ENABLED || cur_sec_sar_index == MMW_BODY_SAR_BACKOFF_ENABLED) {
+			cur_sec_sar_index = MMW_BODY_SAR_BACKOFF_ENABLED;
+			hdd_info("Ignored - cur_sec_sar_index is [NR_MMWAVE_SAR_BACKOFF_ENABLED]");
+			return -EBUSY;
+		}
+		hdd_set_sar_power_limit(hdd_ctx, set_value);
+#ifdef SEC_CONFIG_WLAN_BEACON_CHECK
+		hdd_ctx->bmiss_set_last = TRUE;
+#endif /* SEC_CONFIG_WLAN_BEACON_CHECK */
+	//NR_MMWAVE_SAR_BACKOFF_ENABLED
+	} else if (set_value == NR_MMWAVE_SAR_BACKOFF_ENABLED) {
+		hdd_set_sar_power_limit(hdd_ctx, set_value);
+#ifdef SEC_CONFIG_WLAN_BEACON_CHECK
+		hdd_ctx->bmiss_set_last = TRUE;
+#endif /* SEC_CONFIG_WLAN_BEACON_CHECK */
+	//HEAD_SAR_BACKOFF_DISABLED
+	//If NR_MMWAVE_SAR_BACKOFF_ENABLED was enabled, set NR_MMWAVE_SAR_BACKOFF_ENABLED again
+	} else if (set_value == HEAD_SAR_BACKOFF_DISABLED ) {
+		if (cur_sec_sar_index == NR_MMWAVE_SAR_BACKOFF_ENABLED || cur_sec_sar_index == MMW_HEAD_SAR_BACKOFF_ENABLED) {
+			cur_sec_sar_index = NR_MMWAVE_SAR_BACKOFF_ENABLED;
+			hdd_info("Ignored - NR_MMWAVE_SAR_BACKOFF_DISABLED only can disable mmW back off");
+			return -EBUSY;
+		}
+		hdd_set_sar_power_limit(hdd_ctx, set_value);
+#ifdef SEC_CONFIG_WLAN_BEACON_CHECK
+		hdd_ctx->bmiss_set_last = FALSE;
+#endif /* SEC_CONFIG_WLAN_BEACON_CHECK */
+	//BODY_SAR_BACKOFF_DISABLED
+	//If NR_MMWAVE_SAR_BACKOFF_ENABLED was enabled, set NR_MMWAVE_SAR_BACKOFF_ENABLED again
+	} else if (set_value == BODY_SAR_BACKOFF_DISABLED) {
+		if (cur_sec_sar_index == NR_MMWAVE_SAR_BACKOFF_ENABLED || cur_sec_sar_index == MMW_BODY_SAR_BACKOFF_ENABLED) {
+			cur_sec_sar_index = NR_MMWAVE_SAR_BACKOFF_ENABLED;
+			hdd_info("Ignored - NR_MMWAVE_SAR_BACKOFF_DISABLED only can disable mmW back off");
+			return -EBUSY;
+		}
+		hdd_set_sar_power_limit(hdd_ctx, set_value);
+#ifdef SEC_CONFIG_WLAN_BEACON_CHECK
+		hdd_ctx->bmiss_set_last = FALSE;
+#endif /* SEC_CONFIG_WLAN_BEACON_CHECK */
+	//NR_MMWAVE_SAR_BACKOFF_DISABLED
+	//If MMW_HEAD_SAR_BACKOFF_ENABLED or MMW_BODY_SAR_BACKOFF_ENABLED
+	//will be set MMW_HEAD_SAR_BACKOFF_ENABLED or MMW_BODY_SAR_BACKOFF_ENABLED
+	} else if (set_value == NR_MMWAVE_SAR_BACKOFF_DISABLED) {
+		if (cur_sec_sar_index == MMW_HEAD_SAR_BACKOFF_ENABLED) {
+			set_value = HEAD_SAR_BACKOFF_ENABLED;
+		} else if (cur_sec_sar_index == MMW_BODY_SAR_BACKOFF_ENABLED) {
+			set_value = BODY_SAR_BACKOFF_ENABLED;
+		}
+		hdd_set_sar_power_limit(hdd_ctx, set_value);
+#ifdef SEC_CONFIG_WLAN_BEACON_CHECK
+		if(set_value == NR_MMWAVE_SAR_BACKOFF_DISABLED)
+			hdd_ctx->bmiss_set_last = FALSE;
+		else
+			hdd_ctx->bmiss_set_last = TRUE;
+#endif /* SEC_CONFIG_WLAN_BEACON_CHECK */
+	} else {
+		hdd_set_sar_power_limit(hdd_ctx, SAR_BACKOFF_DISABLE_ALL);
+#ifdef SEC_CONFIG_WLAN_BEACON_CHECK
+		hdd_ctx->bmiss_set_last = FALSE;
+#endif /* SEC_CONFIG_WLAN_BEACON_CHECK */
+	}
+
+#ifdef SEC_CONFIG_WLAN_BEACON_CHECK
+	if(hdd_ctx->bmiss_set_last) {
+		if (QDF_TIMER_STATE_RUNNING != qdf_mc_timer_get_current_state(&hdd_ctx->skip_bmiss_set_timer)) {
+			hdd_set_bmiss_count_check(adapter, hdd_ctx, TRUE);
+			qdf_mc_timer_start(&hdd_ctx->skip_bmiss_set_timer, (10+50)*100); /* 6 sec */
+		}
+	} else {
+		if (QDF_TIMER_STATE_RUNNING != qdf_mc_timer_get_current_state(&hdd_ctx->skip_bmiss_set_timer)) {
+			hdd_set_bmiss_count_check(adapter, hdd_ctx, FALSE);
+			qdf_mc_timer_start(&hdd_ctx->skip_bmiss_set_timer,
+					   (hdd_ctx->config->nRoamBmissFirstBcnt + hdd_ctx->config->nRoamBmissFinalBcnt)*100);
+		}
+	}
+#endif /* SEC_CONFIG_WLAN_BEACON_CHECK */
+
+	return status;
+}
+#endif /* SEC_CONFIG_POWER_BACKOFF */
+
 #ifdef FEATURE_ANI_LEVEL_REQUEST
 static int drv_cmd_get_ani_level(struct hdd_adapter *adapter,
 				 struct hdd_context *hdd_ctx,
@@ -8022,12 +8269,16 @@ static const struct hdd_drv_cmd hdd_drv_cmds[] = {
 	{"SETANTENNAMODE",            drv_cmd_set_antenna_mode, true},
 	{"GETANTENNAMODE",            drv_cmd_get_antenna_mode, false},
 #ifdef CONFIG_SEC
+	{"P2P_ECSA",                  drv_cmd_set_channel_switch, true},
 	{"SET_INDOOR_CHANNELS",       drv_cmd_set_disable_chan_list, true},
 	{"GET_INDOOR_CHANNELS",       drv_cmd_get_disable_chan_list, false},
-#else
+#else /* !CONFIG_SEC */
 	{"SET_DISABLE_CHANNEL_LIST",  drv_cmd_set_disable_chan_list, true},
 	{"GET_DISABLE_CHANNEL_LIST",  drv_cmd_get_disable_chan_list, false},
 #endif /* CONFIG_SEC */
+#ifdef SEC_CONFIG_POWER_BACKOFF
+	{"SET_TX_POWER_CALLING",      drv_cmd_grip_power_set_tx_power_calling},
+#endif /* SEC_CONFIG_POWER_BACKOFF */
 	{"GET_ANI_LEVEL",             drv_cmd_get_ani_level, false},
 	{"STOP",                      drv_cmd_dummy, false},
 	/* Deprecated commands */

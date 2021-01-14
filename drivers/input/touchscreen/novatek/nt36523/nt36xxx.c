@@ -2,7 +2,7 @@
  * Copyright (C) 2010 - 2017 Novatek, Inc.
  *
  * $Revision: 31202 $
- * $Date: 2018-07-23 10:56:09 +0800 (週一, 23 七月 2018) $
+ * $Date: 2018-07-23 10:56:09 +0800 (?��?, 23 七月 2018) $
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -323,6 +323,15 @@ int nvt_ts_i2c_read(struct nvt_ts_data *ts, u16 address, u8 *buf, u16 len)
 	if (unlikely(retries == NVT_TS_I2C_RETRY_CNT))
 		input_err(true, &ts->client->dev, "%s: I2C read over retry limit\n", __func__);
 
+	if (ts->debug_flag & NVT_TS_DEBUG_PRINT_I2C_READ_CMD) {
+		int i;
+
+		pr_info("%s: i2c_cmd: R: %02X | ", SECLOG, buf[0]);
+		for (i = 0; i < len - 1; i++)
+			pr_cont("%02X ", buf[i + 1]);
+		pr_cont("\n");
+	}
+
 err:
 	return ret;
 }
@@ -381,6 +390,15 @@ int nvt_ts_i2c_write(struct nvt_ts_data *ts, u16 address, u8 *buf, u16 len)
 
 	if (unlikely(retries == NVT_TS_I2C_RETRY_CNT))
 		input_err(true, &ts->client->dev, "%s: I2C write over retry limit\n", __func__);
+
+	if (ts->debug_flag & NVT_TS_DEBUG_PRINT_I2C_WRITE_CMD) {
+		int i;
+
+		pr_info("%s: i2c_cmd: W: ", SECLOG);
+		for (i = 0; i < len; i++)
+			pr_cont("%02X ", buf[i]);
+		pr_cont("\n");
+	}
 
 err:
 	return ret;

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2012-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012-2020, The Linux Foundation. All rights reserved.
  */
 
 #include <linux/of.h>
@@ -117,7 +117,8 @@ static size_t snapshot_os(struct kgsl_device *device,
 	/* Remember the power information */
 	header->power_flags = pwr->power_flags;
 	header->power_level = pwr->active_pwrlevel;
-	header->power_interval_timeout = pwr->interval_timeout;
+	header->power_interval_timeout =
+		jiffies_to_msecs(pwr->interval_timeout);
 	header->grpclk = kgsl_get_clkrate(pwr->grp_clks[0]);
 
 	/*
@@ -204,7 +205,8 @@ static size_t snapshot_os_no_ctxt(struct kgsl_device *device,
 	/* Remember the power information */
 	header->power_flags = pwr->power_flags;
 	header->power_level = pwr->active_pwrlevel;
-	header->power_interval_timeout = pwr->interval_timeout;
+	header->power_interval_timeout =
+		jiffies_to_msecs(pwr->interval_timeout);
 	header->grpclk = kgsl_get_clkrate(pwr->grp_clks[0]);
 
 	/* Return the size of the data segment */
@@ -216,6 +218,7 @@ static void kgsl_snapshot_put_object(struct kgsl_snapshot_object *obj)
 	list_del(&obj->node);
 
 	obj->entry->memdesc.priv &= ~KGSL_MEMDESC_FROZEN;
+	obj->entry->memdesc.priv &= ~KGSL_MEMDESC_SKIP_RECLAIM;
 	kgsl_mem_entry_put(obj->entry);
 
 	kfree(obj);
@@ -399,6 +402,7 @@ int kgsl_snapshot_get_object(struct kgsl_snapshot *snapshot,
 
 	return ret;
 err_put:
+	entry->memdesc.priv &= ~KGSL_MEMDESC_SKIP_RECLAIM;
 	kgsl_mem_entry_put(entry);
 	return ret;
 }
@@ -1329,7 +1333,7 @@ done:
 				snapshot->ib2base);
 
 gmu_only:
-	complete_all(&snapshot->dump_gate);
 	BUG_ON(!snapshot->device->skip_ib_capture &
 				snapshot->device->force_panic);
+	complete_all(&snapshot->dump_gate);
 }

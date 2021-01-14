@@ -123,7 +123,6 @@
 		//samsung,support_gct;
 		//samsung,support_pac;
 		//samsung,support_gpara; 2byte G-para
-		// samsung,support_poc_driver;
 		samsung,support_dynamic_mipi_clk;
 		samsung,pll_ssc_disabled;
 		samsung,no_qcom_pps;
@@ -267,6 +266,60 @@
 		];
 
 		/* *************************************************************
+		 *  FirmWare Update
+		 * *************************************************************
+		 */
+		samsung,support_firmware_update;
+
+		// Erase
+		samsung,firmware_update_erase_delay_us = <400000>;	/* 400ms */
+		samsung,firmware_update_erase_tx_cmds_revA = [
+				39 01 00 00 00 00 11
+					C0 00 44 03 20 00 00 10 00 00 00 00 00 00 00 00 00
+		];
+		samsung,firmware_update_mtp_id_erase_tx_cmds_revA = [
+				39 01 00 00 00 00 11
+					C0 00 44 03 A0 00 00 10 00 00 00 00 00 00 00 00 00
+		];
+
+		// Write
+		samsung,firmware_update_write_delay_us = <100000>;	/* 100ms */
+		samsung,firmware_update_write_tx_cmds_revA = [
+				39 01 00 00 00 00 91
+					C0 00 22 00 00 00 00 00 80 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 /* 128 Byte Write */
+					00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+		];
+
+		samsung,firmware_update_mtp_id_write_tx_cmds_revA = [
+				39 01 00 00 00 00 33
+					C0 00 22 03 A0 00 00 00 22 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 /* 34 Byte Write */
+					00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+					00 00
+		];
+
+		// Read
+		samsung,firmware_update_read_delay_us = <100000>;	/* 100ms */
+		samsung,firmware_update_done_check_read_value = <0x0E>;
+		samsung,firmware_update_status_read_value = <0x04>;	/* Expected C1 Read Value */
+		samsung,firmware_update_read_rx_cmds_revA = [06 01 00 00 00 00 01 C2 80 00];	/* Read C2 128(0x80) byte */
+		samsung,firmware_update_status_read_rx_cmds_revA = [06 01 00 00 00 00 01 C1 01 00];	/* Read C1 1 byte */
+		samsung,firmware_update_mtp_id_read_rx_cmds_revA = [06 01 00 00 00 00 01 D8 22 00];	/* Read E8 34(0x22) byte */
+		samsung,firmware_update_read_tx_cmds_revA = [
+					39 01 00 00 00 00 11 C0 00 11 03 28 80 00 00 83 00 00 00 00 00 00 00 00
+				];
+
+		samsung,firmware_update_done_check_rx_cmds_revA = [06 01 00 00 00 00 01 D3 01 03];	/* Read D3 4th 1 byte */
+
+
+		/* *************************************************************
 		 *  SELF DISPLAY
 		 * *************************************************************
 		 */
@@ -294,6 +347,28 @@
 			39 01 00 00 00 00 03 CF EF 06
 			39 01 00 00 00 00 03 B0 03 76
 			39 01 00 00 00 00 02 D6 30
+		];
+
+		samsung,tcon_pe_on_tx_cmds_revA = [
+			39 01 00 00 00 00 34 CB
+						70 2A 08 80 66 13 36 01
+						66 13 36 01 66 13 36 01
+						66 13 36 01 66 13 36 01
+						66 13 36 01 66 13 36 01
+						66 13 36 01 66 03 36 01
+						66 03 36 01 66 03 36 01
+						66 03 36
+		];
+
+		samsung,tcon_pe_off_tx_cmds_revA = [
+			39 01 00 00 00 00 34 CB
+						70 2A 08 80 66 13 32 01
+						66 13 32 01 66 13 32 01
+						66 13 32 01 66 13 32 01
+						66 13 32 01 66 13 32 01
+						66 13 32 01 66 03 32 01
+						66 03 32 01 66 03 32 01
+						66 03 32
 		];
 
 		/* No MCD */
@@ -630,6 +705,34 @@
 			19	302	304	20	500	0
 		>;
 
+		/* green weight control */
+		samsung,green_weight_normal_tx_cmds_revA = [
+			39 01 00 00 00 00 03 B0 00 08
+			39 01 00 00 00 00 02 8D 01
+			39 01 00 00 00 00 03 B0 00 0E
+			39 01 00 00 00 00 02 8D 01
+			39 01 00 00 00 00 03 B0 00 5C
+			39 01 00 00 00 00 02 8D 01
+			39 01 00 00 00 00 03 B0 00 62
+			39 01 00 00 00 00 02 8D 01
+		];
+
+		samsung,green_weight_80percent_tx_cmds_revA = [
+			39 01 00 00 00 00 03 B0 00 08
+			39 01 00 00 00 00 02 8D 00
+			39 01 00 00 00 00 03 B0 00 0E
+			39 01 00 00 00 00 02 8D 01
+			39 01 00 00 00 00 03 B0 00 5C
+			39 01 00 00 00 00 02 8D 00
+			39 01 00 00 00 00 03 B0 00 62
+			39 01 00 00 00 00 02 8D 01
+
+			39 01 00 00 00 00 03 B0 00 3F
+			39 01 00 00 00 00 08 8D 00 34 34 34 34 34 00
+			39 01 00 00 00 00 03 B0 00 93
+			39 01 00 00 00 00 08 8D 00 34 34 34 34 34 00
+		];
+
 		samsung,gamma_mode2_normal_tx_cmds_revA=[
 			39 01 00 00 00 00 05 68 19 20 00 14
 			39 01 00 00 00 00 03 51 D8 0D
@@ -855,25 +958,67 @@
 				7	326	127411	130380	1
 		>;
 
-		/*
-		 * ************************************************************************************************************************
-		 *  FD Settings
-		 * ************************************************************************************************************************
+
+		/* *************************************************************
+		 *  POC CONTROL
+		 * *************************************************************
 		 */
 
-		//samsung,fd_on_tx_cmds_revA = [
-		//	29 01 00 00 00 00 03 F0 5A 5A
-		//	29 01 00 00 00 00 03 B0 0B B5
-		//	29 01 00 00 00 00 02 B5 40
-		//	29 01 00 00 00 00 03 F0 A5 A5
-		//];
+		samsung,support_poc_driver;
 
-		//samsung,fd_off_tx_cmds_revA = [
-		//	29 01 00 00 00 00 03 F0 5A 5A
-		//	29 01 00 00 00 00 03 B0 0B B5
-		//	29 01 00 00 00 00 02 B5 80
-		//	29 01 00 00 00 00 03 F0 A5 A5
-		//];
+		samsung,poc_start_addr = <7217152>;		/* 0x6e2000 MCA */
+		samsung,poc_image_size = <530>;		/* 527byte */
+
+		/*
+		 * ERASE (SECTOR)
+		 * Because whole operation of earse is excueted in driver level,
+		 * do not use Exclusive Lock for frame update.
+		 * Add flash lock for each cmd set.
+		 */
+
+		samsung,poc_erase_delay_us = <400000>;	/* 400ms */
+		samsung,poc_erase_sector_addr_idx = <3 4 5>;
+
+		samsung,poc_erase_sector_tx_cmds_revA = [
+			39 01 00 00 00 00 11 C0 00 44 6E 20 00 00 10 00 00 00 00 00 00 00 00 00 /* 4K byte Erase at 0x6E2000 */
+		];
+
+		// WRITE
+
+		samsung,poc_write_delay_us = <200000>;		/* 200ms */
+		samsung,poc_write_data_size = <128>;
+		samsung,poc_write_addr_idx = <3 4 5>;
+
+		samsung,poc_write_loop_data_add_tx_cmds_revA = [
+			39 01 00 00 00 00 91
+				C0 00 22 00 00 00 00 00 80 00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 /* 128 Byte Write */
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+		];
+
+		samsung,poc_post_write_tx_cmds_revA = [
+			29 00 00 00 00 00 02 C0 00
+		];
+
+		// READ
+
+		samsung,poc_read_delay_us = <200000>;		/* 200ms */
+		samsung,poc_read_addr_idx = <3 4 5>;
+
+		samsung,poc_read_tx_cmds_revA = [
+			39 01 00 00 00 00 11 C0 00 11 00 00 00 00 00 83 00 00 00 00 00 00 00 00	/* Read Address, size 128+3byte  */
+		];
+
+		samsung,poc_status_rx_cmds_revA = [06 01 00 00 00 00 01 C1 01 00];	/* status Check C1 1byte */
+		samsung,poc_read_rx_cmds_revA = [06 01 00 00 00 00 01 C2 80 00];	/* Read C2 128 byte */
+
+		samsung,poc_mca_check_rx_cmds_revA	= [06 01 00 00 00 00 01 8D FF 00];	/* MCA Checksum */
 
 		/*
 		* ************************************************************************************************************************
@@ -1126,7 +1271,7 @@
 				qcom,mdss-dsc-bit-per-pixel = <8>;
 				qcom,mdss-dsc-block-prediction-enable;
 			};
-
+		#if 0
 			wqxga96hs {
 				qcom,display-topology = <1 1 1>, <2 2 1>;
 				qcom,default-topology-index = <1>;
@@ -1250,6 +1395,7 @@
 				qcom,mdss-dsc-bit-per-pixel = <8>;
 				qcom,mdss-dsc-block-prediction-enable;
 			};
+		#endif
 		};
 	};
 };

@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * Copyright (c) 2017-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
  */
 
 #ifndef _NPU_COMMON_H
@@ -287,6 +287,7 @@ struct npu_device {
 	struct llcc_slice_desc *sys_cache;
 	uint32_t execute_v2_flag;
 	bool cxlimit_registered;
+	bool npu_dsp_sid_mapped;
 
 	uint32_t hw_version;
 };
@@ -341,5 +342,7 @@ int load_fw(struct npu_device *npu_dev);
 int unload_fw(struct npu_device *npu_dev);
 int npu_set_bw(struct npu_device *npu_dev, int new_ib, int new_ab);
 int npu_process_kevent(struct npu_client *client, struct npu_kevent *kevt);
-
+int npu_notify_cdsprm_cxlimit_activity(struct npu_device *npu_dev, bool enable);
+int npu_bridge_mbox_send_data(struct npu_host_ctx *host_ctx,
+	struct npu_mbox *mbox, void *data);
 #endif /* _NPU_COMMON_H */

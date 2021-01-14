@@ -2,12 +2,12 @@
 /*
  *  drivers/usb/notify/usblog_proc_notify.c
  *
- * Copyright (C) 2019 Samsung, Inc.
+ * Copyright (C) 2016-2020 Samsung, Inc.
  * Author: Dongrak Shin <dongrak.shin@samsung.com>
  *
  */
 
- /* usb notify layer v3.4 */
+ /* usb notify layer v3.5 */
 
  #define pr_fmt(fmt) "usb_notify: " fmt
 
@@ -193,6 +193,20 @@ static const char *usbstate_string(enum usblog_state usbstate)
 		return "HIGH SPEED";
 	case NOTIFY_SUPER:
 		return "SUPER SPEED";
+	case NOTIFY_GET_DES:
+		return "GET_DES";
+	case NOTIFY_SET_CON:
+		return "SET_CON";
+	case NOTIFY_CONNDONE_SSP:
+		return "CONNDONE SSP";
+	case NOTIFY_CONNDONE_SS:
+		return "CONNDONE SS";
+	case NOTIFY_CONNDONE_HS:
+		return "CONNDONE HS";
+	case NOTIFY_CONNDONE_FS:
+		return "CONNDONE FS";
+	case NOTIFY_CONNDONE_LS:
+		return "CONNDONE LS";
 	default:
 		return "UNDEFINED";
 	}
@@ -458,6 +472,14 @@ static const char *extra_string(enum extra event)
 		return "USB ANALOG AUDIO";
 	case NOTIFY_EXTRA_USBHOST_OVERCURRENT:
 		return "USB HOST OVERCURRENT";
+	case NOTIFY_EXTRA_ROOTHUB_SUSPEND_FAIL:
+		return "ROOTHUB SUSPEND FAIL";
+	case NOTIFY_EXTRA_PORT_SUSPEND_FAIL:
+		return "PORT SUSPEND FAIL";
+	case NOTIFY_EXTRA_PORT_SUSPEND_WAKEUP_FAIL:
+		return "PORT REMOTE WAKEUP FAIL";
+	case NOTIFY_EXTRA_PORT_SUSPEND_LTM_FAIL:
+		return "PORT LTM FAIL";
 	default:
 		return "ETC";
 	}
@@ -1198,7 +1220,7 @@ void state_store_usblog_notify(int type, char *param1)
 		if (b) {
 			index2 = *b;
 			switch (index2) {
-			case 'L': /* FULL SPEED */
+			case 'F': /* FULL SPEED */
 				usbstate = NOTIFY_RESET_FULL;
 				break;
 			case 'H':  /* HIGH SPEED */
@@ -1290,6 +1312,43 @@ void state_store_usblog_notify(int type, char *param1)
 		break;
 	case 'H': /*HIGH SPEED */
 		usbstate = NOTIFY_HIGH;
+		break;
+	case 'M': /* USB ENUMERATION */
+		name = strsep(&b, ":");
+		if (b) {
+			index2 = *b;
+			name = strsep(&b, ":");
+			if (b)
+				index3 = *b;
+			else /* X means none */
+				index3 = 'X';
+		} else /* X means none */
+			index2 = 'X';
+
+		switch (index2) {
+		case 'C': /* CONNDONE */
+			if (index3 == 'P') /* SUPERSPEED_PLUS */
+				usbstate = NOTIFY_CONNDONE_SSP;
+			else if (index3 == 'S') /* SUPERSPEED */
+				usbstate = NOTIFY_CONNDONE_SS;
+			else if (index3 == 'H') /* HIGHSPEED */
+				usbstate = NOTIFY_CONNDONE_HS;
+			else if (index3 == 'F') /* FULLSPEED */
+				usbstate = NOTIFY_CONNDONE_FS;
+			else if (index3 == 'L') /* LOWSPEED */
+				usbstate = NOTIFY_CONNDONE_LS;
+			break;
+		case 'G': /* GET */
+			if (index3 == 'D') /* GET_DES */
+				usbstate = NOTIFY_GET_DES;
+			break;
+		case 'S': /* SET */
+			if (index3 == 'C') /* SET_CON */
+				usbstate = NOTIFY_SET_CON;
+			break;
+		default:
+			break;
+		}
 		break;
 	default:
 		pr_err("%s state param error. state=%s\n", __func__, param1);

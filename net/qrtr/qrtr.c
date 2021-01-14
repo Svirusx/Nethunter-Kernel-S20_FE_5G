@@ -684,7 +684,7 @@ static void qrtr_node_assign(struct qrtr_node *node, unsigned int nid)
 	 * cause APPS suspend problems and power drain issue.
 	 */
 	if (!node->ws && (nid == 0 || nid == 3 || nid == 7))
-		node->ws = wakeup_source_register(name);
+		node->ws = wakeup_source_register(NULL, name);
 }
 
 /**
@@ -1071,7 +1071,6 @@ static void qrtr_node_rx_work(struct kthread_work *work)
 				 "RX ENQ: 0x%x / 0x%x:0x%x / 0x%x:0x%x\n",
 				 skb->len, cb->src_node, cb->src_port,
 				 cb->dst_node, cb->dst_port);
-
 				qrtr_sock_queue_skb(node, skb, ipc);
 				qrtr_port_put(ipc);
 			}

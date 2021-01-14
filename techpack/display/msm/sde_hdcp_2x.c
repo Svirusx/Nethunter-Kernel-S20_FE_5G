@@ -21,9 +21,8 @@
 
 #include "sde_hdcp_2x.h"
 
-#ifdef CONFIG_SEC_DISPLAYPORT
+#ifdef CONFIG_SEC_DISPLAYPORT_ENG
 #include <linux/secdp_logger.h>
-#include "dp/secdp.h"
 #endif
 
 /* all message IDs */

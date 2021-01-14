@@ -1,0 +1,159 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&aliases {
+		spi7 = "/soc/spi@99c000";
+};
+
+&tlmm {
+	gfspi_drdypin {
+		gfspi_drdypin_active: gfspi_drdypin_active {
+			mux {
+				pins = "gpio63";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio63";
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+
+		gfspi_drdypin_suspend: gfspi_drdypin_suspend {
+			mux {
+				pins = "gpio63";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio63";
+				drive-strength = <2>;
+				bias-pull-down;
+			};
+		};
+
+	};
+
+	gfspi_ldopin: gfspi_ldopin {
+		mux {
+			pins = "gpio117";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio117";
+			bias-pull-down;
+		};
+	};
+
+	gfspi_rstpin: gfspi_rstpin {
+		mux {
+			pins = "gpio127";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio127";
+			bias-pull-down;
+		};
+	};
+
+	qupv3_se7_spi_pins: qupv3_se7_spi_pins {
+		qupv3_se7_spi_active: qupv3_se7_spi_active {
+			mux {
+				pins = "gpio20", "gpio21", "gpio22",
+							"gpio23";
+				function = "qup7";
+			};
+			config {
+				pins = "gpio20", "gpio21", "gpio22",
+							"gpio23";
+				drive-strength = <12>;
+				bias-disable;
+			};
+		};
+		qupv3_se7_spi_sleep: qupv3_se7_spi_sleep {
+			mux {
+				pins = "gpio20", "gpio21", "gpio22",
+							"gpio23";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio20", "gpio21", "gpio22",
+							"gpio23";
+				drive-strength = <12>;
+				bias-pull-down;
+				input-enable;
+			};
+		};
+	};
+};
+
+&qupv3_se7_spi {
+	compatible = "qcom,spi-geni";
+	#address-cells = <1>;
+	#size-cells = <0>;
+	reg = <0x99c000 0x4000>;
+	reg-names = "se_phys";
+	clock-names = "se-clk", "m-ahb", "s-ahb";
+	clocks = <&clock_gcc GCC_QUPV3_WRAP0_S7_CLK>,
+		<&clock_gcc GCC_QUPV3_WRAP_0_M_AHB_CLK>,
+		<&clock_gcc GCC_QUPV3_WRAP_0_S_AHB_CLK>;
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&qupv3_se7_spi_active>;
+	pinctrl-1 = <&qupv3_se7_spi_sleep>;
+	interrupts = <GIC_SPI 608 IRQ_TYPE_LEVEL_HIGH>;
+	spi-max-frequency = <25000000>;
+	qcom,wrapper-core = <&qupv3_0>;
+	dmas = <&gpi_dma0 0 7 1 64 0>,
+		<&gpi_dma0 1 7 1 64 0>;
+	dma-names = "tx", "rx";
+	status = "ok";
+
+	gfspi-spi@0 {
+		compatible = "goodix,fingerprint_factory";
+		reg = <0>;
+		spi-max-frequency = <9600000>;
+		pinctrl-names = "default", "pins_poweroff", "pins_poweron";
+		pinctrl-0 = <&gfspi_ldopin &gfspi_rstpin &gfspi_drdypin_suspend>;
+		pinctrl-1 = <&gfspi_drdypin_suspend>;
+		pinctrl-2 = <&gfspi_drdypin_active>;
+
+		gpio-controller;
+		#gpio-cells = <2>;
+
+		goodix,gpio_reset = <&tlmm 127 0x00>;
+		goodix,gpio_irq = <&tlmm 63 0x00>;
+		goodix,gpio_pwr = <&tlmm 117 0x00>;
+		goodix,min_cpufreq_limit = <2016000>;
+		goodix,chip_id = "GW36T1";
+		goodix,orient = <0>;
+	};
+};
+
+&soc {
+	gfspi@0 {
+		compatible = "goodix,fingerprint";
+		reg = <0>;
+		spi-max-frequency = <9600000>;
+		pinctrl-names = "default", "pins_poweroff", "pins_poweron";
+		pinctrl-0 = <&gfspi_ldopin &gfspi_rstpin &gfspi_drdypin_suspend>;
+		pinctrl-1 = <&gfspi_drdypin_suspend>;
+		pinctrl-2 = <&gfspi_drdypin_active>;
+
+		gpio-controller;
+		#gpio-cells = <2>;
+
+		goodix,gpio_reset = <&tlmm 127 0x00>;
+		goodix,gpio_irq = <&tlmm 63 0x00>;
+		goodix,gpio_pwr = <&tlmm 117 0x00>;
+		goodix,min_cpufreq_limit = <2016000>;
+		goodix,chip_id = "GW36T1";
+		goodix,orient = <0>;
+	};
+};

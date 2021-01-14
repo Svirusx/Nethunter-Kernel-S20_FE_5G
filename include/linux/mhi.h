@@ -15,7 +15,6 @@ struct mhi_buf_info;
 struct mhi_sfr_info;
 
 #define REG_WRITE_QUEUE_LEN 1024
-#define MHI_MAX_PP_ABORT_COUNT 100
 
 /**
  * enum MHI_CB - MHI callback
@@ -40,6 +39,7 @@ enum MHI_CB {
 	MHI_CB_EE_MISSION_MODE,
 	MHI_CB_SYS_ERROR,
 	MHI_CB_FATAL_ERROR,
+	MHI_CB_FW_FALLBACK_IMG,
 	MHI_CB_BOOTUP_TIMEOUT,
 };
 
@@ -224,6 +224,7 @@ struct reg_write_info {
  * @rddm_size: RAM dump size that host should allocate for debugging purpose
  * @sbl_size: SBL image size
  * @seg_len: BHIe vector size
+ * @img_pre_alloc: allocate rddm and fbc image buffers one time
  * @fbc_image: Points to firmware image buffer
  * @rddm_image: Points to RAM dump buffer
  * @max_chan: Maximum number of channels controller support
@@ -286,15 +287,19 @@ struct mhi_controller {
 
 	/* fw images */
 	const char *fw_image;
+	const char *fw_image_fallback;
 	const char *edl_image;
 
 	/* mhi host manages downloading entire fbc images */
 	bool fbc_download;
+	bool rddm_supported;
 	size_t rddm_size;
 	size_t sbl_size;
 	size_t seg_len;
 	u32 session_id;
 	u32 sequence_id;
+
+	bool img_pre_alloc;
 	struct image_info *fbc_image;
 	struct image_info *rddm_image;
 
@@ -339,7 +344,6 @@ struct mhi_controller {
 	atomic_t dev_wake;
 	atomic_t alloc_size;
 	atomic_t pending_pkts;
-	u32 pp_abort_counter;
 	struct list_head transition_list;
 	spinlock_t transition_lock;
 	spinlock_t wlock;
@@ -353,7 +357,7 @@ struct mhi_controller {
 	/* worker for different state transitions */
 	struct work_struct st_worker;
 	struct work_struct special_work;
-	struct workqueue_struct *special_wq;
+	struct workqueue_struct *wq;
 
 	wait_queue_head_t state_event;
 
@@ -403,8 +407,10 @@ struct mhi_controller {
 	/* controller specific data */
 	const char *name;
 	bool power_down;
+	bool initiate_mhi_reset;
 	void *priv_data;
 	void *log_buf;
+	void *cntrl_log_buf;
 	struct dentry *dentry;
 	struct dentry *parent;
 
@@ -604,6 +610,30 @@ void mhi_device_get(struct mhi_device *mhi_dev, int vote);
  * @vote: requested vote (bus, device or both)
  */
 int mhi_device_get_sync(struct mhi_device *mhi_dev, int vote);
+
+/**
+ * mhi_device_get_sync_atomic - Asserts device_wait and moves device to M0
+ * @mhi_dev: Device associated with the channels
+ * @timeout_us: timeout, in micro-seconds
+ *
+ * The device_wake is asserted to keep device in M0 or bring it to M0.
+ * If device is not in M0 state, then this function will wait for device to
+ * move to M0, until @timeout_us elapses.
+ * However, if device's M1 state-change event races with this function
+ * then there is a possiblity of device moving from M0 to M2 and back
+ * to M0. That can't be avoided as host must transition device from M1 to M2
+ * as per the spec.
+ * Clients can ignore that transition after this function returns as the device
+ * is expected to immediately  move from M2 to M0 as wake is asserted and
+ * wouldn't enter low power state.
+ *
+ * Returns:
+ * 0 if operation was successful (however, M0 -> M2 -> M0 is possible later) as
+ * mentioned above.
+ * -ETIMEDOUT is device faled to move to M0 before @timeout_us elapsed
+ * -EIO if the MHI state is one of the ERROR states.
+ */
+int mhi_device_get_sync_atomic(struct mhi_device *mhi_dev, int timeout_us);
 
 /**
  * mhi_device_put - re-enable low power modes
@@ -807,6 +837,12 @@ int mhi_get_remote_time_sync(struct mhi_device *mhi_dev,
 			     u64 *t_dev);
 
 /**
+ * mhi_get_exec_env - Return execution environment of the device
+ * @mhi_cntrl: MHI controller
+ */
+enum mhi_ee mhi_get_exec_env(struct mhi_controller *mhi_cntrl);
+
+/**
  * mhi_get_mhi_state - Return MHI state of device
  * @mhi_cntrl: MHI controller
  */
@@ -858,7 +894,7 @@ char *mhi_get_restart_reason(const char *name);
 #ifdef CONFIG_MHI_DEBUG
 
 #define MHI_VERB(fmt, ...) do { \
-		if (mhi_cntrl->klog_lvl <= MHI_MSG_VERBOSE) \
+		if (mhi_cntrl->klog_lvl <= MHI_MSG_LVL_VERBOSE) \
 			pr_dbg("[D][%s] " fmt, __func__, ##__VA_ARGS__);\
 } while (0)
 
@@ -868,8 +904,18 @@ char *mhi_get_restart_reason(const char *name);
 
 #endif
 
+#define MHI_CNTRL_LOG(fmt, ...) do {	\
+		if (mhi_cntrl->klog_lvl <= MHI_MSG_LVL_INFO) \
+			pr_info("[I][%s] " fmt, __func__, ##__VA_ARGS__);\
+} while (0)
+
+#define MHI_CNTRL_ERR(fmt, ...) do {	\
+		if (mhi_cntrl->klog_lvl <= MHI_MSG_LVL_ERROR) \
+			pr_err("[E][%s] " fmt, __func__, ##__VA_ARGS__); \
+} while (0)
+
 #define MHI_LOG(fmt, ...) do {	\
-		if (mhi_cntrl->klog_lvl <= MHI_MSG_INFO) \
+		if (mhi_cntrl->klog_lvl <= MHI_MSG_LVL_INFO) \
 			pr_info("[I][%s] " fmt, __func__, ##__VA_ARGS__);\
 } while (0)
 
@@ -903,6 +949,20 @@ char *mhi_get_restart_reason(const char *name);
 #define MHI_VERB(fmt, ...)
 
 #endif
+
+#define MHI_CNTRL_LOG(fmt, ...) do { \
+		if (mhi_cntrl->klog_lvl <= MHI_MSG_LVL_INFO) \
+			pr_err("[I][%s] " fmt, __func__, ##__VA_ARGS__);\
+		ipc_log_string(mhi_cntrl->cntrl_log_buf, "[I][%s] " fmt, \
+			       __func__, ##__VA_ARGS__); \
+} while (0)
+
+#define MHI_CNTRL_ERR(fmt, ...) do { \
+		if (mhi_cntrl->klog_lvl <= MHI_MSG_LVL_ERROR) \
+			pr_err("[E][%s] " fmt, __func__, ##__VA_ARGS__); \
+		ipc_log_string(mhi_cntrl->cntrl_log_buf, "[E][%s] " fmt, \
+			       __func__, ##__VA_ARGS__); \
+} while (0)
 
 #define MHI_LOG(fmt, ...) do {	\
 		if (mhi_cntrl->klog_lvl <= MHI_MSG_LVL_INFO) \

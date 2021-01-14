@@ -386,8 +386,7 @@ static int set_online(int event, int state)
 	if (event == NOTIFY_EVENT_HMD_EXT_CURRENT) {
 		value.intval = state;
 		psy_otg->desc->set_property(psy_otg, POWER_SUPPLY_PROP_VOLTAGE_MAX, &value);
-	}
-	else {
+	} else {
 		if (state)
 			value.intval = SEC_BATTERY_CABLE_SMART_OTG;
 		else

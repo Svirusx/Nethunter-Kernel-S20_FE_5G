@@ -42,7 +42,7 @@ void sec_bat_exit_step_charging(struct sec_battery_info *battery)
 		(battery->swelling_mode == SWELLING_MODE_NONE)) {
 		union power_supply_propval val;
 	
-		pr_info("%s : float voltage = %d \n", __func__,
+		pr_info("%s : float voltage = %d\n", __func__,
 			battery->pdata->step_charging_float_voltage[battery->pdata->age_step][battery->step_charging_step-1]);
 		val.intval = battery->pdata->step_charging_float_voltage[battery->pdata->age_step][battery->step_charging_step-1];
 		psy_do_property(battery->pdata->charger_name, set,
@@ -62,16 +62,16 @@ bool sec_bat_check_step_charging(struct sec_battery_info *battery)
 	int value_vsub = 0, step_condition_vsub = 0;
 #endif
 	static int curr_cnt = 0;
-	static bool skip_lcd_on_changed = false;
+	static bool skip_lcd_on_changed;
 
 #if defined(CONFIG_SEC_FACTORY)
 	return false;
 #endif
 
 #if defined(CONFIG_ENG_BATTERY_CONCEPT)
-	if(battery->test_charge_current)
+	if (battery->test_charge_current)
 		return false;
-	if(battery->test_step_condition <= 4500)
+	if (battery->test_step_condition <= 4500)
 		battery->pdata->step_charging_condition[0][0] = battery->test_step_condition;
 #endif
 
@@ -122,7 +122,7 @@ bool sec_bat_check_step_charging(struct sec_battery_info *battery)
 					union power_supply_propval val;
 
 					val.intval = battery->pdata->step_charging_float_voltage[battery->pdata->age_step][battery->step_charging_step - 1];
-					pr_info("%s : float voltage = %d \n", __func__, val.intval);
+					pr_info("%s : float voltage = %d\n", __func__, val.intval);
 					psy_do_property(battery->pdata->charger_name, set,
 						POWER_SUPPLY_PROP_VOLTAGE_MAX, val);
 				}
@@ -159,17 +159,19 @@ bool sec_bat_check_step_charging(struct sec_battery_info *battery)
 		return false;
 	}
 
-	while(i < battery->step_charging_step - 1) {
+	while (i < battery->step_charging_step - 1) {
 #if defined(CONFIG_DUAL_BATTERY)
 		if (battery->step_charging_type & STEP_CHARGING_CONDITION_VOLTAGE) {
 			if ((value < step_condition) && (value_vsub < step_condition_vsub))
 				break;
+		} else {
+			if (value < step_condition)
+				break;
 		}
-		else
-#endif
-		if (value < step_condition) {
+#else
+		if (value < step_condition)
 			break;
-		}
+#endif
 		i++;
 
 		if ((battery->step_charging_type & STEP_CHARGING_CONDITION_SOC) &&
@@ -183,7 +185,7 @@ bool sec_bat_check_step_charging(struct sec_battery_info *battery)
 #endif
 
 		}
-		if(battery->step_charging_status != -1)
+		if (battery->step_charging_status != -1)
 			break;
 	}
 
@@ -194,11 +196,11 @@ bool sec_bat_check_step_charging(struct sec_battery_info *battery)
 			battery->step_charging_status >= 0) {
 			int condition_curr;
 			condition_curr = max(battery->current_avg, battery->current_now);
-			if(condition_curr < battery->pdata->step_charging_condition_curr[battery->step_charging_status]) {
+			if (condition_curr < battery->pdata->step_charging_condition_curr[battery->step_charging_status]) {
 				curr_cnt++;
 				pr_info("%s : cnt = %d, current avg(%d)mA < current condition(%d)mA\n", __func__,
 					curr_cnt, condition_curr, battery->pdata->step_charging_condition_curr[battery->step_charging_status]);
-				if(curr_cnt < 3)
+				if (curr_cnt < 3)
 					return false;
 			} else {
 				pr_info("%s : clear count, current avg(%d)mA >= current condition(%d)mA or"
@@ -219,7 +221,7 @@ bool sec_bat_check_step_charging(struct sec_battery_info *battery)
 			(battery->swelling_mode == SWELLING_MODE_NONE)) {
 			union power_supply_propval val;
 
-			pr_info("%s : float voltage = %d \n", __func__, battery->pdata->step_charging_float_voltage[battery->pdata->age_step][i]);
+			pr_info("%s : float voltage = %d\n", __func__, battery->pdata->step_charging_float_voltage[battery->pdata->age_step][i]);
 			val.intval = battery->pdata->step_charging_float_voltage[battery->pdata->age_step][i];
 			psy_do_property(battery->pdata->charger_name, set,
 				POWER_SUPPLY_PROP_VOLTAGE_MAX, val);
@@ -275,7 +277,7 @@ bool sec_bat_check_dc_step_charging(struct sec_battery_info *battery)
 		if (battery->step_charging_status < 0) {
 			step_soc = i;
 			value = battery->capacity;
-			while(step_soc < battery->dc_step_chg_step - 1) {
+			while (step_soc < battery->dc_step_chg_step - 1) {
 				soc_condition = battery->pdata->dc_step_chg_cond_soc[battery->pdata->age_step][step_soc];
 				if (value < soc_condition)
 					break;
@@ -294,7 +296,7 @@ bool sec_bat_check_dc_step_charging(struct sec_battery_info *battery)
 	if (battery->dc_step_chg_type & STEP_CHARGING_CONDITION_SOC) {
 		step_soc = i;
 		value = battery->capacity;
-		while(step_soc < battery->dc_step_chg_step - 1) {
+		while (step_soc < battery->dc_step_chg_step - 1) {
 			soc_condition = battery->pdata->dc_step_chg_cond_soc[battery->pdata->age_step][step_soc];
 			if (battery->step_charging_status >= 0 &&
 				(battery->siop_level < 100 || battery->lcd_status)) {
@@ -339,7 +341,7 @@ bool sec_bat_check_dc_step_charging(struct sec_battery_info *battery)
 		else
 			value = battery->voltage_avg;
 #endif
-		while(step_vol < battery->dc_step_chg_step - 1) {
+		while (step_vol < battery->dc_step_chg_step - 1) {
 			if (value < battery->pdata->dc_step_chg_cond_vol[step_vol])
 				break;
 			step_vol++;
@@ -361,7 +363,7 @@ bool sec_bat_check_dc_step_charging(struct sec_battery_info *battery)
 		psy_do_property(battery->pdata->charger_name, get,
 			POWER_SUPPLY_EXT_PROP_DIRECT_CHARGER_MODE, val);
 		if (val.intval != SEC_DIRECT_CHG_MODE_DIRECT_ON) {	
-			pr_info("%s : dc no charging status = %d \n", __func__, val.intval);
+			pr_info("%s : dc no charging status = %d\n", __func__, val.intval);
 			battery->dc_step_chg_iin_cnt = 0;
 			return false;
 		} else if (battery->siop_level >= 100 && !battery->lcd_status) {
@@ -370,7 +372,7 @@ bool sec_bat_check_dc_step_charging(struct sec_battery_info *battery)
 					POWER_SUPPLY_EXT_PROP_MEASURE_INPUT, val);
 			value = val.intval;
 
-			while(step_input < battery->dc_step_chg_step - 1) {
+			while (step_input < battery->dc_step_chg_step - 1) {
 				if (value > battery->pdata->dc_step_chg_cond_iin[step_input])
 					break;
 				step_input++;
@@ -382,6 +384,9 @@ bool sec_bat_check_dc_step_charging(struct sec_battery_info *battery)
 					battery->dc_step_chg_iin_cnt = 0;
 				}
 			}
+		} else {
+			/* Do not check input current when lcd is on or siop is not 100 since there might be quite big system current */
+			step_input = battery->dc_step_chg_step - 1;
 		}
 
 		if ((step_input < step) || (step < 0))
@@ -398,7 +403,8 @@ check_dc_step_change:
 		(step != battery->step_charging_status && step == min(min(step_vol, step_soc), step_input))) {
 		if ((battery->dc_step_chg_type & STEP_CHARGING_CONDITION_INPUT_CURRENT) &&
 			(battery->step_charging_status >= 0)) {
-			if (battery->dc_step_chg_iin_cnt < battery->pdata->dc_step_chg_iin_check_cnt) {
+			if (battery->dc_step_chg_iin_cnt < battery->pdata->dc_step_chg_iin_check_cnt &&
+				(battery->siop_level >= 100 && !battery->lcd_status)) {
 				pr_info("%s : keep step(%d), curr_cnt(%d/%d)\n",
 					__func__, battery->step_charging_status,
 					battery->dc_step_chg_iin_cnt, battery->pdata->dc_step_chg_iin_check_cnt);
@@ -406,15 +412,17 @@ check_dc_step_change:
 			}
 		}
 
-		pr_info("%s : cable(%d), step changed(%d->%d), current(%dmA)\n",
-			__func__, battery->cable_type,
+		pr_info("%s : cable(%d), soc(%d), step changed(%d->%d), current(%dmA)\n",
+			__func__, battery->cable_type, battery->capacity,
 			battery->step_charging_status, step, battery->pdata->dc_step_chg_val_iout[battery->pdata->age_step][step]);
-			battery->pdata->charging_current[battery->cable_type].fast_charging_current = battery->pdata->dc_step_chg_val_iout[battery->pdata->age_step][step];
+
+		/* set charging current */
+		battery->pdata->charging_current[battery->cable_type].fast_charging_current = battery->pdata->dc_step_chg_val_iout[battery->pdata->age_step][step];
 
 		if ((battery->dc_step_chg_type & STEP_CHARGING_CONDITION_FLOAT_VOLTAGE) &&
 			(battery->swelling_mode == SWELLING_MODE_NONE)) {
 			if (battery->step_charging_status < 0) {
-				pr_info("%s : step float voltage = %d \n", __func__, battery->pdata->dc_step_chg_val_vfloat[battery->pdata->age_step][step]);
+				pr_info("%s : step float voltage = %d\n", __func__, battery->pdata->dc_step_chg_val_vfloat[battery->pdata->age_step][step]);
 				val.intval = battery->pdata->dc_step_chg_val_vfloat[battery->pdata->age_step][step];
 				psy_do_property(battery->pdata->charger_name, set,
 					POWER_SUPPLY_EXT_PROP_DIRECT_VOLTAGE_MAX, val);
@@ -423,7 +431,7 @@ check_dc_step_change:
 		}
 
 		if (battery->step_charging_status < 0) {
-			pr_info("%s : step input current = %d \n", __func__, battery->pdata->dc_step_chg_val_iout[battery->pdata->age_step][step] / 2);
+			pr_info("%s : step input current = %d\n", __func__, battery->pdata->dc_step_chg_val_iout[battery->pdata->age_step][step] / 2);
 			val.intval = battery->pdata->dc_step_chg_val_iout[battery->pdata->age_step][step] / 2;
 			psy_do_property(battery->pdata->charger_name, set,
 				POWER_SUPPLY_EXT_PROP_DIRECT_CURRENT_MAX, val);
@@ -521,18 +529,18 @@ int sec_dc_step_charging_dt(struct sec_battery_info *battery, struct device *dev
 				pr_err("%s: len of dc_step_charging_cond_soc is not matched, len(%d/%d)\n",
 					__func__, len, battery->dc_step_chg_step);
 			}
-			pr_info("%s step(%d) * age_step(%d) = %d \n", __func__, battery->dc_step_chg_step, battery->pdata->num_age_step, len);
+			pr_info("%s step(%d) * age_step(%d) = %d\n", __func__, battery->dc_step_chg_step, battery->pdata->num_age_step, len);
 
 			/* get dt to buff */
-			soc_cond_temp = kzalloc(sizeof(u32) * battery->dc_step_chg_step * battery->pdata->num_age_step , GFP_KERNEL);
+			soc_cond_temp = kzalloc(sizeof(u32) * battery->dc_step_chg_step * battery->pdata->num_age_step, GFP_KERNEL);
 			ret = of_property_read_u32_array(np, "battery,dc_step_chg_cond_soc",
 					soc_cond_temp, battery->dc_step_chg_step * battery->pdata->num_age_step);
 
 			/* copy buff to 2d arr */
-			pdata->dc_step_chg_cond_soc = kzalloc(sizeof(u32 *) * battery->pdata->num_age_step , GFP_KERNEL);
-			for( i = 0; i < battery->pdata->num_age_step; i++) {
-				pdata->dc_step_chg_cond_soc[i] = kzalloc(sizeof(u32) * battery->dc_step_chg_step , GFP_KERNEL);
-				for( j = 0; j < battery->dc_step_chg_step; j++) {
+			pdata->dc_step_chg_cond_soc = kzalloc(sizeof(u32 *) * battery->pdata->num_age_step, GFP_KERNEL);
+			for (i = 0; i < battery->pdata->num_age_step; i++) {
+				pdata->dc_step_chg_cond_soc[i] = kzalloc(sizeof(u32) * battery->dc_step_chg_step, GFP_KERNEL);
+				for (j = 0; j < battery->dc_step_chg_step; j++) {
 					pdata->dc_step_chg_cond_soc[i][j] = soc_cond_temp[i*battery->dc_step_chg_step + j];
 					pr_info("%s arr = %d ", __func__, pdata->dc_step_chg_cond_soc[i][j]);
 				}
@@ -540,14 +548,13 @@ int sec_dc_step_charging_dt(struct sec_battery_info *battery, struct device *dev
 			}
 
 			/* if there are only 1 dimentional array of value, get the same value */
-			if(battery->dc_step_chg_step * battery->pdata->num_age_step != len) {
+			if (battery->dc_step_chg_step * battery->pdata->num_age_step != len) {
 				ret = of_property_read_u32_array(np, "battery,dc_step_chg_cond_soc",
 						*pdata->dc_step_chg_cond_soc, battery->dc_step_chg_step);
 
-				for( i = 1; i < battery->pdata->num_age_step; i++) {
-					for( j = 0; j < battery->dc_step_chg_step; j++){
+				for (i = 1; i < battery->pdata->num_age_step; i++) {
+					for (j = 0; j < battery->dc_step_chg_step; j++)
 						pdata->dc_step_chg_cond_soc[i][j] = pdata->dc_step_chg_cond_soc[0][j];
-					}
 				}
 			}
 
@@ -617,17 +624,17 @@ int sec_dc_step_charging_dt(struct sec_battery_info *battery, struct device *dev
 				pr_err("%s: len of dc_step_chg_val_vfloat is not matched, len(%d/%d)\n",
 					__func__, len, battery->dc_step_chg_step);
 			}
-			pr_info("%s step(%d) * age_step(%d) = %d \n", __func__, battery->dc_step_chg_step, battery->pdata->num_age_step, len);
+			pr_info("%s step(%d) * age_step(%d) = %d\n", __func__, battery->dc_step_chg_step, battery->pdata->num_age_step, len);
 
-			dc_step_chg_val_vfloat_temp = kzalloc(sizeof(u32) * battery->dc_step_chg_step * battery->pdata->num_age_step , GFP_KERNEL);
+			dc_step_chg_val_vfloat_temp = kzalloc(sizeof(u32) * battery->dc_step_chg_step * battery->pdata->num_age_step, GFP_KERNEL);
 			ret = of_property_read_u32_array(np, "battery,dc_step_chg_val_vfloat",
 						dc_step_chg_val_vfloat_temp, battery->dc_step_chg_step * battery->pdata->num_age_step);
 
 			/* copy buff to 2d arr */
-			pdata->dc_step_chg_val_vfloat = kzalloc(sizeof(u32 *) * battery->pdata->num_age_step , GFP_KERNEL);
-			for( i = 0; i < battery->pdata->num_age_step; i++) {
-				pdata->dc_step_chg_val_vfloat[i] = kzalloc(sizeof(u32) * battery->dc_step_chg_step , GFP_KERNEL);
-				for( j = 0; j < battery->dc_step_chg_step; j++) {
+			pdata->dc_step_chg_val_vfloat = kzalloc(sizeof(u32 *) * battery->pdata->num_age_step, GFP_KERNEL);
+			for (i = 0; i < battery->pdata->num_age_step; i++) {
+				pdata->dc_step_chg_val_vfloat[i] = kzalloc(sizeof(u32) * battery->dc_step_chg_step, GFP_KERNEL);
+				for (j = 0; j < battery->dc_step_chg_step; j++) {
 					pdata->dc_step_chg_val_vfloat[i][j] = dc_step_chg_val_vfloat_temp[i*battery->dc_step_chg_step + j];
 					pr_info("%s arr = %d ", __func__, pdata->dc_step_chg_val_vfloat[i][j]);
 				}
@@ -635,14 +642,13 @@ int sec_dc_step_charging_dt(struct sec_battery_info *battery, struct device *dev
 			}
 
 			/* if there are only 1 dimentional array of value, get the same value */
-			if(battery->dc_step_chg_step * battery->pdata->num_age_step != len) {
+			if (battery->dc_step_chg_step * battery->pdata->num_age_step != len) {
 				ret = of_property_read_u32_array(np, "battery,dc_step_chg_val_vfloat",
 						*pdata->dc_step_chg_val_vfloat, battery->dc_step_chg_step);
 
-				for( i = 1; i < battery->pdata->num_age_step; i++) {
-					for( j = 0; j < battery->dc_step_chg_step; j++){
+				for (i = 1; i < battery->pdata->num_age_step; i++) {
+					for (j = 0; j < battery->dc_step_chg_step; j++)
 						pdata->dc_step_chg_val_vfloat[i][j] = pdata->dc_step_chg_val_vfloat[0][j];
-					}
 				}
 			}
 
@@ -667,17 +673,17 @@ int sec_dc_step_charging_dt(struct sec_battery_info *battery, struct device *dev
 			pr_err("%s: len of dc_step_chg_val_iout is not matched, len(%d/%d)\n",
 				__func__, len, battery->dc_step_chg_step);
 		}
-		pr_info("%s step(%d) * age_step(%d) = %d \n", __func__, battery->dc_step_chg_step, battery->pdata->num_age_step, len);
+		pr_info("%s step(%d) * age_step(%d) = %d\n", __func__, battery->dc_step_chg_step, battery->pdata->num_age_step, len);
 
-		dc_step_chg_val_iout_temp = kzalloc(sizeof(u32) * battery->dc_step_chg_step * battery->pdata->num_age_step , GFP_KERNEL);
+		dc_step_chg_val_iout_temp = kzalloc(sizeof(u32) * battery->dc_step_chg_step * battery->pdata->num_age_step, GFP_KERNEL);
 		ret = of_property_read_u32_array(np, "battery,dc_step_chg_val_iout",
 					dc_step_chg_val_iout_temp, battery->dc_step_chg_step * battery->pdata->num_age_step);
 
 		/* copy buff to 2d arr */
-		pdata->dc_step_chg_val_iout = kzalloc(sizeof(u32 *) * battery->pdata->num_age_step , GFP_KERNEL);
-		for( i = 0; i < battery->pdata->num_age_step; i++) {
-			pdata->dc_step_chg_val_iout[i] = kzalloc(sizeof(u32) * battery->dc_step_chg_step , GFP_KERNEL);
-			for( j = 0; j < battery->dc_step_chg_step; j++) {
+		pdata->dc_step_chg_val_iout = kzalloc(sizeof(u32 *) * battery->pdata->num_age_step, GFP_KERNEL);
+		for (i = 0; i < battery->pdata->num_age_step; i++) {
+			pdata->dc_step_chg_val_iout[i] = kzalloc(sizeof(u32) * battery->dc_step_chg_step, GFP_KERNEL);
+			for (j = 0; j < battery->dc_step_chg_step; j++) {
 				pdata->dc_step_chg_val_iout[i][j] = dc_step_chg_val_iout_temp[i*battery->dc_step_chg_step + j];
 				pr_info("%s arr = %d ", __func__, pdata->dc_step_chg_val_iout[i][j]);
 			}
@@ -685,14 +691,13 @@ int sec_dc_step_charging_dt(struct sec_battery_info *battery, struct device *dev
 		}
 
 		/* if there are only 1 dimentional array of value, get the same value */
-		if(battery->dc_step_chg_step * battery->pdata->num_age_step != len) {
+		if (battery->dc_step_chg_step * battery->pdata->num_age_step != len) {
 			ret = of_property_read_u32_array(np, "battery,dc_step_chg_val_iout",
 					*pdata->dc_step_chg_val_iout, battery->dc_step_chg_step);
 
-			for( i = 1; i < battery->pdata->num_age_step; i++) {
-				for( j = 0; j < battery->dc_step_chg_step; j++){
+			for (i = 1; i < battery->pdata->num_age_step; i++) {
+				for (j = 0; j < battery->dc_step_chg_step; j++)
 					pdata->dc_step_chg_val_iout[i][j] = pdata->dc_step_chg_val_iout[0][j];
-				}
 			}
 		}
 
@@ -766,8 +771,8 @@ void sec_bat_set_aging_info_step_charging(struct sec_battery_info *battery)
 
 	for (i = 0; i < battery->dc_step_chg_step; i++) {
 		dev_info(battery->dev, "%s: cond_vol: %dmV, vfloat: %dmV, cond_iin: %dmA, iout: %dmA\n", __func__,
-	 		battery->dc_step_chg_type & STEP_CHARGING_CONDITION_VOLTAGE ? battery->pdata->dc_step_chg_cond_vol[i] : 0,
-	 		battery->dc_step_chg_type & STEP_CHARGING_CONDITION_FLOAT_VOLTAGE ? battery->pdata->dc_step_chg_val_vfloat[battery->pdata->age_step][i] : 0,
+			battery->dc_step_chg_type & STEP_CHARGING_CONDITION_VOLTAGE ? battery->pdata->dc_step_chg_cond_vol[i] : 0,
+			battery->dc_step_chg_type & STEP_CHARGING_CONDITION_FLOAT_VOLTAGE ? battery->pdata->dc_step_chg_val_vfloat[battery->pdata->age_step][i] : 0,
 			battery->dc_step_chg_type & STEP_CHARGING_CONDITION_INPUT_CURRENT ? battery->pdata->dc_step_chg_cond_iin[i] : 0,
 			battery->pdata->dc_step_chg_val_iout[battery->pdata->age_step][i]);
 	}
@@ -828,7 +833,7 @@ void sec_step_charging_init(struct sec_battery_info *battery, struct device *dev
 		} else {
 			len = len / sizeof(u32);
 
-			pr_info("%s step(%d) * age_step(%d) = %d \n", __func__, battery->step_charging_step, battery->pdata->num_age_step, len);
+			pr_info("%s step(%d) * age_step(%d) = %d\n", __func__, battery->step_charging_step, battery->pdata->num_age_step, len);
 
 			/* get dt to buff */
 			soc_cond_temp = kzalloc(sizeof(u32) * battery->step_charging_step * battery->pdata->num_age_step, GFP_KERNEL);
@@ -836,10 +841,10 @@ void sec_step_charging_init(struct sec_battery_info *battery, struct device *dev
 					soc_cond_temp, battery->step_charging_step * battery->pdata->num_age_step);
 
 			/* copy buff to 2d arr */
-			pdata->step_charging_condition = kzalloc(sizeof(u32 *) * battery->pdata->num_age_step , GFP_KERNEL);
-			for( i = 0; i < battery->pdata->num_age_step; i++) {
-				pdata->step_charging_condition[i] = kzalloc(sizeof(u32) * battery->step_charging_step , GFP_KERNEL);
-				for( j = 0; j < battery->step_charging_step; j++) {
+			pdata->step_charging_condition = kzalloc(sizeof(u32 *) * battery->pdata->num_age_step, GFP_KERNEL);
+			for (i = 0; i < battery->pdata->num_age_step; i++) {
+				pdata->step_charging_condition[i] = kzalloc(sizeof(u32) * battery->step_charging_step, GFP_KERNEL);
+				for (j = 0; j < battery->step_charging_step; j++) {
 					pdata->step_charging_condition[i][j] = soc_cond_temp[i*battery->step_charging_step + j];
 					pr_info("%s arr = %d ", __func__, pdata->step_charging_condition[i][j]);
 				}
@@ -847,13 +852,12 @@ void sec_step_charging_init(struct sec_battery_info *battery, struct device *dev
 			}
 
 			/* if there are only 1 dimentional array of value, get the same value */
-			if(battery->step_charging_step * battery->pdata->num_age_step != len) {
+			if (battery->step_charging_step * battery->pdata->num_age_step != len) {
 				ret = of_property_read_u32_array(np, "battery,step_charging_condition",
 					*pdata->step_charging_condition, battery->step_charging_step);
-				for( i = 0; i < battery->pdata->num_age_step; i++) {
-					for( j = 0; j < battery->step_charging_step; j++){
+				for (i = 0; i < battery->pdata->num_age_step; i++) {
+					for (j = 0; j < battery->step_charging_step; j++)
 						pdata->step_charging_condition[i][j] = pdata->step_charging_condition[0][j];
-					}
 				}
 			}
 			if (ret) {
@@ -867,10 +871,10 @@ void sec_step_charging_init(struct sec_battery_info *battery, struct device *dev
 						soc_cond_temp, battery->step_charging_step * battery->pdata->num_age_step);
 
 				/* copy buff to 2d arr */
-				pdata->step_charging_condition_vsub = kzalloc(sizeof(u32 *) * battery->pdata->num_age_step , GFP_KERNEL);
-				for( i = 0; i < battery->pdata->num_age_step; i++) {
-					pdata->step_charging_condition_vsub[i] = kzalloc(sizeof(u32) * battery->step_charging_step , GFP_KERNEL);
-					for( j = 0; j < battery->step_charging_step; j++) {
+				pdata->step_charging_condition_vsub = kzalloc(sizeof(u32 *) * battery->pdata->num_age_step, GFP_KERNEL);
+				for (i = 0; i < battery->pdata->num_age_step; i++) {
+					pdata->step_charging_condition_vsub[i] = kzalloc(sizeof(u32) * battery->step_charging_step, GFP_KERNEL);
+					for (j = 0; j < battery->step_charging_step; j++) {
 						pdata->step_charging_condition_vsub[i][j] = soc_cond_temp[i*battery->step_charging_step + j];
 						pr_info("%s arr = %d ", __func__, pdata->step_charging_condition_vsub[i][j]);
 					}
@@ -878,13 +882,12 @@ void sec_step_charging_init(struct sec_battery_info *battery, struct device *dev
 				}
 
 				/* if there are only 1 dimentional array of value, get the same value */
-				if(battery->step_charging_step * battery->pdata->num_age_step != len) {
+				if (battery->step_charging_step * battery->pdata->num_age_step != len) {
 					ret = of_property_read_u32_array(np, "battery,step_charging_condition_vsub",
 						*pdata->step_charging_condition_vsub, battery->step_charging_step);
-					for( i = 0; i < battery->pdata->num_age_step; i++) {
-						for( j = 0; j < battery->step_charging_step; j++){
+					for (i = 0; i < battery->pdata->num_age_step; i++) {
+						for (j = 0; j < battery->step_charging_step; j++)
 							pdata->step_charging_condition_vsub[i][j] = pdata->step_charging_condition_vsub[0][j];
-						}
 					}
 				}
 				if (ret)
@@ -913,17 +916,17 @@ void sec_step_charging_init(struct sec_battery_info *battery, struct device *dev
 			} else {
 				len = len / sizeof(u32);
 
-				pr_info("%s step(%d) * age_step(%d) = %d \n", __func__, battery->step_charging_step, battery->pdata->num_age_step, len);
+				pr_info("%s step(%d) * age_step(%d) = %d\n", __func__, battery->step_charging_step, battery->pdata->num_age_step, len);
 
 				step_charging_float_voltage_temp = kzalloc(sizeof(u32) * battery->step_charging_step * battery->pdata->num_age_step, GFP_KERNEL);
 				ret = of_property_read_u32_array(np, "battery,step_charging_float_voltage",
 					step_charging_float_voltage_temp, battery->step_charging_step * battery->pdata->num_age_step);
 
 				/* copy buff to 2d arr */
-				pdata->step_charging_float_voltage = kzalloc(sizeof(u32 *) * battery->pdata->num_age_step , GFP_KERNEL);
-				for( i = 0; i < battery->pdata->num_age_step; i++) {
-					pdata->step_charging_float_voltage[i] = kzalloc(sizeof(u32) * battery->step_charging_step , GFP_KERNEL);
-					for( j = 0; j < battery->step_charging_step; j++) {
+				pdata->step_charging_float_voltage = kzalloc(sizeof(u32 *) * battery->pdata->num_age_step, GFP_KERNEL);
+				for (i = 0; i < battery->pdata->num_age_step; i++) {
+					pdata->step_charging_float_voltage[i] = kzalloc(sizeof(u32) * battery->step_charging_step, GFP_KERNEL);
+					for (j = 0; j < battery->step_charging_step; j++) {
 						pdata->step_charging_float_voltage[i][j] = step_charging_float_voltage_temp[i*battery->step_charging_step + j];
 						pr_info("%s arr = %d ", __func__, pdata->step_charging_float_voltage[i][j]);
 					}
@@ -931,12 +934,12 @@ void sec_step_charging_init(struct sec_battery_info *battery, struct device *dev
 				}
 
 				/* if there are only 1 dimentional array of value, get the same value */
-				if(battery->step_charging_step * battery->pdata->num_age_step != len) {
+				if (battery->step_charging_step * battery->pdata->num_age_step != len) {
 					ret = of_property_read_u32_array(np, "battery,step_charging_float_voltage",
 						*pdata->step_charging_float_voltage, battery->step_charging_step);
 
-					for( i = 1; i < battery->pdata->num_age_step; i++) {
-						for( j = 0; j < battery->step_charging_step; j++){
+					for (i = 1; i < battery->pdata->num_age_step; i++) {
+						for (j = 0; j < battery->step_charging_step; j++) {
 							pdata->step_charging_float_voltage[i][j] = pdata->step_charging_float_voltage[0][j];
 							pr_info("%s arr = %d ", __func__, pdata->step_charging_float_voltage[i][j]);
 						}
@@ -959,10 +962,10 @@ void sec_step_charging_init(struct sec_battery_info *battery, struct device *dev
 					step_charging_current_temp, battery->step_charging_step * battery->pdata->num_age_step);
 
 				/* copy buff to 2d arr */
-				pdata->step_charging_current = kzalloc(sizeof(u32 *) * battery->pdata->num_age_step , GFP_KERNEL);
-				for( i = 0; i < battery->pdata->num_age_step; i++) {
-					pdata->step_charging_current[i] = kzalloc(sizeof(u32) * battery->step_charging_step , GFP_KERNEL);
-					for( j = 0; j < battery->step_charging_step; j++) {
+				pdata->step_charging_current = kzalloc(sizeof(u32 *) * battery->pdata->num_age_step, GFP_KERNEL);
+				for (i = 0; i < battery->pdata->num_age_step; i++) {
+					pdata->step_charging_current[i] = kzalloc(sizeof(u32) * battery->step_charging_step, GFP_KERNEL);
+					for (j = 0; j < battery->step_charging_step; j++) {
 						pdata->step_charging_current[i][j] = step_charging_current_temp[i*battery->step_charging_step + j];
 						pr_info("%s arr = %d ", __func__, pdata->step_charging_current[i][j]);
 					}
@@ -970,12 +973,12 @@ void sec_step_charging_init(struct sec_battery_info *battery, struct device *dev
 				}
 
 				/* if there are only 1 dimentional array of value, get the same value */
-				if(battery->step_charging_step * battery->pdata->num_age_step != len) {
+				if (battery->step_charging_step * battery->pdata->num_age_step != len) {
 					ret = of_property_read_u32_array(np, "battery,step_charging_current",
 						*pdata->step_charging_current, battery->step_charging_step);
 
-					for( i = 1; i < battery->pdata->num_age_step; i++) {
-						for( j = 0; j < battery->step_charging_step; j++){
+					for (i = 1; i < battery->pdata->num_age_step; i++) {
+						for (j = 0; j < battery->step_charging_step; j++) {
 							pdata->step_charging_current[i][j] = pdata->step_charging_current[0][j];
 							pr_info("%s arr = %d ", __func__, pdata->step_charging_current[i][j]);
 						}

@@ -58,11 +58,6 @@ struct dp_usbpd {
  * sink/usb device. This module will notify the client using
  * the callback functions about the connection and status.
  */
-#ifndef CONFIG_SEC_DISPLAYPORT
 struct dp_hpd *dp_usbpd_get(struct device *dev, struct dp_hpd_cb *cb);
-#else
-struct dp_hpd *secdp_usbpd_get(struct device *dev, struct dp_hpd_cb *cb);
-#endif /* CONFIG_SEC_DISPLAYPORT */
-
 void dp_usbpd_put(struct dp_hpd *pd);
 #endif /* _DP_USBPD_H_ */

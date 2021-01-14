@@ -2766,7 +2766,8 @@ void hif_ce_stop(struct hif_softc *scn)
 
 		pipe_info = &hif_state->pipe_info[pipe_num];
 		if (pipe_info->ce_hdl) {
-			if (pipe_info->ce_hdl != ce_diag) {
+			if (pipe_info->ce_hdl != ce_diag &&
+			    hif_state->started) {
 				attr = hif_state->host_ce_config[pipe_num];
 				if (attr.src_nentries)
 					qdf_spinlock_destroy(&pipe_info->
@@ -4207,6 +4208,9 @@ void hif_log_ce_info(struct hif_softc *scn, uint8_t *data,
 	info.ce_count = curr_index;
 	size = sizeof(info) -
 		(CE_COUNT_MAX - info.ce_count) * sizeof(struct ce_index);
+
+	if (*offset + size > QDF_WLAN_HANG_FW_OFFSET)
+		return;
 
 	QDF_HANG_EVT_SET_HDR(&info.tlv_header, HANG_EVT_TAG_CE_INFO,
 			     size - QDF_HANG_EVENT_TLV_HDR_SIZE);

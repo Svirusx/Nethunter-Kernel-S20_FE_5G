@@ -168,6 +168,7 @@ struct swr_mstr_ctrl {
 	u32 ipc_wakeup;
 	bool dev_up;
 	bool ipc_wakeup_triggered;
+	bool req_clk_switch;
 	struct pm_qos_request pm_qos_req;
 	enum swrm_pm_state pm_state;
 	wait_queue_head_t pm_wq;
@@ -181,6 +182,9 @@ struct swr_mstr_ctrl {
 	int hw_core_clk_en;
 	int aud_core_clk_en;
 	int clk_src;
+	u32 disable_div2_clk_switch;
+	u32 rd_fifo_depth;
+	u32 wr_fifo_depth;
 #ifdef CONFIG_DEBUG_FS
 	struct dentry *debugfs_swrm_dent;
 	struct dentry *debugfs_peek;

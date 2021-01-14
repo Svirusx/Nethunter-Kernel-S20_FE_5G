@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2016-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2020, The Linux Foundation. All rights reserved.
  */
 
 
@@ -11,6 +11,7 @@
 #include "sde_connector.h"
 #include "dsi_drm.h"
 #include "sde_trace.h"
+#include "sde_dbg.h"
 
 #if defined(CONFIG_DISPLAY_SAMSUNG)
 //#include "ss_dsi_panel_common.h"
@@ -425,17 +426,24 @@ static bool dsi_bridge_mode_fixup(struct drm_bridge *bridge,
 		if ((dsi_mode.panel_mode != cur_dsi_mode.panel_mode) &&
 			(!(dsi_mode.dsi_mode_flags & DSI_MODE_FLAG_VRR)) &&
 			(crtc_state->enable ==
-				crtc_state->crtc->state->enable))
+				crtc_state->crtc->state->enable)) {
 			dsi_mode.dsi_mode_flags |= DSI_MODE_FLAG_POMS;
+
+			SDE_EVT32(SDE_EVTLOG_FUNC_CASE1,
+				dsi_mode.timing.h_active,
+				dsi_mode.timing.v_active,
+				dsi_mode.timing.refresh_rate,
+				dsi_mode.pixel_clk_khz,
+				dsi_mode.panel_mode);
+		}
 		/* No DMS/VRR when drm pipeline is changing */
 		if (!drm_mode_equal(cur_mode, adjusted_mode) &&
 			(!(dsi_mode.dsi_mode_flags & DSI_MODE_FLAG_VRR)) &&
 			(!(dsi_mode.dsi_mode_flags & DSI_MODE_FLAG_POMS)) &&
 			(!(dsi_mode.dsi_mode_flags & DSI_MODE_FLAG_DYN_CLK)) &&
 			(!crtc_state->active_changed ||
-			 display->is_cont_splash_enabled))
+			 display->is_cont_splash_enabled)) {
 #if defined(CONFIG_DISPLAY_SAMSUNG)
-		{
 			if (display->panel->panel_initialized || display->is_cont_splash_enabled) {
 				struct samsung_display_driver_data *vdd = display->panel->panel_private;
 				struct vrr_info *vrr = &vdd->vrr;
@@ -546,10 +554,17 @@ static bool dsi_bridge_mode_fixup(struct drm_bridge *bridge,
 				adjusted_sot_hs ? "HS" : "NM",
 				crtc_state->active_changed,
 				display->is_cont_splash_enabled);
-		}
 #else
 			dsi_mode.dsi_mode_flags |= DSI_MODE_FLAG_DMS;
+
+			SDE_EVT32(SDE_EVTLOG_FUNC_CASE2,
+				dsi_mode.timing.h_active,
+				dsi_mode.timing.v_active,
+				dsi_mode.timing.refresh_rate,
+				dsi_mode.pixel_clk_khz,
+				dsi_mode.panel_mode);
 #endif
+		}
 	}
 
 	/* Reject seamless transition when active changed */
@@ -942,13 +957,8 @@ int dsi_connector_get_modes(struct drm_connector *connector, void *data,
 	struct drm_display_mode drm_mode;
 	struct dsi_display *display = data;
 	struct edid edid;
-#if defined(CONFIG_DISPLAY_SAMSUNG)
 	unsigned int width_mm = connector->display_info.width_mm;
 	unsigned int height_mm = connector->display_info.height_mm;
-#else
-	u8 width_mm = connector->display_info.width_mm;
-	u8 height_mm = connector->display_info.height_mm;
-#endif
 	const u8 edid_buf[EDID_LENGTH] = {
 		0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x44, 0x6D,
 		0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x1B, 0x10, 0x01, 0x03,
@@ -990,9 +1000,15 @@ int dsi_connector_get_modes(struct drm_connector *connector, void *data,
 		}
 		m->width_mm = connector->display_info.width_mm;
 		m->height_mm = connector->display_info.height_mm;
-		/* set the first mode in list as preferred */
-		if (i == 0)
+
+		if (display->cmdline_timing != NO_OVERRIDE) {
+			/* get the preferred mode from dsi display mode */
+			if (modes[i].is_preferred)
+				m->type |= DRM_MODE_TYPE_PREFERRED;
+		} else if (i == 0) {
+			/* set the first mode in list as preferred */
 			m->type |= DRM_MODE_TYPE_PREFERRED;
+		}
 		drm_mode_probed_add(connector, m);
 	}
 

@@ -256,7 +256,7 @@ static struct bus_type chip_id_subsys = {
 	.dev_name = "chip-id",
 };
 
-static ssize_t ap_serial_show(struct kobject *kobj,
+static ssize_t ap_svc_serial_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
 	return snprintf(buf, sizeof(ap_serial_from_cmdline),
@@ -264,9 +264,16 @@ static ssize_t ap_serial_show(struct kobject *kobj,
 }
 
 static struct kobj_attribute sysfs_SVC_AP_attr =
-	__ATTR(SVC_AP, 0444, ap_serial_show, NULL);
+	__ATTR(SVC_AP, 0444, ap_svc_serial_show, NULL);
 
-static struct kobj_attribute chipid_unique_id_attr =
+static ssize_t ap_serial_show(struct device *dev,
+		struct device_attribute *dev_attr, char *buf)
+{
+	return snprintf(buf, sizeof(ap_serial_from_cmdline),
+			"%s\n", ap_serial_from_cmdline);
+}
+
+static struct device_attribute chipid_unique_id_attr =
 	__ATTR(unique_id, 0444, ap_serial_show, NULL);
 
 static struct attribute *chip_id_attrs[] = {

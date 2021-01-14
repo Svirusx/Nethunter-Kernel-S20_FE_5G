@@ -257,8 +257,10 @@ struct sde_kms {
 	struct dentry *debugfs_vbif;
 
 	/* io/register spaces: */
-	void __iomem *mmio, *vbif[VBIF_MAX], *reg_dma, *sid;
-	unsigned long mmio_len, vbif_len[VBIF_MAX], reg_dma_len, sid_len;
+	void __iomem *mmio, *vbif[VBIF_MAX], *reg_dma, *sid,
+		*imem;
+	unsigned long mmio_len, vbif_len[VBIF_MAX],
+		reg_dma_len, sid_len, imem_len;
 
 	struct regulator *vdd;
 	struct regulator *mmagic;
@@ -306,6 +308,22 @@ struct sde_kms {
 	cpumask_t irq_cpu_mask;
 	struct pm_qos_request pm_qos_irq_req;
 	struct irq_affinity_notify affinity_notify;
+	bool pm_qos_irq_req_en;
+};
+
+/**
+ * struct sde_boot_config:	display info stored in imem region
+ * @header:     header info containing magic ID, frame buffer sizes,
+ *              checksum & platformID
+ * @addr1:      Lower 32 bits of Frame Buffer Address
+ * @addr2:      Higher 32 bits of Frame Buffer Address
+ * @reserved:   Reserved
+ */
+struct sde_boot_config {
+	u32 header;
+	u32 addr1;
+	u32 addr2;
+	u32 reserved;
 };
 
 struct vsync_info {
@@ -649,4 +667,13 @@ void sde_kms_timeline_status(struct drm_device *dev);
  */
 int sde_kms_handle_recovery(struct drm_encoder *encoder);
 
+/**
+ * sde_kms_update_pm_qos_irq_request - Update Qos vote for CPU receiving
+ *					display IRQ
+ * @sde_kms : pointer to sde_kms structure
+ * @enable : indicates request to be enabled or disabled
+ * @skip_lock : indicates if lock needs to be acquired
+ */
+void sde_kms_update_pm_qos_irq_request(struct sde_kms *sde_kms,
+	 bool enable, bool skip_lock);
 #endif /* __sde_kms_H__ */

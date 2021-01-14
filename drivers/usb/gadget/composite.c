@@ -555,14 +555,14 @@ static u8 encode_bMaxPower(enum usb_device_speed speed,
 		val = CONFIG_USB_GADGET_VBUS_DRAW;
 	if (!val)
 		return 0;
-	switch (speed) {
-	case USB_SPEED_SUPER:
-	case USB_SPEED_SUPER_PLUS:
-		return (u8)(val / 8);
-	default:
-		/* only SuperSpeed and faster support > 500mA */
-		return DIV_ROUND_UP(min(val, 500U), 2);
-	}
+	if (speed < USB_SPEED_SUPER)
+		return min(val, 500U) / 2;
+	else
+		/*
+		 * USB 3.x supports up to 900mA, but since 900 isn't divisible
+		 * by 8 the integral division will effectively cap to 896mA.
+		 */
+		return min(val, 900U) / 8;
 }
 
 static int config_buf(struct usb_configuration *config,
@@ -1014,7 +1014,8 @@ static int set_config(struct usb_composite_dev *cdev,
 	power = c->MaxPower ? c->MaxPower : CONFIG_USB_GADGET_VBUS_DRAW;
 	if (gadget->speed < USB_SPEED_SUPER)
 		power = min(power, 500U);
-
+	else
+		power = min(power, 900U);
 done:
 	usb_gadget_vbus_draw(gadget, power);
 	if (result >= 0 && cdev->delayed_status)
@@ -1646,6 +1647,9 @@ static int count_ext_prop(struct usb_configuration *c, int interface)
 	struct usb_function *f;
 	int j;
 
+	if (interface >= c->next_interface_id)
+		return -EINVAL;
+
 	f = c->interface[interface];
 	for (j = 0; j < f->os_desc_n; ++j) {
 		struct usb_os_desc *d;
@@ -1664,6 +1668,9 @@ static int len_ext_prop(struct usb_configuration *c, int interface)
 	struct usb_function *f;
 	struct usb_os_desc *d;
 	int j, res;
+
+	if (interface >= c->next_interface_id)
+		return -EINVAL;
 
 	res = 10; /* header length */
 	f = c->interface[interface];
@@ -2079,6 +2086,8 @@ unknown:
 				buf[6] = w_index;
 				count = count_ext_prop(os_desc_cfg,
 					interface);
+				if (count < 0)
+					return count;
 				put_unaligned_le16(count, buf + 8);
 				count = len_ext_prop(os_desc_cfg,
 					interface);
@@ -2535,10 +2544,13 @@ void composite_resume(struct usb_gadget *gadget)
 				f->resume(f);
 		}
 
-		maxpower = cdev->config->MaxPower;
-		maxpower = maxpower ? maxpower : CONFIG_USB_GADGET_VBUS_DRAW;
+		maxpower = cdev->config->MaxPower ?
+			cdev->config->MaxPower : CONFIG_USB_GADGET_VBUS_DRAW;
 		if (gadget->speed < USB_SPEED_SUPER)
 			maxpower = min(maxpower, 500U);
+		else
+			maxpower = min(maxpower, 900U);
+
 		usb_gadget_vbus_draw(gadget, maxpower);
 	}
 

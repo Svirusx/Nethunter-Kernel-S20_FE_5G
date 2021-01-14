@@ -14,6 +14,7 @@
 #include <linux/time.h>
 
 #include <linux/fs.h>
+#include <linux/fscrypt.h>
 #include <linux/mempool.h>
 #include <crypto/skcipher.h>
 

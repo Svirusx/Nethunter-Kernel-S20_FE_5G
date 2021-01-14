@@ -1,0 +1,254 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "kona-sec-f2q-pinctrl-r00.dtsi"
+#include "../drivers/audio_f2_common.dtsi"
+#include "../drivers/displayport_f2q_r00.dtsi"
+#include "kona-sec-f2q-pm-common.dtsi"
+#include "../drivers/input_f2q_common.dtsi"
+#include "../drivers/eif_8250_common.dtsi"
+#include "../drivers/eif_f2q_common.dtsi"
+#include "../drivers/kona-sec-f2q-display-r00.dtsi"
+#include "../drivers/kona-sec-f2q-mst-r00.dtsi"
+#include "../drivers/nfc_f2q_r00.dtsi"
+#include "../drivers/kona-sec-f2q-sensor-r00.dtsi"
+#include "../drivers/uwb_f2q_r00.dtsi"
+#include "../drivers/camera_sensor_f2q_r00.dtsi"
+#include "../drivers/optics_f2q_r00.dtsi"
+#include "../drivers/abc_f2q_common.dtsi"
+#include "../drivers/connector_detection_f2_common.dtsi"
+#include "../drivers/vibrator_f2q_common.dtsi"
+
+&soc {
+
+	bt_driver: bt_driver{
+		compatible = "bcm,btdriver";  //bt_en
+		pinctrl-names = "default";
+		pinctrl-0 = <&bt_en_default>;
+		bcm,bt-reset-gpio = <&tlmm 76 GPIO_ACTIVE_HIGH>;
+		status = "ok";
+	};
+	bt_bluesleep: bt_bluesleep {
+		compatible = "bcm,bluesleep";
+		bcm,bt-wake-gpio = <&tlmm 133 0>;
+		bcm,bt-host-wake-gpio = <&tlmm 118 0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&bt_wake_default &bt_hostwake_default>;
+		status = "ok";
+	};
+
+	/* GPIO EXPANDER */
+	i2c_23: i2c@23 {
+		status = "ok";
+
+		cell-index = <23>;
+		compatible = "i2c-gpio";
+		gpios = <&tlmm 32 0	/* EXPANDER_I2C_SDA_1P8 */
+			 &tlmm 33 0	/* EXPANDER_I2C_SCL_1P8 */
+		>;
+		i2c-gpio,delay-us = <2>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&i2c_23_pinctrl>;
+
+		expander_gpios: pcal6524@22 {
+			compatible = "pcal6524,gpio-expander";
+			gpio-controller;
+			#gpio-cells = <2>;
+			reg = <0x22>;
+			pinctrl-names = "expander_reset_setting";
+			pinctrl-0 = <&expander_reset_active>;
+			pcal6524,gpio_start = <300>;
+			pcal6524,ngpio = <24>;
+			pcal6524,reset-gpio = <&tlmm 69 0>;
+			pcal6524,vdd-supply = <&pm8150_s4>;
+			pcal6524,support_initialize = <1>;
+			/* config, 24 ~ 0, 1bit configure[1:input, 0:output]*/
+			pcal6524,config = <0x7F7FFF>;    /* P2[01111111] P1[01111111] P0[11111111] */
+			/* data_out, 24 ~ 0, 1bit configure[1:high, 0:low]*/
+			pcal6524,data_out = <0x000000>;  /* P2[00000000] P1[00000000] P0[00000000] */
+			/* pull_reg, 8 ~ 0, 2bit configure[00:no_pull, 01:pull_down, 10:pull_up, 11:not used] */
+			pcal6524,pull_reg_p0 = <0x0000>; /* 00 00 00 00 / 00 00 00 00 */
+			pcal6524,pull_reg_p1 = <0x0000>; /* 00 00 00 00 / 00 00 00 00 */
+			pcal6524,pull_reg_p2 = <0x0000>; /* 00 00 00 00 / 00 00 00 00 */
+		};
+	};
+
+	i2c@17 { /* SW I2C */
+		status = "ok";
+
+		cell-index = <17>;
+		compatible = "i2c-gpio";
+		gpios = <&tlmm 144 0 /* sda */
+			 &tlmm 145 0 /* scl */
+		>;
+		pinctrl-names = "default", "sleep";
+		pinctrl-0 = <&grip_i2c_active>;
+		pinctrl-1 = <&grip_i2c_suspend>;
+
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		sx9360_sub3-i2c@28 { /* grip 3 */
+			compatible = "sx9360_sub3";
+			reg = <0x28>;
+			pinctrl-names = "default", "sleep";
+			pinctrl-0 = <&grip_int_active>;
+			pinctrl-1 = <&grip_int_suspend>;
+			interrupt-parent = <&tlmm>;
+			interrupts = <55 0>;
+
+			sx9360_sub3,nirq-gpio = <&tlmm 55 0>;
+			sx9360_sub3,refresolution_reg = <0x0f>; /* same as resolution_reg */
+			sx9360_sub3,refagainfreq_reg = <0x36>; /* same as againfreq_reg */
+			sx9360_sub3,resolution_reg = <0x0f>; /* resolution : 1024 */
+			sx9360_sub3,againfreq_reg = <0x0>; /* freq : 250 kHz, again : +/-0.75 pF */
+			sx9360_sub3,refgainrawfilt_reg = <0x22>; /* same as gainrawfilt_reg */
+			sx9360_sub3,gainrawfilt_reg = <0x0A>; /* rawfilter : 1-1/4, gain : x1 */
+			sx9360_sub3,hyst_reg = <0x15>; /* hysteresis : +/-6 %, debouncer : 2 samples */
+			sx9360_sub3,proxthresh_reg = <0x20>; /* threshold : 544 */
+			sx9360_sub3,hallic_cert_detect = <1>;
+			sx9360_sub3,proxthresh_mcc = <0x33>; /* threshold : 1381 */
+		};
+	};
+
+	i2c@18 { /* SW I2C */
+		status = "ok";
+
+		cell-index = <18>;
+		compatible = "i2c-gpio";
+		gpios = <&tlmm 119 0 /* sda */
+			 &tlmm 120 0 /* scl */
+		>;
+		pinctrl-names = "default", "sleep";
+		pinctrl-0 = <&grip2_i2c_active>;
+		pinctrl-1 = <&grip2_i2c_suspend>;
+
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		sx9330_sub2-i2c@2c { /* grip 4 */
+			compatible = "sx9330_sub2";
+			reg = <0x2c>;
+			pinctrl-names = "default", "sleep";
+			pinctrl-0 = <&grip2_int_active>;
+			pinctrl-1 = <&grip2_int_suspend>;
+			interrupt-parent = <&tlmm>;
+			interrupts = <113 0>;
+
+			sx9330_sub2,nirq-gpio = <&tlmm 113 0>;
+			sx9330_sub2,scanperiod_reg = <0x00000032>; /* scanperiod : 102ms */
+			sx9330_sub2,gnrlctrl2_reg = <0x00FF0002>;
+			sx9330_sub2,afeparamsph0_reg = <0x0000021F>;
+			sx9330_sub2,afephph0_reg = <0x3FBB8548>;
+			sx9330_sub2,adcfiltph0_reg = <0x0510101D>;
+			sx9330_sub2,afeparamsph1_reg = <0x01001E02>;  /* again : 9.9pF, sampling freq : 250khz, resolution : 32, R Filter : 0Ohm */
+			sx9330_sub2,adcfiltph1_reg = <0x0013ff15>;    /* threshold : 32513 */
+			sx9330_sub2,avgbfilt_reg = <0x60600C00>;   /* AVGPOSFILT : 1/256, AVGNEGFILT : 1/2 */
+			sx9330_sub2,avgafilt_reg = <0x00000000>;
+			sx9330_sub2,advdig3_reg = <0x00000000>;
+			sx9330_sub2,advdig4_reg = <0x00000000>;
+			sx9330_sub2,refcorra_reg = <0x00000000>;
+		};
+	};
+	bcmdhd_wlan {
+		qcom,iommu-dma = "disabled";
+		compatible = "android,bcmdhd_wlan";
+		wlan-en-gpio = <&tlmm 90 0>;
+		wlan-host-wake-gpio = <&tlmm 150 0>;
+		wlan-smmu-iova-address = <0xa0000000 0x10000000>;
+		pinctrl-name = "bcmdhd_wlan_en","bcmdhd_default";
+		pinctrl-0 = <&bcmdhd_wlan_en>;
+		pinctrl-1 = <&bcmdhd_default>;
+		status = "ok";
+	};
+
+	sound {
+		mixer-paths = "mixer_paths_old.xml";
+	};
+};
+
+&certify_hall {
+	status = "disabled";
+};
+
+&flip_hall {
+	status = "disabled";
+};
+
+&bluetooth {
+	status = "disabled";
+};
+
+&qupv3_se6_4uart {
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&qupv3_se6_ctsrx_active>, <&qupv3_se6_rts_active>,
+						<&qupv3_se6_tx_active>;
+	pinctrl-1 = <&qupv3_se6_ctsrx_sleep>, <&qupv3_se6_rts_sleep>,
+						<&qupv3_se6_tx_sleep>;
+	interrupts-extended = <&intc GIC_SPI 607 IRQ_TYPE_LEVEL_HIGH>;
+	status = "ok";
+};
+
+&wlan {
+	status = "disabled";
+};
+
+&cnss_pci {
+	status = "disabled";
+};
+
+&pm8150_l10 {
+	regulator-min-microvolt = <2900000>;
+	regulator-max-microvolt = <2900000>;
+	qcom,init-voltage = <2900000>;
+	regulator-always-on;
+};
+
+&s2mpb02_sub_l12 {
+	regulator-min-microvolt = <2900000>;
+	regulator-max-microvolt = <2900000>;
+	regulator-always-on;
+};
+
+&pcie0 {
+    qcom,target-link-speed = <0x2>;
+};
+
+&pcie2 {
+	qcom,core-preset = <0x55555555>;
+};
+
+&sdhc_2 {
+	status = "disabled";
+};
+
+&qupv3_se17_i2c {
+	status = "ok";
+
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&qupv3_se17_i2c_active>;
+	pinctrl-1 = <&qupv3_se17_i2c_sleep>;
+
+	ptn36502@1a {
+		compatible = "ptn36502_driver";
+		reg = <0x1a>;
+		combo,con_sel = <&tlmm 65 0>;
+	};
+};
+
+&mdm0 {
+	pinctrl-0 = <&ap2mdm_active &mdm2ap_active &ap2mdm_errfatal2_default>;
+	qcom,ap2mdm-errfatal2-gpio = <&pm8150l_gpios 4 0>;
+};

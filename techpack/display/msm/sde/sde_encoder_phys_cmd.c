@@ -408,7 +408,7 @@ static void _sde_encoder_phys_cmd_setup_irq_hw_idx(
 		struct sde_encoder_phys *phys_enc)
 {
 	struct sde_encoder_irq *irq;
-	struct sde_kms *sde_kms = phys_enc->sde_kms;
+	struct sde_kms *sde_kms;
 	int ret = 0;
 
 	if (!phys_enc || !phys_enc->hw_pp || !phys_enc->hw_ctl) {
@@ -422,6 +422,7 @@ static void _sde_encoder_phys_cmd_setup_irq_hw_idx(
 		return;
 	}
 
+	sde_kms = phys_enc->sde_kms;
 	mutex_lock(&sde_kms->vblank_ctl_global_lock);
 
 	if (atomic_read(&phys_enc->vblank_refcount)) {
@@ -601,24 +602,27 @@ static int _sde_encoder_phys_cmd_handle_ppdone_timeout(
 
 	phys_enc->sde_kms->base.funcs->ss_callback(conn->index, SS_EVENT_CHECK_TE, NULL);
 	inc_dpui_u32_field(DPUI_KEY_QCT_PPTO, 1);
-#if 0
-	pr_err("%s (%d): pp_timeout_report_cnt: %d\n", __func__, __LINE__, cmd_enc->pp_timeout_report_cnt);
+
+
+	if (sec_debug_is_enabled()) {
+		/* Debug Level MID or HIGH */
+		SDE_ERROR_CMDENC(cmd_enc,
+			"pp:%d kickoff timed out ctl %d koff_cnt %d\n",
+			phys_enc->hw_pp->idx - PINGPONG_0,
+			phys_enc->hw_ctl->idx - CTL_0,
+			pending_kickoff_cnt);
+
+		SDE_EVT32(DRMID(phys_enc->parent), SDE_EVTLOG_FATAL);
+		SDE_DBG_DUMP("all", "dbg_bus", "vbif_dbg_bus", "panic");
+	}
+
+	pr_err("%s: pp_timeout_report_cnt: %d\n", __func__, cmd_enc->pp_timeout_report_cnt);
 	if (cmd_enc->pp_timeout_report_cnt < 10) {
 		/* request a ctl reset before the next kickoff */
 		phys_enc->enable_state = SDE_ENC_ERR_NEEDS_HW_RESET;
-		pr_err("%s (%d): ignore pp & phy_hw_reset\n", __func__, __LINE__);
+		pr_err("%s: ignore pp & phy_hw_reset\n", __func__);
 		goto exit;
 	}
-#endif
-
-	SDE_ERROR_CMDENC(cmd_enc,
-		"pp:%d kickoff timed out ctl %d koff_cnt %d\n",
-		phys_enc->hw_pp->idx - PINGPONG_0,
-		phys_enc->hw_ctl->idx - CTL_0,
-		pending_kickoff_cnt);
-
-	SDE_EVT32(DRMID(phys_enc->parent), SDE_EVTLOG_FATAL);
-	SDE_DBG_DUMP("all", "dbg_bus", "vbif_dbg_bus", "panic");
 #endif
 
 	/* check if panel is still sending TE signal or not */

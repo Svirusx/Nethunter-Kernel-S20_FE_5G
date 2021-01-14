@@ -3,7 +3,7 @@
 
 #include <linux/version.h>
 
-#ifdef CONFIG_DRV_SAMSUNG
+#if IS_ENABLED(CONFIG_DRV_SAMSUNG)
 extern struct device *sec_dev_get_by_name(const char *name);
 extern void sec_device_destroy(dev_t devt);
 extern struct device *___sec_device_create(void *drvdata, const char *fmt);

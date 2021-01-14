@@ -16,6 +16,8 @@
 #define MSM_VIDC_MIN_UBWC_COMPRESSION_RATIO (1 << 16)
 #define MSM_VIDC_MAX_UBWC_COMPRESSION_RATIO (5 << 16)
 
+#define MSM_VIDC_SESSION_INACTIVE_THRESHOLD_MS 1000
+
 static int msm_vidc_decide_work_mode_ar50(struct msm_vidc_inst *inst);
 static unsigned long msm_vidc_calc_freq_ar50(struct msm_vidc_inst *inst,
 	u32 filled_len);
@@ -172,6 +174,19 @@ int msm_vidc_get_fps(struct msm_vidc_inst *inst)
 	return fps;
 }
 
+static inline bool is_active_session(u64 prev, u64 curr)
+{
+	u64 ts_delta;
+
+	if (!prev || !curr)
+		return true;
+
+	ts_delta = (prev < curr) ? curr - prev : prev - curr;
+
+	return ((ts_delta / NSEC_PER_MSEC) <=
+			MSM_VIDC_SESSION_INACTIVE_THRESHOLD_MS);
+}
+
 void update_recon_stats(struct msm_vidc_inst *inst,
 	struct recon_stats_type *recon_stats)
 {
@@ -265,12 +280,14 @@ int msm_comm_set_buses(struct msm_vidc_core *core, u32 sid)
 	struct msm_vidc_inst *inst = NULL;
 	struct hfi_device *hdev;
 	unsigned long total_bw_ddr = 0, total_bw_llcc = 0;
+	u64 curr_time_ns;
 
 	if (!core || !core->device) {
 		s_vpr_e(sid, "%s: Invalid args: %pK\n", __func__, core);
 		return -EINVAL;
 	}
 	hdev = core->device;
+	curr_time_ns = ktime_get_ns();
 
 	mutex_lock(&core->lock);
 	list_for_each_entry(inst, &core->instances, list) {
@@ -292,6 +309,12 @@ int msm_comm_set_buses(struct msm_vidc_core *core, u32 sid)
 		if ((!filled_len || !device_addr) &&
 			(inst->session_type != MSM_VIDC_CVP)) {
 			s_vpr_l(sid, "%s: no input\n", __func__);
+			continue;
+		}
+
+		/* skip inactive session bus bandwidth */
+		if (!is_active_session(inst->last_qbuf_time_ns, curr_time_ns)) {
+			inst->active = false;
 			continue;
 		}
 
@@ -865,8 +888,10 @@ int msm_vidc_set_clocks(struct msm_vidc_core *core, u32 sid)
 	int rc = 0, i = 0;
 	struct allowed_clock_rates_table *allowed_clks_tbl = NULL;
 	bool increment, decrement;
+	u64 curr_time_ns;
 
 	hdev = core->device;
+	curr_time_ns = ktime_get_ns();
 	allowed_clks_tbl = core->resources.allowed_clks_tbl;
 	if (!allowed_clks_tbl) {
 		s_vpr_e(sid, "%s: Invalid parameters\n", __func__);
@@ -892,6 +917,12 @@ int msm_vidc_set_clocks(struct msm_vidc_core *core, u32 sid)
 
 		if (!filled_len || !device_addr) {
 			s_vpr_l(sid, "%s: no input\n", __func__);
+			continue;
+		}
+
+		/* skip inactive session clock rate */
+		if (!is_active_session(inst->last_qbuf_time_ns, curr_time_ns)) {
+			inst->active = false;
 			continue;
 		}
 
@@ -1018,6 +1049,12 @@ int msm_comm_scale_clocks_and_bus(struct msm_vidc_inst *inst, bool do_bw_calc)
 	core = inst->core;
 	hdev = core->device;
 
+	if (!inst->active) {
+		/* do not skip bw voting for inactive -> active session */
+		do_bw_calc = true;
+		inst->active = true;
+	}
+
 	if (msm_comm_scale_clocks(inst)) {
 		s_vpr_e(inst->sid,
 			"Failed to scale clocks. May impact performance\n");
@@ -1029,29 +1066,74 @@ int msm_comm_scale_clocks_and_bus(struct msm_vidc_inst *inst, bool do_bw_calc)
 				"Failed to scale DDR bus. May impact perf\n");
 		}
 	}
+
 	return 0;
 }
 
 int msm_dcvs_try_enable(struct msm_vidc_inst *inst)
 {
+	bool disable_hfr_dcvs = false;
+
 	if (!inst || !inst->core) {
 		d_vpr_e("%s: Invalid args: %pK\n", __func__, inst);
 		return -EINVAL;
+	}
+	if (inst->core->platform_data->vpu_ver == VPU_VERSION_IRIS2_1) {
+		/* 720p@240 encode */
+		if (is_encode_session(inst) && msm_vidc_get_fps(inst) >= 240
+			&& msm_vidc_get_mbs_per_frame(inst) >= 3600)
+			disable_hfr_dcvs = true;
 	}
 
 	inst->clk_data.dcvs_mode =
 		!(msm_vidc_clock_voting ||
 			!inst->core->resources.dcvs ||
 			inst->flags & VIDC_THUMBNAIL ||
+			is_low_latency_hint(inst) ||
 			inst->clk_data.low_latency_mode ||
 			inst->batch.enable ||
 			is_turbo_session(inst) ||
-		  inst->rc_type == V4L2_MPEG_VIDEO_BITRATE_MODE_CQ);
+			inst->rc_type == V4L2_MPEG_VIDEO_BITRATE_MODE_CQ ||
+			disable_hfr_dcvs);
 
 	s_vpr_hp(inst->sid, "DCVS %s: %pK\n",
 		inst->clk_data.dcvs_mode ? "enabled" : "disabled", inst);
 
 	return 0;
+}
+
+void msm_dcvs_reset(struct msm_vidc_inst *inst)
+{
+	struct msm_vidc_format *fmt;
+	struct clock_data *dcvs;
+
+	if (!inst) {
+		d_vpr_e("%s: Invalid params\n", __func__);
+		return;
+	}
+
+	dcvs = &inst->clk_data;
+	if (inst->session_type == MSM_VIDC_ENCODER) {
+		fmt = &inst->fmts[INPUT_PORT];
+	} else if (inst->session_type == MSM_VIDC_DECODER) {
+		fmt = &inst->fmts[OUTPUT_PORT];
+	} else {
+		s_vpr_e(inst->sid, "%s: invalid session type %#x\n",
+			__func__, inst->session_type);
+		return;
+	}
+
+	dcvs->min_threshold = fmt->count_min;
+	dcvs->max_threshold =
+		min((fmt->count_min + DCVS_DEC_EXTRA_OUTPUT_BUFFERS),
+			fmt->count_actual);
+
+	dcvs->dcvs_window =
+		dcvs->max_threshold < dcvs->min_threshold ? 0 :
+			dcvs->max_threshold - dcvs->min_threshold;
+	dcvs->nom_threshold = dcvs->min_threshold +
+				(dcvs->dcvs_window ?
+				 (dcvs->dcvs_window / 2) : 0);
 }
 
 int msm_comm_init_clocks_and_bus_data(struct msm_vidc_inst *inst)
@@ -1099,8 +1181,6 @@ void msm_clock_data_reset(struct msm_vidc_inst *inst)
 	struct allowed_clock_rates_table *allowed_clks_tbl = NULL;
 	u64 total_freq = 0, rate = 0, load;
 	int cycles;
-	struct clock_data *dcvs;
-	struct msm_vidc_format *fmt;
 
 	if (!inst || !inst->core || !inst->clk_data.entry) {
 		d_vpr_e("%s: Invalid args: Inst = %pK\n",
@@ -1110,35 +1190,14 @@ void msm_clock_data_reset(struct msm_vidc_inst *inst)
 	s_vpr_h(inst->sid, "Init DCVS Load\n");
 
 	core = inst->core;
-	dcvs = &inst->clk_data;
 	load = msm_comm_get_inst_load_per_core(inst, LOAD_POWER);
 	cycles = inst->clk_data.entry->vpp_cycles;
 	allowed_clks_tbl = core->resources.allowed_clks_tbl;
-	if (inst->session_type == MSM_VIDC_ENCODER) {
-		cycles = inst->flags & VIDC_LOW_POWER ?
-			inst->clk_data.entry->low_power_cycles :
-			cycles;
+	if (inst->session_type == MSM_VIDC_ENCODER &&
+		inst->flags & VIDC_LOW_POWER)
+		cycles = inst->clk_data.entry->low_power_cycles;
 
-		fmt = &inst->fmts[INPUT_PORT];
-	} else if (inst->session_type == MSM_VIDC_DECODER) {
-		fmt = &inst->fmts[OUTPUT_PORT];
-	} else {
-		s_vpr_e(inst->sid, "%s: invalid session type %#x\n",
-			__func__, inst->session_type);
-		return;
-	}
-
-	dcvs->min_threshold = fmt->count_min;
-	dcvs->max_threshold =
-		min((fmt->count_min + DCVS_DEC_EXTRA_OUTPUT_BUFFERS),
-			fmt->count_actual);
-
-	dcvs->dcvs_window =
-		dcvs->max_threshold < dcvs->min_threshold ? 0 :
-			dcvs->max_threshold - dcvs->min_threshold;
-	dcvs->nom_threshold = dcvs->min_threshold +
-				(dcvs->dcvs_window ?
-				 (dcvs->dcvs_window / 2) : 0);
+	msm_dcvs_reset(inst);
 
 	total_freq = cycles * load;
 
@@ -1337,7 +1396,8 @@ static int msm_vidc_decide_work_mode_ar50(struct msm_vidc_inst *inst)
 		pdata.video_work_mode = HFI_WORKMODE_1;
 		if (inst->rc_type == V4L2_MPEG_VIDEO_BITRATE_MODE_VBR ||
 		    inst->rc_type == V4L2_MPEG_VIDEO_BITRATE_MODE_MBR ||
-		    inst->rc_type == V4L2_MPEG_VIDEO_BITRATE_MODE_MBR_VFR)
+		    inst->rc_type == V4L2_MPEG_VIDEO_BITRATE_MODE_MBR_VFR ||
+		    inst->rc_type == V4L2_MPEG_VIDEO_BITRATE_MODE_CQ)
 			pdata.video_work_mode = HFI_WORKMODE_2;
 	} else {
 		return -EINVAL;

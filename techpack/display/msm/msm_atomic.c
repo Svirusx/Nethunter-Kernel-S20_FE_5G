@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2020, The Linux Foundation. All rights reserved.
  * Copyright (C) 2014 Red Hat
  * Author: Rob Clark <robdclark@gmail.com>
  *
@@ -33,13 +33,17 @@ struct msm_commit {
 	struct kthread_work commit_work;
 };
 
-static inline bool _msm_seamless_for_crtc(struct drm_atomic_state *state,
+static inline bool _msm_seamless_for_crtc(struct drm_device *dev,
+					struct drm_atomic_state *state,
 			struct drm_crtc_state *crtc_state, bool enable)
 {
 	struct drm_connector *connector = NULL;
 	struct drm_connector_state  *conn_state = NULL;
+	struct msm_drm_private *priv = dev->dev_private;
+	struct msm_kms *kms = priv->kms;
 	int i = 0;
 	int conn_cnt = 0;
+	bool splash_en = false;
 
 	if (msm_is_mode_seamless(&crtc_state->mode) ||
 		msm_is_mode_seamless_vrr(&crtc_state->adjusted_mode) ||
@@ -58,7 +62,11 @@ static inline bool _msm_seamless_for_crtc(struct drm_atomic_state *state,
 					 crtc_state->crtc))
 				conn_cnt++;
 
-			if (MULTIPLE_CONN_DETECTED(conn_cnt))
+			if (kms && kms->funcs && kms->funcs->check_for_splash)
+				splash_en = kms->funcs->check_for_splash(kms,
+							 crtc_state->crtc);
+
+			if (MULTIPLE_CONN_DETECTED(conn_cnt) && !splash_en)
 				return true;
 		}
 	}
@@ -80,6 +88,10 @@ static inline bool _msm_seamless_for_conn(struct drm_connector *connector,
 	}
 
 	if (enable)
+		return false;
+
+	if (!connector->state->crtc &&
+		old_conn_state->crtc->state->connectors_changed)
 		return false;
 
 	if (msm_is_mode_seamless(&connector->encoder->crtc->state->mode))
@@ -224,7 +236,7 @@ msm_disable_outputs(struct drm_device *dev, struct drm_atomic_state *old_state)
 		if (!old_crtc_state->active)
 			continue;
 
-		if (_msm_seamless_for_crtc(old_state, crtc->state, false))
+		if (_msm_seamless_for_crtc(dev, old_state, crtc->state, false))
 			continue;
 
 		funcs = crtc->helper_private;
@@ -372,7 +384,7 @@ static void msm_atomic_helper_commit_modeset_enables(struct drm_device *dev,
 		if (!new_crtc_state->active)
 			continue;
 
-		if (_msm_seamless_for_crtc(old_state, crtc->state, true))
+		if (_msm_seamless_for_crtc(dev, old_state, crtc->state, true))
 			continue;
 
 		funcs = crtc->helper_private;
@@ -608,7 +620,7 @@ static void msm_atomic_commit_dispatch(struct drm_device *dev,
 	struct msm_drm_private *priv = dev->dev_private;
 	struct drm_crtc *crtc = NULL;
 	struct drm_crtc_state *crtc_state = NULL;
-	int ret = -EINVAL, i = 0, j = 0;
+	int ret = -ECANCELED, i = 0, j = 0;
 	bool nonblock;
 
 	/* cache since work will kfree commit in non-blocking case */
@@ -629,6 +641,7 @@ static void msm_atomic_commit_dispatch(struct drm_device *dev,
 				} else {
 					DRM_ERROR(" Error for crtc_id: %d\n",
 						priv->disp_thread[j].crtc_id);
+					ret = -EINVAL;
 				}
 				break;
 			}
@@ -644,13 +657,17 @@ static void msm_atomic_commit_dispatch(struct drm_device *dev,
 	}
 
 	if (ret) {
+		if (ret == -EINVAL)
+			DRM_ERROR("failed to dispatch commit to any CRTC\n");
+		else
+			DRM_DEBUG_DRIVER_RATELIMITED("empty crtc state\n");
+
 		/**
 		 * this is not expected to happen, but at this point the state
 		 * has been swapped, but we couldn't dispatch to a crtc thread.
 		 * fallback now to a synchronous complete_commit to try and
 		 * ensure that SW and HW state don't get out of sync.
 		 */
-		DRM_ERROR("failed to dispatch commit to any CRTC\n");
 		complete_commit(commit);
 	} else if (!nonblock) {
 		kthread_flush_work(&commit->commit_work);
@@ -743,6 +760,16 @@ int msm_atomic_commit(struct drm_device *dev,
 			drm_atomic_set_fence_for_plane(new_plane_state, fence);
 		}
 		c->plane_mask |= (1 << drm_plane_index(plane));
+	}
+
+	/* Protection for prepare_fence callback */
+retry:
+	ret = drm_modeset_lock(&state->dev->mode_config.connection_mutex,
+		state->acquire_ctx);
+
+	if (ret == -EDEADLK) {
+		drm_modeset_backoff(state->acquire_ctx);
+		goto retry;
 	}
 
 	/*

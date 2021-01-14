@@ -23,7 +23,7 @@
 #include "clk-regmap.h"
 #include "common.h"
 #include "reset.h"
-#include "vdd-level-lito.h"
+#include "vdd-level-lagoon.h"
 
 static DEFINE_VDD_REGULATORS(vdd_cx, VDD_NUM, 1, vdd_corner);
 
@@ -127,7 +127,6 @@ static struct clk_alpha_pll_postdiv video_pll0_out_even = {
 };
 
 static const struct freq_tbl ftbl_video_cc_iris_clk_src[] = {
-	F(19200000, P_BI_TCXO, 1, 0, 0),
 	F(133250000, P_VIDEO_PLL0_OUT_EVEN, 2, 0, 0),
 	F(240000000, P_VIDEO_PLL0_OUT_EVEN, 1.5, 0, 0),
 	F(300000000, P_VIDEO_PLL0_OUT_EVEN, 1, 0, 0),
@@ -323,12 +322,6 @@ static struct clk_regmap *video_cc_lagoon_clocks[] = {
 	[VIDEO_CC_XO_CLK] = &video_cc_xo_clk.clkr,
 	[VIDEO_PLL0] = &video_pll0.clkr,
 	[VIDEO_PLL0_OUT_EVEN] = &video_pll0_out_even.clkr,
-};
-
-static const struct qcom_reset_map video_cc_lito_resets[] = {
-	[VCODEC_VIDEO_CC_INTERFACE_BCR] = { 0x8000 },
-	[VCODEC_VIDEO_CC_MVS0_BCR] = { 0x3000 },
-	[VCODEC_VIDEO_CC_MVSC_BCR] = { 0x2000 },
 };
 
 static const struct regmap_config video_cc_lagoon_regmap_config = {

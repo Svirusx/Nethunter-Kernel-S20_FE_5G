@@ -28,7 +28,7 @@
 #define LUT_ROW_SIZE			32
 #define CLK_HW_DIV			2
 #define GT_IRQ_STATUS			BIT(2)
-#define MAX_FN_SIZE			12
+#define MAX_FN_SIZE			20
 #define LIMITS_POLLING_DELAY_MS		10
 
 #define CYCLE_CNTR_OFFSET(c, m, acc_count)				\
@@ -151,6 +151,7 @@ static unsigned long limits_mitigation_notify(struct cpufreq_qcom *c,
 	u32 cpu;
 	unsigned long freq;
 	char lmh_debug[8] = {0};
+
 	if (limit) {
 		freq = readl_relaxed(c->reg_bases[REG_DOMAIN_STATE]) &
 				GENMASK(7, 0);
@@ -320,15 +321,20 @@ qcom_cpufreq_hw_target_index(struct cpufreq_policy *policy,
 {
 	struct cpufreq_qcom *c = policy->driver_data;
 	unsigned long flags;
+	unsigned int target_index = index;
 
 	if (c->skip_data.skip && index == c->skip_data.high_temp_index) {
 		spin_lock_irqsave(&c->skip_data.lock, flags);
 		writel_relaxed(c->skip_data.final_index,
 				c->reg_bases[REG_PERF_STATE]);
+		target_index = c->skip_data.final_index;
 		spin_unlock_irqrestore(&c->skip_data.lock, flags);
 	} else {
 		writel_relaxed(index, c->reg_bases[REG_PERF_STATE]);
 	}
+
+	sec_smem_clk_osm_add_log_cpufreq(policy->cpu,
+				policy->freq_table[target_index].frequency, policy->kobj.name);
 
 	sec_smem_clk_osm_add_log_cpufreq(policy->cpu,
 				policy->freq_table[index].frequency, policy->kobj.name);
@@ -496,6 +502,8 @@ static int qcom_cpufreq_hw_read_lut(struct platform_device *pdev,
 	spin_lock_init(&c->skip_data.lock);
 	base_freq = c->reg_bases[REG_FREQ_LUT_TABLE];
 	base_volt = c->reg_bases[REG_VOLT_LUT_TABLE];
+
+	prev_cc = 0;
 
 	for (i = 0; i < lut_max_entries; i++) {
 		data = readl_relaxed(base_freq + i * lut_row_size);

@@ -206,6 +206,6 @@ int dd_write_crypt_context(struct inode *inode, const struct dd_crypt_context *c
 int dd_read_crypto_metadata(struct inode *inode, const char *name, void *buffer, size_t buffer_size);
 int dd_write_crypto_metadata(struct inode *inode, const char *name, const void *buffer, size_t len);
 
-void dd_hex_key_dump(const char* tag, uint8_t *data, size_t data_len);
+void dd_hex_key_dump(const char* tag, uint8_t *data, unsigned int data_len);
 
 #endif /* SECURITY_SDP_DD_COMMON_H_ */

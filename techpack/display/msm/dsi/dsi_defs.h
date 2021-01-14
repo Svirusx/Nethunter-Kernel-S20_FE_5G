@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * Copyright (c) 2016-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2020, The Linux Foundation. All rights reserved.
  */
 
 #ifndef _DSI_DEFS_H_
@@ -454,6 +454,9 @@ enum dsi_cmd_set_type {
 
 	TX_MICRO_SHORT_TEST_ON,
 	TX_MICRO_SHORT_TEST_OFF,
+	TX_TCON_PE_ON,
+	TX_TCON_PE_OFF,
+
 	TX_POC_CMD_START, /* START POC CMDS */
 	TX_POC_ENABLE,
 	TX_POC_DISABLE,
@@ -475,6 +478,11 @@ enum dsi_cmd_set_type {
 	TX_POC_POST_READ,
 	TX_POC_REG_READ_POS,
 	TX_POC_CMD_END, /* END POC CMDS */
+	TX_FW_UP_ERASE,
+	TX_FW_UP_MTP_ID_ERASE,
+	TX_FW_UP_WRITE,
+	TX_FW_UP_MTP_ID_WRITE,
+	TX_FW_UP_READ,
 	TX_GCT_ENTER,
 	TX_GCT_MID,
 	TX_GCT_EXIT,
@@ -616,6 +624,9 @@ enum dsi_cmd_set_type {
 	TX_VRR,
 	TX_VRR_GM2_GAMMA_COMP,
 
+	TX_GREEN_WEIGHT_NORMAL,
+	TX_GREEN_WEIGHT_80PERCENT,
+
 	TX_DFPS,
 
 	TX_ADJUST_TE,
@@ -667,6 +678,10 @@ enum dsi_cmd_set_type {
 	RX_POC_STATUS,
 	RX_POC_CHECKSUM,
 	RX_POC_MCA_CHECK,
+	RX_FW_UP_READ,
+	RX_FW_UP_MTP_ID_READ,
+	RX_FW_UP_STATUS,
+	RX_FW_UP_CHECK,
 	RX_GCT_CHECKSUM,
 	RX_MCD_READ_RESISTANCE,  /* For read real MCD R/L resistance */
 	RX_FLASH_GAMMA,
@@ -878,6 +893,8 @@ struct dsi_split_link_config {
  * @t_clk_pre:           Number of byte clock cycles that the high spped clock
  *                       shall be driven prior to data lane transitions from LP
  *                       to HS mode.
+ * @t_clk_pre_extend:    Increment t_clk_pre counter by 2 byteclk if set to
+ *                       true, otherwise increment by 1 byteclk.
  * @ignore_rx_eot:       Ignore Rx EOT packets if set to true.
  * @append_tx_eot:       Append EOT packets for forward transmissions if set to
  *                       true.
@@ -904,6 +921,7 @@ struct dsi_host_common_cfg {
 	bool bit_swap_blue;
 	u32 t_clk_post;
 	u32 t_clk_pre;
+	bool t_clk_pre_extend;
 	bool ignore_rx_eot;
 	bool append_tx_eot;
 	bool ext_bridge_mode;
@@ -966,7 +984,7 @@ struct dsi_cmd_engine_cfg {
  * @common_config:         Host configuration common to both Video and Cmd mode.
  * @video_engine:          Video engine configuration if panel is in video mode.
  * @cmd_engine:            Cmd engine configuration if panel is in cmd mode.
- * @esc_clk_rate_khz:      Esc clock frequency in Hz.
+ * @esc_clk_rate_hz:      Esc clock frequency in Hz.
  * @bit_clk_rate_hz:       Bit clock frequency in Hz.
  * @bit_clk_rate_hz_override: DSI bit clk rate override from dt/sysfs.
  * @video_timing:          Video timing information of a frame.
@@ -1034,6 +1052,7 @@ struct dsi_display_mode_priv_info {
  * @pixel_clk_khz:  Pixel clock in Khz.
  * @dsi_mode_flags: Flags to signal other drm components via private flags
  * @panel_mode:      Panel mode
+ * @is_preferred:   Is mode preferred
  * @priv_info:      Mode private info
  */
 struct dsi_display_mode {
@@ -1041,6 +1060,7 @@ struct dsi_display_mode {
 	u32 pixel_clk_khz;
 	u32 dsi_mode_flags;
 	enum dsi_op_mode panel_mode;
+	bool is_preferred;
 	struct dsi_display_mode_priv_info *priv_info;
 };
 

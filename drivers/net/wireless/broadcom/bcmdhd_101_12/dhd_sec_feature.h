@@ -170,12 +170,11 @@
 #endif /* !DHD_LB */
 
 #if defined(CONFIG_ARCH_MSM) || defined(CONFIG_SOC_EXYNOS8895) || \
-	defined(CONFIG_SOC_EXYNOS9810) || defined(CONFIG_SOC_EXYNOS9820) || \
-	defined(CONFIG_SOC_EXYNOS9830)
+	defined(CONFIG_SOC_EXYNOS9810) || defined(CONFIG_SOC_EXYNOS9820)
 #if defined(CONFIG_BCMDHD_PCIE)
 #define BCMPCIE_DISABLE_ASYNC_SUSPEND
 #endif /* CONFIG_BCMDHD_PCIE */
-#endif /* CONFIG_ARCH_MSM */
+#endif /* CONFIG_ARCH_MSM && under EXYNOS9830 platforms */
 /* PROJECTS END */
 
 /* REGION CODE START */

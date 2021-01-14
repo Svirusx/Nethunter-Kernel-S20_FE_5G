@@ -42,10 +42,10 @@
 	pr_err("[drm:%s][msm-dp-err][%-4d]"fmt, __func__,   \
 		       current->pid, ##__VA_ARGS__)
 #else
-#define DP_WARN(fmt, ...)  pr_warn("%s: "fmt, __func__, ##__VA_ARGS__)
-#define DP_ERR(fmt, ...)   pr_err("%s: "fmt, __func__, ##__VA_ARGS__)
-#define DP_INFO(fmt, ...)  pr_info("%s: "fmt, __func__, ##__VA_ARGS__)
-#define DP_DEBUG(fmt, ...) pr_debug("%s: "fmt, __func__, ##__VA_ARGS__)
+#define DP_WARN(fmt, ...)  pr_warn(fmt, ##__VA_ARGS__)
+#define DP_ERR(fmt, ...)   pr_err(fmt, ##__VA_ARGS__)
+#define DP_INFO(fmt, ...)  pr_info(fmt, ##__VA_ARGS__)
+#define DP_DEBUG(fmt, ...) pr_debug(fmt, ##__VA_ARGS__)
 #endif
 
 /**

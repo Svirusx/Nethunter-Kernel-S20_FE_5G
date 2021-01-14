@@ -22,14 +22,13 @@
 #include <linux/spinlock.h>
 #include <linux/wakelock.h>
 
-#if !defined(TEMP_KBJ)
-extern struct device *sec_key;
+#if !defined(CONFIG_SENSORS_HALL)
+#include <linux/sec_class.h>
+struct device *hall_ic;
+EXPORT_SYMBOL(hall_ic);
 #else
-#include <linux/sec_class.h> 
-extern struct class *sec_class;
+extern struct device *hall_ic;
 #endif
-
-struct device *sec_device_create(void *drvdata, const char *fmt);
 
 struct certify_hall_drvdata {
 	struct input_dev *input;
@@ -242,12 +241,10 @@ static int certify_hall_probe(struct platform_device *pdev)
 	init_certify_hall_ic_irq(input);
 
 	if (ddata->gpio_certify_cover != 0) {
-
-#if !defined(TEMP_KBJ)		
-		error = device_create_file(sec_key, &dev_attr_certify_hall_detect);
-#else
-		error = device_create_file(sec_class, &dev_attr_hall_detect);
-#endif		
+#if !defined(CONFIG_SENSORS_HALL)
+		hall_ic = sec_device_create(ddata, "hall_ic");
+#endif
+		error = device_create_file(hall_ic, &dev_attr_certify_hall_detect);
 		if (error < 0) {
 			pr_err("Failed to create device file(%s)!, error: %d\n",
 				dev_attr_certify_hall_detect.attr.name, error);

@@ -510,7 +510,7 @@ struct pca9468_platform_data {
 	int	irq_gpio;	/* GPIO pin that's connected to INT# */
 	unsigned int	iin_cfg;	/* Input Current Limit - uA unit */
 	unsigned int 	ichg_cfg;	/* Charging Current - uA unit */
-	unsigned int 	ta_max_vol; /* Maximum TA voltage threshold - uV unit */
+	unsigned int	ta_max_vol;	/* Maximum TA voltage threshold - uV unit */
 	unsigned int	v_float;	/* V_Float Voltage - uV unit */
 	unsigned int 	iin_topoff;	/* Input Topoff current -uV unit */
 	unsigned int 	v_float_max;	/* V_Float max Voltage -uV unit */
@@ -565,7 +565,7 @@ struct pca9468_platform_data {
  * @debug_address: debug register address
  */
 struct pca9468_charger {
-	struct wakeup_source	monitor_wake_lock;
+	struct wakeup_source	*monitor_wake_lock;
 	struct mutex		lock;
 	struct mutex		i2c_lock;
 	struct device		*dev;

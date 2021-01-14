@@ -42,9 +42,13 @@
 #define IS_COLD_RESET_ALLOWED(flags, src) (!IS_COLD_RESET_REQ_IN_PROGRESS(flags)    \
 		&& (!IS_RESET_PROTECTION_ENABLED(flags) || src == ESE_COLD_RESET_SOURCE_SPI))
 
+#define IS_COLD_RESET_ALLOWED_NFC(flags, src) ((IS_RESET_PROTECTION_ENABLED(flags) \
+		&& src == ESE_COLD_RESET_SOURCE_NFC))
+
 static struct pn547_dev *pn547_dev;
 struct mutex  ese_cold_reset_sync_mutex;
 struct mutex  nci_send_cmd_mutex;
+bool is_force_reset_allowed;
 
 //extern ssize_t pn547_dev_read(struct file *filp, char __user *buf,
  //       size_t count, loff_t *offset);
@@ -102,6 +106,11 @@ static long start_ese_cold_reset_guard_timer(void)
 		pr_info("%s: Error in mod_timer\n", __func__);
 
 	return ret;
+}
+
+void set_force_reset(bool value)
+{
+	is_force_reset_allowed = value;
 }
 
 void ese_reset_resource_init(void)
@@ -163,6 +172,7 @@ static int send_nci_transceive(uint8_t *prop_cmd, size_t prop_cmd_size)
 
 	pr_info("%s: Enter\n", __func__);
 
+	memset(&filp, 0, sizeof(struct file));
 	filp.private_data = pn547_dev;
 	if (pn547_dev->state_flags & PN547_STATE_FW_DNLD) {
 		/* If FW DNLD, Operation is not permitted */
@@ -205,12 +215,9 @@ static int send_nci_transceive(uint8_t *prop_cmd, size_t prop_cmd_size)
 			/* call the pn547_dev_read() */
 			filp.f_flags &= ~O_NONBLOCK;
 			ret = pn547_dev_read(&filp, NULL, 3, 0);
-			if (!ret)
-				break;
-
-			usleep_range(2000, 3000);
+			usleep_range(3500, 4000);
 		}
-	} while ((retry-- >= 0) && ret == -ERESTARTSYS);
+	} while ((retry-- >= 0) && (ret == -ERESTARTSYS || ret == -EFAULT));
 
 	mutex_unlock(&nci_send_cmd_mutex);
 
@@ -310,6 +317,7 @@ EXPORT_SYMBOL(do_reset_protection);
 int ese_cold_reset(enum ese_cold_reset_origin src)
 {
 	int ret = 0;
+	bool status = false;
 	uint8_t ese_cld_reset[] = {0x2F, 0x1E, 0x00};
 
 	pr_info("%s: Enter origin:%d", __func__, src);
@@ -328,7 +336,12 @@ int ese_cold_reset(enum ese_cold_reset_origin src)
 
 	mutex_lock(&ese_cold_reset_sync_mutex);
 
-	if (IS_COLD_RESET_ALLOWED(pn547_dev->state_flags, src)) {
+	if (is_force_reset_allowed)
+		status = IS_COLD_RESET_ALLOWED_NFC(pn547_dev->state_flags, src);
+	else
+		status = IS_COLD_RESET_ALLOWED(pn547_dev->state_flags, src);
+
+	if (status) {
 		ret = start_ese_cold_reset_guard_timer();
 
 		if (ret) {

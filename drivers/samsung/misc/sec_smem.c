@@ -68,10 +68,8 @@ static void *__get_ddr_smem_entry(unsigned int id)
 	size_t size = 0;
 
 	entry = qcom_smem_get(QCOM_SMEM_HOST_ANY, id, &size);
-	if (!size) {
-		pr_err("entry size can not be zero\n");
-		return NULL;
-	}
+	if (!size)
+		pr_err("entry size is zero\n");
 
 	return entry;
 }
@@ -79,7 +77,7 @@ static void *__get_ddr_smem_entry(unsigned int id)
 uint8_t get_ddr_info(uint8_t type) {
 	sec_smem_id_vendor0_v2_t *vendor0 = __get_ddr_smem_entry(SMEM_ID_VENDOR0);
 
-	if (!vendor0) {
+	if (IS_ERR_OR_NULL(vendor0)) {
 		pr_err("SMEM_ID_VENDOR0 get entry error\n");
 		return 0;
 	}
@@ -93,7 +91,7 @@ char *get_ddr_vendor_name(void)
 	size_t lpddr4_manufacture;
 
 	vendor0 = __get_ddr_smem_entry(SMEM_ID_VENDOR0);
-	if (!vendor0) {
+	if (IS_ERR_OR_NULL(vendor0)) {
 		pr_err("SMEM_ID_VENDOR0 get entry error\n");
 		return 0;
 	}
@@ -109,7 +107,7 @@ uint32_t get_ddr_DSF_version(void)
 	SEC_SMEM_ID_VEN1_TYPE *vendor1;
 
 	vendor1 = __get_ddr_smem_entry(SMEM_ID_VENDOR1);
-	if (!vendor1) {
+	if (IS_ERR_OR_NULL(vendor1)) {
 		pr_err("SMEM_ID_VENDOR1 get entry error\n");
 		return 0;
 	}
@@ -137,7 +135,7 @@ uint8_t get_ddr_rcw_tDQSCK(uint32_t ch, uint32_t cs, uint32_t dq)
 	SEC_SMEM_ID_VEN1_TYPE *vendor1;
 
 	vendor1 = __get_ddr_smem_entry(SMEM_ID_VENDOR1);
-	if (!vendor1) {
+	if (IS_ERR_OR_NULL(vendor1)) {
 		pr_err("SMEM_ID_VENDOR1 get entry error\n");
 		return 0;
 	}
@@ -150,7 +148,7 @@ uint8_t get_ddr_wr_coarseCDC(uint32_t ch, uint32_t cs, uint32_t dq)
 	SEC_SMEM_ID_VEN1_TYPE *vendor1;
 
 	vendor1 = __get_ddr_smem_entry(SMEM_ID_VENDOR1);
-	if (!vendor1) {
+	if (IS_ERR_OR_NULL(vendor1)) {
 		pr_err("SMEM_ID_VENDOR1 get entry error\n");
 		return 0;
 	}
@@ -163,7 +161,7 @@ uint8_t get_ddr_wr_fineCDC(uint32_t ch, uint32_t cs, uint32_t dq)
 	SEC_SMEM_ID_VEN1_TYPE *vendor1;
 
 	vendor1 = __get_ddr_smem_entry(SMEM_ID_VENDOR1);
-	if (!vendor1) {
+	if (IS_ERR_OR_NULL(vendor1)) {
 		pr_err("SMEM_ID_VENDOR1 get entry error\n");
 		return 0;
 	}
@@ -177,7 +175,7 @@ uint8_t ddr_get_wr_pr_width(uint32_t ch, uint32_t cs, uint32_t dq)
 	SEC_SMEM_ID_VEN1_TYPE *vendor1;
 
 	vendor1 = __get_ddr_smem_entry(SMEM_ID_VENDOR1);
-	if (!vendor1) {
+	if (IS_ERR_OR_NULL(vendor1)) {
 		pr_err("SMEM_ID_VENDOR1 get entry error\n");
 		return 0;
 	}
@@ -190,7 +188,7 @@ uint8_t ddr_get_wr_min_eye_height(uint32_t ch, uint32_t cs)
 	SEC_SMEM_ID_VEN1_TYPE *vendor1;
 
 	vendor1 = __get_ddr_smem_entry(SMEM_ID_VENDOR1);
-	if (!vendor1) {
+	if (IS_ERR_OR_NULL(vendor1)) {
 		pr_err("SMEM_ID_VENDOR1 get entry error\n");
 		return 0;
 	}
@@ -203,7 +201,7 @@ uint8_t ddr_get_wr_best_vref(uint32_t ch, uint32_t cs)
 	SEC_SMEM_ID_VEN1_TYPE *vendor1;
 
 	vendor1 = __get_ddr_smem_entry(SMEM_ID_VENDOR1);
-	if (!vendor1) {
+	if (IS_ERR_OR_NULL(vendor1)) {
 		pr_err("SMEM_ID_VENDOR1 get entry error\n");
 		return 0;
 	}
@@ -216,7 +214,7 @@ uint8_t ddr_get_wr_vmax_to_vmid(uint32_t ch, uint32_t cs, uint32_t dq)
 	SEC_SMEM_ID_VEN1_TYPE *vendor1;
 
 	vendor1 = __get_ddr_smem_entry(SMEM_ID_VENDOR1);
-	if (!vendor1) {
+	if (IS_ERR_OR_NULL(vendor1)) {
 		pr_err("SMEM_ID_VENDOR1 get entry error\n");
 		return 0;
 	}
@@ -229,7 +227,7 @@ uint8_t ddr_get_wr_vmid_to_vmin(uint32_t ch, uint32_t cs, uint32_t dq)
 	SEC_SMEM_ID_VEN1_TYPE *vendor1;
 
 	vendor1 = __get_ddr_smem_entry(SMEM_ID_VENDOR1);
-	if (!vendor1) {
+	if (IS_ERR_OR_NULL(vendor1)) {
 		pr_err("SMEM_ID_VENDOR1 get entry error\n");
 		return 0;
 	}
@@ -242,7 +240,7 @@ uint8_t ddr_get_dqs_dcc_adj(uint32_t ch, uint32_t dq)
 	SEC_SMEM_ID_VEN1_TYPE *vendor1;
 
 	vendor1 = __get_ddr_smem_entry(SMEM_ID_VENDOR1);
-	if (!vendor1) {
+	if (IS_ERR_OR_NULL(vendor1)) {
 		pr_err("SMEM_ID_VENDOR1 get entry error\n");
 		return 0;
 	}
@@ -255,7 +253,7 @@ uint8_t ddr_get_rd_pr_width(uint32_t ch, uint32_t cs, uint32_t dq)
 	SEC_SMEM_ID_VEN1_TYPE *vendor1;
 
 	vendor1 = __get_ddr_smem_entry(SMEM_ID_VENDOR1);
-	if (!vendor1) {
+	if (IS_ERR_OR_NULL(vendor1)) {
 		pr_err("SMEM_ID_VENDOR1 get entry error\n");
 		return 0;
 	}
@@ -268,7 +266,7 @@ uint8_t ddr_get_rd_min_eye_height(uint32_t ch, uint32_t cs)
 	SEC_SMEM_ID_VEN1_TYPE *vendor1;
 
 	vendor1 = __get_ddr_smem_entry(SMEM_ID_VENDOR1);
-	if (!vendor1) {
+	if (IS_ERR_OR_NULL(vendor1)) {
 		pr_err("SMEM_ID_VENDOR1 get entry error\n");
 		return 0;
 	}
@@ -381,10 +379,13 @@ static int sec_smem_suspend(struct device *dev)
 	struct platform_device *pdev = to_platform_device(dev);
 	SEC_SMEM_ID_VEN1_TYPE *vendor1 = platform_get_drvdata(pdev);
 
+#if (CONFIG_SEC_SMEM_VENDOR1_VERSION >= 7)
+	vendor1->share.ap_suspended = SUSPEND;
+#else
 	vendor1->ven1_v2.ap_suspended = SUSPEND;
+#endif
 
-	pr_debug("smem_vendor1 ap_suspended(%llu)\n",
-			(unsigned long long)vendor1->ven1_v2.ap_suspended);
+	pr_debug("smem_vendor1 ap_suspended - SUSPEND\n");
 	return 0;
 }
 
@@ -393,10 +394,13 @@ static int sec_smem_resume(struct device *dev)
 	struct platform_device *pdev = to_platform_device(dev);
 	SEC_SMEM_ID_VEN1_TYPE *vendor1 = platform_get_drvdata(pdev);
 
+#if (CONFIG_SEC_SMEM_VENDOR1_VERSION >= 7)
+	vendor1->share.ap_suspended = RESUME;
+#else
 	vendor1->ven1_v2.ap_suspended = RESUME;
+#endif
 
-	pr_debug("smem_vendor1 ap_suspended(%llu)\n",
-			(unsigned long long)vendor1->ven1_v2.ap_suspended);
+	pr_debug("smem_vendor1 ap_suspended - RESUME\n");
 	return 0;
 }
 
@@ -405,10 +409,12 @@ static int sec_smem_probe(struct platform_device *pdev)
 	SEC_SMEM_ID_VEN1_TYPE *vendor1;
 
 	vendor1 = __get_ddr_smem_entry(SMEM_ID_VENDOR1);
-	if (!vendor1) {
-		pr_err("SMEM_ID_VENDOR1 get entry error\n");
-		panic("sec_smem_probe fail");
+	if (PTR_ERR(vendor1) == -EPROBE_DEFER)
+		return -EPROBE_DEFER;
 
+	if (IS_ERR_OR_NULL(vendor1)) {
+		pr_err("SMEM_ID_VENDOR1 get entry error(%ld)\n", PTR_ERR(vendor1));
+		panic("sec_smem_probe fail");
 		return -EINVAL;
 	}
 
@@ -459,7 +465,7 @@ static int sec_smem_dbg_part_notifier_callback(struct notifier_block *nfb,
 			return NOTIFY_DONE;
 
 		vendor1 = __get_ddr_smem_entry(SMEM_ID_VENDOR1);
-		if (!vendor1)
+		if (IS_ERR_OR_NULL(vendor1))
 			return NOTIFY_DONE;
 
 		vendor1->ap_health = (void *)virt_to_phys(p_health);

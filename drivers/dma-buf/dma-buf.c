@@ -40,7 +40,11 @@
 #include <linux/fdtable.h>
 #include <linux/list_sort.h>
 #include <linux/hashtable.h>
+#include <linux/mount.h>
+#include <linux/dcache.h>
+
 #include <uapi/linux/dma-buf.h>
+#include <uapi/linux/magic.h>
 
 static atomic_long_t name_counter;
 
@@ -66,9 +70,61 @@ struct dma_proc {
 
 static struct dma_buf_list db_list;
 
+static void dmabuf_dent_put(struct dma_buf *dmabuf)
+{
+	if (atomic_dec_and_test(&dmabuf->dent_count)) {
+		kfree(dmabuf->name);
+		kfree(dmabuf);
+	}
+}
+
+
+static char *dmabuffs_dname(struct dentry *dentry, char *buffer, int buflen)
+{
+	struct dma_buf *dmabuf;
+	char name[DMA_BUF_NAME_LEN];
+	size_t ret = 0;
+
+	spin_lock(&dentry->d_lock);
+	dmabuf = dentry->d_fsdata;
+	if (!dmabuf || !atomic_add_unless(&dmabuf->dent_count, 1, 0)) {
+		spin_unlock(&dentry->d_lock);
+		goto out;
+	}
+	spin_unlock(&dentry->d_lock);
+	spin_lock(&dmabuf->name_lock);
+	if (dmabuf->name)
+		ret = strlcpy(name, dmabuf->name, DMA_BUF_NAME_LEN);
+	spin_unlock(&dmabuf->name_lock);
+	dmabuf_dent_put(dmabuf);
+out:
+	return dynamic_dname(dentry, buffer, buflen, "/%s:%s",
+			     dentry->d_name.name, ret > 0 ? name : "");
+}
+
+static const struct dentry_operations dma_buf_dentry_ops = {
+	.d_dname = dmabuffs_dname,
+};
+
+static struct vfsmount *dma_buf_mnt;
+
+static struct dentry *dma_buf_fs_mount(struct file_system_type *fs_type,
+		int flags, const char *name, void *data)
+{
+	return mount_pseudo(fs_type, "dmabuf:", NULL, &dma_buf_dentry_ops,
+			DMA_BUF_MAGIC);
+}
+
+static struct file_system_type dma_buf_fs_type = {
+	.name = "dmabuf",
+	.mount = dma_buf_fs_mount,
+	.kill_sb = kill_anon_super,
+};
+
 static int dma_buf_release(struct inode *inode, struct file *file)
 {
 	struct dma_buf *dmabuf;
+	struct dentry *dentry = file->f_path.dentry;
 	int dtor_ret = 0;
 
 	if (!is_dma_buf_file(file))
@@ -76,6 +132,9 @@ static int dma_buf_release(struct inode *inode, struct file *file)
 
 	dmabuf = file->private_data;
 
+	spin_lock(&dentry->d_lock);
+	dentry->d_fsdata = NULL;
+	spin_unlock(&dentry->d_lock);
 	BUG_ON(dmabuf->vmapping_counter);
 
 	/*
@@ -99,7 +158,7 @@ static int dma_buf_release(struct inode *inode, struct file *file)
 		dmabuf->ops->release(dmabuf);
 	else
 		pr_warn_ratelimited("Leaking dmabuf %s because destructor failed error:%d\n",
-				    dmabuf->name, dtor_ret);
+				    dmabuf->buf_name, dtor_ret);
 
 	dma_buf_ref_destroy(dmabuf);
 
@@ -107,8 +166,7 @@ static int dma_buf_release(struct inode *inode, struct file *file)
 		reservation_object_fini(dmabuf->resv);
 
 	module_put(dmabuf->owner);
-	kfree(dmabuf->name);
-	kfree(dmabuf);
+	dmabuf_dent_put(dmabuf);
 	return 0;
 }
 
@@ -314,6 +372,52 @@ static int dma_buf_begin_cpu_access_umapped(struct dma_buf *dmabuf,
 static int dma_buf_end_cpu_access_umapped(struct dma_buf *dmabuf,
 					  enum dma_data_direction direction);
 
+/**
+ * dma_buf_set_name - Set a name to a specific dma_buf to track the usage.
+ * The name of the dma-buf buffer can only be set when the dma-buf is not
+ * attached to any devices. It could theoritically support changing the
+ * name of the dma-buf if the same piece of memory is used for multiple
+ * purpose between different devices.
+ *
+ * @dmabuf [in]     dmabuf buffer that will be renamed.
+ * @buf:   [in]     A piece of userspace memory that contains the name of
+ *                  the dma-buf.
+ *
+ * Returns 0 on success. If the dma-buf buffer is already attached to
+ * devices, return -EBUSY.
+ *
+ */
+static long dma_buf_set_name(struct dma_buf *dmabuf, const char __user *buf)
+{
+	char *name = strndup_user(buf, DMA_BUF_NAME_LEN);
+	long ret = 0;
+
+	if (IS_ERR(name))
+		return PTR_ERR(name);
+
+	mutex_lock(&dmabuf->lock);
+	spin_lock(&dmabuf->name_lock);
+	if (!list_empty(&dmabuf->attachments)) {
+		ret = -EBUSY;
+		kfree(name);
+		goto out_unlock;
+	}
+	kfree(dmabuf->name);
+	dmabuf->name = name;
+
+out_unlock:
+	spin_unlock(&dmabuf->name_lock);
+	mutex_unlock(&dmabuf->lock);
+	return ret;
+}
+
+static int dma_buf_begin_cpu_access_umapped(struct dma_buf *dmabuf,
+					    enum dma_data_direction direction);
+
+
+static int dma_buf_end_cpu_access_umapped(struct dma_buf *dmabuf,
+					  enum dma_data_direction direction);
+
 static long dma_buf_ioctl(struct file *file,
 			  unsigned int cmd, unsigned long arg)
 {
@@ -360,9 +464,27 @@ static long dma_buf_ioctl(struct file *file,
 				ret = dma_buf_begin_cpu_access(dmabuf, dir);
 
 		return ret;
+
+	case DMA_BUF_SET_NAME:
+		return dma_buf_set_name(dmabuf, (const char __user *)arg);
+
 	default:
 		return -ENOTTY;
 	}
+}
+
+static void dma_buf_show_fdinfo(struct seq_file *m, struct file *file)
+{
+	struct dma_buf *dmabuf = file->private_data;
+
+	seq_printf(m, "size:\t%zu\n", dmabuf->size);
+	/* Don't count the temporary reference taken inside procfs seq_show */
+	seq_printf(m, "count:\t%ld\n", file_count(dmabuf->file) - 1);
+	seq_printf(m, "exp_name:\t%s\n", dmabuf->exp_name);
+	spin_lock(&dmabuf->name_lock);
+	if (dmabuf->name)
+		seq_printf(m, "name:\t%s\n", dmabuf->name);
+	spin_unlock(&dmabuf->name_lock);
 }
 
 static const struct file_operations dma_buf_fops = {
@@ -374,6 +496,7 @@ static const struct file_operations dma_buf_fops = {
 #ifdef CONFIG_COMPAT
 	.compat_ioctl	= dma_buf_ioctl,
 #endif
+	.show_fdinfo	= dma_buf_show_fdinfo,
 };
 
 /*
@@ -382,6 +505,32 @@ static const struct file_operations dma_buf_fops = {
 static inline int is_dma_buf_file(struct file *file)
 {
 	return file->f_op == &dma_buf_fops;
+}
+
+static struct file *dma_buf_getfile(struct dma_buf *dmabuf, int flags)
+{
+	struct file *file;
+	struct inode *inode = alloc_anon_inode(dma_buf_mnt->mnt_sb);
+
+	if (IS_ERR(inode))
+		return ERR_CAST(inode);
+
+	inode->i_size = dmabuf->size;
+	inode_set_bytes(inode, dmabuf->size);
+
+	file = alloc_file_pseudo(inode, dma_buf_mnt, "dmabuf",
+				 flags, &dma_buf_fops);
+	if (IS_ERR(file))
+		goto err_alloc_file;
+	file->f_flags = flags & (O_ACCMODE | O_NONBLOCK);
+	file->private_data = dmabuf;
+	file->f_path.dentry->d_fsdata = dmabuf;
+
+	return file;
+
+err_alloc_file:
+	iput(inode);
+	return file;
 }
 
 /**
@@ -482,8 +631,10 @@ struct dma_buf *dma_buf_export(const struct dma_buf_export_info *exp_info)
 	init_waitqueue_head(&dmabuf->poll);
 	dmabuf->cb_excl.poll = dmabuf->cb_shared.poll = &dmabuf->poll;
 	dmabuf->cb_excl.active = dmabuf->cb_shared.active = 0;
+	dmabuf->buf_name = bufname;
 	dmabuf->name = bufname;
 	dmabuf->ktime = ktime_get();
+	atomic_set(&dmabuf->dent_count, 1);
 
 	if (!resv) {
 		resv = (struct reservation_object *)&dmabuf[1];
@@ -491,8 +642,7 @@ struct dma_buf *dma_buf_export(const struct dma_buf_export_info *exp_info)
 	}
 	dmabuf->resv = resv;
 
-	file = anon_inode_getfile(bufname, &dma_buf_fops, dmabuf,
-					exp_info->flags);
+	file = dma_buf_getfile(dmabuf, exp_info->flags);
 	if (IS_ERR(file)) {
 		ret = PTR_ERR(file);
 		goto err_dmabuf;
@@ -502,6 +652,7 @@ struct dma_buf *dma_buf_export(const struct dma_buf_export_info *exp_info)
 	dmabuf->file = file;
 
 	mutex_init(&dmabuf->lock);
+	spin_lock_init(&dmabuf->name_lock);
 	INIT_LIST_HEAD(&dmabuf->attachments);
 
 	dma_buf_ref_init(dmabuf);
@@ -905,6 +1056,7 @@ static int dma_buf_begin_cpu_access_umapped(struct dma_buf *dmabuf,
 
 	return ret;
 }
+
 int dma_buf_begin_cpu_access_partial(struct dma_buf *dmabuf,
 				     enum dma_data_direction direction,
 				     unsigned int offset, unsigned int len)
@@ -927,7 +1079,7 @@ int dma_buf_begin_cpu_access_partial(struct dma_buf *dmabuf,
 
 	return ret;
 }
-EXPORT_SYMBOL(dma_buf_begin_cpu_access_partial);
+EXPORT_SYMBOL_GPL(dma_buf_begin_cpu_access_partial);
 
 /**
  * dma_buf_end_cpu_access - Must be called after accessing a dma_buf from the
@@ -955,7 +1107,7 @@ int dma_buf_end_cpu_access(struct dma_buf *dmabuf,
 }
 EXPORT_SYMBOL_GPL(dma_buf_end_cpu_access);
 
-int dma_buf_end_cpu_access_umapped(struct dma_buf *dmabuf,
+static int dma_buf_end_cpu_access_umapped(struct dma_buf *dmabuf,
 			   enum dma_data_direction direction)
 {
 	int ret = 0;
@@ -982,7 +1134,7 @@ int dma_buf_end_cpu_access_partial(struct dma_buf *dmabuf,
 
 	return ret;
 }
-EXPORT_SYMBOL(dma_buf_end_cpu_access_partial);
+EXPORT_SYMBOL_GPL(dma_buf_end_cpu_access_partial);
 
 /**
  * dma_buf_kmap - Map a page of the buffer object into kernel address space. The
@@ -1149,7 +1301,7 @@ int dma_buf_get_flags(struct dma_buf *dmabuf, unsigned long *flags)
 {
 	int ret = 0;
 
-	if (WARN_ON(!dmabuf))
+	if (WARN_ON(!dmabuf) || !flags)
 		return -EINVAL;
 
 	if (dmabuf->ops->get_flags)
@@ -1157,7 +1309,7 @@ int dma_buf_get_flags(struct dma_buf *dmabuf, unsigned long *flags)
 
 	return ret;
 }
-EXPORT_SYMBOL(dma_buf_get_flags);
+EXPORT_SYMBOL_GPL(dma_buf_get_flags);
 
 #ifdef CONFIG_DEBUG_FS
 static int dma_buf_debug_show(struct seq_file *s, void *unused)
@@ -1178,8 +1330,9 @@ static int dma_buf_debug_show(struct seq_file *s, void *unused)
 		return ret;
 
 	seq_puts(s, "\nDma-buf Objects:\n");
-	seq_printf(s, "%-8s\t%-8s\t%-8s\t%-8s\t%-12s\t%-s\n",
-		   "size", "flags", "mode", "count", "exp_name", "buf name");
+	seq_printf(s, "%-8s\t%-8s\t%-8s\t%-8s\t%-12s\t%-s\t%-8s\n",
+		   "size", "flags", "mode", "count", "exp_name",
+		   "buf name", "ino");
 
 	list_for_each_entry(buf_obj, &db_list.head, list_node) {
 		ret = mutex_lock_interruptible(&buf_obj->lock);
@@ -1190,11 +1343,13 @@ static int dma_buf_debug_show(struct seq_file *s, void *unused)
 			continue;
 		}
 
-		seq_printf(s, "%08zu\t%08x\t%08x\t%08ld\t%-12s\t%-s\n",
+		seq_printf(s, "%08zu\t%08x\t%08x\t%08ld\t%-12s\t%-s\t%08lu\t%s\n",
 				buf_obj->size,
 				buf_obj->file->f_flags, buf_obj->file->f_mode,
 				file_count(buf_obj->file),
-				buf_obj->exp_name, buf_obj->name);
+				buf_obj->exp_name, buf_obj->buf_name,
+				file_inode(buf_obj->file)->i_ino,
+				buf_obj->name ?: "");
 
 		robj = buf_obj->resv;
 		while (true) {
@@ -1303,7 +1458,7 @@ static void write_proc(struct seq_file *s, struct dma_proc *proc)
 
 		elapmstime = ktime_divns(elapmstime, MSEC_PER_SEC);
 		seq_printf(s, "%-8s\t%-8ld\t%-8lld\n",
-				dmabuf->name,
+				dmabuf->buf_name,
 				dmabuf->size / SZ_1K,
 				elapmstime);
 	}
@@ -1449,6 +1604,10 @@ static inline void dma_buf_uninit_debugfs(void)
 
 static int __init dma_buf_init(void)
 {
+	dma_buf_mnt = kern_mount(&dma_buf_fs_type);
+	if (IS_ERR(dma_buf_mnt))
+		return PTR_ERR(dma_buf_mnt);
+
 	mutex_init(&db_list.lock);
 	INIT_LIST_HEAD(&db_list.head);
 	dma_buf_init_debugfs();
@@ -1459,5 +1618,6 @@ subsys_initcall(dma_buf_init);
 static void __exit dma_buf_deinit(void)
 {
 	dma_buf_uninit_debugfs();
+	kern_unmount(dma_buf_mnt);
 }
 __exitcall(dma_buf_deinit);

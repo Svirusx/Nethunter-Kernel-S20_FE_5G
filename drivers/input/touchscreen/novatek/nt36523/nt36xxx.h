@@ -2,7 +2,7 @@
  * Copyright (C) 2010 - 2017 Novatek, Inc.
  *
  * $Revision: 22429 $
- * $Date: 2018-01-30 19:42:59 +0800 (週二, 30 一月 2018) $
+ * $Date: 2018-01-30 19:42:59 +0800 (?�二, 30 一?? 2018) $
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,6 +63,9 @@
 
 #define INT_ENABLE		1
 #define INT_DISABLE		0
+
+#define NVT_TS_DEBUG_PRINT_I2C_READ_CMD  0x04
+#define NVT_TS_DEBUG_PRINT_I2C_WRITE_CMD 0x08
 
 /* sponge mode */
 #define NVT_SPONGE_MODE_SPAY			(1 << 1)
@@ -190,6 +193,8 @@ struct nvt_ts_data {
 	unsigned int all_finger_count;
 
 	bool noise_mode;
+
+	int debug_flag;
 };
 
 typedef enum {

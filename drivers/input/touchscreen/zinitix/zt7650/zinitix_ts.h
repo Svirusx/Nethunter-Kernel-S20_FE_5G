@@ -101,6 +101,7 @@ struct zt_ts_platform_data {
 	int bringup;
 	bool mis_cal_check;
 	bool support_dex;
+	bool support_open_short_test;
 	u16 pat_function;
 	u16 afe_base;
 	void (*register_cb)(void *);

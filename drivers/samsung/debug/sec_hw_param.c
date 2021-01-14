@@ -34,6 +34,15 @@
 #include <linux/input/qpnp-power-on.h>
 #endif
 
+enum {
+	CONVERSION_SOC_REV_1_0 = 0,
+	CONVERSION_SOC_REV_2_0,
+	CONVERSION_SOC_REV_2_1,
+	CONVERSION_SOC_REV_2_2,
+	CONVERSION_SOC_REV_1_1,
+	CONVERSION_SOC_REV_UNKNOWN,
+};      
+
 #define DEFAULT_LEN_STR         1023
 #define SPECIAL_LEN_STR         2047
 #define EXTRA_LEN_STR           ((SPECIAL_LEN_STR) - (31 + 5))
@@ -316,6 +325,14 @@ static ssize_t show_ap_health(struct device *dev,
 			phealth->cache.edac_l3.ue_cnt);
 	default_scnprintf(buf, info_size, "\"EDB\":\"%d\",",
 			phealth->cache.edac_bus_cnt);
+	default_scnprintf(buf, info_size, "\"LDc\":\"%d\",",
+			phealth->cache.edac_llcc_data_ram.ce_cnt);
+	default_scnprintf(buf, info_size, "\"LDu\":\"%d\",",
+			phealth->cache.edac_llcc_data_ram.ue_cnt);
+	default_scnprintf(buf, info_size, "\"LTc\":\"%d\",",
+			phealth->cache.edac_llcc_tag_ram.ce_cnt);
+	default_scnprintf(buf, info_size, "\"LTu\":\"%d\",",
+			phealth->cache.edac_llcc_tag_ram.ue_cnt);
 
 	default_scnprintf(buf, info_size, "\"dL1c\":\"");
 	for (cpu = 0; cpu < num_present_cpus(); cpu++) {
@@ -367,6 +384,14 @@ static ssize_t show_ap_health(struct device *dev,
 			phealth->daily_cache.edac_l3.ue_cnt);
 	default_scnprintf(buf, info_size, "\"dEDB\":\"%d\",",
 			phealth->daily_cache.edac_bus_cnt);
+	default_scnprintf(buf, info_size, "\"dLDc\":\"%d\",",
+			phealth->daily_cache.edac_llcc_data_ram.ce_cnt);
+	default_scnprintf(buf, info_size, "\"dLDu\":\"%d\",",
+			phealth->daily_cache.edac_llcc_data_ram.ue_cnt);
+	default_scnprintf(buf, info_size, "\"dLTc\":\"%d\",",
+			phealth->daily_cache.edac_llcc_tag_ram.ce_cnt);
+	default_scnprintf(buf, info_size, "\"dLTu\":\"%d\",",
+			phealth->daily_cache.edac_llcc_tag_ram.ue_cnt);
 
 	for (i = 0; i < MAX_PCIE_NUM; i++) {
 		default_scnprintf(buf, info_size, "\"P%zuPF\":\"%d\",", i,
@@ -669,17 +694,20 @@ char * get_soc_hw_rev(void)
 	soc_value = get_param0("soc_rev");
 
 	switch (soc_value) {
-		case 0:         // ES1
+		case CONVERSION_SOC_REV_1_0:
 			return "1.0";
 			break;
-		case 1:         // ES2
+		case CONVERSION_SOC_REV_2_0:
 			return "2.0";
 			break;
-		case 2:         // ES3
+		case CONVERSION_SOC_REV_2_1:
 			return "2.1";
 			break;
-		case 3:
+		case CONVERSION_SOC_REV_2_2:
 			return "2.2";
+			break;
+		case CONVERSION_SOC_REV_1_1:
+			return "1.1";
 			break;
 		default:
 			return "unknown";

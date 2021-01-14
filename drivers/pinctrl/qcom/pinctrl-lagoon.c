@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2019,2020, The Linux Foundation. All rights reserved.
  */
 
 #include <linux/module.h>
@@ -42,6 +42,7 @@
 		.intr_cfg_reg = REG_BASE + 0x8 + REG_SIZE * id,		\
 		.intr_status_reg = REG_BASE + 0xc + REG_SIZE * id,	\
 		.intr_target_reg = REG_BASE + 0x8 + REG_SIZE * id,	\
+		.dir_conn_reg = REG_BASE + 0xBF000,\
 		.mux_bit = 2,			\
 		.pull_bit = 0,			\
 		.drv_bit = 6,			\
@@ -58,6 +59,7 @@
 		.intr_polarity_bit = 1,		\
 		.intr_detection_bit = 2,	\
 		.intr_detection_width = 2,	\
+		.dir_conn_en_bit = 8,		\
 		.wake_reg = REG_BASE + wake_off,	\
 		.wake_bit = bit,		\
 	}
@@ -474,7 +476,8 @@ enum lagoon_functions {
 	msm_mux_gcc_gp2,
 	msm_mux_gcc_gp3,
 	msm_mux_edp_lcd,
-	msm_mux_qup13,
+	msm_mux_qup13_f1,
+	msm_mux_qup13_f2,
 	msm_mux_qup11,
 	msm_mux_PLL_BIST,
 	msm_mux_qdss_gpio14,
@@ -729,8 +732,11 @@ static const char * const gcc_gp3_groups[] = {
 static const char * const edp_lcd_groups[] = {
 	"gpio23",
 };
-static const char * const qup13_groups[] = {
-	"gpio25", "gpio25", "gpio26", "gpio26",
+static const char * const qup13_f1_groups[] = {
+	"gpio25", "gpio26",
+};
+static const char * const qup13_f2_groups[] = {
+	"gpio25", "gpio26",
 };
 static const char * const qup11_groups[] = {
 	"gpio27", "gpio27", "gpio28", "gpio28",
@@ -1196,7 +1202,8 @@ static const struct msm_function lagoon_functions[] = {
 	FUNCTION(gcc_gp2),
 	FUNCTION(gcc_gp3),
 	FUNCTION(edp_lcd),
-	FUNCTION(qup13),
+	FUNCTION(qup13_f1),
+	FUNCTION(qup13_f2),
 	FUNCTION(qup11),
 	FUNCTION(PLL_BIST),
 	FUNCTION(qdss_gpio14),
@@ -1394,9 +1401,10 @@ static const struct msm_pingroup lagoon_groups[] = {
 			0x9C008, 13),
 	[24] = PINGROUP(24, MDP_VSYNC, NA, NA, NA, NA, NA, NA, NA, NA,
 			0x9C008, 14),
-	[25] = PINGROUP(25, qup13, qup13, NA, NA, NA, NA, NA, NA, NA,
+	[25] = PINGROUP(25, qup13_f1, qup13_f2, NA, NA, NA, NA, NA, NA, NA,
 			0x9C008, 15),
-	[26] = PINGROUP(26, qup13, qup13, NA, NA, NA, NA, NA, NA, NA, 0, -1),
+	[26] = PINGROUP(26, qup13_f1, qup13_f2, NA, NA, NA, NA, NA, NA, NA,
+			0, -1),
 	[27] = PINGROUP(27, qup11, qup11, MDP_VSYNC, PLL_BIST, NA, qdss_gpio14,
 			NA, NA, NA, 0x9C00C, 0),
 	[28] = PINGROUP(28, qup11, qup11, MDP_VSYNC, NA, qdss_gpio15, NA, NA,
@@ -1598,14 +1606,23 @@ static const struct msm_pingroup lagoon_groups[] = {
 	[153] = PINGROUP(153, NA, NA, NA, NA, NA, NA, NA, NA, NA, 0x9C004, 13),
 	[154] = PINGROUP(154, NA, NA, NA, NA, NA, NA, NA, NA, NA, 0, -1),
 	[155] = PINGROUP(155, NA, NA, NA, NA, NA, NA, NA, NA, NA, 0x9C004, 14),
-	[156] = SDC_QDSD_PINGROUP(sdc1_rclk, 0x1a1000, 15, 0),
-	[157] = SDC_QDSD_PINGROUP(sdc1_clk, 0x1a0000, 13, 6),
-	[158] = SDC_QDSD_PINGROUP(sdc1_cmd, 0x1a0000, 11, 3),
-	[159] = SDC_QDSD_PINGROUP(sdc1_data, 0x1a0000, 9, 0),
-	[160] = SDC_QDSD_PINGROUP(sdc2_clk, 0x1a2000, 14, 6),
-	[161] = SDC_QDSD_PINGROUP(sdc2_cmd, 0x1a2000, 11, 3),
-	[162] = SDC_QDSD_PINGROUP(sdc2_data, 0x1a2000, 9, 0),
-	[163] = UFS_RESET(ufs_reset, 0x1ae000),
+	[156] = SDC_QDSD_PINGROUP(sdc1_rclk, 0xa1000, 15, 0),
+	[157] = SDC_QDSD_PINGROUP(sdc1_clk, 0xa0000, 13, 6),
+	[158] = SDC_QDSD_PINGROUP(sdc1_cmd, 0xa0000, 11, 3),
+	[159] = SDC_QDSD_PINGROUP(sdc1_data, 0xa0000, 9, 0),
+	[160] = SDC_QDSD_PINGROUP(sdc2_clk, 0xa2000, 14, 6),
+	[161] = SDC_QDSD_PINGROUP(sdc2_cmd, 0xa2000, 11, 3),
+	[162] = SDC_QDSD_PINGROUP(sdc2_data, 0xa2000, 9, 0),
+	[163] = UFS_RESET(ufs_reset, 0xae000),
+};
+
+static const int lagoon_reserved_gpios[] = {
+	13, 14, 15, 16, 45, 46, 56, 57, -1
+};
+
+static struct msm_dir_conn lagoon_dir_conn[] = {
+	{-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0},
+	{-1, 0}, {-1, 0}, {-1, 0}, {-1, 0}
 };
 
 static const struct msm_pinctrl_soc_data lagoon_pinctrl = {
@@ -1615,7 +1632,9 @@ static const struct msm_pinctrl_soc_data lagoon_pinctrl = {
 	.nfunctions = ARRAY_SIZE(lagoon_functions),
 	.groups = lagoon_groups,
 	.ngroups = ARRAY_SIZE(lagoon_groups),
+	.reserved_gpios = lagoon_reserved_gpios,
 	.ngpios = 156,
+	.dir_conn = lagoon_dir_conn,
 };
 
 static int lagoon_pinctrl_probe(struct platform_device *pdev)

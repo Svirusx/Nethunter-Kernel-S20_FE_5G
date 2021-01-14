@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2016-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2020, The Linux Foundation. All rights reserved.
  */
 
 #include <linux/module.h>
@@ -1164,11 +1164,13 @@ static void handle_uaudio_stream_req(struct qmi_handle *handle,
 
 response:
 	pr_info("%s : response : ret = %d\n", __func__, ret);
-	if (!req_msg->enable && (ret != -EINVAL && ret != -ENODEV)) {
+	if (!req_msg->enable && ret != -EINVAL && ret != -ENODEV) {
 		mutex_lock(&chip->dev_lock);
 		if (info_idx >= 0) {
 			info = &uadev[pcm_card_num].info[info_idx];
-			uaudio_dev_intf_cleanup(uadev[pcm_card_num].udev, info);
+			uaudio_dev_intf_cleanup(
+					uadev[pcm_card_num].udev,
+					info);
 			uaudio_dbg("release resources: intf# %d card# %d\n",
 					subs->interface, pcm_card_num);
 		}

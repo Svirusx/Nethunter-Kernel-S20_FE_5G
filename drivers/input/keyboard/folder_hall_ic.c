@@ -30,6 +30,8 @@
 
 #define HALL_EVENT_REPORT_WORKQUEUE	0
 
+extern struct device *hall_ic;
+
 struct hall_drvdata {
 	struct input_dev *input;
 	int gpio_hall;
@@ -111,7 +113,7 @@ static ssize_t sysfs_hall_value_store(struct device *dev,
 	
 	return count;
 }
-static DEVICE_ATTR(flipStatus, 0444, sysfs_hall_value_show, sysfs_hall_value_store);
+static DEVICE_ATTR(flip_status, 0444, sysfs_hall_value_show, sysfs_hall_value_store);
 
 #ifdef CONFIG_SEC_FACTORY
 static void hall_value_work(struct work_struct *work)
@@ -307,10 +309,10 @@ static irqreturn_t hall_value_detect(int irq, void *dev_id)
 
 	hall_status = gpio_get_value(ddata->gpio_hall);
 
-	printk(KERN_DEBUG "[keys] %s hall_status : %d\n", __func__, hall_status);
+	pr_debug("[keys] %s hall_status : %d\n", __func__, hall_status);
 
 	if ( (system_state == SYSTEM_POWER_OFF) || (system_state == SYSTEM_RESTART) ) {
-		printk(KERN_DEBUG "[keys] %s don't need to work hall irq\n", __func__);
+		pr_debug("[keys] %s don't need to work hall irq\n", __func__);
 		return IRQ_HANDLED;
 	}
 	__hall_value_detect(ddata, hall_status);
@@ -441,9 +443,9 @@ static int hall_probe(struct platform_device *pdev)
 
 	init_hall_ic_irq(input);
 
-	dev = sec_device_create(NULL, "sec_flip");
-	if (device_create_file(dev, &dev_attr_flipStatus) < 0) {
-		pr_err("Failed to create device file(%s) !\n", dev_attr_flipStatus.attr.name);
+	error = device_create_file(hall_ic, &dev_attr_flip_status);
+	if (error < 0) {
+		pr_err("Failed to create device file(%s) !\n", dev_attr_flip_status.attr.name);
 		goto fail2;
 	}
 
@@ -467,7 +469,7 @@ static int hall_probe(struct platform_device *pdev)
 
 	return 0;
 fail3:
-	device_remove_file(dev, &dev_attr_flipStatus);
+	device_remove_file(dev, &dev_attr_flip_status);
 fail2:
 	platform_set_drvdata(pdev, NULL);
 	wake_lock_destroy(&ddata->hall_wake_lock);
@@ -484,7 +486,7 @@ static int hall_remove(struct platform_device *pdev)
 	struct input_dev *input = ddata->input;
 
 	printk("[keys] %s\n", __func__);
-	device_remove_file(&pdev->dev, &dev_attr_flipStatus);
+	device_remove_file(&pdev->dev, &dev_attr_flip_status);
 
 	device_init_wakeup(&pdev->dev, 0);
 

@@ -26,6 +26,7 @@ enum debug_partition_index {
 	debug_index_auto_comment,
 	debug_index_reset_history,
 	debug_index_reset_rkplog,
+	debug_index_reset_lpm_klog,
 	debug_index_max,
 };
 
@@ -49,6 +50,8 @@ typedef struct {
 	struct edac_cnt edac[NR_CPUS][2]; // L1, L2
 	struct edac_cnt edac_l3; // L3
 	uint32_t edac_bus_cnt;
+	struct edac_cnt edac_llcc_data_ram; // LLCC Data RAM
+	struct edac_cnt edac_llcc_tag_ram; // LLCC Tag RAM
 } cache_health_t;
 
 typedef struct {
@@ -185,6 +188,9 @@ struct lcd_debug_t {
 
 #define SEC_DEBUG_RESET_ETRM_SIZE		(0x3c0)
 #define SEC_DEBUG_RESET_ETRM_OFFSET		(SEC_DEBUG_AUTO_COMMENT_OFFSET + ALIGN(SEC_DEBUG_AUTO_COMMENT_SIZE, SECTOR_UNIT_SIZE) - 0x15)	/* 5MB + 16KB + 4KB */
+
+#define SEC_DEBUG_RESET_LPM_KLOG_OFFSET		(6 * 1024 * 1024)
+#define SEC_DEBUG_RESET_LPM_KLOG_SIZE		(0x200000)		/* 2MB */
 
 enum {
 	DBG_PART_DRV_INIT_DONE,

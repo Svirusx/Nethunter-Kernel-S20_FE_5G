@@ -311,17 +311,8 @@ static int qvr_send_package_wrap(u8 *message, int msize, struct hid_device *hid)
 	data->gx = imuData.gx0;
 	data->gy = imuData.gy0;
 	data->gz = imuData.gz0;
-	data->mx = imuData.my0;
-	data->my = imuData.mx0;
-	data->mz = imuData.mz0;
-	data->ax = imuData.ax0;
-	data->ay = imuData.ay0;
-	data->az = imuData.az0;
-	data->gx = imuData.gx0;
-	data->gy = imuData.gy0;
-	data->gz = imuData.gz0;
-	data->mx = imuData.my0;
-	data->my = imuData.mx0;
+	data->mx = imuData.mx0;
+	data->my = imuData.my0;
 	data->mz = imuData.mz0;
 	data->aNumerator = imuData.aNumerator;
 	data->aDenominator = imuData.aDenominator;
@@ -498,6 +489,14 @@ static int qvr_external_sensor_probe(struct hid_device *hdev,
 	struct qvr_external_sensor *sensor = &qvr_external_sensor;
 	int ret;
 	char *node_name = "qcom,smp2p-interrupt-qvrexternal-5-out";
+
+	//For devices with non-standard HID report descriptors, it is
+	//required to force the registration of an input device.
+	hdev->quirks |= HID_QUIRK_HIDINPUT_FORCE;
+
+	//Devices with non-standard incoming events need to use this quirk.
+	hdev->quirks |= HID_QUIRK_INCREMENT_USAGE_ON_DUPLICATE;
+
 	sensor->hdev = hdev;
 
 	ret = register_smp2p(&hdev->dev, node_name, &sensor->gpio_info_out);

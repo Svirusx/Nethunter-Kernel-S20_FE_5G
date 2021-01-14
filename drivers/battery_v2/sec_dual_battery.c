@@ -39,7 +39,7 @@ static int sec_dual_check_eoc_status(struct sec_dual_battery_info *battery)
 
 	pr_info("%s [Main] %dmV %dmA\n", __func__, battery->main_voltage_avg, battery->main_current_avg);
 
-	if((battery->main_voltage_avg >= battery->pdata->main_full_condition_vcell[battery->age_step] ||
+	if ((battery->main_voltage_avg >= battery->pdata->main_full_condition_vcell[battery->age_step] ||
 		battery->main_current_avg <= battery->pdata->main_full_condition_eoc) &&
 		!(battery->full_total_status & SEC_DUAL_BATTERY_MAIN_CONDITION_DONE)) {
 		pr_info("%s Main Batt eoc condition is done (2nd charging)\n", __func__);
@@ -68,7 +68,7 @@ static int sec_dual_check_eoc_status(struct sec_dual_battery_info *battery)
 
 	pr_info("%s [Sub] %dmV %dmA\n", __func__, battery->sub_voltage_avg, battery->sub_current_avg);
 
-	if((battery->sub_voltage_avg >= battery->pdata->sub_full_condition_vcell[battery->age_step] ||
+	if ((battery->sub_voltage_avg >= battery->pdata->sub_full_condition_vcell[battery->age_step] ||
 		battery->sub_current_avg <= battery->pdata->sub_full_condition_eoc) &&
 		!(battery->full_total_status & SEC_DUAL_BATTERY_SUB_CONDITION_DONE)) {
 		pr_info("%s Sub Batt eoc condition is done (2nd charging)\n", __func__);
@@ -94,7 +94,8 @@ static int sec_dual_check_eoc_status(struct sec_dual_battery_info *battery)
 		}
 
 		/* If both MAIN and SUB not reached EOC condition at least 30 minutes from force_full_time,
-			make FULL to prevent abnormal infinite charging */
+		 * make FULL to prevent abnormal infinite charging
+		 */
 		if (force_full_time >= 1800) {
 			pr_info("%s force_full_time passed time(%ld), 2nd full safety timer works\n", __func__, force_full_time);
 			/* main/sub supplement mode enable */
@@ -108,7 +109,7 @@ static int sec_dual_check_eoc_status(struct sec_dual_battery_info *battery)
 		}
 	}
 
-	if(battery->full_total_status == (SEC_DUAL_BATTERY_MAIN_CONDITION_DONE | SEC_DUAL_BATTERY_SUB_CONDITION_DONE)) {
+	if (battery->full_total_status == (SEC_DUAL_BATTERY_MAIN_CONDITION_DONE | SEC_DUAL_BATTERY_SUB_CONDITION_DONE)) {
 		battery->force_full_time = 0;
 		return POWER_SUPPLY_STATUS_FULL;
 	} else
@@ -152,7 +153,7 @@ static int sec_dual_check_each_eoc(struct sec_dual_battery_info *battery)
 			POWER_SUPPLY_PROP_CHARGE_FULL, value);
 		eoc_status = true;
 	}
-	if(eoc_status)
+	if (eoc_status)
 		return POWER_SUPPLY_STATUS_FULL;
 	else
 		return POWER_SUPPLY_STATUS_CHARGING;
@@ -167,19 +168,17 @@ static int sec_dual_check_eoc_current(struct sec_dual_battery_info *battery)
 		POWER_SUPPLY_EXT_PROP_CHG_CURRENT, value);
 	battery->main_current_avg = value.intval;
 
-	if(battery->main_current_avg <= battery->pdata->main_full_condition_eoc) {
+	if (battery->main_current_avg <= battery->pdata->main_full_condition_eoc)
 		battery->full_current_status |= SEC_DUAL_BATTERY_MAIN_CONDITION_DONE;
-	}
 
 	psy_do_property(battery->pdata->sub_limiter_name, get,
 		POWER_SUPPLY_EXT_PROP_CHG_CURRENT, value);
 	battery->sub_current_avg = value.intval;
 
-	if(battery->sub_current_avg <= battery->pdata->sub_full_condition_eoc) {
+	if (battery->sub_current_avg <= battery->pdata->sub_full_condition_eoc)
 		battery->full_current_status |= SEC_DUAL_BATTERY_MAIN_CONDITION_DONE;
-	}
 
-	if(battery->full_current_status == (SEC_DUAL_BATTERY_MAIN_CONDITION_DONE | SEC_DUAL_BATTERY_SUB_CONDITION_DONE))
+	if (battery->full_current_status == (SEC_DUAL_BATTERY_MAIN_CONDITION_DONE | SEC_DUAL_BATTERY_SUB_CONDITION_DONE))
 		return POWER_SUPPLY_STATUS_FULL;
 	else
 		return POWER_SUPPLY_STATUS_CHARGING;	
@@ -191,7 +190,7 @@ static int sec_dual_battery_current_avg(struct sec_dual_battery_info *battery, i
 	union power_supply_propval value;
 	int ichg = 0, idis = 0;
 
-	if(bat_type == SEC_DUAL_BATTERY_MAIN) {
+	if (bat_type == SEC_DUAL_BATTERY_MAIN) {
 		value.intval = SEC_BATTERY_CURRENT_MA;
 		psy_do_property(battery->pdata->main_limiter_name, get,
 			(enum power_supply_property)POWER_SUPPLY_EXT_PROP_CHG_CURRENT, value);
@@ -213,11 +212,13 @@ static int sec_dual_battery_current_avg(struct sec_dual_battery_info *battery, i
 
 	pr_info("%s: ichg=%d, idis=%d\n", __func__, ichg, idis);
 
-	if((ichg == 0) && (idis == 0))
+	if ((ichg == 0) && (idis == 0))
 		return 0;
 	else {
-		if(ichg != 0) return ichg;
-		else return idis * (-1);		
+		if (ichg != 0)
+			return ichg;
+		else
+			return idis * (-1);
 	}
 }
 
@@ -226,7 +227,7 @@ static int sec_dual_battery_voltage_avg(struct sec_dual_battery_info *battery, i
 	union power_supply_propval value;
 	int vbat = 0;
 
-	if(bat_type == SEC_DUAL_BATTERY_MAIN) {
+	if (bat_type == SEC_DUAL_BATTERY_MAIN) {
 		value.intval = SEC_BATTERY_VOLTAGE_MV;
 		psy_do_property(battery->pdata->main_limiter_name, get,
 			(enum power_supply_property)POWER_SUPPLY_EXT_PROP_BAT_VOLTAGE, value);
@@ -270,13 +271,13 @@ static int sec_dual_battery_get_property(struct power_supply *psy,
 		val->intval = sec_dual_check_each_eoc(battery);
 		break;
 	case POWER_SUPPLY_PROP_VOLTAGE_AVG:
-		if(value.intval == SEC_DUAL_BATTERY_MAIN)
+		if (value.intval == SEC_DUAL_BATTERY_MAIN)
 			val->intval = sec_dual_battery_voltage_avg(battery, SEC_DUAL_BATTERY_MAIN, SEC_BATTERY_VOLTAGE_MV);
 		else
 			val->intval = sec_dual_battery_voltage_avg(battery, SEC_DUAL_BATTERY_SUB, SEC_BATTERY_VOLTAGE_MV);
 		break;
 	case POWER_SUPPLY_PROP_CURRENT_AVG:
-		if(value.intval == SEC_DUAL_BATTERY_MAIN)
+		if (value.intval == SEC_DUAL_BATTERY_MAIN)
 			val->intval = sec_dual_battery_current_avg(battery, SEC_DUAL_BATTERY_MAIN, SEC_BATTERY_CURRENT_MA);
 		else
 			val->intval = sec_dual_battery_current_avg(battery, SEC_DUAL_BATTERY_SUB, SEC_BATTERY_CURRENT_MA);
@@ -326,7 +327,7 @@ static int sec_dual_battery_set_property(struct power_supply *psy,
 			battery->force_full_time = 0;
 		break;
 	case POWER_SUPPLY_PROP_CHARGING_ENABLED:
-		if(val->intval == 0) {
+		if (val->intval == 0) {
 			/* disable main/sub supplement mode */
 			value.intval = 0;
 			psy_do_property(battery->pdata->main_limiter_name, set,
@@ -345,7 +346,7 @@ static int sec_dual_battery_set_property(struct power_supply *psy,
 		break;
 	case POWER_SUPPLY_PROP_ENERGY_NOW:
 		/* SET PWR OFF MODE 2*/		
-		if(val->intval == SEC_DUAL_BATTERY_MAIN) {
+		if (val->intval == SEC_DUAL_BATTERY_MAIN) {
 			value.intval = 1;
 			psy_do_property(battery->pdata->main_limiter_name, set,
 				POWER_SUPPLY_PROP_ENERGY_NOW, value);			

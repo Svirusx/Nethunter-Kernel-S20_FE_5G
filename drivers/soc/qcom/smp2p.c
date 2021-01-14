@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2015, Sony Mobile Communications AB.
- * Copyright (c) 2012-2013, 2018-2019 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012-2013, 2018-2020 The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -148,10 +148,6 @@ struct qcom_smp2p {
 
 	unsigned smem_items[SMP2P_OUTBOUND + 1];
 
-#ifdef CONFIG_SEC_PM
-	char name[32];
-#endif
-	
 	unsigned valid_entries;
 
 	bool ssr_ack_enabled;
@@ -165,7 +161,7 @@ struct qcom_smp2p {
 	struct regmap *ipc_regmap;
 	int ipc_offset;
 	int ipc_bit;
-	struct wakeup_source ws;
+	struct wakeup_source *ws;
 
 	struct mbox_client mbox_client;
 	struct mbox_chan *mbox_chan;
@@ -307,7 +303,7 @@ static irqreturn_t qcom_smp2p_isr(int irq, void *data)
 {
 	struct qcom_smp2p *smp2p = data;
 
-	__pm_stay_awake(&smp2p->ws);
+	__pm_stay_awake(smp2p->ws);
 	return IRQ_WAKE_THREAD;
 }
 
@@ -355,7 +351,7 @@ static irqreturn_t qcom_smp2p_intr(int irq, void *data)
 	}
 
 out:
-	__pm_relax(&smp2p->ws);
+	__pm_relax(smp2p->ws);
 	return IRQ_HANDLED;
 }
 
@@ -569,7 +565,6 @@ static int qcom_smp2p_probe(struct platform_device *pdev)
 	struct device_node *node;
 	struct qcom_smp2p *smp2p;
 	const char *key;
-	const char *node_name;
 	int ret;
 
 	if (!ilc)
@@ -606,11 +601,6 @@ static int qcom_smp2p_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev, "unable to acquire smp2p interrupt\n");
 		return smp2p->irq;
 	}
-
-#ifdef CONFIG_SEC_PM	
-	node_name = of_node_full_name(pdev->dev.of_node);
-	snprintf(smp2p->name, 32, "%s", node_name + 5);
-#endif
 
 	smp2p->mbox_client.dev = &pdev->dev;
 	smp2p->mbox_client.knows_txdone = true;
@@ -658,33 +648,30 @@ static int qcom_smp2p_probe(struct platform_device *pdev)
 			list_add(&entry->node, &smp2p->outbound);
 		}
 	}
-#ifdef CONFIG_SEC_PM
-	wakeup_source_init(&smp2p->ws, smp2p->name);
-#else
-	wakeup_source_init(&smp2p->ws, "smp2p");
-#endif
+
+	smp2p->ws = wakeup_source_register(&pdev->dev, "smp2p");
+	if (!smp2p->ws) {
+		ret = -ENOMEM;
+		goto unwind_interfaces;
+	}
 
 	/* Kick the outgoing edge after allocating entries */
 	qcom_smp2p_kick(smp2p);
 
-#ifdef CONFIG_SEC_PM
-	ret = devm_request_threaded_irq(&pdev->dev, smp2p->irq,
-					qcom_smp2p_isr, qcom_smp2p_intr,
-					IRQF_NO_SUSPEND | IRQF_ONESHOT,
-					smp2p->name, (void *)smp2p);
-#else
 	ret = devm_request_threaded_irq(&pdev->dev, smp2p->irq,
 					qcom_smp2p_isr, qcom_smp2p_intr,
 					IRQF_NO_SUSPEND | IRQF_ONESHOT,
 					"smp2p", (void *)smp2p);
-#endif
 	if (ret) {
 		dev_err(&pdev->dev, "failed to request interrupt\n");
-		goto unwind_interfaces;
+		goto unreg_ws;
 	}
 	enable_irq_wake(smp2p->irq);
 
 	return 0;
+
+unreg_ws:
+	wakeup_source_unregister(smp2p->ws);
 
 unwind_interfaces:
 	list_for_each_entry(entry, &smp2p->inbound, node)
@@ -709,6 +696,8 @@ static int qcom_smp2p_remove(struct platform_device *pdev)
 {
 	struct qcom_smp2p *smp2p = platform_get_drvdata(pdev);
 	struct smp2p_entry *entry;
+
+	wakeup_source_unregister(smp2p->ws);
 
 	list_for_each_entry(entry, &smp2p->inbound, node)
 		irq_domain_remove(entry->domain);

@@ -637,6 +637,9 @@ static void self_aclock_img_write(struct samsung_display_driver_data *vdd)
 	usleep_range(ONE_FRAME_US + 1000, ONE_FRAME_US + 1000);
 
 	ss_send_cmd(vdd, TX_SELF_ACLOCK_IMAGE);
+
+	usleep_range(100, 110); /* needs 100us delay between 0x5C & 0x75 */
+
 	ss_send_cmd(vdd, TX_SELF_ACLOCK_SET_POST);
 	ss_send_cmd(vdd, TX_LEVEL1_KEY_DISABLE);
 	mutex_unlock(&vdd->self_disp.vdd_self_display_lock);
@@ -659,7 +662,6 @@ static void self_aclock_img_write(struct samsung_display_driver_data *vdd)
 static int self_aclock_set(struct samsung_display_driver_data *vdd)
 {
 	u8 *cmd_pload;
-	u32 mem_reuse_x, mem_reuse_y;
 	struct self_analog_clk_info sa_info;
 	struct dsi_panel_cmd_set *pcmds;
 
@@ -716,7 +718,7 @@ static int self_aclock_set(struct samsung_display_driver_data *vdd)
 	default:
 		LCD_ERR("Invalid Rotation Setting, (%d)\n", sa_info.rotate);
 	}
-
+#if 0 /* No need to update this just use that from dtsi */
 	/* Clock Memory Mask for Power Saving */
 	if (sa_info.mem_mask_en) {
 		cmd_pload[15] = AC_HH_MASK_ST_X & 0xFF;
@@ -761,7 +763,7 @@ static int self_aclock_set(struct samsung_display_driver_data *vdd)
 	} else {
 		cmd_pload[2] &= ~(BIT(4)); /* SC_MEM_DISP_ON */
 	}
-
+#endif
 skip_update:
 	self_aclock_on(vdd, sa_info.en);
 
@@ -820,6 +822,9 @@ static void self_dclock_img_write(struct samsung_display_driver_data *vdd)
 	usleep_range(ONE_FRAME_US + 1000, ONE_FRAME_US + 1000);
 
 	ss_send_cmd(vdd, TX_SELF_DCLOCK_IMAGE);
+
+	usleep_range(100, 110); /* needs 100us delay between 0x5C & 0x75 */
+
 	ss_send_cmd(vdd, TX_SELF_DCLOCK_SET_POST);
 	ss_send_cmd(vdd, TX_LEVEL1_KEY_DISABLE);
 	mutex_unlock(&vdd->self_disp.vdd_self_display_lock);
@@ -1000,6 +1005,9 @@ static void self_mask_img_write(struct samsung_display_driver_data *vdd)
 	ss_set_exclusive_tx_packet(vdd, TX_LEVEL1_KEY_ENABLE, 1);
 	ss_set_exclusive_tx_packet(vdd, TX_SELF_MASK_SET_PRE, 1);
 	ss_set_exclusive_tx_packet(vdd, TX_SELF_MASK_IMAGE, 1);
+
+	usleep_range(100, 110); /* needs 100us delay between 0x5C& 0x75 */
+
 	ss_set_exclusive_tx_packet(vdd, TX_SELF_MASK_SET_POST, 1);
 	ss_set_exclusive_tx_packet(vdd, TX_LEVEL1_KEY_DISABLE, 1);
 

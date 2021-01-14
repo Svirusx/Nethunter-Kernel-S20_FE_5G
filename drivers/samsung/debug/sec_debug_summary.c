@@ -19,6 +19,7 @@
 #include <linux/kernel.h>
 #include <linux/of_fdt.h>
 #include <linux/version.h>
+#include <linux/platform_device.h>
 
 #include <asm/stacktrace.h>
 #include <asm/system_misc.h>
@@ -676,7 +677,7 @@ static int __init __smem_alloc_secdbg_summary(size_t size)
 	return err;
 }
 
-static int __init sec_debug_summary_init(void)
+static int _sec_debug_summary_init(void)
 {
 	int err;
 	size_t size = sizeof(struct sec_debug_summary);
@@ -685,8 +686,10 @@ static int __init sec_debug_summary_init(void)
 		(unsigned int)SMEM_ID_VENDOR2, size);
 
 	err = __smem_alloc_secdbg_summary(size);
-	if (err)
+	if (err) {
+		pr_err("return with error[%d]", err);
 		return err;
+	}
 
 	memset_io(secdbg_summary, 0x0, size);
 
@@ -744,4 +747,61 @@ static int __init sec_debug_summary_init(void)
 
 	return 0;
 }
+
+#ifdef CONFIG_SEC_DEBUG_SUMMARY_DRIVER
+static int sec_debug_summary_probe(struct platform_device *pdev)
+{
+	int err = _sec_debug_summary_init();
+
+	if (err) {
+		pr_err("return with error[%d]", err);
+		return err;
+	}
+	
+	platform_set_drvdata(pdev, secdbg_summary);
+	return 0;
+}
+
+#ifdef CONFIG_OF
+static const struct of_device_id sec_debug_summary_dt_ids[] = {
+	{ .compatible = "samsung,sec-debug-summary" },
+	{ }
+};
+MODULE_DEVICE_TABLE(of, sec_debug_summary_dt_ids);
+#endif /* CONFIG_OF */
+
+struct platform_driver sec_debug_summary_driver = {
+	.probe		= sec_debug_summary_probe,
+	.driver		= {
+		.name 	= "sec_debug_summary",
+		.owner	= THIS_MODULE,
+#ifdef CONFIG_OF
+		.of_match_table = sec_debug_summary_dt_ids,
+#endif
+	},
+};
+
+static int __init sec_debug_summary_init(void)
+{
+	int err;
+
+	err = platform_driver_register(&sec_debug_summary_driver);
+	if (err)
+		pr_err("Failed to register sec_debug_summary platform driver: %d\n", err);
+
+	return 0;
+}
 subsys_initcall_sync(sec_debug_summary_init);
+
+static void __exit sec_debug_summary_exit(void)
+{
+	platform_driver_unregister(&sec_debug_summary_driver);
+}
+module_exit(sec_debug_summary_exit);
+#else
+static int __init sec_debug_summary_init(void)
+{
+	return _sec_debug_summary_init();
+}
+subsys_initcall_sync(sec_debug_summary_init);
+#endif

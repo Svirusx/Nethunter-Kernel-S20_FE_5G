@@ -1,0 +1,131 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "kona-sec-y2q-pinctrl-r00-b.dtsi"
+#include "kona-sec-picassoq-pm-common.dtsi"
+
+#include "../drivers/input_y2q_common.dtsi"
+#include "../drivers/eif_picasso_common.dtsi"
+#include "../drivers/eif_y2q_common.dtsi"
+#include "../drivers/battery-data-y2qlte-common.dtsi"
+#include "../drivers/audio_qca_picasso_common.dtsi"
+#include "../drivers/kona-sec-y2q-display-r00.dtsi"
+#include "../drivers/displayport_y2q_r00.dtsi"
+#include "../drivers/fingerprint-sensor_hubbley2_r00.dtsi"
+#include "../drivers/kona-sec-picassoq-common-mst-r00.dtsi"
+#include "../drivers/abc_picassoq_common.dtsi"
+
+&soc {
+
+	bcmdhd_wlan {
+		qcom,iommu-dma = "disabled";
+		compatible = "android,bcmdhd_wlan";
+		wlan-en-gpio = <&tlmm 90 0>;
+		wlan-host-wake-gpio = <&tlmm 128 0>;
+		wlan-smmu-iova-address = <0xa0000000 0x10000000>;
+		pinctrl-name = "bcmdhd_wlan_en","bcmdhd_default";
+		pinctrl-0 = <&bcmdhd_wlan_en>;
+		pinctrl-1 = <&bcmdhd_default>;
+		status = "ok";
+	}; 
+
+	bt_driver: bt_driver{
+		compatible = "bcm,btdriver";  //bt_en
+		pinctrl-names = "default";
+		pinctrl-0 = <&bt_en_default>;
+		bcm,bt-reset-gpio = <&tlmm 132 GPIO_ACTIVE_HIGH>;
+		status = "ok";
+	};
+
+	bt_bluesleep: bt_bluesleep {
+		compatible = "bcm,bluesleep";
+		bcm,bt-wake-gpio = <&tlmm 76 0>;
+		bcm,bt-host-wake-gpio = <&tlmm 47 0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&bt_wake_default &bt_hostwake_default>;
+		status = "ok";
+	};
+
+	qupv3_se1_4uart: qcom,qup_uart@984000 { 
+		compatible = "qcom,msm-geni-serial-hs"; 
+		reg = <0x984000 0x4000>; 
+		reg-names = "se_phys"; 
+		clock-names = "se-clk", "m-ahb", "s-ahb"; 
+		clocks = <&clock_gcc GCC_QUPV3_WRAP0_S1_CLK>, 
+		<&clock_gcc GCC_QUPV3_WRAP_0_M_AHB_CLK>, 
+		<&clock_gcc GCC_QUPV3_WRAP_0_S_AHB_CLK>; 
+		pinctrl-names = "default", "sleep"; 
+		pinctrl-0 = <&qupv3_se1_ctsrx_active>, <&qupv3_se1_rts_active>, 
+		<&qupv3_se1_tx_active>; 
+		pinctrl-1 = <&qupv3_se1_ctsrx_sleep>, <&qupv3_se1_rts_sleep>, 
+		<&qupv3_se1_tx_sleep>; 
+		interrupts-extended = <&intc GIC_SPI 602 IRQ_TYPE_LEVEL_HIGH>;
+		status = "ok"; 
+		qcom,wrapper-core = <&qupv3_0>; 
+	}; 
+};
+
+&aliases {
+	hsuart0 = "/soc/qcom,qup_uart@984000";
+};
+
+&ssc_sensors {
+	qcom,ssc_hw_rev = <0>;
+};
+
+&wlan {
+	status = "disabled";
+};
+
+&cnss_pci {
+	status = "disabled";
+};
+
+&bluetooth {
+	status = "disabled";
+};
+
+&qupv3_se1_i2c {
+	status = "disabled";
+};
+
+&qupv3_se6_4uart{
+	status = "disabled";
+};
+
+&cs35l41_r {
+	reset-gpios = <&tlmm 135 0>;
+};
+
+&kona_snd {
+	qcom,wcn-bt = <0>;
+};
+
+&qupv3_se5_i2c {
+	touchscreen@48 {
+		sec,bringup = <1>;
+	};
+};
+
+&pcie2 {
+    lane_equalization_preset = <0x55555555>;
+};
+
+&qupv3_se0_i2c {
+	max77705@66 {
+		max77705,extra_fw_enable = <1>;
+        };
+};
+
+&ufshc_mem {
+	hpb-enable = <1>;
+};

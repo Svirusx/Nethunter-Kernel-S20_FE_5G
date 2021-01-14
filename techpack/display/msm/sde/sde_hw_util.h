@@ -178,6 +178,9 @@ int sde_reg_read(struct sde_hw_blk_reg_map *c, u32 reg_off);
 #define SDE_REG_WRITE(c, off, val) sde_reg_write(c, off, val, #off)
 #define SDE_REG_READ(c, off) sde_reg_read(c, off)
 
+#define SDE_IMEM_WRITE(addr, val) writel_relaxed(val, addr)
+#define SDE_IMEM_READ(addr) readl_relaxed(addr)
+
 #define MISR_FRAME_COUNT_MASK		0xFF
 #define MISR_CTRL_ENABLE		BIT(8)
 #define MISR_CTRL_STATUS		BIT(9)
@@ -214,7 +217,7 @@ uint32_t sde_copy_formats(
 		const struct sde_format_extended *src_list,
 		uint32_t src_list_size);
 
-uint32_t sde_get_linetime(struct drm_display_mode *mode);
+uint32_t sde_get_linetime(struct drm_display_mode *mode, int comp_ratio);
 
 static inline bool is_qseed3_rev_qseed3lite(struct sde_mdss_cfg *sde_cfg)
 {

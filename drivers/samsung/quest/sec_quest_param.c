@@ -140,6 +140,7 @@ void quest_print_param_quest_data()
 	QUEST_PRINT("smd_ddrscan_elapsed_time     : (%d)\n", param_quest_data.smd_ddrscan_elapsed_time);
 	QUEST_PRINT("smd_quefi_elapsed_time       : (%d)\n", param_quest_data.smd_quefi_elapsed_time);
 	QUEST_PRINT("smd_suefi_elapsed_time       : (%d)\n", param_quest_data.smd_suefi_elapsed_time);
+	QUEST_PRINT("smd_quefi_total_pause_time   : (%d)\n", param_quest_data.smd_quefi_total_pause_time);
 	QUEST_PRINT("smd_boot_reason              : (%.2s)\n", param_quest_data.smd_boot_reason);
 	QUEST_PRINT("smd_hlos_start_time          : (%d)\n", param_quest_data.smd_hlos_start_time);
 	QUEST_PRINT("smd_hlos_elapsed_time        : (%d)\n", param_quest_data.smd_hlos_elapsed_time);
@@ -162,6 +163,7 @@ void quest_print_param_quest_data()
 	QUEST_PRINT("smd_ddrscan_elapsed_time_first : (%d)\n", param_quest_data.smd_ddrscan_elapsed_time_first);
 	QUEST_PRINT("smd_quefi_elapsed_time_first   : (%d)\n", param_quest_data.smd_quefi_elapsed_time_first);
 	QUEST_PRINT("smd_suefi_elapsed_time_first   : (%d)\n", param_quest_data.smd_suefi_elapsed_time_first);
+	QUEST_PRINT("smd_quefi_total_pause_time_first : (%d)\n", param_quest_data.smd_quefi_total_pause_time_first);
 	QUEST_PRINT("smd_boot_reason_first          : (%.2s)\n", param_quest_data.smd_boot_reason_first);
 	QUEST_PRINT("smd_hlos_start_time_first      : (%d)\n", param_quest_data.smd_hlos_start_time_first);
 	QUEST_PRINT("smd_hlos_elapsed_time_first    : (%d)\n", param_quest_data.smd_hlos_elapsed_time_first);
@@ -190,6 +192,23 @@ void quest_sync_param_quest_data()
 		QUEST_PRINT("%s : succeeded **********\n", __func__);
 	quest_print_param_quest_data();
 }
+
+void quest_load_param_quest_ddr_result_data(void)
+{
+	if (!sec_get_param(param_index_quest_ddr_result, &param_quest_ddr_result_data))
+		QUEST_PRINT("%s : failed\n", __func__);
+	else
+		QUEST_PRINT("%s : succeeded\n", __func__);
+}
+
+void quest_sync_param_quest_ddr_result_data(void)
+{
+	if (!sec_set_param(param_index_quest_ddr_result, &param_quest_ddr_result_data))
+		QUEST_PRINT("%s : failed\n", __func__);
+	else
+		QUEST_PRINT("%s : succeeded\n", __func__);
+}
+
 
 #if defined(CONFIG_SEC_DDR_SKP)
 #define QUEST_REPEAT_CNT 3
@@ -270,6 +289,9 @@ void quest_clear_param_quest_data()
 	}
 
 	quest_sync_param_quest_data();
+
+	param_quest_ddr_result_data.ddr_err_addr_total = 0;
+	quest_sync_param_quest_ddr_result_data();
 }
 
 void quest_initialize_curr_step()
@@ -280,22 +302,9 @@ void quest_initialize_curr_step()
 	param_quest_data.suefi_remained_count = 0;
 	param_quest_data.ddrscan_remained_count = 0;
 	quest_sync_param_quest_data();
-}
 
-void quest_load_param_quest_ddr_result_data()
-{
-	if (!sec_get_param(param_index_quest_ddr_result, &param_quest_ddr_result_data))
-		QUEST_PRINT("%s : failed\n", __func__);
-	else
-		QUEST_PRINT("%s : succeeded\n", __func__);
-}
-
-void quest_sync_param_quest_ddr_result_data()
-{
-	if (!sec_set_param(param_index_quest_ddr_result, &param_quest_ddr_result_data))
-		QUEST_PRINT("%s : failed\n", __func__);
-	else
-		QUEST_PRINT("%s : succeeded\n", __func__);
+	param_quest_ddr_result_data.ddr_err_addr_total = 0;
+	quest_sync_param_quest_ddr_result_data();
 }
 
 

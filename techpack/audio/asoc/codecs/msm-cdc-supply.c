@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2016-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2020, The Linux Foundation. All rights reserved.
  */
 
 #include <linux/kernel.h>
@@ -59,9 +59,22 @@ static int msm_cdc_dt_parse_vreg_info(struct device *dev,
 	}
 	cdc_vreg->optimum_uA = prop_val;
 
-	dev_info(dev, "%s: %s: vol=[%d %d]uV, curr=[%d]uA, ond %d\n",
+	/* Parse supply - LPM or NOM mode(default NOM) */
+	snprintf(prop_name, CODEC_DT_MAX_PROP_SIZE, "qcom,%s-lpm-supported", name);
+	rc = of_property_read_u32(dev->of_node, prop_name, &prop_val);
+	if (rc) {
+		dev_dbg(dev, "%s: Looking up %s property in node %s failed",
+			__func__, prop_name, dev->of_node->full_name);
+		cdc_vreg->lpm_supported = 0;
+		rc = 0;
+	} else {
+		cdc_vreg->lpm_supported = prop_val;
+	}
+
+	dev_info(dev, "%s: %s: vol=[%d %d]uV, curr=[%d]uA, ond %d lpm %d\n",
 		 __func__, cdc_vreg->name, cdc_vreg->min_uV, cdc_vreg->max_uV,
-		 cdc_vreg->optimum_uA, cdc_vreg->ondemand);
+		 cdc_vreg->optimum_uA, cdc_vreg->ondemand,
+		 cdc_vreg->lpm_supported);
 
 done:
 	return rc;
@@ -117,6 +130,93 @@ static int msm_cdc_check_supply_param(struct device *dev,
 
 	return 0;
 }
+
+/*
+ * msm_cdc_is_ondemand_supply:
+ *	return if ondemand supply true or not
+ *
+ * @dev: pointer to codec device
+ * @supplies: pointer to regulator bulk data
+ * @cdc_vreg: pointer to platform regulator data
+ * @num_supplies: number of supplies
+ * @supply_name: supply name to be checked
+ *
+ * Return true/false
+ */
+bool msm_cdc_is_ondemand_supply(struct device *dev,
+				struct regulator_bulk_data *supplies,
+				struct cdc_regulator *cdc_vreg,
+				int num_supplies,
+				char *supply_name)
+{
+	bool rc = false;
+	int ret, i;
+
+	if ((!supply_name) || (!supplies)) {
+		pr_err("%s: either dev or supplies or cdc_vreg is NULL\n",
+				__func__);
+		return rc;
+	}
+	/* input parameter validation */
+	ret = msm_cdc_check_supply_param(dev, cdc_vreg, num_supplies);
+	if (ret)
+		return rc;
+
+	for (i = 0; i < num_supplies; i++) {
+		if (cdc_vreg[i].ondemand &&
+			!strcmp(cdc_vreg[i].name, supply_name))
+			return true;
+	}
+
+	return rc;
+}
+EXPORT_SYMBOL(msm_cdc_is_ondemand_supply);
+
+/*
+ * msm_cdc_set_supply_min_voltage:
+ *	Set min supply voltage for particular supply
+ *
+ * @dev: pointer to codec device
+ * @supplies: pointer to regulator bulk data
+ * @cdc_vreg: pointer to platform regulator data
+ * @num_supplies: number of supplies
+ * @supply_name: Supply name to change voltage for
+ * @vval_min: Min voltage to be set in uV
+ * @override_min_vol: True if override min voltage from default
+ * Return error code if unable to set voltage
+ */
+int msm_cdc_set_supply_min_voltage(struct device *dev,
+				    struct regulator_bulk_data *supplies,
+				    struct cdc_regulator *cdc_vreg,
+				    int num_supplies, char *supply_name,
+				    int vval_min, bool override_min_vol)
+{
+	int rc = 0, i;
+
+	if ((!supply_name) || (!supplies)) {
+		pr_err("%s: either dev or supplies or cdc_vreg is NULL\n",
+				__func__);
+		return -EINVAL;
+	}
+	/* input parameter validation */
+	rc = msm_cdc_check_supply_param(dev, cdc_vreg, num_supplies);
+	if (rc)
+		return rc;
+	for (i = 0; i < num_supplies; i++) {
+		if (!strcmp(cdc_vreg[i].name, supply_name)) {
+			if (override_min_vol)
+				regulator_set_voltage(supplies[i].consumer,
+					vval_min, cdc_vreg[i].max_uV);
+			else
+				regulator_set_voltage(supplies[i].consumer,
+				    cdc_vreg[i].min_uV, cdc_vreg[i].max_uV);
+			break;
+		}
+	}
+
+	return rc;
+}
+EXPORT_SYMBOL(msm_cdc_set_supply_min_voltage);
 
 /*
  * msm_cdc_disable_ondemand_supply:
@@ -217,6 +317,59 @@ int msm_cdc_enable_ondemand_supply(struct device *dev,
 	return rc;
 }
 EXPORT_SYMBOL(msm_cdc_enable_ondemand_supply);
+
+/*
+ * msm_cdc_set_supplies_lpm_mode:
+ *	Update load for given supply string
+ *
+ * @dev: pointer to codec device
+ * @supplies: pointer to regulator bulk data
+ * @cdc_vreg: pointer to platform regulator data
+ * @num_supplies: number of supplies
+ * @supply_name: supply name to be checked
+ * @min_max: Apply optimum or 0 current
+ *
+ * Return error code if set current fail
+ */
+int msm_cdc_set_supplies_lpm_mode(struct device *dev,
+				struct regulator_bulk_data *supplies,
+				struct cdc_regulator *cdc_vreg,
+				int num_supplies,
+				bool flag)
+{
+	int rc = 0, i;
+
+	if (!supplies) {
+		pr_err("%s: supplies is NULL\n",
+				__func__);
+		return -EINVAL;
+	}
+	/* input parameter validation */
+	rc = msm_cdc_check_supply_param(dev, cdc_vreg, num_supplies);
+	if (rc)
+		return rc;
+
+	for (i = 0; i < num_supplies; i++) {
+		if (cdc_vreg[i].lpm_supported) {
+			rc = regulator_set_load(
+				supplies[i].consumer,
+				flag ? 0 : cdc_vreg[i].optimum_uA);
+			if (rc)
+				dev_err(dev,
+					"%s: failed to set supply %s to %s, err:%d\n",
+					__func__, supplies[i].supply,
+					flag ? "LPM" : "NOM",
+					rc);
+			else
+				dev_dbg(dev, "%s: regulator %s load set to %s\n",
+					__func__, supplies[i].supply,
+					flag ? "LPM" : "NOM");
+		}
+	}
+
+	return rc;
+}
+EXPORT_SYMBOL(msm_cdc_set_supplies_lpm_mode);
 
 /*
  * msm_cdc_disable_static_supplies:

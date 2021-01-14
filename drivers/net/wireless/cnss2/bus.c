@@ -435,6 +435,36 @@ int cnss_bus_is_device_down(struct cnss_plat_data *plat_priv)
 	}
 }
 
+int cnss_bus_check_link_status(struct cnss_plat_data *plat_priv)
+{
+	if (!plat_priv)
+		return -ENODEV;
+
+	switch (plat_priv->bus_type) {
+	case CNSS_BUS_PCI:
+		return cnss_pci_check_link_status(plat_priv->bus_priv);
+	default:
+		cnss_pr_dbg("Unsupported bus type: %d\n",
+			    plat_priv->bus_type);
+		return 0;
+	}
+}
+
+int cnss_bus_recover_link_down(struct cnss_plat_data *plat_priv)
+{
+	if (!plat_priv)
+		return -ENODEV;
+
+	switch (plat_priv->bus_type) {
+	case CNSS_BUS_PCI:
+		return cnss_pci_recover_link_down(plat_priv->bus_priv);
+	default:
+		cnss_pr_dbg("Unsupported bus type: %d\n",
+			    plat_priv->bus_type);
+		return -EINVAL;
+	}
+}
+
 int cnss_bus_debug_reg_read(struct cnss_plat_data *plat_priv, u32 offset,
 			    u32 *val)
 {
@@ -479,13 +509,13 @@ int cnss_bus_get_iova(struct cnss_plat_data *plat_priv, u64 *addr, u64 *size)
 		return cnss_pci_get_iova(plat_priv->bus_priv, addr, size);
 	default:
 		cnss_pr_err("Unsupported bus type: %d\n",
-                           plat_priv->bus_type);
+			    plat_priv->bus_type);
 		return -EINVAL;
 	}
 }
 
 int cnss_bus_get_iova_ipa(struct cnss_plat_data *plat_priv, u64 *addr,
-                         u64 *size)
+			  u64 *size)
 {
 	if (!plat_priv)
 		return -ENODEV;
@@ -495,7 +525,7 @@ int cnss_bus_get_iova_ipa(struct cnss_plat_data *plat_priv, u64 *addr,
 		return cnss_pci_get_iova_ipa(plat_priv->bus_priv, addr, size);
 	default:
 		cnss_pr_err("Unsupported bus type: %d\n",
-			plat_priv->bus_type);
+			    plat_priv->bus_type);
 		return -EINVAL;
 	}
 }

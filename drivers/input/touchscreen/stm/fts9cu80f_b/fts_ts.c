@@ -2120,6 +2120,15 @@ static u8 fts_event_handler_type_b(struct fts_ts_info *info)
 				p_gesture_status->gesture_data_1, p_gesture_status->gesture_data_2,
 				p_gesture_status->gesture_data_3, p_gesture_status->gesture_data_4);
 
+			if (p_gesture_status->stype == FTS_SPONGE_EVENT_LARGE_PALM) {
+				input_info(true, &info->client->dev, "%s: LARGE PALM: %d\n", __func__, p_gesture_status->gesture_id);
+				if (p_gesture_status->gesture_id == 0)
+					input_report_key(info->input_dev, BTN_LARGE_PALM, 1);
+				else
+					input_report_key(info->input_dev, BTN_LARGE_PALM, 0);
+				input_sync(info->input_dev);
+			}
+
 #ifdef FTS_SUPPORT_SPONGELIB
 			if (p_gesture_status->stype == FTS_SPONGE_EVENT_DOUBLETAP) {
 				if (p_gesture_status->gesture_id == FTS_SPONGE_EVENT_GESTURE_ID_AOD) {
@@ -2925,6 +2934,7 @@ static void fts_set_input_prop(struct fts_ts_info *info, struct input_dev *dev, 
 	set_bit(propbit, dev->propbit);
 	set_bit(BTN_TOUCH, dev->keybit);
 	set_bit(BTN_TOOL_FINGER, dev->keybit);
+	set_bit(BTN_LARGE_PALM, dev->keybit);
 	set_bit(KEY_BLACK_UI_GESTURE, dev->keybit);
 	set_bit(KEY_WAKEUP, dev->keybit);
 	set_bit(KEY_INT_CANCEL, dev->keybit);
@@ -3706,6 +3716,7 @@ void fts_release_all_finger(struct fts_ts_info *info)
 
 	input_report_key(info->input_dev, BTN_TOUCH, 0);
 	input_report_key(info->input_dev, BTN_TOOL_FINGER, 0);
+	input_report_key(info->input_dev, BTN_LARGE_PALM, 0);
 
 	if (info->board->support_sidegesture) {
 		input_report_key(info->input_dev, KEY_SIDE_GESTURE, 0);

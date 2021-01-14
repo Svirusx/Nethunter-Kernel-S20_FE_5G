@@ -1,0 +1,102 @@
+/* Copyright (c) 2020, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "kona-sec-c1q-r03.dtsi"
+#include "kona-sec-c1q-pinctrl-r04.dtsi"
+#include "../drivers/input_c1q_r04.dtsi"
+
+&soc {
+	battery {
+		battery,store_mode_buckoff;
+
+		battery,chg_float_voltage = <4420>;
+		battery,recharge_condition_vcell = <4350>;
+
+		battery,swelling_low_temp_current = <1000>;	/* 0.24C */
+		battery,swelling_low_temp_current_2nd = <400>;	/* 0.1C */
+		battery,swelling_low_temp_current_3rd = <3000>;	/* 0.72C */
+		battery,swelling_low_temp_topoff = <208>;	/* 0.05C */
+		battery,swelling_high_temp_current = <1500>;	/* 0.36C */
+		battery,swelling_high_temp_topoff = <208>;	/* 0.05C */
+
+		battery,swelling_drop_float_voltage = <4200>;
+		battery,swelling_high_rechg_voltage = <4050>;
+		battery,swelling_low_rechg_thr = <150>;
+
+		battery,age_data = <0 4420 4350 4370 93
+				200 4360 4290 4310 90
+				1000 4310 4240 4260 89>;
+
+		/* step charging option */
+		battery,step_charging_type = <0x3E>;
+		battery,step_charging_step = <2>;
+		battery,step_charging_charge_power = <12000>;
+		battery,step_charging_condition = <55 100
+						55 100
+						55 100
+						55 100
+						55 100>;
+		battery,step_charging_condition_curr = <2850 2500>;
+		battery,step_charging_current = <3150 3100>;
+		battery,step_charging_float_voltage = <4260 4420>;
+
+		/* direct step charging option */
+		battery,dc_step_chg_cond_vol = <4150 4265 4420>; /*<25w 3step> STEP_CHARGING_CONDITION_VOLTAGE */
+		battery,dc_step_chg_cond_iin = <1940 1550 0>; /* <25w 3step> STEP_CHARGING_CONDITION_INPUT_CURRENT */
+		battery,dc_step_chg_iin_check_cnt = <3>;
+		battery,dc_step_chg_cond_soc = <30 55 100
+						30 55 100
+						30 55 100
+						30 55 100
+						30 55 100>; /* <25w 3step> STEP_CHARGING_CONDITION_SOC */
+		battery,dc_step_chg_val_vfloat = <4150 4265 4420>; /* <25w 3step> STEP_CHARGING_CONDITION_FLOAT_VOLTAGE */
+		battery,dc_step_chg_val_iout = <5040 3880 3100>; /* <25w 3step> */
+
+		battery,battery_full_capacity = <4000>;
+		battery,cisd_max_voltage_thr = <4470>; /* batttery ovp dettection voltage */
+	};
+	max77705-fuelgauge {
+		fuelgauge,capacity = <0x0DFF>; /* capacity = fullcapnom = DesignCap */
+		fuelgauge,fg_reset_wa_data = <0x0DFF 0x0032 0x037F 0x002F 0x1B28>; /* fullcapnom(=capacity), dPacc, dQacc,  rcomp0, tempco */
+	};
+	cable-info {
+		full_check_current_1st = <625>;
+		full_check_current_2nd = <208>;
+
+		current_group_6 {
+			charging_current = <2750>;
+		};
+		current_group_7 {
+			charging_current = <2750>;
+		};
+		current_group_10 {
+			charging_current = <2750>;
+		};
+		current_group_13 {
+			charging_current = <2750>;
+		};
+	};
+	wireless-power-info {
+		current_group_0 {
+			fast_charging_current = <2750>;
+		};
+		current_group_1 {
+			fast_charging_current = <2750>;
+		};
+		current_group_2 {
+			fast_charging_current = <2750>;
+		};
+		current_group_3 {
+			fast_charging_current = <2750>;
+		};
+	};
+};

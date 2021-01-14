@@ -406,6 +406,7 @@ struct wacom_i2c {
 	volatile bool probe_done;
 	bool query_status;
 	struct completion resume_done;
+	struct completion i2c_done;
 	struct regulator *regulator_avdd;
 	struct regulator *regulator_dvdd;
 

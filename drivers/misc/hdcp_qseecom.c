@@ -26,7 +26,7 @@
 
 #include "qseecom_kernel.h"
 
-#ifdef CONFIG_SEC_DISPLAYPORT
+#ifdef CONFIG_SEC_DISPLAYPORT_ENG
 #include <linux/secdp_logger.h>
 #endif
 
@@ -610,6 +610,10 @@ static int hdcp_get_version(struct hdcp2_handle *handle)
 	if (app_major_version == 1)
 		handle->legacy_app = true;
 error:
+#ifdef CONFIG_SEC_DISPLAYPORT
+	if (rc)
+		pr_err("%s error! rc:%d\n", __func__, rc);
+#endif
 	return rc;
 }
 
@@ -636,6 +640,10 @@ static int hdcp2_app_init_legacy(struct hdcp2_handle *handle)
 
 	pr_debug("success\n");
 error:
+#ifdef CONFIG_SEC_DISPLAYPORT
+	if (rc)
+		pr_err("%s error! rc:%d\n", __func__, rc);
+#endif
 	return rc;
 }
 
@@ -686,6 +694,10 @@ static int hdcp2_app_init(struct hdcp2_handle *handle)
 		 HCDP_TXMTR_GET_MINOR_VERSION(rsp_buf->appversion),
 		 HCDP_TXMTR_GET_PATCH_VERSION(rsp_buf->appversion));
 error:
+#ifdef CONFIG_SEC_DISPLAYPORT
+	if (rc)
+		pr_err("%s error! rc:%d\n", __func__, rc);
+#endif
 	return rc;
 }
 
@@ -717,6 +729,10 @@ static int hdcp2_app_tx_init(struct hdcp2_handle *handle)
 
 	pr_debug("success\n");
 error:
+#ifdef CONFIG_SEC_DISPLAYPORT
+	if (rc)
+		pr_err("%s error! rc:%d\n", __func__, rc);
+#endif
 	return rc;
 }
 
@@ -750,14 +766,16 @@ static int hdcp2_app_tx_init_legacy(struct hdcp2_handle *handle)
 
 	pr_debug("success\n");
 error:
+#ifdef CONFIG_SEC_DISPLAYPORT
+	if (rc)
+		pr_err("%s error! rc:%d\n", __func__, rc);
+#endif
 	return rc;
 }
 
 static int hdcp2_app_load(struct hdcp2_handle *handle)
 {
 	int rc = 0;
-
-	pr_debug("+++\n");
 
 	if (!handle) {
 		pr_err("invalid input\n");
@@ -769,6 +787,8 @@ static int hdcp2_app_load(struct hdcp2_handle *handle)
 		pr_err("%s app already loaded\n", handle->app_name);
 		goto error;
 	}
+
+	pr_debug("+++\n");
 
 	rc = qseecom_start_app(&handle->qseecom_handle,
 		 handle->app_name, QSEECOM_SBUFF_SIZE);
@@ -823,9 +843,9 @@ static int hdcp2_app_unload(struct hdcp2_handle *handle)
 
 	hdcp2_app_init_var(deinit);
 
-	hdcp2_app_process_cmd(deinit);
-
 	pr_debug("+++\n");
+
+	hdcp2_app_process_cmd(deinit);
 
 	/* deallocate the resources for qseecom HDCPSRM handle */
 	rc = qseecom_shutdown_app(&handle->hdcpsrm_qseecom_handle);
@@ -859,6 +879,8 @@ static int hdcp2_verify_key(struct hdcp2_handle *handle)
 		rc = -EINVAL;
 		goto error;
 	}
+
+	pr_debug("+++\n");
 
 	rc = hdcp2_app_process_cmd(verify_key);
 	pr_debug("verify_key = %d\n", rc);
@@ -894,6 +916,10 @@ bool hdcp2_feature_supported(void *data)
 		hdcp2_app_unload(handle);
 	}
 error:
+#ifdef CONFIG_SEC_DISPLAYPORT
+	if (rc)
+		pr_err("%s error! rc:%d\n", __func__, rc);
+#endif
 	return supported;
 }
 
@@ -922,6 +948,8 @@ static int hdcp2_app_session_init(struct hdcp2_handle *handle)
 
 	req_buf->deviceid = handle->device_type;
 
+	pr_debug("+++\n");
+
 	rc = hdcp2_app_process_cmd(session_init);
 	if (rc)
 		goto error;
@@ -933,6 +961,10 @@ static int hdcp2_app_session_init(struct hdcp2_handle *handle)
 
 	pr_debug("success\n");
 error:
+#ifdef CONFIG_SEC_DISPLAYPORT
+	if (rc)
+		pr_err("%s error! rc:%d\n", __func__, rc);
+#endif
 	return rc;
 }
 
@@ -956,6 +988,8 @@ static int hdcp2_app_session_deinit(struct hdcp2_handle *handle)
 
 	req_buf->sessionid = handle->session_id;
 
+	pr_debug("+++\n");
+
 	rc = hdcp2_app_process_cmd(session_deinit);
 	if (rc)
 		goto error;
@@ -963,6 +997,10 @@ static int hdcp2_app_session_deinit(struct hdcp2_handle *handle)
 	handle->hdcp_state &= ~HDCP_STATE_SESSION_INIT;
 	pr_debug("success\n");
 error:
+#ifdef CONFIG_SEC_DISPLAYPORT
+	if (rc)
+		pr_err("%s error! rc:%d\n", __func__, rc);
+#endif
 	return rc;
 }
 
@@ -986,6 +1024,8 @@ static int hdcp2_app_tx_deinit(struct hdcp2_handle *handle)
 
 	req_buf->ctxhandle = handle->tz_ctxhandle;
 
+	pr_debug("+++\n");
+
 	rc = hdcp2_app_process_cmd(tx_deinit);
 	if (rc)
 		goto error;
@@ -993,6 +1033,10 @@ static int hdcp2_app_tx_deinit(struct hdcp2_handle *handle)
 	handle->hdcp_state &= ~HDCP_STATE_TXMTR_INIT;
 	pr_debug("success\n");
 error:
+#ifdef CONFIG_SEC_DISPLAYPORT
+	if (rc)
+		pr_err("%s error! rc:%d\n", __func__, rc);
+#endif
 	return rc;
 }
 
@@ -1016,6 +1060,8 @@ static int hdcp2_app_start_auth(struct hdcp2_handle *handle)
 
 	req_buf->ctxHandle = handle->tz_ctxhandle;
 
+	pr_debug("+++\n");
+
 	rc = hdcp2_app_process_cmd(start_auth);
 	if (rc)
 		goto error;
@@ -1029,6 +1075,10 @@ static int hdcp2_app_start_auth(struct hdcp2_handle *handle)
 
 	pr_debug("success\n");
 error:
+#ifdef CONFIG_SEC_DISPLAYPORT
+	if (rc)
+		pr_err("%s error! rc:%d\n", __func__, rc);
+#endif
 	return rc;
 }
 
@@ -1096,6 +1146,8 @@ static int hdcp2_app_process_msg(struct hdcp2_handle *handle)
 	req_buf->msglen = handle->app_data.request.length;
 	req_buf->ctxhandle = handle->tz_ctxhandle;
 
+	pr_debug("+++\n");
+
 	rc = hdcp2_app_process_cmd(rcvd_msg);
 	if (rc)
 		goto error;
@@ -1108,6 +1160,10 @@ static int hdcp2_app_process_msg(struct hdcp2_handle *handle)
 	handle->app_data.response.length = rsp_buf->msglen;
 	handle->app_data.timeout = rsp_buf->timeout;
 error:
+#ifdef CONFIG_SEC_DISPLAYPORT
+	if (rc)
+		pr_err("%s error! rc:%d\n", __func__, rc);
+#endif
 	return rc;
 }
 
@@ -1117,6 +1173,8 @@ static int hdcp2_app_timeout(struct hdcp2_handle *handle)
 
 	hdcp2_app_init_var(send_timeout);
 
+	pr_debug("+++\n");
+
 	rc = hdcp2_app_process_cmd(send_timeout);
 	if (rc)
 		goto error;
@@ -1125,6 +1183,10 @@ static int hdcp2_app_timeout(struct hdcp2_handle *handle)
 	handle->app_data.response.length = rsp_buf->msglen;
 	handle->app_data.timeout = rsp_buf->timeout;
 error:
+#ifdef CONFIG_SEC_DISPLAYPORT
+	if (rc)
+		pr_err("%s error! rc:%d\n", __func__, rc);
+#endif
 	return rc;
 }
 
@@ -1142,6 +1204,8 @@ static int hdcp2_app_enable_encryption(struct hdcp2_handle *handle)
 
 	req_buf->ctxhandle = handle->tz_ctxhandle;
 
+	pr_debug("+++\n");
+
 	rc = hdcp2_app_process_cmd(set_hw_key);
 	if (rc)
 		goto error;
@@ -1151,6 +1215,10 @@ static int hdcp2_app_enable_encryption(struct hdcp2_handle *handle)
 	pr_debug("success\n");
 	return rc;
 error:
+#ifdef CONFIG_SEC_DISPLAYPORT
+	if (rc)
+		pr_err("%s error! rc:%d\n", __func__, rc);
+#endif
 	return rc;
 }
 
@@ -1165,12 +1233,18 @@ int hdcp2_force_encryption_utility(struct hdcp2_handle *handle, uint32_t enable)
 	req_buf->ctxhandle = handle->tz_ctxhandle;
 	req_buf->enable = enable;
 
+	pr_debug("+++\n");
+
 	rc = hdcp2_app_process_cmd(force_encryption);
 	if (rc || (rsp_buf->commandid != hdcp_cmd_force_encryption))
 		goto error;
 
 	return 0;
 error:
+#ifdef CONFIG_SEC_DISPLAYPORT
+	if (rc)
+		pr_err("%s error! rc:%d\n", __func__, rc);
+#endif
 	return rc;
 }
 
@@ -1205,6 +1279,8 @@ static int hdcp2_app_query_stream(struct hdcp2_handle *handle)
 
 	req_buf->ctxhandle = handle->tz_ctxhandle;
 
+	pr_debug("+++\n");
+
 	rc = hdcp2_app_process_cmd(query_stream_type);
 	if (rc)
 		goto error;
@@ -1213,6 +1289,10 @@ static int hdcp2_app_query_stream(struct hdcp2_handle *handle)
 	handle->app_data.response.length = rsp_buf->msglen;
 	handle->app_data.timeout = rsp_buf->timeout;
 error:
+#ifdef CONFIG_SEC_DISPLAYPORT
+	if (rc)
+		pr_err("%s error! rc:%d\n", __func__, rc);
+#endif
 	return rc;
 }
 
@@ -1307,6 +1387,8 @@ static int hdcp2_open_stream_helper(struct hdcp2_handle *handle,
 	req_buf->stream_number = stream_number;
 	req_buf->streamMediaType = 0;
 
+	pr_debug("+++\n");
+
 	rc = hdcp2_app_process_cmd(session_open_stream);
 	if (rc)
 		goto error;
@@ -1316,6 +1398,10 @@ static int hdcp2_open_stream_helper(struct hdcp2_handle *handle,
 	pr_debug("success\n");
 
 error:
+#ifdef CONFIG_SEC_DISPLAYPORT
+	if (rc)
+		pr_err("%s error! rc:%d\n", __func__, rc);
+#endif
 	return rc;
 }
 
@@ -1358,6 +1444,8 @@ static int hdcp2_close_stream_helper(struct hdcp2_handle *handle,
 	req_buf->sessionid = handle->session_id;
 	req_buf->streamid = stream_id;
 
+	pr_debug("+++\n");
+
 	rc = hdcp2_app_process_cmd(session_close_stream);
 
 	if (rc)
@@ -1365,6 +1453,10 @@ static int hdcp2_close_stream_helper(struct hdcp2_handle *handle,
 
 	pr_debug("success\n");
 error:
+#ifdef CONFIG_SEC_DISPLAYPORT
+	if (rc)
+		pr_err("%s error! rc:%d\n", __func__, rc);
+#endif
 	return rc;
 }
 
@@ -1527,6 +1619,8 @@ static int hdcp1_app_load(struct hdcp1_handle *handle)
 		goto error;
 	}
 
+	pr_debug("+++\n");
+
 	rc = qseecom_start_app(&handle->qseecom_handle, handle->app_name,
 			QSEECOM_SBUFF_SIZE);
 	if (rc) {
@@ -1538,6 +1632,10 @@ static int hdcp1_app_load(struct hdcp1_handle *handle)
 	pr_debug("%s app loaded\n", handle->app_name);
 
 error:
+#ifdef CONFIG_SEC_DISPLAYPORT
+	if (rc)
+		pr_err("%s error! rc:%d\n", __func__, rc);
+#endif
 	return rc;
 }
 
@@ -1554,6 +1652,8 @@ static void hdcp1_app_unload(struct hdcp1_handle *handle)
 		pr_warn("%s app not loaded\n", handle->app_name);
 		return;
 	}
+
+	pr_debug("+++\n");
 
 	/* deallocate the resources for qseecom HDCP 1.x handle */
 	rc = qseecom_shutdown_app(&handle->qseecom_handle);
@@ -1582,6 +1682,8 @@ static int hdcp1_verify_key(struct hdcp1_handle *hdcp1_handle)
 		pr_err("%s app not loaded\n", hdcp1_handle->app_name);
 		return -EINVAL;
 	}
+
+	pr_debug("+++\n");
 
 	handle = hdcp1_handle->qseecom_handle;
 
@@ -1663,6 +1765,8 @@ int hdcp1_set_enc(void *data, bool enable)
 		pr_err("%s app not loaded\n", hdcp1_handle->app_name);
 		return -EINVAL;
 	}
+
+	pr_debug("+++\n");
 
 	handle = hdcp1_handle->qseecom_handle;
 

@@ -105,7 +105,7 @@ config ION_RBIN_ONLY_FOR_UNDER_8GB
 
 config ION_RBIN_HEAP_EXCEPTION
 	bool "support different rbin size for under 8GB device"
-	default n
+	default y
 	depends on ION_RBIN_ONLY_FOR_UNDER_8GB
 	help
 	  set different rbin size for under 8GB ram devices

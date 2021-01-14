@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2012-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012-2020, The Linux Foundation. All rights reserved.
  */
 
 #include "dp_panel.h"
@@ -2826,8 +2826,6 @@ static int dp_panel_init_panel_info(struct dp_panel *dp_panel)
 	*/
 	usleep_range(1000, 2000);
 
-	drm_dp_link_probe(panel->aux->drm_aux, &dp_panel->link_info);
-
 end:
 	return rc;
 }
@@ -3346,9 +3344,6 @@ static void dp_panel_config_msa(struct dp_panel *dp_panel)
 static void dp_panel_resolution_info(struct dp_panel_private *panel)
 {
 	struct dp_panel_info *pinfo = &panel->dp_panel.pinfo;
-#ifdef CONFIG_SEC_DISPLAYPORT_BIGDATA
-	char buf[20] = {0, };
-#endif
 
 	/*
 	 * print resolution info as this is a result
@@ -3368,11 +3363,14 @@ static void dp_panel_resolution_info(struct dp_panel_private *panel)
 	DP_INFO("SET NEW RESOLUTION: %dx%d@%dfps\n",
 		pinfo->h_active, pinfo->v_active, pinfo->refresh_rate);
 #endif
-
 #ifdef CONFIG_SEC_DISPLAYPORT_BIGDATA
+{
+	char buf[20] = {0, };
+
 	scnprintf(buf, 20, "%dx%d@%d",
 		pinfo->h_active, pinfo->v_active, pinfo->refresh_rate);
 	secdp_bigdata_save_item(BD_RESOLUTION, buf);
+}
 #endif
 }
 

@@ -365,6 +365,9 @@
 #define BTN_BACK		0x116
 #define BTN_TASK		0x117
 
+#define BTN_PALM		0x118    /* palm flag */
+#define BTN_LARGE_PALM		0x119    /* large palm flag */
+
 #define BTN_JOYSTICK		0x120
 #define BTN_TRIGGER		0x120
 #define BTN_THUMB		0x121

@@ -244,6 +244,8 @@ void cam_mipi_init_setting(struct cam_sensor_ctrl_t *s_ctrl)
 			s_ctrl->mipi_info = sensor_s5kgh1_setfile_B_mipi_sensor_mode;
 		} else if (s_ctrl->sensor_mode == 2) {
 			s_ctrl->mipi_info = sensor_s5kgh1_setfile_C_mipi_sensor_mode;
+		} else if (s_ctrl->sensor_mode == 3) {
+			s_ctrl->mipi_info = sensor_s5kgh1_setfile_D_mipi_sensor_mode;
 		} else {
 			s_ctrl->mipi_info = sensor_s5kgh1_setfile_A_mipi_sensor_mode;
 		}

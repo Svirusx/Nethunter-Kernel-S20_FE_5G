@@ -374,11 +374,11 @@ static struct dsi_panel_cmd_set *ss_hbm_etc(struct samsung_display_driver_data *
 	else if (vdd->br_info.common_br.cd_level == 1000) {
 		hbm_etc_cmds->cmds[4].msg.tx_buf[3] = 0x20;
 	}
-	else if (vdd->br_info.common_br.cd_level == 485) {
-		hbm_etc_cmds->cmds[4].msg.tx_buf[3] = 0xB4;
+	else if (vdd->br_info.common_br.cd_level == 440) { /* BLOOMX_TODO : need to add proper aor value for WHITE */
+		hbm_etc_cmds->cmds[4].msg.tx_buf[3] = 0xA0;
 	}
-	else if (vdd->br_info.common_br.cd_level == 730) {
-		hbm_etc_cmds->cmds[4].msg.tx_buf[3] = 0x70;
+	else if (vdd->br_info.common_br.cd_level == 666) {
+		hbm_etc_cmds->cmds[4].msg.tx_buf[3] = 0x30;
 	}
 
 	LCD_INFO("vdd->br_info.common_br.cd_level = %d\n", vdd->br_info.common_br.cd_level);

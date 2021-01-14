@@ -1,0 +1,129 @@
+/* Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include <dt-bindings/input/input.h>
+
+&s2dos05_l2 {	/* tsp_io */
+	regulator-min-microvolt = <1800000>;
+	regulator-max-microvolt = <1800000>;
+	regulator-boot-on;
+};
+
+&s2dos05_l3 {	/* tsp_avdd */
+	regulator-min-microvolt = <3000000>;
+	regulator-max-microvolt = <3000000>;
+	regulator-boot-on;
+};
+
+/delete-node/ &gpio_keys;
+&soc {
+	gpio_keys: gpio_keys {
+		status = "ok";
+		compatible = "gpio-keys";
+		input-name = "gpio-keys";
+		gpio-key,wakeup_enable;
+		label = "gpio_keys";
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&key_vol_up_default>;
+
+		vol_up {
+			label = "volume_up";
+			gpios = <&pm8150l_gpios 3 GPIO_ACTIVE_LOW>;
+			linux,input-type = <1>;
+			linux,code = <KEY_VOLUMEUP>;
+			debounce-interval = <15>;
+			linux,can-disable;
+		};
+	};
+
+	ss_touch {
+		compatible = "samsung,ss_touch";
+		ss_touch,numbers = <1>;
+	};
+};
+
+/delete-node/ &key_vol_up_default;
+
+&pm8150l_gpios {
+	key_vol_up {
+		key_vol_up_default: key_vol_up_default {
+			pins = "gpio3";
+			function = "normal";
+			input-enable;
+			bias-pull-up;
+			power-source = <0>;
+		};
+	};
+};
+
+&qupv3_se5_i2c {
+	pinctrl-0 = <&qupv3_se5_tsp_i2c_active>;
+	pinctrl-1 = <&qupv3_se5_tsp_i2c_sleep>;
+	status = "ok";
+
+	touchscreen@48 {
+		status = "ok";
+		compatible = "sec,sec_ts";
+		reg = <0x48>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <15 0>;
+		pinctrl-names = "default", "on_state", "off_state";
+		pinctrl-0 = <&attn_irq>;
+		pinctrl-1 = <&attn_irq>;
+		pinctrl-2 = <&attn_irq>;
+		sec,irq_gpio = <&tlmm 15 0x2008>;
+		sec,irq_type = <0x2008>;
+		sec,max_coords = <4096 4096>; /* x y */
+		sec,regulator_dvdd = "s2dos05-ldo2";
+		sec,regulator_avdd = "s2dos05-ldo3";
+		sec,regulator_boot_on;
+		sec,tclm_level = <1>;
+		sec,afe_base = <0x00>;
+		support_dex_mode;
+		sec,i2c-burstmax = <0xffff>;
+		sec,ss_touch_num = <1>;
+		enable_settings_aot;
+		sec,area-size = <132 266 341>;
+		support_ear_detect_mode;
+		sync-reportrate-120 = "Y";
+		support_fod;
+		support_vrr;
+	};
+	
+	st_fts@49 {
+		status = "disabled";
+	};
+};
+
+&qupv3_se9_i2c {
+	pinctrl-0 = <&qupv3_se9_i2c_active_keyless>;
+	pinctrl-1 = <&qupv3_se9_i2c_sleep_keyless>;
+	status = "disabled";
+
+	fsr@49 {
+		status = "disabled";
+		compatible = "stm,fsr_sidekey";
+		reg = <0x49>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&keyless_reset_active &keyless_int_default>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <150 0>;
+		stm,irq_gpio = <&tlmm 150 0>;
+		stm,irq_type = <8200>;
+		stm,rst_gpio = <&tlmm 127 GPIO_ACTIVE_HIGH>;
+		stm,project_name = "DAVINCI", "N970";
+		stm,system_info_addr = <0x0000>;
+		stm,firmware_name = "key_stm/fsr1ad04_p2.fw";
+	};
+};
+

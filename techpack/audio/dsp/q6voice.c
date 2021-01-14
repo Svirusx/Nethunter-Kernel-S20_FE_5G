@@ -61,10 +61,7 @@ struct cvd_version_table cvd_version_table_mapping[CVD_INT_VERSION_MAX] = {
 static struct common_data common;
 static bool module_initialized;
 
-#ifdef CONFIG_DSP_SLEEP_RECOVERY
 bool voice_activated = false;
-#endif /* CONFIG_DSP_SLEEP_RECOVERY */
-
 
 static int voice_send_enable_vocproc_cmd(struct voice_data *v);
 static int voice_send_netid_timing_cmd(struct voice_data *v);
@@ -531,6 +528,8 @@ static void voc_set_error_state(uint16_t reset_proc)
 		if (v != NULL) {
 			v->voc_state = VOC_ERROR;
 			v->rec_info.recording = 0;
+			v->music_info.playing = 0;
+			v->music_info.force = 0;
 		}
 	}
 }
@@ -7019,9 +7018,7 @@ int voc_end_voice_call(uint32_t session_id)
 		}
 
 		v->voc_state = VOC_RELEASE;
-#ifdef CONFIG_DSP_SLEEP_RECOVERY
 		voice_activated = false;
-#endif /* CONFIG_DSP_SLEEP_RECOVERY */
 	} else {
 		pr_err("%s: Error: End voice called in state %d\n",
 			__func__, v->voc_state);
@@ -7229,9 +7226,17 @@ int voc_enable_device(uint32_t session_id)
 			goto done;
 		}
 		v->voc_state = VOC_RUN;
-#ifdef CONFIG_DSP_SLEEP_RECOVERY
+
+		if (v->lch_mode == 0) {
+			pr_debug("%s: dev_mute = %d, ramp_duration = %d ms\n",
+				__func__, v->dev_rx.dev_mute,
+				 v->dev_rx.dev_mute_ramp_duration_ms);
+			ret = voice_send_device_mute_cmd(v,
+					VSS_IVOLUME_DIRECTION_RX,
+					v->dev_rx.dev_mute,
+					v->dev_rx.dev_mute_ramp_duration_ms);
+		}
 		voice_activated = true;
-#endif /* CONFIG_DSP_SLEEP_RECOVERY */
 	} else {
 		pr_debug("%s: called in voc state=%d, No_OP\n",
 			 __func__, v->voc_state);
@@ -7307,9 +7312,7 @@ int voc_resume_voice_call(uint32_t session_id)
 		goto fail;
 	}
 	v->voc_state = VOC_RUN;
-#ifdef CONFIG_DSP_SLEEP_RECOVERY
 	voice_activated = true;
-#endif /* CONFIG_DSP_SLEEP_RECOVERY */
 
 	return 0;
 fail:
@@ -7433,9 +7436,7 @@ int voc_start_voice_call(uint32_t session_id)
 #endif /* CONFIG_SEC_SND_ADAPTATION */
 
 		v->voc_state = VOC_RUN;
-#ifdef CONFIG_DSP_SLEEP_RECOVERY
 		voice_activated = true;
-#endif /* CONFIG_DSP_SLEEP_RECOVERY */
 	} else {
 		pr_err("%s: Error: Start voice called in state %d\n",
 			__func__, v->voc_state);

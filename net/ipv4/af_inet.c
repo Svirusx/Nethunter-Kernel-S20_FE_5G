@@ -461,8 +461,8 @@ int inet_release(struct socket *sock)
 		if (sock_flag(sk, SOCK_LINGER) &&
 		    !(current->flags & PF_EXITING))
 			timeout = sk->sk_lingertime;
-		sock->sk = NULL;
 		sk->sk_prot->close(sk, timeout);
+		sock->sk = NULL;
 	}
 	return 0;
 }
@@ -855,8 +855,7 @@ int inet_sendmsg(struct socket *sock, struct msghdr *msg, size_t size)
 
 #ifdef CONFIG_NET_ANALYTICS
 	err = sk->sk_prot->sendmsg(sk, msg, size);
-	if (err > 0)
-		net_usr_tx(sk, err);
+	net_usr_tx(sk, err);
 
 	return err;
 #else
@@ -899,8 +898,7 @@ int inet_recvmsg(struct socket *sock, struct msghdr *msg, size_t size,
 		msg->msg_namelen = addr_len;
 
 #ifdef CONFIG_NET_ANALYTICS
-	if (err > 0)
-		net_usr_rx(sk, err);
+	net_usr_rx(sk, err);
 #endif
 
 	return err;

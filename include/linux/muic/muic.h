@@ -260,6 +260,7 @@ struct muic_platform_data {
 	bool afc_disable;
 	bool afc_limit_voltage;
 	bool wireless;
+	int afc_disabled_updated;
 
 #ifdef CONFIG_MUIC_HV_FORCE_LIMIT
 	int hv_sel;

@@ -1,0 +1,121 @@
+/* Copyright (c) 2020, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "kona-sec-r8q-pinctrl-r00.dtsi"
+#include "kona-sec-r8q-pm-common.dtsi"
+#include "../drivers/audio_r8_common.dtsi"
+#include "../drivers/bluetooth_r8q_common.dtsi"
+#include "../drivers/kona-sec-r8q-mst-r00.dtsi"
+#include "../drivers/kona-sec-r8q-sensor-r00.dtsi"
+#include "../drivers/displayport_r8q_r00.dtsi"
+#include "../drivers/nfc_r8q_r00.dtsi"
+#include "../drivers/kona-sec-r8q-display-r00.dtsi"
+#include "../drivers/eif_r8q_common.dtsi"
+#include "../drivers/battery-data-r8q-common.dtsi"
+#include "../drivers/input_r8_common.dtsi"
+#include "../drivers/fingerprint-sensor_r8q_r00.dtsi"
+#include "../drivers/connector_detection_r8_common.dtsi"
+#include "../drivers/abc_r8_common.dtsi"
+#include "../drivers/camera_sensor_r8q_r00.dtsi"
+
+&soc {
+	i2c_17: i2c@17 { /* SW I2C */
+		status = "ok";
+
+		cell-index = <17>;
+		compatible = "i2c-gpio";
+		gpios = <&tlmm 112 0 /* sda */
+			 &tlmm 113 0 /* scl */
+		>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&grip_i2c_active>;
+
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		a96t3x6: a96t3x6@20 {
+				compatible = "a96t3x6";
+				pinctrl-names = "default";
+				pinctrl-0 = <&grip_int_active>;
+				reg = <0x20>;
+
+				interrupt-parent = <&tlmm>;
+				interrupts = <111 0>;
+
+				a96t3x6,irq_gpio = <&tlmm 111 0>;
+				a96t3x6,dvdd_vreg_name = "pm8150_l13";
+				a96t3x6,fw_path = "a96t356_r8q_all.bin";
+				a96t3x6,firmup_cmd = <0x3b>;
+		};
+	};
+};
+
+&apps_rsc {
+/*
+ * L1C source power is changed to VREG_S5A_2P0.
+ * so, Need to be changed to LDO mode(HPM) for NFC.
+ */
+	rpmh-regulator-ldoc1 {
+		qcom,supported-modes =
+			<RPMH_REGULATOR_MODE_LPM
+			RPMH_REGULATOR_MODE_HPM>;
+		qcom,mode-threshold-currents = <0 10000>;
+		L1C: pm8150a_l1: regulator-pm8150a-l1 {
+			qcom,init-mode = <RPMH_REGULATOR_MODE_HPM>;
+		};
+	};
+
+	rpmh-regulator-ldoa13 {
+		L13A: pm8150_l13: regulator-pm8150-l13 {
+			regulator-min-microvolt = <3000000>;
+			regulator-max-microvolt = <3000000>;
+			qcom,init-voltage = <3000000>;
+		};
+	};
+};
+
+&wlan {
+	wlan-en-gpio = <&tlmm 90 0>;
+	vdd-wlan-dig-supply = <&pm8150_s6>;
+	pinctrl-0 = <&qca6390_wlan_en_active>;
+	pinctrl-1 = <&qca6390_wlan_en_sleep>;
+	status = "ok";
+};
+
+&pcie0 {
+	qcom,target-link-speed = <0x2>; /* limit to gen2 */
+	esoc-name = "wlan";
+	oops-after-ready;
+};
+
+&pcie2 {
+	qcom,core-preset = <0x55555555>;
+};
+
+&mdm0 {
+	pinctrl-0 = <&ap2mdm_active &mdm2ap_active &ap2mdm_errfatal2_default>;
+	qcom,ap2mdm-errfatal2-gpio = <&pm8150l_gpios 7 0>;
+};
+
+/* TZapp region */
+&removed_mem {
+	reg = <0x0 0x80B00000 0x0 0x7900000>;
+};
+
+&sdhc_2 {
+	status = "disabled";
+};
+
+/* Camera RBIN set to 500 MB for test */
+&camera_mem {
+	rbin_size = <0x1F400000>;
+};

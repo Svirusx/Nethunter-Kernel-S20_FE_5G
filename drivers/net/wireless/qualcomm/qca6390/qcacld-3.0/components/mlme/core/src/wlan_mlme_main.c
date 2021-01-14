@@ -1221,7 +1221,7 @@ mlme_is_freq_present_in_list(struct acs_weight *normalize_weight_chan_list,
 {
 	uint8_t i;
 
-	for (i = 0; i < num_freq; i++) {
+	for (i = 0; i < num_freq && i < NUM_CHANNELS; i++) {
 		if (normalize_weight_chan_list[i].chan_freq == freq) {
 			*index = i;
 			return true;
@@ -1277,7 +1277,7 @@ mlme_acs_parse_weight_list(struct wlan_objmgr_psoc *psoc,
 		} else {
 			sscanf(str1, "%d", &freq1);
 			strsep(&str1, "=");
-			if (!str1)
+			if (!str1 || !weight_list)
 				goto end;
 			sscanf(str1, "%d", &normalize_factor);
 			if (mlme_is_freq_present_in_list(weight_list,
@@ -2431,9 +2431,11 @@ static void mlme_init_reg_cfg(struct wlan_objmgr_psoc *psoc,
 }
 
 static void
-mlme_init_dot11_mode_cfg(struct wlan_mlme_dot11_mode *dot11_mode)
+mlme_init_dot11_mode_cfg(struct wlan_objmgr_psoc *psoc,
+			 struct wlan_mlme_dot11_mode *dot11_mode)
 {
 	dot11_mode->dot11_mode = cfg_default(CFG_DOT11_MODE);
+	dot11_mode->vdev_type_dot11_mode = cfg_get(psoc, CFG_VDEV_DOT11_MODE);
 }
 
 QDF_STATUS mlme_cfg_on_psoc_enable(struct wlan_objmgr_psoc *psoc)
@@ -2474,7 +2476,7 @@ QDF_STATUS mlme_cfg_on_psoc_enable(struct wlan_objmgr_psoc *psoc)
 	mlme_init_ibss_cfg(psoc, &mlme_cfg->ibss);
 	mlme_init_feature_flag_in_cfg(psoc, &mlme_cfg->feature_flags);
 	mlme_init_scoring_cfg(psoc, &mlme_cfg->scoring);
-	mlme_init_dot11_mode_cfg(&mlme_cfg->dot11_mode);
+	mlme_init_dot11_mode_cfg(psoc, &mlme_cfg->dot11_mode);
 	mlme_init_threshold_cfg(psoc, &mlme_cfg->threshold);
 	mlme_init_acs_cfg(psoc, &mlme_cfg->acs);
 	mlme_init_power_cfg(psoc, &mlme_cfg->power);

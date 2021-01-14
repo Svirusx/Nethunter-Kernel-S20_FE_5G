@@ -1,0 +1,71 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "kona-sec-y2q-r02.dtsi"
+#include "kona-sec-y2q-pinctrl-r03.dtsi"
+#include "kona-sec-picassoq-pm-r03.dtsi"
+#include "../drivers/kona-sec-picassoq-common-mst-r02.dtsi"
+#include "../drivers/input_y2q_common.dtsi"
+
+&soc {
+
+};
+
+&ssc_sensors {
+	/delete-property/ qcom,ssc_hw_rev;
+	qcom,ssc_hw_rev = <3>;
+};
+
+&qupv3_se9_i2c {
+	status = "ok";
+	fsr@49 {
+		status = "ok";
+	};
+};
+
+&spmi_bus {
+	qcom,pm8150@0 {
+		qcom,power-on@800 {
+			qcom,pon_1 {
+				qcom,pon-type = <PON_POWER_ON_TYPE_KPDPWR>;
+				qcom,support-reset = <1>;
+				qcom,pull-up = <1>;
+				qcom,s1-timer = <6720>;
+				qcom,s2-timer = <1000>;
+				qcom,s2-type = <8>;
+			};
+		};
+	};
+};
+
+&cs35l41_r {
+	reset-gpios = <&tlmm 11 0>;
+};
+
+&ois_rear {
+	gpios = <&tlmm 174 0>, // RESET
+		<&tlmm 145 0>; // BOOT0
+};
+
+&qupv3_se5_i2c {
+	touchscreen@48 {
+		pinctrl-0 = <&attn_irq &tsp_id>;
+		pinctrl-1 = <&attn_irq &tsp_id>;
+		pinctrl-2 = <&attn_irq &tsp_id>;
+		sec,tsp-id_gpio = <&tlmm 46 0>;
+		sec,firmware_name = "tsp_sec/y771_y2_ub.bin", "tsp_sec/y79a_y2_ub.bin";
+	};
+};
+
+&pcie0 {
+	ignore_pcie_error;
+};

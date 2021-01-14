@@ -2,12 +2,12 @@
 /*
  *  drivers/usb/notify/host_notify_class.c
  *
- * Copyright (C) 2019 Samsung, Inc.
+ * Copyright (C) 2011-2020 Samsung, Inc.
  * Author: Dongrak Shin <dongrak.shin@samsung.com>
  *
  */
 
- /* usb notify layer v3.4 */
+ /* usb notify layer v3.5 */
 
 #include <linux/module.h>
 #include <linux/types.h>
@@ -369,19 +369,12 @@ void host_notify_dev_unregister(struct host_notify_dev *ndev)
 }
 EXPORT_SYMBOL_GPL(host_notify_dev_unregister);
 
-static int __init notify_class_init(void)
+int notify_class_init(void)
 {
 	return create_notify_class();
 }
 
-static void __exit notify_class_exit(void)
+void notify_class_exit(void)
 {
 	class_destroy(host_notify.host_notify_class);
 }
-
-module_init(notify_class_init);
-module_exit(notify_class_exit);
-
-MODULE_AUTHOR("Dongrak Shin <dongrak.shin@samsung.com>");
-MODULE_DESCRIPTION("Usb host notify driver");
-MODULE_LICENSE("GPL");

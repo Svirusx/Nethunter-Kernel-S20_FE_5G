@@ -65,6 +65,12 @@ struct notifier_block;
 typedef int (*iommu_fault_handler_t)(struct iommu_domain *,
 			struct device *, unsigned long, int, void *);
 
+struct iommu_fault_ids {
+	u32 bid;
+	u32 pid;
+	u32 mid;
+};
+
 struct iommu_domain_geometry {
 	dma_addr_t aperture_start; /* First address that can be mapped    */
 	dma_addr_t aperture_end;   /* Last address that can be mapped     */
@@ -72,15 +78,13 @@ struct iommu_domain_geometry {
 };
 
 /* iommu transaction flags */
-#define IOMMU_TRANS_DEFAULT             (0U)
-#define IOMMU_TRANS_READ                (1U << 0)
-#define IOMMU_TRANS_WRITE               (1U << 1)
-#define IOMMU_TRANS_PRIV                (1U << 2)
-#define IOMMU_TRANS_UNPRIV              (1U << 3)
-#define IOMMU_TRANS_SEC                 (1U << 4)
-#define IOMMU_TRANS_NONSEC              (1U << 5)
-#define IOMMU_TRANS_DATA                (1U << 6)
-#define IOMMU_TRANS_INST                (1U << 7)
+#define IOMMU_TRANS_WRITE	BIT(0)	/* 1 Write, 0 Read */
+#define IOMMU_TRANS_PRIV	BIT(1)	/* 1 Privileged, 0 Unprivileged */
+#define IOMMU_TRANS_INST	BIT(2)	/* 1 Instruction fetch, 0 Data access */
+#define IOMMU_TRANS_SEC	BIT(3)	/* 1 Secure, 0 Non-secure access*/
+
+/* Non secure unprivileged Data read operation */
+#define IOMMU_TRANS_DEFAULT	(0U)
 
 struct iommu_pgtbl_info {
 	void *ops;
@@ -387,7 +391,8 @@ extern bool iommu_is_iova_coherent(struct iommu_domain *domain,
 				dma_addr_t iova);
 extern void iommu_set_fault_handler(struct iommu_domain *domain,
 			iommu_fault_handler_t handler, void *token);
-
+extern int iommu_get_fault_ids(struct iommu_domain *domain,
+				struct iommu_fault_ids *f_ids);
 extern void iommu_get_resv_regions(struct device *dev, struct list_head *list);
 extern void iommu_put_resv_regions(struct device *dev, struct list_head *list);
 extern int iommu_request_dm_for_dev(struct device *dev);
@@ -633,12 +638,16 @@ static inline void iommu_set_fault_handler(struct iommu_domain *domain,
 				iommu_fault_handler_t handler, void *token)
 {
 }
+static inline int iommu_get_fault_ids(struct iommu_domain *domain,
+				struct iommu_fault_ids *f_ids)
+{
+	return -EINVAL;
+}
 
 static inline void iommu_get_resv_regions(struct device *dev,
 					struct list_head *list)
 {
 }
-
 static inline void iommu_put_resv_regions(struct device *dev,
 					struct list_head *list)
 {

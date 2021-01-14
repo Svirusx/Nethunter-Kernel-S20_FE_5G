@@ -15,6 +15,7 @@
 #include <linux/usb/gadget.h>
 #include "io.h"
 
+extern bool acc_dev_status;
 struct dwc3;
 #define to_dwc3_ep(ep)		(container_of(ep, struct dwc3_ep, endpoint))
 #define gadget_to_dwc(g)	(container_of(g, struct dwc3, gadget))
@@ -87,6 +88,21 @@ static inline void dwc3_gadget_move_pending_list_front(struct dwc3_request *req)
 
 	req->started = false;
 	list_move(&req->list, &dep->pending_list);
+}
+
+/**
+ * dwc3_gadget_move_cancelled_request - move @req to the cancelled_list
+ * @req: the request to be moved
+ *
+ * Caller should take care of locking. This function will move @req from its
+ * current list to the endpoint's cancelled_list.
+ */
+static inline void dwc3_gadget_move_cancelled_request(struct dwc3_request *req)
+{
+	struct dwc3_ep		*dep = req->dep;
+
+	req->started = false;
+	list_move_tail(&req->list, &dep->cancelled_list);
 }
 
 static inline enum dwc3_link_state dwc3_get_link_state(struct dwc3 *dwc)

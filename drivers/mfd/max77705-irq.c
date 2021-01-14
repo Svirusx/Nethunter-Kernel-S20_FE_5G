@@ -209,6 +209,15 @@ static irqreturn_t max77705_irq_thread(int irq, void *data)
 	wake_lock(&max77705_irq_wakelock);
 #endif
 
+	ret = wait_event_timeout(max77705->suspend_wait,
+						!max77705->suspended,
+						msecs_to_jiffies(200));
+	if (!ret) {
+		pr_info("%s suspend_wait timeout\n", __func__);
+		max77705->doing_irq = 0;
+		return IRQ_NONE;
+	}
+
 	ret = max77705_read_reg(max77705->i2c,
 					MAX77705_PMIC_REG_INTSRC, &irq_src);
 	if (ret) {

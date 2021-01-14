@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2015-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2015-2020, The Linux Foundation. All rights reserved.
  */
 
 #include <linux/module.h>
@@ -859,8 +859,10 @@ static int gsi_ep_enable(struct f_gsi *gsi)
 		ret = usb_gsi_ep_op(gsi->d_port.out_ep,
 				&gsi->d_port.out_request, GSI_EP_OP_CONFIG);
 		if (ret) {
-			usb_gsi_ep_op(gsi->d_port.in_ep,
-				&gsi->d_port.in_request, GSI_EP_OP_DISABLE);
+			if (gsi->d_port.in_ep)
+				usb_gsi_ep_op(gsi->d_port.in_ep,
+					&gsi->d_port.in_request,
+					GSI_EP_OP_DISABLE);
 			return ret;
 		}
 	}
@@ -2591,10 +2593,6 @@ static int gsi_update_function_bind_params(struct f_gsi *gsi,
 	struct usb_function *f = &gsi->function;
 	int status;
 
-	/* maybe allocate device-global string IDs */
-	if (info->string_defs[0].id != 0)
-		goto skip_string_id_alloc;
-
 	if (info->ctrl_str_idx >= 0 && info->ctrl_desc) {
 		/* ctrl interface label */
 		status = usb_string_id(cdev);
@@ -2631,7 +2629,6 @@ static int gsi_update_function_bind_params(struct f_gsi *gsi,
 		info->cdc_eth_desc->iMACAddress = status;
 	}
 
-skip_string_id_alloc:
 	if (info->ctrl_desc)
 		info->ctrl_desc->bInterfaceNumber = gsi->ctrl_id;
 

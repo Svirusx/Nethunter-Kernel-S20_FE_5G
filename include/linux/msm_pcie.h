@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright (c) 2014-2019, The Linux Foundation. All rights reserved.*/
+/* Copyright (c) 2014-2020, The Linux Foundation. All rights reserved.*/
 
 #ifndef __MSM_PCIE_H
 #define __MSM_PCIE_H
@@ -21,6 +21,7 @@ enum msm_pcie_pm_opt {
 	MSM_PCIE_RESUME,
 	MSM_PCIE_DISABLE_PC,
 	MSM_PCIE_ENABLE_PC,
+	MSM_PCIE_HANDLE_LINKDOWN,
 };
 
 enum msm_pcie_event {
@@ -284,6 +285,7 @@ enum l1ss_ctrl_ids {
 
 void sec_pcie_set_use_ep_loaded(struct pci_dev *dev);
 void sec_pcie_set_ep_driver_loaded(struct pci_dev *dev, bool is_loaded);
+
 
 int sec_pcie_l1ss_enable(int ctrl_id);
 int sec_pcie_l1ss_disable(int ctrl_id);

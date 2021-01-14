@@ -16,6 +16,7 @@
 
 #define pr_fmt(fmt)     KBUILD_MODNAME ":%s() " fmt, __func__
 
+#include <linux/version.h>
 #include <linux/module.h>
 #include <linux/uaccess.h>
 #include <linux/preempt.h>
@@ -30,7 +31,11 @@
 #include <linux/irq.h>
 #include <linux/slab.h>
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,4,0)
+#include <linux/qcom_scm.h>
+#else
 #include <soc/qcom/scm.h>
+#endif
 
 #include <linux/sec_debug.h>
 
@@ -85,15 +90,18 @@ static void __simulate_apps_wdog_bite(void)
 	defined(CONFIG_SEC_USER_RESET_DEBUG_TEST)
 static void __simulate_secure_wdog_bite(void)
 {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,4,0)
+	qcom_scm_sec_wdog_trigger();
+#else
 #define SCM_SVC_SEC_WDOG_TRIG	0x8
 	struct scm_desc desc = {
 		.args[0] = 0,
 		.arginfo = SCM_ARGS(1),
 	};
 
-	pr_emerg("simulating secure watch dog bite\n");
 	scm_call2(SCM_SIP_FNID(SCM_SVC_BOOT,
 			SCM_SVC_SEC_WDOG_TRIG), &desc);
+#endif
 	/* if we hit, scm_call has failed */
 	pr_emerg("simulation of secure watch dog bite failed\n");
 	__simulate_apps_wdog_bite();
@@ -320,7 +328,7 @@ static int force_error(const char *val, const struct kernel_param *kp)
 			&__simulate_memcorrupt },
 #ifdef CONFIG_SEC_DEBUG_SEC_WDOG_BITE
 		{ "secdogbite",
-			NULL,
+			"simulating secure watch dog bite!",
 			&__simulate_secure_wdog_bite },
 #endif
 #ifdef CONFIG_SEC_USER_RESET_DEBUG_TEST
@@ -331,7 +339,7 @@ static int force_error(const char *val, const struct kernel_param *kp)
 			NULL,
 			&force_watchdog_bark },
 		{ "WP",
-			NULL,
+			"simulating secure watch dog bite!",
 			&__simulate_secure_wdog_bite },
 #endif
 #ifdef CONFIG_FREE_PAGES_RDONLY

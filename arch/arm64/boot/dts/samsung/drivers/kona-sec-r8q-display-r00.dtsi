@@ -1,0 +1,220 @@
+/* Copyright (c) 2016-2020, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "../../../../../../techpack/display/msm/samsung/EA8076A_AMS646UJ10/dsi_panel_EA8076A_AMS646UJ10_fhd_octa_cmd.dtsi"
+#include "../../../../../../techpack/display/msm/samsung/PBA_BOOTING/dsi_panel_PBA_BOOTING_fhd_video.dtsi"
+
+#define DEFAULT_FIXED_VAL	0
+
+&tlmm {
+	pmx_sde: pmx_sde {
+		sde_dsi_active: sde_dsi_active {
+			mux {
+				pins = "gpio82", "gpio93";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio82", "gpio93";
+				drive-strength = <8>;   /* 8 mA */
+				bias-disable = <0>;   /* no pull */
+			};
+		};
+		sde_dsi_suspend: sde_dsi_suspend {
+			mux {
+				pins = "gpio82", "gpio93";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio82", "gpio93";
+				drive-strength = <2>;   /* 2 mA */
+				bias-pull-down;         /* PULL DOWN */
+			};
+		};
+	};
+
+	pmx_sde_te {
+		sde_te_active: sde_te_active {
+			mux {
+				pins = "gpio66";
+				function = "mdp_vsync";
+			};
+
+			config {
+				pins = "gpio66";
+				drive-strength = <2>;   /* 2 mA */
+				bias-pull-down;         /* PULL DOWN */
+			};
+		};
+
+		sde_te_suspend: sde_te_suspend {
+			mux {
+				pins = "gpio66";
+				function = "mdp_vsync";
+			};
+
+			config {
+				pins = "gpio66";
+				drive-strength = <2>;   /* 2 mA */
+				bias-pull-down;         /* PULL DOWN */
+			};
+		};
+	};
+
+	pmx_sde_ub_det {
+		sde_ub_det_active: sde_ub_det_active {
+			mux {
+				pins = "gpio46";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio46";
+				drive-strength = <2>;	/* 2 mA */
+				bias-disable = <0>;   /* no pull */
+			};
+		};
+
+		sde_ub_det_suspend: sde_ub_det_suspend {
+			mux {
+				pins = "gpio46";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio46";
+				drive-strength = <2>;	/* 2 mA */
+				bias-disable = <0>;   /* no pull */
+			};
+		};
+	};
+};
+
+&pm8150l_gpios {
+    sde_fg_err_default: sde_fg_err_default {
+        pins = "gpio8";
+        function = "normal";
+        power-source = <1>; 
+        bias-disable;
+        input-enable;
+    };
+};
+
+&soc {
+	fixed_reg_octa_vdd3: fixed_reg_octa_vdd3 {
+		compatible = "regulator-fixed";
+		status = "okay";
+		regulator-name = "vdd3";
+		gpio = <&tlmm 93 0>; /* 1.8V & 3.0V */
+		enable-active-high;
+		regulator-boot-on;
+	};
+};
+
+&soc {
+	ss_dsi_panel_EA8076A_AMS646UJ10_FHD_display: qcom,dsi-display@0 {
+		label = "ss_dsi_panel_EA8076A_AMS646UJ10_FHD";
+	};
+
+	/* PBA */
+	ss_dsi_panel_PBA_BOOTING_FHD_display: qcom,dsi-display@1 {
+		label = "ss_dsi_panel_PBA_BOOTING_FHD";
+	};
+};
+
+/* display_panel_avdd node, in kona-sde-display.dtsi file, is gpio regualtor.
+ * So, even SS doesn't enable the regulator, gpio61 is always registered as fixed regulator,
+ * even it is for the other module, like audio i2c...
+ * change compatible name to unused name, prevent to call probe of fixed regulator.
+ */
+&display_panel_avdd { // JUN_TEMP
+	compatible = "regulator-fixed-disable";
+};
+
+/* disp_rdump_memory mem node is reserved memory for upload mode bootloader framebuffer.
+ * In most all case, upload display has HD resolution, like 720x1520, and it requires
+ * only about 4MB for upload xbl framebuffer, so 8MB is enough for that. In that case,
+ * you can reduce disp_rdump_memory size to allow system utilize more system ram memory.
+ *
+ * In case of hubble, it uses WQHD (1440x3200) in upload mode, same with normal booting mode,
+ * hubble should increase disp_rdump_memory size up to 18 MB,
+ * to prevent memory corruption by upload framebuffer.
+ */
+&disp_rdump_memory {
+	/* size: 18 MB, hubble upload display (WQHD): 1440x3200x4 = about 17.58MB, round up to 18 MB */
+	reg = <0x0 0x9c000000 0x0 0x1200000>;
+};
+
+
+/* override display-list / supply for samsung panel */
+&sde_dsi {
+	vdd3-supply = <&fixed_reg_octa_vdd3>;
+
+	pinctrl-names = "panel_active", "panel_suspend";
+	pinctrl-0 = <&sde_dsi_active &sde_te_active &sde_ub_det_active>;
+	pinctrl-1 = <&sde_dsi_suspend &sde_te_suspend &sde_ub_det_suspend>;
+
+	qcom,dsi-default-panel = <&ss_dsi_panel_EA8076A_AMS646UJ10_FHD>;
+
+	//qcom,dsi-display-list =
+	//	<&ss_dsi_panel_EA8076A_AMS646UJ10_FHD
+	//	&ss_dsi_panel_PBA_BOOTING_FHD>;
+};
+
+&ss_dsi_panel_EA8076A_AMS646UJ10_FHD {
+	qcom,display-type = "primary";
+	qcom,dsi-display-active;
+
+	qcom,dsi-ctrl-num = <0>;
+	qcom,dsi-phy-num = <0>;
+	qcom,dsi-select-clocks = "mux_byte_clk0", "mux_pixel_clk0",
+				"src_byte_clk0", "src_pixel_clk0",
+				"shadow_byte_clk0", "shadow_pixel_clk0";
+
+	qcom,platform-reset-gpio = <&tlmm 82 0>;
+	qcom,platform-te-gpio = <&tlmm 66 0>;
+
+	samsung,ub-con-det = <&tlmm 46 0>; // UB_CON_DET
+	samsung,support-optical-fingerprint;
+
+	qcom,panel-supply-entries {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		/* use fixed regulator instead of samsung,panel-extra-power-gpio or qcom,platform-enable-gpio. */
+		qcom,panel-supply-entry@0 {
+			reg = <0>;
+			qcom,supply-name = "vdd3"; // VDD_DDI_3P0 & VDD_LCD_1P8
+			qcom,supply-min-voltage = <DEFAULT_FIXED_VAL>;
+			qcom,supply-max-voltage = <DEFAULT_FIXED_VAL>;
+			qcom,supply-enable-load = <DEFAULT_FIXED_VAL>;
+			qcom,supply-disable-load = <DEFAULT_FIXED_VAL>;
+			qcom,supply-pre-off-sleep = <0>;
+			qcom,supply-post-on-sleep = <0>;
+		};
+	};
+};
+
+&ss_dsi_panel_PBA_BOOTING_FHD {
+	qcom,display-type = "primary";
+	qcom,dsi-display-active;
+
+	qcom,dsi-ctrl-num = <0>;
+	qcom,dsi-phy-num = <0>;
+	qcom,dsi-select-clocks = "mux_byte_clk0", "mux_pixel_clk0",
+				"src_byte_clk0", "src_pixel_clk0",
+				"shadow_byte_clk0", "shadow_pixel_clk0";
+
+	qcom,platform-reset-gpio = <&tlmm 82 0>;
+	qcom,platform-te-gpio = <&tlmm 66 0>;
+};

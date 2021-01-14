@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * Copyright (c) 2012-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012-2020, The Linux Foundation. All rights reserved.
  */
 
 
@@ -598,7 +598,7 @@ struct adm_cmd_device_open_v8 {
  * In all other use cases this should be set to 0xffff
  */
 
-	u16                  reserved;
+	u16 compressed_data_type;
 } __packed;
 
 /*
@@ -1356,6 +1356,7 @@ struct adm_cmd_connect_afe_port_v5 {
 #define RT_PROXY_PORT_001_RX	0x2000
 #define RT_PROXY_PORT_001_TX	0x2001
 #define AFE_LOOPBACK_TX	0x6001
+#define HDMI_RX_MS			0x6002
 #define DISPLAY_PORT_RX	0x6020
 
 #define AFE_LANE_MASK_INVALID 0
@@ -1385,7 +1386,7 @@ struct adm_cmd_connect_afe_port_v5 {
 #define AFE_PORT_ID_SLIMBUS_RANGE_SIZE	0xA
 
 /* Size of the range of port IDs for real-time proxy ports. */
-#define  AFE_PORT_ID_RT_PROXY_PORT_RANGE_SIZE	0x2
+#define  AFE_PORT_ID_RT_PROXY_PORT_RANGE_SIZE	0x4
 
 /* Size of the range of port IDs for pseudoports. */
 #define AFE_PORT_ID_PSEUDOPORT_RANGE_SIZE	0x5
@@ -1562,6 +1563,8 @@ struct adm_cmd_connect_afe_port_v5 {
 #define AFE_PORT_ID_SLIMBUS_MULTI_CHAN_9_RX      0x4012
 /* SLIMbus Tx port on channel 9. */
 #define AFE_PORT_ID_SLIMBUS_MULTI_CHAN_9_TX      0x4013
+/*AFE Rx port for audio over hdmi*/
+#define AFE_PORT_ID_HDMI_MS					0x6002
 /* AFE Rx port for audio over Display port */
 #define AFE_PORT_ID_HDMI_OVER_DP_RX              0x6020
 /*USB AFE port */
@@ -1663,6 +1666,16 @@ struct adm_cmd_connect_afe_port_v5 {
  */
 #define AFE_PORT_ID_VOICE2_PLAYBACK_TX  0x8002
 #define AFE_PORT_ID_VOICE_PLAYBACK_TX   0x8005
+
+/*
+ * Proxyport used for voice call data processing.
+ * In cases like call-screening feature, where user can communicate
+ * with caller with the help of "call screen" mode, and without
+ * connecting the call with any HW input/output devices in the phon,
+ * voice call can use Pseudo port to start voice data processing.
+ */
+#define RT_PROXY_PORT_002_TX  0x2003
+#define RT_PROXY_PORT_002_RX  0x2002
 
 #define AFE_PORT_ID_PRIMARY_TDM_RX \
 	(AFE_PORT_ID_TDM_PORT_RANGE_START + 0x00)
@@ -2544,6 +2557,7 @@ struct afe_port_data_cmd_rt_proxy_port_read_v2 {
 #define AFE_GENERIC_COMPRESSED           0x8
 #define AFE_LINEAR_PCM_DATA_PACKED_16BIT 0X6
 #define AFE_DSD_DOP_W_MARKER_DATA        0x9
+#define AFE_DSD_DATA                     0xA
 
 /* This param id is used to configure I2S interface */
 #define AFE_PARAM_ID_I2S_CONFIG	0x0001020D
@@ -4129,6 +4143,16 @@ struct afe_id_aptx_adaptive_enc_init
 #define AFE_MODULE_ID_DEPACKETIZER_COP        0x00013233
 #define AFE_MODULE_ID_DEPACKETIZER_COP_V1     0x000132E9
 
+/* Macros for dynamic loading of modules by AVCS */
+
+#define AVS_MODULE_ID_PACKETIZER_COP        0x0001322A
+
+#define AVS_MODULE_ID_PACKETIZER_COP_V1     0x000132E8
+
+#define AVS_MODULE_ID_DEPACKETIZER_COP      0x00013233
+
+#define AVS_MODULE_ID_DEPACKETIZER_COP_V1   0x000132E9
+
 /*
  * Depacketizer type parameter for the #AVS_MODULE_ID_DECODER module.
  * This parameter cannot be set runtime.
@@ -4351,6 +4375,7 @@ struct asm_aac_frame_size_control_t {
 struct asm_aac_enc_cfg_t {
 	struct asm_aac_enc_cfg_v2_t aac_cfg;
 	struct asm_aac_frame_size_control_t frame_ctl;
+	struct asm_aac_frame_size_control_t frame_ctl_v2;
 } __packed;
 
 /* FMT ID for apt-X Classic */
@@ -4747,6 +4772,56 @@ struct afe_enc_config {
 	u16 mtu;
 	u16 a2dp_suspend;
 	union afe_enc_config_data data;
+};
+
+/*
+ * Enable TTP generator in AFE.
+ */
+#define AVS_DEPACKETIZER_PARAM_ID_TTP_GEN_STATE         0x000132EF
+/*
+ * Configure TTP generator params in AFE.
+ */
+#define AVS_DEPACKETIZER_PARAM_ID_TTP_GEN_CFG           0x000132F0
+#define MAX_TTP_OFFSET_PAIRS  4
+struct afe_ttp_gen_enable_t {
+	uint16_t enable;
+	uint16_t reserved;
+} __packed;
+
+struct afe_ttp_ssrc_offset_pair_t {
+	uint32_t ssrc;
+	uint32_t offset;
+} __packed;
+
+struct afe_ttp_gen_cfg_t {
+	uint32_t ttp_offset_default;
+	/*
+	 * TTP offset uses for all other cases
+	 * where no valid SSRC is received.
+	 */
+	uint32_t settling_time;
+	/*
+	 * If settling_mode==0x00: time in [us]
+	 * after first received packet until
+	 * packets are no longer dropped.
+	 */
+	uint16_t settling_mode;
+	/*
+	 * 0x00(Drop), 0x01(Settle)
+	 */
+	uint16_t num_ssrc_offsets;
+	/*
+	 * Number of SSRC/TTPOFFSET pairs to follow
+	 */
+	struct afe_ttp_ssrc_offset_pair_t ssrc_ttp_offset[MAX_TTP_OFFSET_PAIRS];
+	/*
+	 * Array of ssrc/offset pairs
+	 */
+} __packed;
+
+struct afe_ttp_config {
+	struct afe_ttp_gen_enable_t ttp_gen_enable;
+	struct afe_ttp_gen_cfg_t ttp_gen_cfg;
 };
 
 union afe_dec_config_data {
@@ -5436,6 +5511,7 @@ struct afe_param_id_lpass_core_shared_clk_cfg {
 #define COMPRESSED_PASSTHROUGH_NONE_TOPOLOGY            0x00010774
 #define VPM_TX_SM_ECNS_V2_COPP_TOPOLOGY			0x00010F89
 #define VPM_TX_VOICE_SMECNS_V2_COPP_TOPOLOGY		0x10000003
+#define VPM_TX_VOICE_FLUENCE_SM_COPP_TOPOLOGY		0x10000004
 #define VPM_TX_DM_FLUENCE_COPP_TOPOLOGY			0x00010F72
 #define VPM_TX_QMIC_FLUENCE_COPP_TOPOLOGY		0x00010F75
 #define VPM_TX_DM_RFECNS_COPP_TOPOLOGY			0x00010F86
@@ -7631,6 +7707,7 @@ struct asm_data_cmd_iec_60958_frame_rate {
 #define ASM_SESSION_CMD_RUN_STARTIME_RUN_AT_ABSOLUTEIME 1
 #define ASM_SESSION_CMD_RUN_STARTIME_RUN_AT_RELATIVEIME 2
 #define ASM_SESSION_CMD_RUN_STARTIME_RUN_WITH_DELAY     3
+#define ASM_SESSION_CMD_RUN_STARTIME_RUN_WITH_TTP       4
 
 #define ASM_BIT_MASK_RUN_STARTIME                 (0x00000003UL)
 
@@ -7654,6 +7731,7 @@ struct asm_session_cmd_run_v2 {
  *- #ASM_SESSION_CMD_RUN_STARTIME_RUN_AT_ABSOLUTEIME
  *- #ASM_SESSION_CMD_RUN_STARTIME_RUN_AT_RELATIVEIME
  *- #ASM_SESSION_CMD_RUN_STARTIME_RUN_WITH_DELAY
+ *- #ASM_SESSION_CMD_RUN_STARTIME_RUN_WITH_TTP
  *
  *All other bits are reserved; clients must set them to zero.
  */
@@ -8963,6 +9041,13 @@ struct asm_data_cmd_remove_silence {
 /* Shift value for the IEC 61937 to 61937 pass-through capture. */
 #define ASM_SHIFT_IEC_61937_PASS_THROUGH_FLAG           0
 
+/* Bitmask for the DSD pass-through capture. */
+#define ASM_BIT_MASK_COMPRESSED_FORMAT_FLAG             (0x00000003UL)
+
+/* Shift value for the DSD pass-through capture. */
+#define ASM_SHIFT_DSD_COMPRESSED_FORMAT_FLAG            0
+
+#define ASM_DSD_FORMAT_FLAG                             2
 struct asm_stream_cmd_open_read_compressed {
 	struct apr_hdr hdr;
 	u32                    mode_flags;
@@ -8974,6 +9059,12 @@ struct asm_stream_cmd_open_read_compressed {
  * - Use #ASM_BIT_MASK_IEC_61937_PASS_THROUGH_FLAG to set the bitmask
  *   and #ASM_SHIFT_IEC_61937_PASS_THROUGH_FLAG to set the shift value
  *   for this bit.
+ * Supported values for bit 1: (DSD native pass-through mode)
+ * 0 -- non DSD operation
+ * 1 -- Pass-through transfer of the DSD format stream
+ * To set this bit, use #ASM_BIT_MASK_DSD_PASS_THROUGH_FLAG and
+ * use #ASM_SHIFT_DSD_PASS_THROUGH_FLAG to set the shift value for
+ * this bit
  * Supported values for bit 4:
  * - 0 -- Return data buffer contains all encoded frames only; it does
  *      not contain frame metadata.
@@ -8990,6 +9081,9 @@ struct asm_stream_cmd_open_read_compressed {
  * Supported values: should be greater than 0 for IEC to RAW compressed
  *                   unpack mode.
  *                   Value is don't care for IEC 61937 pass-through mode.
+ * @values
+ * - >0 -- For IEC 61937-to-RAW Compressed Unpack mode
+ * - 1  -- For IEC 61937 or DSD Pass-through mode
  */
 
 } __packed;
@@ -11086,19 +11180,6 @@ struct afe_sp_rx_limiter_th_param {
 	uint32_t lim_thr_per_calib_q27[SP_V2_NUM_MAX_SPKR];
 } __packed;
 
-union afe_spkr_prot_config {
-	struct asm_fbsp_mode_rx_cfg mode_rx_cfg;
-	struct asm_spkr_calib_vi_proc_cfg vi_proc_cfg;
-	struct asm_feedback_path_cfg feedback_path_cfg;
-	struct asm_mode_vi_proc_cfg mode_vi_proc_cfg;
-	struct afe_sp_th_vi_mode_cfg th_vi_mode_cfg;
-	struct afe_sp_th_vi_ftm_cfg th_vi_ftm_cfg;
-	struct afe_sp_th_vi_v_vali_cfg th_vi_v_vali_cfg;
-	struct afe_sp_ex_vi_mode_cfg ex_vi_mode_cfg;
-	struct afe_sp_ex_vi_ftm_cfg ex_vi_ftm_cfg;
-	struct afe_sp_rx_limiter_th_param limiter_th_cfg;
-} __packed;
-
 struct afe_spkr_prot_get_vi_calib {
 	struct apr_hdr hdr;
 	struct mem_mapping_hdr mem_hdr;
@@ -11110,6 +11191,366 @@ struct afe_spkr_prot_calib_get_resp {
 	uint32_t status;
 	struct param_hdr_v3 pdata;
 	struct asm_calib_res_cfg res_cfg;
+} __packed;
+
+
+#define AFE_MODULE_SPEAKER_PROTECTION_V4_RX       0x000102C7
+#define AFE_PARAM_ID_SP_V4_OP_MODE                0x000102C9
+#define AFE_PARAM_ID_SP_V4_RX_TMAX_XMAX_LOGGING   0x000102D2
+
+struct afe_sp_v4_param_op_mode {
+	uint32_t mode;
+} __packed;
+
+struct afe_sp_v4_channel_tmax_xmax_params {
+	/*
+	 * Maximum excursion since the last grasp of xmax in mm.
+	 */
+	int32_t max_excursion;
+	/*
+	 * Number of periods when the monitored excursion exceeds to and
+	 * stays at Xmax during logging_count_period.
+	 */
+	uint32_t count_exceeded_excursion;
+	/*
+	 * Maximum temperature since the last grasp of tmax in C.
+	 */
+	int32_t max_temperature;
+	/*
+	 * Number of periods when the monitored temperature exceeds to and
+	 * stays at Tmax during logging_count_period
+	 */
+	uint32_t count_exceeded_temperature;
+} __packed;
+
+/* This structure is followed by 'num_ch' number of structures of
+ * type afe_sp_v4_channel_tmax_xmax_params.
+ */
+struct afe_sp_v4_param_tmax_xmax_logging {
+	uint32_t num_ch;
+	/* Number of channels for Rx signal.
+	 */
+
+	 struct afe_sp_v4_channel_tmax_xmax_params ch_tmax_xmax[0];
+} __packed;
+
+#define AFE_MODULE_SPEAKER_PROTECTION_V4_VI     0x000102D3
+#define AFE_PARAM_ID_SP_V4_VI_OP_MODE_CFG       0x000102D4
+#define AFE_PARAM_ID_SP_V4_VI_R0T0_CFG          0x000102D5
+#define AFE_PARAM_ID_SP_V4_CALIB_RES_CFG        0x000102D8
+#define AFE_PARAM_ID_SP_V4_TH_VI_FTM_CFG        0x000102D9
+#define AFE_PARAM_ID_SP_V4_TH_VI_FTM_PARAMS     0x000102DA
+#define AFE_PARAM_ID_SP_V4_TH_VI_V_VALI_CFG     0x000102DB
+#define AFE_PARAM_ID_SP_V4_TH_VI_V_VALI_PARAMS  0x000102DC
+#define AFE_PARAM_ID_SP_V4_EX_VI_MODE_CFG       0x000102DF
+#define AFE_PARAM_ID_SP_V4_EX_VI_FTM_CFG        0x000102E0
+#define AFE_PARAM_ID_SP_V4_EX_VI_FTM_PARAMS     0x000102E1
+#define AFE_PARAM_ID_SP_V4_VI_CHANNEL_MAP_CFG   0x000102E5
+
+struct afe_sp_v4_param_vi_op_mode_cfg {
+	uint32_t num_speakers;
+	/* Number of channels for Rx signal.
+	 */
+	uint32_t th_operation_mode;
+	/*
+	 * Operation mode of thermal VI module.
+	 *   0 -- Normal Running mode
+	 *   1 -- Calibration mode
+	 *   2 -- FTM mode
+	 *   3 -- V-Validation mode
+	 */
+	uint32_t th_quick_calib_flag;
+	/*
+	 * Indicates whether calibration is to be done in quick mode or not.
+	 * This field is valid only in Calibration mode (operation_mode = 1).
+	 * 0 -- Disabled
+	 * 1 -- Enabled
+	 */
+	uint32_t th_r0t0_selection_flag[SP_V2_NUM_MAX_SPKR];
+	/*
+	 * Specifies which set of R0, T0 values the algorithm will use.
+	 * This field is valid only in Normal mode (operation_mode = 0).
+	 * 0 -- Use calibrated R0, T0 value
+	 * 1 -- Use safe R0, T0 value
+	 */
+} __packed;
+
+struct afe_sp_v4_channel_r0t0 {
+	int32_t r0_cali_q24;
+	/*
+	 * Calibration point resistance per device. This field is valid
+	 * only in Normal mode (operation_mode = 0).
+	 * values 33554432 to 1073741824 Ohms (in Q24 format)
+	 */
+	int16_t t0_cali_q6;
+	/*
+	 * Calibration point temperature per device. This field is valid
+	 * in both Normal mode and Calibration mode.
+	 * values -1920 to 5120 degrees C (in Q6 format)
+	 */
+	uint16_t reserved;
+
+} __packed;
+
+/* Followed by this structure are 'num_speaakers' number of structures
+ *  of type afe_sp_v4_channel_r0t0.
+ */
+struct afe_sp_v4_param_th_vi_r0t0_cfg {
+	uint32_t num_speakers;
+	/* Number of channels for Rx signal.
+	 */
+
+	struct afe_sp_v4_channel_r0t0 ch_r0t0[0];
+} __packed;
+
+struct afe_sp_v4_param_th_vi_calib_res_cfg {
+	uint32_t num_ch;
+	/* Number of channels for Rx signal.
+	 */
+	uint32_t th_vi_ca_state;
+	/*
+	 * Represents the calibration state for both speakers.
+	 * 0 -- Incorrect operation mode.
+	 * 1 -- Inactive mode.
+	 * 2 -- Wait state.
+	 * 3 -- Calibration in progress state.
+	 * 4 -- Calibration success.
+	 * 5 -- Calibration failed.
+	 */
+	int32_t	r0_cali_q24[SP_V2_NUM_MAX_SPKR];
+	/* Calibration resistance per device.
+	 */
+} __packed;
+
+struct afe_sp_v4_th_vi_calib_resp {
+	uint32_t status;
+	struct param_hdr_v3 pdata;
+	struct afe_sp_v4_param_th_vi_calib_res_cfg res_cfg;
+} __packed;
+
+struct afe_sp_v4_channel_ftm_cfg {
+	uint32_t wait_time_ms;
+	/*
+	 * Wait time to heat up speaker before collecting statistics
+	 * for ftm mode in ms.
+	 * values 0 to 4294967295 ms
+	 */
+	uint32_t ftm_time_ms;
+	/*
+	 * duration for which FTM statistics are collected in ms.
+	 * values 0 to 2000 ms
+	 */
+} __packed;
+
+/* This structure is followed by 'num_ch' number of structures
+ * of type afe_sp_v4_channel_ftm_cfg.
+ */
+struct afe_sp_v4_param_th_vi_ftm_cfg {
+	uint32_t num_ch;
+	/* Number of channels for Rx signal.
+	 */
+
+	 struct afe_sp_v4_channel_ftm_cfg ch_ftm_cfg[0];
+} __packed;
+
+struct afe_sp_v4_channel_ftm_params {
+	int32_t dc_res_q24;
+	/*
+	 * DC resistance value in q24 format
+	 * values 0 to 2147483647 Ohms (in Q24 format)
+	 */
+	int32_t temp_q22;
+	/*
+	 * temperature value in q22 format
+	 * values -125829120 to 2147483647 degC (in Q22 format)
+	 */
+	uint32_t status;
+	/*
+	 * FTM packet status
+	 * 0 - Incorrect operation mode.This status is returned
+	 *     when GET_PARAM is called in non FTM Mode
+	 * 1 - Inactive mode -- Port is not yet started.
+	 * 2 - Wait state. wait_time_ms has not yet elapsed
+	 * 3 - In progress state. ftm_time_ms has not yet elapsed.
+	 * 4 - Success.
+	 * 5 - Failed.
+	 */
+} __packed;
+
+/* This structure is followed by 'num_ch' number of structures
+ * of type afe_sp_v4_channel_ftm_params.
+ */
+struct afe_sp_v4_param_th_vi_ftm_params {
+	uint32_t num_ch;
+	/* Number of channels for Rx signal.
+	 */
+
+	 struct afe_sp_v4_channel_ftm_params ch_ftm_params[0];
+} __packed;
+
+struct afe_sp_v4_gen_get_param_resp {
+	uint32_t status;
+	struct param_hdr_v3 pdata;
+} __packed;
+
+struct afe_sp_v4_channel_v_vali_cfg {
+	uint32_t wait_time_ms;
+	/*
+	 * Wait time to heat up speaker before collecting statistics
+	 * for V validation mode in ms.
+	 * values 100 to 1000 ms
+	 */
+	uint32_t vali_time_ms;
+	/*
+	 * duration for which V VALIDATION statistics are collected in ms.
+	 * values 1000 to 3000 ms
+	 */
+} __packed;
+
+/* This structure is followed by 'num_ch' number of structures
+ * of type afe_sp_v4_channel_v_vali_cfg.
+ */
+struct afe_sp_v4_param_th_vi_v_vali_cfg {
+	uint32_t num_ch;
+	/* Number of channels for Rx signal.
+	 */
+
+	 struct afe_sp_v4_channel_v_vali_cfg ch_v_vali_cfg[0];
+} __packed;
+
+struct afe_sp_v4_channel_v_vali_params {
+	uint32_t vrms_q24;
+	/*
+	 * Vrms value in q24 format
+	 * values [0 33554432] Q24 (0 - 2Vrms)
+	 */
+	uint32_t status;
+	/*
+	 * v-vali packet status
+	 * 0 - Failed.
+	 * 1 - Success.
+	 * 2 - Incorrect operation mode.This status is returned
+	 *     when GET_PARAM is called in non v-vali Mode
+	 * 3 - Inactive mode -- Port is not yet started.
+	 * 4 - Wait state. wait_time_ms has not yet elapsed
+	 * 5 - In progress state. ftm_time_ms has not yet elapsed.
+	 */
+} __packed;
+
+/* This structure is followed by 'num_ch' number of structures
+ * of type afe_sp_v4_channel_v_vali_params.
+ */
+struct afe_sp_v4_param_th_vi_v_vali_params {
+	uint32_t num_ch;
+	/* Number of channels for Rx signal.
+	 */
+
+	 struct afe_sp_v4_channel_v_vali_params ch_v_vali_params[0];
+} __packed;
+
+struct afe_sp_v4_param_ex_vi_mode_cfg {
+	uint32_t operation_mode;
+	/*
+	 * Operation mode of Excursion VI module.
+	 * 0 - Normal Running mode
+	 * 2 - FTM mode
+	 */
+} __packed;
+
+struct afe_sp_v4_channel_ex_vi_ftm {
+	uint32_t wait_time_ms;
+	/*
+	 * Wait time to heat up speaker before collecting statistics
+	 * for ftm mode in ms.
+	 * values 0 to 4294967295 ms
+	 */
+	uint32_t ftm_time_ms;
+	/*
+	 * duration for which FTM statistics are collected in ms.
+	 * values 0 to 2000 ms
+	 */
+} __packed;
+
+/* This structure is followed by 'num_ch' number of structures
+ * of type afe_sp_v4_channel_ex_vi_ftm.
+ */
+struct afe_sp_v4_param_ex_vi_ftm_cfg {
+	uint32_t num_ch;
+	/* Number of channels for Rx signal.
+	 */
+
+	 struct afe_sp_v4_channel_ex_vi_ftm ch_ex_vi_ftm[0];
+} __packed;
+
+struct afe_sp_v4_channel_ex_vi_ftm_params {
+	int32_t ftm_re_q24;
+	/*
+	 * DC resistance of voice coil at room temperature
+	 * or small signal level in Ohm.
+	 */
+	int32_t ftm_Bl_q24;
+	/* Force factor.
+	 */
+	int32_t ftm_Rms_q24;
+	/* Mechanical damping or resistance of loudspeaker in Kg/sec.
+	 */
+	int32_t ftm_Kms_q24;
+	/* Mechanical stiffness of driver suspension in N/mm.
+	 */
+	int32_t ftm_Fres_q20;
+	/* Resonance frequency in Hz.
+	 */
+	int32_t ftm_Qms_q24;
+	/* Mechanical Q-factor.
+	 */
+	uint32_t status;
+	/*
+	 * FTM packet status
+	 * 0 - Incorrect operation mode.This status is returned
+	 *      when GET_PARAM is called in non FTM Mode.
+	 * 1 - Inactive mode -- Port is not yet started.
+	 * 2 - Wait state. wait_time_ms has not yet elapsed
+	 * 3 - In progress state. ftm_time_ms has not yet elapsed.
+	 * 4 - Success.
+	 * 5 - Failed.
+	 */
+} __packed;
+
+/* This structure is followed by 'num_ch' number of structures of
+ * type afe_sp_v4_channel_ex_vi_ftm_params.
+ */
+struct afe_sp_v4_param_ex_vi_ftm_params {
+	uint32_t num_ch;
+	/* Number of channels for Rx signal.
+	 */
+
+	 struct afe_sp_v4_channel_ex_vi_ftm_params ch_ex_vi_ftm_params[0];
+} __packed;
+
+struct afe_sp_v4_param_vi_channel_map_cfg {
+	int32_t	num_channels;
+	int32_t	chan_info[4];
+} __packed;
+
+union afe_spkr_prot_config {
+	struct asm_fbsp_mode_rx_cfg mode_rx_cfg;
+	struct asm_spkr_calib_vi_proc_cfg vi_proc_cfg;
+	struct asm_feedback_path_cfg feedback_path_cfg;
+	struct asm_mode_vi_proc_cfg mode_vi_proc_cfg;
+	struct afe_sp_th_vi_mode_cfg th_vi_mode_cfg;
+	struct afe_sp_th_vi_ftm_cfg th_vi_ftm_cfg;
+	struct afe_sp_th_vi_v_vali_cfg th_vi_v_vali_cfg;
+	struct afe_sp_ex_vi_mode_cfg ex_vi_mode_cfg;
+	struct afe_sp_ex_vi_ftm_cfg ex_vi_ftm_cfg;
+	struct afe_sp_rx_limiter_th_param limiter_th_cfg;
+	struct afe_sp_v4_param_op_mode v4_op_mode;
+	struct afe_sp_v4_param_vi_op_mode_cfg v4_vi_op_mode;
+	struct afe_sp_v4_param_th_vi_r0t0_cfg v4_r0t0_cfg;
+	struct afe_sp_v4_param_th_vi_ftm_cfg v4_th_vi_ftm_cfg;
+	struct afe_sp_v4_param_th_vi_v_vali_cfg v4_v_vali_cfg;
+	struct afe_sp_v4_param_ex_vi_mode_cfg v4_ex_vi_mode_cfg;
+	struct afe_sp_v4_param_ex_vi_ftm_cfg v4_ex_vi_ftm_cfg;
+	struct afe_sp_v4_param_vi_channel_map_cfg v4_ch_map_cfg;
 } __packed;
 
 
@@ -11349,6 +11790,10 @@ struct avcs_fwk_ver_info {
 #define LSM_SESSION_CMD_SET_PARAMS			(0x00012A83)
 #define LSM_SESSION_CMD_SET_PARAMS_V2			(0x00012A8F)
 #define LSM_SESSION_CMD_SET_PARAMS_V3			(0x00012A92)
+#define LSM_SESSION_CMD_GET_PARAMS_V2			(0x00012A90)
+#define LSM_SESSION_CMDRSP_GET_PARAMS_V2		(0x00012A91)
+#define LSM_SESSION_CMD_GET_PARAMS_V3			(0x00012A93)
+#define LSM_SESSION_CMDRSP_GET_PARAMS_V3		(0x00012A94)
 #define LSM_SESSION_CMD_REGISTER_SOUND_MODEL		(0x00012A84)
 #define LSM_SESSION_CMD_DEREGISTER_SOUND_MODEL		(0x00012A85)
 #define LSM_SESSION_CMD_START				(0x00012A86)
@@ -11784,7 +12229,7 @@ struct afe_clk_set {
 	 * for enable and disable clock.
 	 *	"clk_freq_in_hz", "clk_attri", and "clk_root"
 	 *	are ignored in disable clock case.
-	 *	@values�
+	 *	@values
 	 *	- 0 -- Disabled
 	 *	- 1 -- Enabled  @tablebulletend
 	 */
@@ -11830,6 +12275,35 @@ struct afe_clk_cfg {
 #define AFE_PARAM_ID_LPAIF_CLK_CONFIG	0x00010238
 #define AFE_MODULE_CLOCK_SET		0x0001028F
 #define AFE_PARAM_ID_CLOCK_SET		0x00010290
+
+struct afe_set_clk_drift {
+	/*
+	 * Clock ID
+	 *	@values
+	 *	- 0x100 to 0x10E
+	 *	- 0x200 to 0x20C
+	 *	- 0x500 to 0x505
+	 */
+	uint32_t clk_id;
+
+	/*
+	 * Clock drift  (in PPB) to be set.
+	 *	@values
+	 *	- need to get values from DSP team
+	 */
+	int32_t clk_drift;
+
+	/*
+	 * Clock rest.
+	 *	@values
+	 *	- 1 -- Reset PLL with the original frequency
+	 *	- 0 -- Adjust the clock with the clk drift value
+	 */
+	uint32_t clk_reset;
+} __packed;
+
+/* This param id is used to adjust audio interface PLL*/
+#define AFE_PARAM_ID_CLOCK_ADJUST       0x000102C6
 
 enum afe_lpass_digital_clk_src {
 	Q6AFE_LPASS_DIGITAL_ROOT_INVALID,
@@ -12382,6 +12856,12 @@ struct afe_av_dev_drift_get_param_resp {
  */
 #define ASM_SESSION_MTMX_STRTR_PARAM_RENDER_WINDOW_END_V2   0x00010DD2
 
+/* Parameter used by #ASM_SESSION_MTMX_STRTR_MODULE_ID_AVSYNC to specify the
+ * ttp offset value. This parameter is supported only for a Set
+ * command (not a Get command) in the Tx direction
+ */
+#define ASM_SESSION_MTMX_STRTR_PARAM_TTP_OFFSET 0x00013228
+
 /* Generic payload of the window parameters in the
  * #ASM_SESSION_MTMX_STRTR_MODULE_ID_AVSYNC module.
  * This payload is supported only for a Set command
@@ -12490,6 +12970,26 @@ struct asm_session_mtmx_strtr_param_render_mode_t {
 	u32                  flags;
 } __packed;
 
+struct asm_session_mtmx_strtr_param_ttp_offset_t {
+	uint32_t                  ttp_offset_lsw;
+	/* Lower 32 bits of the ttp_offset in microseconds. */
+
+	uint32_t                  ttp_offset_msw;
+	/* Upper 32 bits of the ttp_offset in microseconds.
+	 *
+	 * Internal default value is 0 for both values. The 64-bit number
+	 * formed by ttp_offset_lsw and ttp_offset_lsw is treated as unsigned.
+	 * In case of local DSP loopback when using start flag
+	 * ASM_SESSION_CMD_RUN_START_TIME_RUN_WITH_TTP the max. ttp_offset
+	 * value is limited by internal buffer constraints. Currently the
+	 * limit is 200ms.
+
+	 * This parameter can be set before or while an ASM stream is running,
+	 * allowing “at-run-time” changes of the overall latency.
+	 */
+
+} __packed;
+
 /* Parameter used by #ASM_SESSION_MTMX_STRTR_MODULE_ID_AVSYNC which allows the
  * audio client to specify the clock recovery mechanism that the audio DSP
  * should use.
@@ -12561,6 +13061,7 @@ union asm_session_mtmx_strtr_param_config {
 	struct asm_session_mtmx_strtr_param_render_mode_t render_param;
 	struct asm_session_mtmx_strtr_param_clk_rec_t clk_rec_param;
 	struct asm_session_mtmx_param_adjust_session_time_ctl_t adj_time_param;
+	struct asm_session_mtmx_strtr_param_ttp_offset_t ttp_offset;
 } __packed;
 
 struct asm_mtmx_strtr_params {
@@ -12778,6 +13279,12 @@ struct afe_doa_tracking_mon_get_param_resp {
 #define AUDPROC_MODULE_ID_FFECNS 0x00010952
 #define AUDPROC_MODULE_ID_FFNS 0x00010962
 #define AUDPROC_PARAM_ID_FFV_DOA_TRACKING_PARAM 0x0001097C
+
+/*
+* ID of the DTMF Detection Module.
+*/
+#define AUDPROC_MODULE_ID_DTMF_DETECTION        0x00010940
+
 #define AUDPROC_PARAM_ID_FFV_DOA_TRACKING_MONITOR 0x0001097D
 
 struct admx_sec_primary_mic_ch {

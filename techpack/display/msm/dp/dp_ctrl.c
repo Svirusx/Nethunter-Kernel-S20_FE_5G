@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2012-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012-2020, The Linux Foundation. All rights reserved.
  */
 
 #include <linux/types.h>
@@ -805,8 +805,10 @@ static int dp_ctrl_link_setup(struct dp_ctrl_private *ctrl, bool shallow)
 		}
 #endif
 
-		if (!link_train_max_retries || atomic_read(&ctrl->aborted))
+		if (!link_train_max_retries || atomic_read(&ctrl->aborted)) {
+			dp_ctrl_disable_link_clock(ctrl);
 			break;
+		}
 
 		if (rc != -EAGAIN)
 			dp_ctrl_link_rate_down_shift(ctrl);
@@ -1281,6 +1283,11 @@ static int dp_ctrl_stream_on(struct dp_ctrl *dp_ctrl, struct dp_panel *panel)
 
 	ctrl = container_of(dp_ctrl, struct dp_ctrl_private, dp_ctrl);
 
+	if (!ctrl->power_on) {
+		DP_ERR("ctrl off\n");
+		return -EINVAL;
+	}
+
 	rc = dp_ctrl_enable_stream_clocks(ctrl, panel);
 	if (rc) {
 		DP_ERR("failure on stream clock enable\n");
@@ -1518,11 +1525,8 @@ static int dp_ctrl_on(struct dp_ctrl *dp_ctrl, bool mst_mode,
 	ctrl->initial_bw_code = ctrl->link->link_params.bw_code;
 
 	rc = dp_ctrl_link_setup(ctrl, shallow);
-#ifdef CONFIG_SEC_DISPLAYPORT
-	if (rc)
-		goto end;
-#endif
-	ctrl->power_on = true;
+	if (!rc)
+		ctrl->power_on = true;
 end:
 	return rc;
 }

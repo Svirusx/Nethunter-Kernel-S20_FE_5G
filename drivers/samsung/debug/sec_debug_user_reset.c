@@ -1459,10 +1459,14 @@ void sec_debug_backtrace(void)
 #endif
 
 	if (!once++) {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,4,0)
+		start_backtrace(&frame, (unsigned long)__builtin_frame_address(0), (unsigned long)sec_debug_backtrace);
+#else
 		frame.fp = (unsigned long)__builtin_frame_address(0);
 		frame.pc = (unsigned long)sec_debug_backtrace;
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4,14,0)
 		frame.sp = current_stack_pointer;
+#endif
 #endif
 		while (1) {
 			int ret;

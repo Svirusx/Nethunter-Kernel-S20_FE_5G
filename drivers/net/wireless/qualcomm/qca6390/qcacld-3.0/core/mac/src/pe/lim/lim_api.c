@@ -763,6 +763,7 @@ static int pe_hang_event_notifier_call(struct notifier_block *block,
 	uint8_t *pe_data;
 	uint8_t i;
 	struct pe_hang_event_fixed_param *cmd;
+	size_t size;
 
 	if (!data)
 		return NOTIFY_STOP_MASK;
@@ -771,13 +772,13 @@ static int pe_hang_event_notifier_call(struct notifier_block *block,
 	if (!mac)
 		return NOTIFY_STOP_MASK;
 
-	if (pe_hang_data->offset >= QDF_WLAN_MAX_HOST_OFFSET)
-		return NOTIFY_STOP_MASK;
-
+	size = sizeof(*cmd);
 	for (i = 0; i < mac->lim.maxBssId; i++) {
 		session = &mac->lim.gpSession[i];
 		if (!session->valid)
 			continue;
+		if (pe_hang_data->offset + size > QDF_WLAN_HANG_FW_OFFSET)
+			return NOTIFY_STOP_MASK;
 
 		pe_data = (pe_hang_data->hang_data + pe_hang_data->offset);
 		cmd = (struct pe_hang_event_fixed_param *)pe_data;
@@ -788,7 +789,7 @@ static int pe_hang_event_notifier_call(struct notifier_block *block,
 		cmd->limprevmlmstate = session->limPrevMlmState;
 		cmd->limsmestate = session->limSmeState;
 		cmd->limprevsmestate = session->limPrevSmeState;
-		pe_hang_data->offset += sizeof(*cmd);
+		pe_hang_data->offset += size;
 	}
 
 	return NOTIFY_OK;
@@ -2657,10 +2658,9 @@ pe_roam_synch_callback(struct mac_context *mac_ctx,
 	ft_session_ptr->csaOffloadEnable = session_ptr->csaOffloadEnable;
 
 	/* Next routine will update nss and vdev_nss with AP's capabilities */
-	lim_fill_ft_session(mac_ctx, bss_desc, ft_session_ptr, session_ptr);
-	
-	pe_set_rmf_caps(mac_ctx, ft_session_ptr, roam_sync_ind_ptr);	
-	
+	lim_fill_ft_session(mac_ctx, bss_desc, ft_session_ptr,
+			    session_ptr, roam_sync_ind_ptr->phy_mode);
+	pe_set_rmf_caps(mac_ctx, ft_session_ptr, roam_sync_ind_ptr);
 	/* Next routine may update nss based on dot11Mode */
 	lim_ft_prepare_add_bss_req(mac_ctx, ft_session_ptr, bss_desc);
 	if (session_ptr->is11Rconnection)

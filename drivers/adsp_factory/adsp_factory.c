@@ -567,6 +567,10 @@ static int __init factory_adsp_init(void)
 #ifdef CONFIG_SUPPORT_AMS_LIGHT_CALIBRATION
 	INIT_DELAYED_WORK(&data->light_cal_work, light_cal_read_work_func);
 #endif
+#if defined(CONFIG_SEC_C1Q_PROJECT) || defined(CONFIG_SEC_C2Q_PROJECT)
+	INIT_DELAYED_WORK(&data->light_copr_debug_work,
+		light_copr_debug_work_func);
+#endif
 #ifdef CONFIG_SUPPORT_BRIGHTNESS_NOTIFY_FOR_LIGHT_SENSOR
 	INIT_WORK(&data->light_br_work, light_brightness_work_func);
 #endif
@@ -587,6 +591,9 @@ static void __exit factory_adsp_exit(void)
 #endif
 #ifdef CONFIG_SUPPORT_AMS_LIGHT_CALIBRATION
 	cancel_delayed_work_sync(&data->light_cal_work);
+#endif
+#if defined(CONFIG_SEC_C1Q_PROJECT) || defined(CONFIG_SEC_C2Q_PROJECT)
+	cancel_delayed_work_sync(&data->light_copr_debug_work);
 #endif
 #ifdef CONFIG_SUPPORT_BRIGHTNESS_NOTIFY_FOR_LIGHT_SENSOR
 	cancel_work_sync(&data->light_br_work);

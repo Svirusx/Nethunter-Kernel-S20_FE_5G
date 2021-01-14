@@ -42,6 +42,8 @@
 #define MFC_LDO_ON		1
 #define MFC_LDO_OFF		0
 
+#define TX_ID_CHECK_CNT		3
+
 enum power_supply_ext_property {
 	POWER_SUPPLY_EXT_PROP_CHECK_SLAVE_I2C = POWER_SUPPLY_PROP_MAX,
 	POWER_SUPPLY_EXT_PROP_MULTI_CHARGER_MODE,
@@ -95,6 +97,7 @@ enum power_supply_ext_property {
 	POWER_SUPPLY_EXT_PROP_DEFAULT_CURRENT,
 	POWER_SUPPLY_PROP_WIRELESS_RX_POWER,
 	POWER_SUPPLY_PROP_WIRELESS_MAX_VOUT,
+	POWER_SUPPLY_PROP_WIRELESS_ABNORMAL_PAD,
 #if defined(CONFIG_DUAL_BATTERY)
 	POWER_SUPPLY_EXT_PROP_CHGIN_OK,
 	POWER_SUPPLY_EXT_PROP_SUPLLEMENT_MODE,
@@ -543,6 +546,7 @@ enum sec_battery_direct_charging_source_ctrl {
 #define SEC_BAT_TX_RETRY_MIX_TEMP		0x0008
 #define SEC_BAT_TX_RETRY_HIGH_TEMP		0x0010
 #define SEC_BAT_TX_RETRY_LOW_TEMP		0x0020
+#define SEC_BAT_TX_RETRY_OCP			0x0040
 
 /* ext_event */
 #define BATT_EXT_EVENT_NONE			0x00000000
@@ -1564,6 +1568,9 @@ static inline struct power_supply *get_power_supply_by_name(char *name)
 
 #define is_wireless_type(cable_type) \
 	(is_hv_wireless_type(cable_type) || is_nv_wireless_type(cable_type))
+
+#define is_wireless_fake_type(cable_type) \
+	(is_wireless_type(cable_type) || (cable_type == SEC_BATTERY_CABLE_WIRELESS_FAKE))
 
 #define is_not_wireless_type(cable_type) ( \
 	(cable_type != SEC_BATTERY_CABLE_WIRELESS) && \

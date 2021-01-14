@@ -80,10 +80,6 @@ module_param(rmnet_ipa_napi_chain_mbps, uint, 0644);
 MODULE_PARM_DESC(rmnet_ipa_napi_chain_mbps, "IPA NAPI chained rx Threshold");
 extern void ipa3_set_napi_chained_rx(bool enable);
 
-/* mhi napi chained rx */
-#define ARGOS_RMNET_MHI_NAPI_CHAIN_MBPS 200
-static unsigned int rmnet_mhi_napi_chain_mbps = ARGOS_RMNET_MHI_NAPI_CHAIN_MBPS;
-
 /* gro count variation */
 u32 config_flushcount = 2;
 #define RMNET_GRO_CNT_LVL1_MBPS 100
@@ -247,15 +243,6 @@ static void rmnet_data_pm_boost_rps(unsigned long speed)
 	}
 }
 
-static void rmnet_data_pm_set_mhi_napi_chain(unsigned long speed)
-{
-	if (speed >= rmnet_mhi_napi_chain_mbps) {
-		mhi_set_napi_chained_rx(cfg->real_dev, true);
-	} else {
-		mhi_set_napi_chained_rx(cfg->real_dev, false);
-	}
-}
-
 static void rmnet_data_pm_set_ipa_napi_chain(unsigned long speed)
 {
 	if (speed >= rmnet_ipa_napi_chain_mbps) {
@@ -269,7 +256,7 @@ static void rmnet_data_pm_set_ipa_napi_chain(unsigned long speed)
 
 struct rmnet_data_pm_ops rmnet_mhi_ops = {
 	.boost_rps = rmnet_data_pm_boost_rps,
-	.pnd_chain = rmnet_data_pm_set_mhi_napi_chain,
+	.pnd_chain = NULL,
 	.gro_count = rmnet_data_pm_set_gro_cnt,
 	.tx_aggr = rmnet_data_pm_set_tx_aggr,
 	.pm_qos = rmnet_data_pm_set_pm_qos,

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2012-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012-2020, The Linux Foundation. All rights reserved.
  */
 #include <linux/module.h>
 #include <linux/slab.h>
@@ -516,6 +516,17 @@ int adm_programable_channel_mixer(int port_id, int copp_idx, int session_id,
 		pr_err("%s: Invalid port_id %#x\n", __func__, port_id);
 		return -EINVAL;
 	}
+
+	/*
+	 * check if PSPD is already configured
+	 * if it is configured already, return 0 without applying PSPD.
+	 */
+	if (atomic_read(&this_adm.copp.cnt[port_idx][copp_idx]) > 1) {
+		pr_debug("%s: copp.cnt:%#x\n", __func__,
+			atomic_read(&this_adm.copp.cnt[port_idx][copp_idx]));
+		return 0;
+	}
+
 	/*
 	 * First 8 bytes are 4 bytes as rule number, 2 bytes as output
 	 * channel and 2 bytes as input channel.
@@ -2141,7 +2152,8 @@ static struct cal_block_data *adm_find_cal_by_path(int cal_index, int path)
 
 		if (cal_index == ADM_AUDPROC_CAL ||
 		    cal_index == ADM_LSM_AUDPROC_CAL ||
-		    cal_index == ADM_LSM_AUDPROC_PERSISTENT_CAL) {
+		    cal_index == ADM_LSM_AUDPROC_PERSISTENT_CAL ||
+		    cal_index == ADM_AUDPROC_PERSISTENT_CAL) {
 			audproc_cal_info = cal_block->cal_info;
 			if ((audproc_cal_info->path == path) &&
 			    (cal_block->cal_data.size > 0))
@@ -2179,7 +2191,8 @@ static struct cal_block_data *adm_find_cal_by_app_type(int cal_index, int path,
 
 		if (cal_index == ADM_AUDPROC_CAL ||
 		    cal_index == ADM_LSM_AUDPROC_CAL ||
-		    cal_index == ADM_LSM_AUDPROC_PERSISTENT_CAL) {
+		    cal_index == ADM_LSM_AUDPROC_PERSISTENT_CAL ||
+		    cal_index == ADM_AUDPROC_PERSISTENT_CAL) {
 			audproc_cal_info = cal_block->cal_info;
 			if ((audproc_cal_info->path == path) &&
 			    (audproc_cal_info->app_type == app_type) &&
@@ -2220,7 +2233,8 @@ static struct cal_block_data *adm_find_cal(int cal_index, int path,
 
 		if (cal_index == ADM_AUDPROC_CAL ||
 		    cal_index == ADM_LSM_AUDPROC_CAL ||
-		    cal_index == ADM_LSM_AUDPROC_PERSISTENT_CAL) {
+		    cal_index == ADM_LSM_AUDPROC_PERSISTENT_CAL||
+		    cal_index == ADM_AUDPROC_PERSISTENT_CAL) {
 			audproc_cal_info = cal_block->cal_info;
 			if ((audproc_cal_info->path == path) &&
 			    (audproc_cal_info->app_type == app_type) &&
@@ -2311,6 +2325,9 @@ static void send_adm_cal(int port_id, int copp_idx, int path, int perf_mode,
 	if (passthr_mode != LISTEN) {
 		send_adm_cal_type(ADM_AUDPROC_CAL, path, port_id, copp_idx,
 				perf_mode, app_type, acdb_id, sample_rate);
+		send_adm_cal_type(ADM_AUDPROC_PERSISTENT_CAL, path,
+				  port_id, copp_idx, perf_mode, app_type,
+				  acdb_id, sample_rate);
 	} else {
 		send_adm_cal_type(ADM_LSM_AUDPROC_CAL, path, port_id, copp_idx,
 				  perf_mode, app_type, acdb_id, sample_rate);
@@ -2984,7 +3001,7 @@ exit:
  */
 int adm_open(int port_id, int path, int rate, int channel_mode, int topology,
 	     int perf_mode, uint16_t bit_width, int app_type, int acdb_id,
-	     int session_type)
+	     int session_type, uint32_t passthr_mode)
 {
 	struct adm_cmd_device_open_v5	open;
 	struct adm_cmd_device_open_v6	open_v6;
@@ -3088,7 +3105,8 @@ int adm_open(int port_id, int path, int rate, int channel_mode, int topology,
 				this_adm.ffecns_port_id);
 	}
 
-	if (topology == VPM_TX_VOICE_SMECNS_V2_COPP_TOPOLOGY)
+	if (topology == VPM_TX_VOICE_SMECNS_V2_COPP_TOPOLOGY ||
+	    topology == VPM_TX_VOICE_FLUENCE_SM_COPP_TOPOLOGY)
 		channel_mode = 1;
 
 	/*
@@ -3211,7 +3229,9 @@ int adm_open(int port_id, int path, int rate, int channel_mode, int topology,
 			}
 
 			open_v8.topology_id = topology;
-			open_v8.reserved = 0;
+			open_v8.compressed_data_type = 0;
+			if (passthr_mode == COMPRESSED_PASSTHROUGH_DSD)
+				open_v8.compressed_data_type = 1;
 
 			/* variable endpoint payload */
 			ep1_payload.dev_num_channel = channel_mode & 0x00FF;
@@ -3284,7 +3304,6 @@ int adm_open(int port_id, int path, int rate, int channel_mode, int topology,
 			if ((this_adm.num_ec_ref_rx_chans != 0)
 				&& (path != ADM_PATH_PLAYBACK)
 				&& (open_v8.endpoint_id_2 != 0xFFFF)) {
-				this_adm.num_ec_ref_rx_chans = 0;
 				memcpy(adm_params + sizeof(open_v8)
 						+ ep1_payload_size,
 						(void *)&ep2_payload,
@@ -4146,6 +4165,9 @@ static int get_cal_type_index(int32_t cal_type)
 	case ADM_LSM_AUDPROC_PERSISTENT_CAL_TYPE:
 		ret = ADM_LSM_AUDPROC_PERSISTENT_CAL;
 		break;
+	case ADM_AUDPROC_PERSISTENT_CAL_TYPE:
+		ret = ADM_AUDPROC_PERSISTENT_CAL;
+		break;
 	default:
 		pr_err("%s: invalid cal type %d!\n", __func__, cal_type);
 	}
@@ -4369,6 +4391,12 @@ static int adm_init_cal_data(void)
 		cal_utils_match_buf_num} },
 
 		{{ADM_LSM_AUDPROC_PERSISTENT_CAL_TYPE,
+		 {adm_alloc_cal, adm_dealloc_cal, NULL,
+		  adm_set_cal, NULL, NULL} },
+		 {adm_map_cal_data, adm_unmap_cal_data,
+		  cal_utils_match_buf_num} },
+
+		{{ADM_AUDPROC_PERSISTENT_CAL_TYPE,
 		 {adm_alloc_cal, adm_dealloc_cal, NULL,
 		  adm_set_cal, NULL, NULL} },
 		 {adm_map_cal_data, adm_unmap_cal_data,
@@ -4934,7 +4962,15 @@ int adm_store_cal_data(int port_id, int copp_idx, int path, int perf_mode,
 			rc = -ENOMEM;
 			goto unlock;
 		}
-	} else if (cal_index == ADM_AUDVOL_CAL) {
+	} else if (cal_index == ADM_AUDPROC_PERSISTENT_CAL) {
+		if (cal_block->cal_data.size > AUD_PROC_PERSIST_BLOCK_SIZE) {
+			pr_err("%s:persist invalid size exp/actual[%zd, %d]\n",
+				__func__, cal_block->cal_data.size, *size);
+			rc = -ENOMEM;
+			goto unlock;
+		}
+	}
+	else if (cal_index == ADM_AUDVOL_CAL) {
 		if (cal_block->cal_data.size > AUD_VOL_BLOCK_SIZE) {
 			pr_err("%s:aud_vol:invalid size exp/actual[%zd, %d]\n",
 				__func__, cal_block->cal_data.size, *size);
@@ -5347,7 +5383,7 @@ int adm_get_source_tracking(int port_id, int copp_idx,
 	 */
 	param_hdr.param_size =
 		sizeof(struct adm_param_fluence_sourcetracking_t) +
-		sizeof(union param_hdrs);
+		sizeof(struct param_hdr_v3);
 
 	/*
 	 * Retrieving parameters out of band, so no need to provide a buffer for
@@ -5376,7 +5412,7 @@ int adm_get_source_tracking(int port_id, int copp_idx,
 	source_tracking_params =
 		(struct adm_param_fluence_sourcetracking_t
 			 *) (this_adm.sourceTrackingData.memmap.kvaddr +
-			     sizeof(struct param_hdr_v1));
+			     sizeof(struct param_hdr_v3));
 	for (i = 0; i < MAX_SECTORS; i++) {
 		sourceTrackingData->vad[i] = source_tracking_params->vad[i];
 		pr_debug("%s: vad[%d] = %d\n",

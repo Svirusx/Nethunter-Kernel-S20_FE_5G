@@ -1,0 +1,151 @@
+/* Copyright (c) 2020, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&aliases {
+    uart3 = "/soc/qcom,qup_uart@0x98c000"; /* UART for GPS*/
+};
+
+&soc {
+    gps {
+        compatible = "samsung,exynos54xx-bcm4753";
+        gpios = <&tlmm 91 0
+                &tlmm 55 0>;
+        status = "okay";
+    };
+	qupv3_se3_4uart: qcom,qup_uart@98c000 {
+		compatible = "qcom,msm-geni-serial-hs";
+		reg = <0x98c000 0x4000>;
+		reg-names = "se_phys";
+		clock-names = "se-clk", "m-ahb", "s-ahb";
+		clocks = <&clock_gcc GCC_QUPV3_WRAP0_S3_CLK>,
+				<&clock_gcc GCC_QUPV3_WRAP_0_M_AHB_CLK>,
+				<&clock_gcc GCC_QUPV3_WRAP_0_S_AHB_CLK>;
+		pinctrl-names = "default", "active", "sleep";
+		pinctrl-0 = <&qupv3_se3_default_cts>,
+				<&qupv3_se3_default_rtsrx>, <&qupv3_se3_default_tx>;
+		pinctrl-1 = <&qupv3_se3_ctsrx>, <&qupv3_se3_rts>,
+				<&qupv3_se3_tx>;
+		pinctrl-2 = <&qupv3_se3_ctsrx>, <&qupv3_se3_rts>,
+				<&qupv3_se3_tx>;
+		interrupts-extended = <&intc GIC_SPI 604 IRQ_TYPE_LEVEL_HIGH>,
+				<&tlmm 122 0>;
+		status = "disabled";
+		qcom,wakeup-byte = <0xFD>;
+		qcom,wrapper-core = <&qupv3_0>;
+	};
+};
+
+&tlmm {
+     gps_en_default: gps_en_default {
+		mux {
+			pins = "gpio91";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio91";
+			drive-strength = <2>;
+			bias-pull-down;
+		};
+	};
+
+    gps_int_default: gps_int_default {
+		mux {
+			pins = "gpio55";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio55";
+			drive-strength = <2>;
+			bias-pull-down;
+		};
+	};
+
+	qupv3_se3_4uart_pins: qupv3_se3_4uart_pins {
+		qupv3_se3_default_cts: qupv3_se3_default_cts {
+			mux {
+				pins = "gpio119";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio119";
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+
+		qupv3_se3_default_rtsrx: qupv3_se3_default_rtsrx {
+			mux {
+				pins = "gpio120", "gpio122";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio120", "gpio122";
+				drive-strength = <2>;
+				bias-pull-down;
+			};
+		};
+
+		qupv3_se3_default_tx: qupv3_se3_default_tx {
+			mux {
+				pins = "gpio121";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio121";
+				drive-strength = <2>;
+				bias-pull-up;
+			};
+		};
+
+		qupv3_se3_ctsrx: qupv3_se3_ctsrx {
+			mux {
+				pins = "gpio119", "gpio122";
+				function = "qup3";
+			};
+
+			config {
+				pins = "gpio119", "gpio122";
+				drive-strength = <2>;
+				bias-disable;
+			};
+		};
+
+		qupv3_se3_rts: qupv3_se3_rts {
+			mux {
+				pins = "gpio120";
+				function = "qup3";
+			};
+
+			config {
+				pins = "gpio120";
+				drive-strength = <2>;
+				bias-pull-down;
+			};
+		};
+
+		qupv3_se3_tx: qupv3_se3_tx {
+			mux {
+				pins = "gpio121";
+				function = "qup3";
+			};
+
+			config {
+				pins = "gpio121";
+				drive-strength = <2>;
+				bias-pull-up;
+			};
+		};
+	};
+};

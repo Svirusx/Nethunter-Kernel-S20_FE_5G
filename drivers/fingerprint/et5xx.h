@@ -10,10 +10,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
  */
-
 #ifndef _ET5XX_LINUX_DIRVER_H_
 #define _ET5XX_LINUX_DIRVER_H_
-
 #include <linux/module.h>
 #include <linux/spi/spi.h>
 #include <linux/wakelock.h>
@@ -27,23 +25,18 @@
 #include <linux/msm-bus.h>
 #include <linux/msm-bus-board.h>
 #endif
-
 #include <linux/cpufreq.h>
 #include <linux/pinctrl/consumer.h>
 #include <linux/regulator/consumer.h>
 #include "../pinctrl/core.h"
 #include <linux/pm_qos.h>
-
 #ifdef ENABLE_SENSORS_FPRINT_SECURE
 #define FP_DDR_FREQ_CONTROL
 #endif
-
 #ifdef FP_DDR_FREQ_CONTROL
 #define MHZ_TO_BPS(mhz, w) ((uint64_t)mhz * 1000 * 1000 * w)
-
 #define NUM_BUS_TABLE 11
 #define BUS_W 4	/* SDM845 DDR Voting('w' for DDR is 4) */
-
 enum {
 	MHZ_NONE = 0,
 	MHZ_200,
@@ -57,7 +50,6 @@ enum {
 	MHZ_1555,
 	MHZ_1803
 };
-
 static int ab_ib_bus_vectors[NUM_BUS_TABLE][2] = {
 {0, 0},		/* 0 */
 {0, 200},	/* 1 */
@@ -71,13 +63,11 @@ static int ab_ib_bus_vectors[NUM_BUS_TABLE][2] = {
 {0, 1555},	/* 9 */
 {0, 1803}	/* 10 */
 };
-
 static u32 bus_hdl;
-
 static struct msm_bus_vectors fpsensor_reg_bus_vectors[NUM_BUS_TABLE];
-
 static struct msm_bus_paths fpsensor_reg_bus_usecases[ARRAY_SIZE(
 	fpsensor_reg_bus_vectors)];
+
 
 static struct msm_bus_scale_pdata fpsensor_reg_bus_scale_table = {
 	.usecase = fpsensor_reg_bus_usecases,
@@ -85,23 +75,18 @@ static struct msm_bus_scale_pdata fpsensor_reg_bus_scale_table = {
 	.name = "fpsensor_bw",
 };
 #endif
-
 /*#define ET5XX_SPI_DEBUG*/
-
 #ifdef ET5XX_SPI_DEBUG
 #define DEBUG_PRINT(fmt, args...) pr_err(fmt, ## args)
 #else
 #define DEBUG_PRINT(fmt, args...)
 #endif
-
 #define VENDOR						"EGISTEC"
 #define CHIP_ID						"ET5XX"
-
 /* assigned */
 #define ET5XX_MAJOR					152
 /* ... up to 256 */
 #define N_SPI_MINORS					32
-
 #define OP_REG_R						0x20
 #define OP_REG_R_C						0x22
 #define OP_REG_R_C_BW					0x23
@@ -120,15 +105,11 @@ static struct msm_bus_scale_pdata fpsensor_reg_bus_scale_table = {
 #define OP_CLB_R						0x64
 #define OP_CLB_W						0x66
 #define BITS_PER_WORD					8
-
 #define SLOW_BAUD_RATE					12500000
-
 #define DRDY_IRQ_ENABLE					1
 #define DRDY_IRQ_DISABLE				0
-
 #define ET5XX_INT_DETECTION_PERIOD			10
 #define ET5XX_DETECTION_THRESHOLD			10
-
 #define FP_REGISTER_READ				0x01
 #define FP_REGISTER_WRITE				0x02
 #define FP_GET_ONE_IMG					0x03
@@ -151,7 +132,6 @@ static struct msm_bus_scale_pdata fpsensor_reg_bus_scale_table = {
 #define FP_NBM_READ						0x44
 #define FP_CLB_READ						0x45
 #define FP_CLB_WRITE					0x46
-
 #ifdef ENABLE_SENSORS_FPRINT_SECURE
 #define FP_DISABLE_SPI_CLOCK				0x10
 #define FP_CPU_SPEEDUP					0x11
@@ -165,8 +145,6 @@ static struct msm_bus_scale_pdata fpsensor_reg_bus_scale_table = {
 #define FP_SPI_VALUE					0x1a
 #define FP_IOCTL_RESERVED_01				0x1b
 #define FP_IOCTL_RESERVED_02				0x1c
-
-
 
 /* trigger signal initial routine */
 #define INT_TRIGGER_INIT				0xa4
@@ -183,41 +161,33 @@ static struct msm_bus_scale_pdata fpsensor_reg_bus_scale_table = {
 #define FSTATUS_ET5XX_ADDR				0x01
 /* Detect Define */
 #define FRAME_READY_MASK				0x01
-
 #define SHIFT_BYTE_OF_IMAGE 0
 #define DIVISION_OF_IMAGE 4
 #define LARGE_SPI_TRANSFER_BUFFER	64
 #define MAX_NVM_LEN (32 * 2) /* NVM length in bytes (32 * 16 bits internally) */
 #define NVM_WRITE_LENGTH 4096
 #define DETECT_ADM 1
-
 struct egis_ioc_transfer {
 	u8 *tx_buf;
 	u8 *rx_buf;
-
 	__u32 len;
 	__u32 speed_hz;
-
 	__u16 delay_usecs;
 	__u8 bits_per_word;
 	__u8 cs_change;
 	__u8 opcode;
 	__u8 pad[3];
-
 };
-
 #define EGIS_IOC_MAGIC			'k'
 #define EGIS_MSGSIZE(N) \
 	((((N)*(sizeof(struct egis_ioc_transfer))) < (1 << _IOC_SIZEBITS)) \
 		? ((N)*(sizeof(struct egis_ioc_transfer))) : 0)
 #define EGIS_IOC_MESSAGE(N) _IOW(EGIS_IOC_MAGIC, 0, char[EGIS_MSGSIZE(N)])
-
 struct etspi_data {
 	dev_t devt;
 	spinlock_t spi_lock;
 	struct spi_device *spi;
 	struct list_head device_entry;
-
 	/* buffer is NULL unless this device is open (users > 0) */
 	struct mutex buf_lock;
 	unsigned int users;
@@ -226,16 +196,16 @@ struct etspi_data {
 	unsigned int drdyPin;	/* DRDY GPIO pin number */
 	unsigned int sleepPin;	/* Sleep GPIO pin number */
 	unsigned int ldo_pin;	/* LDO GPIO pin number */
+
 	const char *btp_vcc;	/* 3.3V power source or enable LDO */
 	const char *btp_vdd;	/* 1.8V power source */
 	struct regulator *regulator_3p3;
 	struct regulator *regulator_1p8;
+
 	unsigned int min_cpufreq_limit;
 	unsigned int spi_cs;	/* spi cs pin <temporary gpio setting> */
-
 	unsigned int drdy_irq_flag;	/* irq flag */
 	bool ldo_onoff;
-
 	/* For polling interrupt */
 	int int_count;
 	struct timer_list timer;
@@ -265,7 +235,6 @@ struct etspi_data {
 	struct pinctrl_state *pins_idle;
 	struct pm_qos_request pm_qos;
 };
-
 int etspi_io_burst_read_register(struct etspi_data *etspi,
 		struct egis_ioc_transfer *ioc);
 int etspi_io_burst_read_register_backward(struct etspi_data *etspi,

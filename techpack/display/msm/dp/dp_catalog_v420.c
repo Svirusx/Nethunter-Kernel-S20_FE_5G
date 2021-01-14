@@ -3,6 +3,9 @@
  * Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
  */
 
+#include <linux/iopoll.h>
+#include <linux/iopoll.h>
+
 #include "dp_catalog.h"
 #include "dp_reg.h"
 #include "dp_debug.h"
@@ -25,6 +28,7 @@
 	catalog->sub.write(catalog->dpc, io_data, x, y); \
 })
 
+#define DP_PHY_READY BIT(1)
 #define MAX_VOLTAGE_LEVELS 4
 #define MAX_PRE_EMP_LEVELS 4
 
@@ -72,11 +76,7 @@ static u8 const dp_swing_hbr_rbr[MAX_VOLTAGE_LEVELS][MAX_PRE_EMP_LEVELS] = {
 	{0x1F, 0xFF, 0xFF, 0xFF}  /* sw1, 1.2v */
 };
 #else
-#ifdef SECDP_CALIBRATE_VXPX
-#include "inc/secdp_params_test.h"	/* for DP param tuning */
-#else
-#include "inc/secdp_params.h"		/* actual DP params as per project */
-#endif
+/* actual DP PHY params are read at each dtsi */
 #endif
 
 struct dp_catalog_private_v420 {
@@ -84,7 +84,90 @@ struct dp_catalog_private_v420 {
 	struct dp_catalog_sub sub;
 	struct dp_catalog_io *io;
 	struct dp_catalog *dpc;
+
+#ifdef CONFIG_SEC_DISPLAYPORT_ENG
+	char preshoot[DP_HW_PRESHOOT_MAX];
+#endif
 };
+
+#ifdef CONFIG_SEC_DISPLAYPORT_ENG
+struct dp_catalog_private_v420 *g_catalog_priv;
+
+int secdp_catalog_preshoot_show(char *buf)
+{
+	struct dp_catalog_private_v420 *catalog_priv = g_catalog_priv;
+	int  rc = 0;
+
+	rc += scnprintf(buf + rc, PAGE_SIZE - rc,
+			"%02x %02x\n",
+			catalog_priv->preshoot[DP_HW_PRESHOOT_0],
+			catalog_priv->preshoot[DP_HW_PRESHOOT_1]);
+
+	return rc;
+}
+
+void secdp_catalog_preshoot_store(char *buf)
+{
+	struct dp_catalog_private_v420 *catalog_priv = g_catalog_priv;
+	char *tok;
+	u32  value;
+	int  i, rc = 0;
+
+	for (i = 0; i < DP_HW_PRESHOOT_MAX; i++) {
+		tok = strsep(&buf, ",");
+		if (!tok)
+			continue;
+
+		rc = kstrtouint(tok, 16, &value);
+		if (rc) {
+			DP_ERR("error: %s rc:%d\n", tok, rc);
+			goto end;
+		}
+
+		catalog_priv->preshoot[i] = value;
+	}
+end:
+	return;
+}
+
+static void _secdp_catalog_preshoot_init(struct dp_catalog_private_v420 *catalog)
+{
+	int i;
+
+	for (i = 0; i < DP_HW_PRESHOOT_MAX; i++)
+		catalog->preshoot[i] = 0xff;
+}
+
+static void _secdp_catalog_preshoot_adjust(
+			struct dp_catalog_private_v420 *catalog)
+{
+	struct dp_io_data *io_data;
+	int i;
+
+	for (i = 0; i < DP_HW_PRESHOOT_MAX; i++) {
+		if (catalog->preshoot[i] != 0xff) {
+			if (i == DP_HW_PRESHOOT_0)
+				io_data = catalog->io->dp_ln_tx0;
+			else if (i == DP_HW_PRESHOOT_1)
+				io_data = catalog->io->dp_ln_tx1;
+			else
+				DP_ERR("cannot be here\n");
+
+			catalog->preshoot[i] |= BIT(5);
+
+			/*
+			 * USB3_DP_PHY_DP_QSERDES_TX0_PRE_EMPH
+			 * USB3_DP_PHY_DP_QSERDES_TX1_PRE_EMPH
+			 */
+			dp_write(0x108, catalog->preshoot[i]);
+
+			DP_INFO("%s 0x%02x write done!\n",
+					secdp_preshoot_to_string(i),
+					catalog->preshoot[i]);
+		}
+	}
+}
+#endif
 
 static void dp_catalog_aux_setup_v420(struct dp_catalog_aux *aux,
 		struct dp_aux_cfg *cfg)
@@ -238,11 +321,6 @@ static void dp_catalog_ctrl_phy_lane_cfg_v420(struct dp_catalog_ctrl *ctrl,
 	dp_write(DP_PHY_SPARE0_V420, info);
 }
 
-#ifdef SECDP_CALIBRATE_VXPX
-static char g_prsht_val0 = 0xFF;
-static char g_prsht_val1 = 0xFF;
-#endif
-
 static void dp_catalog_ctrl_update_vx_px_v420(struct dp_catalog_ctrl *ctrl,
 		u8 v_level, u8 p_level, bool high)
 {
@@ -250,6 +328,16 @@ static void dp_catalog_ctrl_update_vx_px_v420(struct dp_catalog_ctrl *ctrl,
 	struct dp_io_data *io_data;
 	u8 value0, value1;
 	u32 version;
+#ifdef CONFIG_SEC_DISPLAYPORT
+	struct dp_parser *parser;
+	u8 *dp_swing_hbr2_hbr3[MAX_VOLTAGE_LEVELS];
+	u8 *dp_pre_emp_hbr2_hbr3[MAX_PRE_EMP_LEVELS];
+	u8 *dp_swing_hbr_rbr[MAX_VOLTAGE_LEVELS];
+	u8 *dp_pre_emp_hbr_rbr[MAX_PRE_EMP_LEVELS];
+	u8 *vm_voltage_swing[MAX_VOLTAGE_LEVELS];
+	u8 *vm_pre_emphasis[MAX_PRE_EMP_LEVELS];
+	int i;
+#endif
 
 	if (!ctrl || !((v_level < MAX_VOLTAGE_LEVELS)
 		&& (p_level < MAX_PRE_EMP_LEVELS))) {
@@ -264,6 +352,21 @@ static void dp_catalog_ctrl_update_vx_px_v420(struct dp_catalog_ctrl *ctrl,
 	io_data = catalog->io->dp_ahb;
 	version = dp_read(DP_HW_VERSION);
 
+#ifdef CONFIG_SEC_DISPLAYPORT
+	parser = catalog->dpc->parser;
+
+	for (i = 0; i < MAX_VOLTAGE_LEVELS; i++) {
+		dp_swing_hbr2_hbr3[i]   = parser->dp_swing_hbr2_hbr3[i];
+		dp_swing_hbr_rbr[i]     = parser->dp_swing_hbr_rbr[i];
+		vm_voltage_swing[i]     = parser->vm_voltage_swing[i];
+	}
+
+	for (i = 0; i < MAX_PRE_EMP_LEVELS; i++) {
+		dp_pre_emp_hbr2_hbr3[i] = parser->dp_pre_emp_hbr2_hbr3[i];
+		dp_pre_emp_hbr_rbr[i]   = parser->dp_pre_emp_hbr_rbr[i];
+		vm_pre_emphasis[i]      = parser->vm_pre_emphasis[i];
+	}
+#endif
 	/*
 	 * For DP controller versions 1.2.3 and 1.2.4
 	 */
@@ -326,25 +429,111 @@ static void dp_catalog_ctrl_update_vx_px_v420(struct dp_catalog_ctrl *ctrl,
 			v_level, value0, p_level, value1);
 	}
 
-#ifdef SECDP_CALIBRATE_VXPX
-	DP_INFO("[g_prsht_val0] 0x%02X\n", g_prsht_val0);
-	if (g_prsht_val0 != 0xFF) {
-		io_data = catalog->io->dp_ln_tx0;
-		g_prsht_val0 |= BIT(5);
-		/*USB3_DP_PHY_DP_QSERDES_TX0_PRE_EMPH*/
-		dp_write(0x108, g_prsht_val0);
-		DP_INFO("[g_prsht_val0] 0x%02X write done!\n", g_prsht_val0);
+#ifdef CONFIG_SEC_DISPLAYPORT_ENG
+	_secdp_catalog_preshoot_adjust(catalog);
+#endif
+}
+
+static bool dp_catalog_ctrl_wait_for_phy_ready_v420(
+		struct dp_catalog_private_v420 *catalog)
+{
+	u32 reg = DP_PHY_STATUS_V420, state;
+	void __iomem *base = catalog->io->dp_phy->io.base;
+	bool success = true;
+	u32 const poll_sleep_us = 500;
+	u32 const pll_timeout_us = 10000;
+
+	if (readl_poll_timeout_atomic((base + reg), state,
+			((state & DP_PHY_READY) > 0),
+			poll_sleep_us, pll_timeout_us)) {
+		DP_ERR("PHY status failed, status=%x\n", state);
+
+		success = false;
 	}
 
-	DP_INFO("[g_prsht_val1] 0x%02X\n", g_prsht_val1);
-	if (g_prsht_val1 != 0xFF) {
-		io_data = catalog->io->dp_ln_tx1;
-		g_prsht_val1 |= BIT(5);
-		/*USB3_DP_PHY_DP_QSERDES_TX1_PRE_EMPH*/
-		dp_write(0x108, g_prsht_val1);
-		DP_INFO("[g_prsht_val1] 0x%02X write done!\n", g_prsht_val1);
+	return success;
+}
+
+static int dp_catalog_ctrl_late_phy_init_v420(struct dp_catalog_ctrl *ctrl,
+					u8 lane_cnt, bool flipped)
+{
+	int rc = 0;
+	u32 bias0_en, drvr0_en, bias1_en, drvr1_en;
+	struct dp_catalog_private_v420 *catalog;
+	struct dp_io_data *io_data;
+
+	if (!ctrl) {
+		DP_ERR("invalid input\n");
+		return -EINVAL;
 	}
-#endif
+
+	catalog = dp_catalog_get_priv_v420(ctrl);
+
+	switch (lane_cnt) {
+	case 1:
+		drvr0_en = flipped ? 0x13 : 0x10;
+		bias0_en = flipped ? 0x3E : 0x15;
+		drvr1_en = flipped ? 0x10 : 0x13;
+		bias1_en = flipped ? 0x15 : 0x3E;
+		break;
+	case 2:
+		drvr0_en = flipped ? 0x10 : 0x10;
+		bias0_en = flipped ? 0x3F : 0x15;
+		drvr1_en = flipped ? 0x10 : 0x10;
+		bias1_en = flipped ? 0x15 : 0x3F;
+		break;
+	case 4:
+	default:
+		drvr0_en = 0x10;
+		bias0_en = 0x3F;
+		drvr1_en = 0x10;
+		bias1_en = 0x3F;
+		break;
+	}
+
+	io_data = catalog->io->dp_ln_tx0;
+	dp_write(TXn_HIGHZ_DRVR_EN_V420, drvr0_en);
+	dp_write(TXn_TRANSCEIVER_BIAS_EN_V420, bias0_en);
+
+	io_data = catalog->io->dp_ln_tx1;
+	dp_write(TXn_HIGHZ_DRVR_EN_V420, drvr1_en);
+	dp_write(TXn_TRANSCEIVER_BIAS_EN_V420, bias1_en);
+
+	io_data = catalog->io->dp_phy;
+	dp_write(DP_PHY_CFG, 0x18);
+	/* add hardware recommended delay */
+	udelay(2000);
+	dp_write(DP_PHY_CFG, 0x19);
+
+	/*
+	 * Make sure all the register writes are completed before
+	 * doing any other operation
+	 */
+	wmb();
+
+	if (!dp_catalog_ctrl_wait_for_phy_ready_v420(catalog)) {
+		rc = -EINVAL;
+		goto lock_err;
+	}
+
+	io_data = catalog->io->dp_ln_tx0;
+	dp_write(TXn_TX_POL_INV_V420, 0x0a);
+	io_data = catalog->io->dp_ln_tx1;
+	dp_write(TXn_TX_POL_INV_V420, 0x0a);
+
+	io_data = catalog->io->dp_ln_tx0;
+	dp_write(TXn_TX_DRV_LVL_V420, 0x27);
+	io_data = catalog->io->dp_ln_tx1;
+	dp_write(TXn_TX_DRV_LVL_V420, 0x27);
+
+	io_data = catalog->io->dp_ln_tx0;
+	dp_write(TXn_TX_EMP_POST1_LVL, 0x20);
+	io_data = catalog->io->dp_ln_tx1;
+	dp_write(TXn_TX_EMP_POST1_LVL, 0x20);
+	/* Make sure the PHY register writes are done */
+	wmb();
+lock_err:
+	return rc;
 }
 
 static void dp_catalog_ctrl_lane_pnswap_v420(struct dp_catalog_ctrl *ctrl,
@@ -370,336 +559,6 @@ static void dp_catalog_ctrl_lane_pnswap_v420(struct dp_catalog_ctrl *ctrl,
 	io_data = catalog->io->dp_ln_tx1;
 	dp_write(TXn_TX_POL_INV_V420, cfg1);
 }
-
-#ifdef SECDP_CALIBRATE_VXPX
-int secdp_catalog_prsht0_show(char *val)
-{
-	*val = g_prsht_val0;
-
-	DP_DEBUG("*val: 0x%02x\n", *val);
-
-	return 0;
-}
-
-int secdp_catalog_prsht0_store(char val)
-{
-	int rc = 0;
-
-	g_prsht_val0 = val;
-
-	DP_DEBUG("g_prsht_val0: 0x%02x\n", g_prsht_val0);
-
-	return rc;
-}
-
-int secdp_catalog_prsht1_show(char *val)
-{
-	*val = g_prsht_val1;
-
-	DP_DEBUG("*val: 0x%02x\n", *val);
-
-	return 0;
-}
-
-int secdp_catalog_prsht1_store(char val)
-{
-	int rc = 0;
-
-	g_prsht_val1 = val;
-
-	DP_DEBUG("g_prsht_val1: 0x%02x\n", g_prsht_val1);
-
-	return rc;
-}
-
-int secdp_catalog_vx_show(char *buf, int len)
-{
-	u8 value0, value1, value2, value3;
-	int i;
-
-	DP_DEBUG("+++\n");
-
-	for (i = 0; i < MAX_VOLTAGE_LEVELS; i++) {
-		value0 = vm_voltage_swing[i][0];
-		value1 = vm_voltage_swing[i][1];
-		value2 = vm_voltage_swing[i][2];
-		value3 = vm_voltage_swing[i][3];
-		DP_INFO("%02x,%02x,%02x,%02x\n", value0, value1, value2, value3);
-	}
-
-	memcpy(buf, vm_voltage_swing, len);
-	return len;
-}
-
-int secdp_catalog_vx_store(int *val, int size)
-{
-	int rc = 0;
-
-	DP_DEBUG("+++\n");
-
-	vm_voltage_swing[0][0] = val[0];
-	vm_voltage_swing[0][1] = val[1];
-	vm_voltage_swing[0][2] = val[2];
-	vm_voltage_swing[0][3] = val[3];
-
-	vm_voltage_swing[1][0] = val[4];
-	vm_voltage_swing[1][1] = val[5];
-	vm_voltage_swing[1][2] = val[6];
-	vm_voltage_swing[1][3] = val[7];
-
-	vm_voltage_swing[2][0] = val[8];
-	vm_voltage_swing[2][1] = val[9];
-	vm_voltage_swing[2][2] = val[10];
-	vm_voltage_swing[2][3] = val[11];
-
-	vm_voltage_swing[3][0] = val[12];
-	vm_voltage_swing[3][1] = val[13];
-	vm_voltage_swing[3][2] = val[14];
-	vm_voltage_swing[3][3] = val[15];
-
-	return rc;
-}
-
-int secdp_catalog_px_show(char *buf, int len)
-{
-	u8 value0, value1, value2, value3;
-	int i;
-
-	DP_DEBUG("+++\n");
-
-	for (i = 0; i < MAX_PRE_EMP_LEVELS; i++) {
-		value0 = vm_pre_emphasis[i][0];
-		value1 = vm_pre_emphasis[i][1];
-		value2 = vm_pre_emphasis[i][2];
-		value3 = vm_pre_emphasis[i][3];
-		DP_INFO("%02x,%02x,%02x,%02x\n", value0, value1, value2, value3);
-	}
-
-	memcpy(buf, vm_pre_emphasis, len);
-	return len;
-}
-
-int secdp_catalog_px_store(int *val, int size)
-{
-	int rc = 0;
-
-	DP_DEBUG("+++\n");
-
-	vm_pre_emphasis[0][0] = val[0];
-	vm_pre_emphasis[0][1] = val[1];
-	vm_pre_emphasis[0][2] = val[2];
-	vm_pre_emphasis[0][3] = val[3];
-
-	vm_pre_emphasis[1][0] = val[4];
-	vm_pre_emphasis[1][1] = val[5];
-	vm_pre_emphasis[1][2] = val[6];
-	vm_pre_emphasis[1][3] = val[7];
-
-	vm_pre_emphasis[2][0] = val[8];
-	vm_pre_emphasis[2][1] = val[9];
-	vm_pre_emphasis[2][2] = val[10];
-	vm_pre_emphasis[2][3] = val[11];
-
-	vm_pre_emphasis[3][0] = val[12];
-	vm_pre_emphasis[3][1] = val[13];
-	vm_pre_emphasis[3][2] = val[14];
-	vm_pre_emphasis[3][3] = val[15];
-
-	return rc;
-}
-
-int secdp_catalog_vx_hbr2_hbr3_show(char *buf, int len)
-{
-	u8 value0, value1, value2, value3;
-	int i;
-
-	DP_DEBUG("+++\n");
-
-	for (i = 0; i < MAX_VOLTAGE_LEVELS; i++) {
-		value0 = dp_swing_hbr2_hbr3[i][0];
-		value1 = dp_swing_hbr2_hbr3[i][1];
-		value2 = dp_swing_hbr2_hbr3[i][2];
-		value3 = dp_swing_hbr2_hbr3[i][3];
-		DP_INFO("%02x,%02x,%02x,%02x\n", value0, value1, value2, value3);
-	}
-
-	memcpy(buf, dp_swing_hbr2_hbr3, len);
-	return len;
-}
-
-int secdp_catalog_vx_hbr2_hbr3_store(int *val, int size)
-{
-	int rc = 0;
-
-	DP_DEBUG("+++\n");
-
-	dp_swing_hbr2_hbr3[0][0] = val[0];
-	dp_swing_hbr2_hbr3[0][1] = val[1];
-	dp_swing_hbr2_hbr3[0][2] = val[2];
-	dp_swing_hbr2_hbr3[0][3] = val[3];
-
-	dp_swing_hbr2_hbr3[1][0] = val[4];
-	dp_swing_hbr2_hbr3[1][1] = val[5];
-	dp_swing_hbr2_hbr3[1][2] = val[6];
-	dp_swing_hbr2_hbr3[1][3] = val[7];
-
-	dp_swing_hbr2_hbr3[2][0] = val[8];
-	dp_swing_hbr2_hbr3[2][1] = val[9];
-	dp_swing_hbr2_hbr3[2][2] = val[10];
-	dp_swing_hbr2_hbr3[2][3] = val[11];
-
-	dp_swing_hbr2_hbr3[3][0] = val[12];
-	dp_swing_hbr2_hbr3[3][1] = val[13];
-	dp_swing_hbr2_hbr3[3][2] = val[14];
-	dp_swing_hbr2_hbr3[3][3] = val[15];
-
-	return rc;
-}
-
-int secdp_catalog_px_hbr2_hbr3_show(char *buf, int len)
-{
-	u8 value0, value1, value2, value3;
-	int i;
-
-	DP_DEBUG("+++\n");
-
-	for (i = 0; i < MAX_PRE_EMP_LEVELS; i++) {
-		value0 = dp_pre_emp_hbr2_hbr3[i][0];
-		value1 = dp_pre_emp_hbr2_hbr3[i][1];
-		value2 = dp_pre_emp_hbr2_hbr3[i][2];
-		value3 = dp_pre_emp_hbr2_hbr3[i][3];
-		DP_INFO("%02x,%02x,%02x,%02x\n", value0, value1, value2, value3);
-	}
-
-	memcpy(buf, dp_pre_emp_hbr2_hbr3, len);
-	return len;
-}
-
-int secdp_catalog_px_hbr2_hbr3_store(int *val, int size)
-{
-	int rc = 0;
-
-	DP_DEBUG("+++\n");
-
-	dp_pre_emp_hbr2_hbr3[0][0] = val[0];
-	dp_pre_emp_hbr2_hbr3[0][1] = val[1];
-	dp_pre_emp_hbr2_hbr3[0][2] = val[2];
-	dp_pre_emp_hbr2_hbr3[0][3] = val[3];
-
-	dp_pre_emp_hbr2_hbr3[1][0] = val[4];
-	dp_pre_emp_hbr2_hbr3[1][1] = val[5];
-	dp_pre_emp_hbr2_hbr3[1][2] = val[6];
-	dp_pre_emp_hbr2_hbr3[1][3] = val[7];
-
-	dp_pre_emp_hbr2_hbr3[2][0] = val[8];
-	dp_pre_emp_hbr2_hbr3[2][1] = val[9];
-	dp_pre_emp_hbr2_hbr3[2][2] = val[10];
-	dp_pre_emp_hbr2_hbr3[2][3] = val[11];
-
-	dp_pre_emp_hbr2_hbr3[3][0] = val[12];
-	dp_pre_emp_hbr2_hbr3[3][1] = val[13];
-	dp_pre_emp_hbr2_hbr3[3][2] = val[14];
-	dp_pre_emp_hbr2_hbr3[3][3] = val[15];
-
-	return rc;
-}
-
-int secdp_catalog_vx_hbr_rbr_show(char *buf, int len)
-{
-	u8 value0, value1, value2, value3;
-	int i;
-
-	DP_DEBUG("+++\n");
-
-	for (i = 0; i < MAX_VOLTAGE_LEVELS; i++) {
-		value0 = dp_swing_hbr_rbr[i][0];
-		value1 = dp_swing_hbr_rbr[i][1];
-		value2 = dp_swing_hbr_rbr[i][2];
-		value3 = dp_swing_hbr_rbr[i][3];
-		DP_INFO("%02x,%02x,%02x,%02x\n", value0, value1, value2, value3);
-	}
-
-	memcpy(buf, dp_swing_hbr_rbr, len);
-	return len;
-}
-
-int secdp_catalog_vx_hbr_rbr_store(int *val, int size)
-{
-	int rc = 0;
-
-	DP_DEBUG("+++\n");
-
-	dp_swing_hbr_rbr[0][0] = val[0];
-	dp_swing_hbr_rbr[0][1] = val[1];
-	dp_swing_hbr_rbr[0][2] = val[2];
-	dp_swing_hbr_rbr[0][3] = val[3];
-
-	dp_swing_hbr_rbr[1][0] = val[4];
-	dp_swing_hbr_rbr[1][1] = val[5];
-	dp_swing_hbr_rbr[1][2] = val[6];
-	dp_swing_hbr_rbr[1][3] = val[7];
-
-	dp_swing_hbr_rbr[2][0] = val[8];
-	dp_swing_hbr_rbr[2][1] = val[9];
-	dp_swing_hbr_rbr[2][2] = val[10];
-	dp_swing_hbr_rbr[2][3] = val[11];
-
-	dp_swing_hbr_rbr[3][0] = val[12];
-	dp_swing_hbr_rbr[3][1] = val[13];
-	dp_swing_hbr_rbr[3][2] = val[14];
-	dp_swing_hbr_rbr[3][3] = val[15];
-
-	return rc;
-}
-
-int secdp_catalog_px_hbr_rbr_show(char *buf, int len)
-{
-	u8 value0, value1, value2, value3;
-	int i;
-
-	DP_DEBUG("+++\n");
-
-	for (i = 0; i < MAX_PRE_EMP_LEVELS; i++) {
-		value0 = dp_pre_emp_hbr_rbr[i][0];
-		value1 = dp_pre_emp_hbr_rbr[i][1];
-		value2 = dp_pre_emp_hbr_rbr[i][2];
-		value3 = dp_pre_emp_hbr_rbr[i][3];
-		DP_INFO("%02x,%02x,%02x,%02x\n", value0, value1, value2, value3);
-	}
-
-	memcpy(buf, dp_pre_emp_hbr_rbr, len);
-	return len;
-}
-
-int secdp_catalog_px_hbr_rbr_store(int *val, int size)
-{
-	int rc = 0;
-
-	DP_DEBUG("+++\n");
-
-	dp_pre_emp_hbr_rbr[0][0] = val[0];
-	dp_pre_emp_hbr_rbr[0][1] = val[1];
-	dp_pre_emp_hbr_rbr[0][2] = val[2];
-	dp_pre_emp_hbr_rbr[0][3] = val[3];
-
-	dp_pre_emp_hbr_rbr[1][0] = val[4];
-	dp_pre_emp_hbr_rbr[1][1] = val[5];
-	dp_pre_emp_hbr_rbr[1][2] = val[6];
-	dp_pre_emp_hbr_rbr[1][3] = val[7];
-
-	dp_pre_emp_hbr_rbr[2][0] = val[8];
-	dp_pre_emp_hbr_rbr[2][1] = val[9];
-	dp_pre_emp_hbr_rbr[2][2] = val[10];
-	dp_pre_emp_hbr_rbr[2][3] = val[11];
-
-	dp_pre_emp_hbr_rbr[3][0] = val[12];
-	dp_pre_emp_hbr_rbr[3][1] = val[13];
-	dp_pre_emp_hbr_rbr[3][2] = val[14];
-	dp_pre_emp_hbr_rbr[3][3] = val[15];
-
-	return rc;
-}
-#endif
 
 static void dp_catalog_put_v420(struct dp_catalog *catalog)
 {
@@ -735,12 +594,18 @@ struct dp_catalog_sub *dp_catalog_get_v420(struct device *dev,
 
 	catalog_priv->sub.put      = dp_catalog_put_v420;
 
+#ifdef CONFIG_SEC_DISPLAYPORT_ENG
+	_secdp_catalog_preshoot_init(catalog_priv);
+	g_catalog_priv = catalog_priv;
+#endif
+
 	catalog->aux.setup         = dp_catalog_aux_setup_v420;
 	catalog->aux.clear_hw_interrupts = dp_catalog_aux_clear_hw_int_v420;
 	catalog->panel.config_msa  = dp_catalog_panel_config_msa_v420;
 	catalog->ctrl.phy_lane_cfg = dp_catalog_ctrl_phy_lane_cfg_v420;
 	catalog->ctrl.update_vx_px = dp_catalog_ctrl_update_vx_px_v420;
 	catalog->ctrl.lane_pnswap = dp_catalog_ctrl_lane_pnswap_v420;
+	catalog->ctrl.late_phy_init = dp_catalog_ctrl_late_phy_init_v420;
 
 	return &catalog_priv->sub;
 }

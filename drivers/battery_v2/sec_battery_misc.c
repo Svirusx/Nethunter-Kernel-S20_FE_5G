@@ -29,7 +29,7 @@ static struct sec_bat_misc_dev *c_dev;
 #define BATT_IOCTL_SWAM _IOWR('B', 0, struct swam_data)
 
 #if SEC_BATT_MISC_DBG
-static void print_message(u8* buf, int size)
+static void print_message(u8 *buf, int size)
 {
 	int start_idx = 0;
 

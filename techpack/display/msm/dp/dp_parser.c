@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2012-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012-2020, The Linux Foundation. All rights reserved.
  */
 
 #include <linux/of_gpio.h>
@@ -10,6 +10,8 @@
 #include "dp_debug.h"
 #ifdef CONFIG_SEC_DISPLAYPORT
 #include "secdp.h"
+
+struct dp_parser *g_dp_parser;
 #endif
 
 static void dp_parser_unmap_io_resources(struct dp_parser *parser)
@@ -143,6 +145,53 @@ error:
 	dp_parser_phy_aux_cfg_reset(parser);
 	return -EINVAL;
 }
+
+#ifdef CONFIG_SEC_DISPLAYPORT_ENG
+int secdp_aux_cfg_show(char *buf)
+{
+	struct dp_parser *parser = g_dp_parser;
+	struct dp_aux_cfg *cfg = parser->aux_cfg;
+	int i, rc = 0;
+
+	for (i = 0; i < PHY_AUX_CFG_MAX; i++) {
+		rc += scnprintf(buf + rc, PAGE_SIZE - rc,
+				"%s: offset=0x%x, value=0x%02x\n",
+				dp_phy_aux_config_type_to_string(i),
+				cfg[i].offset,
+				cfg[i].lut[cfg[i].current_index]);
+	}
+
+	return rc;
+}
+
+int secdp_aux_cfg_store(char *buf)
+{
+	struct dp_parser *parser = g_dp_parser;
+	struct dp_aux_cfg *cfg = parser->aux_cfg;
+	char *tok;
+	u32  value;
+	int  i, rc = 0;
+
+	for (i = 0; i < PHY_AUX_CFG_MAX; i++) {
+		tok = strsep(&buf, ",");
+		if (!tok)
+			continue;
+
+		rc = kstrtouint(tok, 16, &value);
+		if (rc) {
+			DP_ERR("error: %s rc:%d\n", tok, rc);
+			break;
+		}
+
+		cfg[i].lut[cfg[i].current_index] = value;
+
+		DP_DEBUG("offset=0x%x, value=0x%02x\n", cfg[i].offset,
+			cfg[i].lut[cfg[i].current_index]);
+	}
+
+	return rc;
+}
+#endif
 
 static int dp_parser_misc(struct dp_parser *parser)
 {
@@ -305,7 +354,7 @@ static int dp_parser_gpio(struct dp_parser *parser)
 
 #ifdef CONFIG_SEC_DISPLAYPORT
 	for (i = 0; i < ARRAY_SIZE(dp_gpios); i++) {
-		DP_INFO("name(%s) gpio(%u) value(%u)\n",
+		DP_INFO("name:%s gpio:%u value:%u\n",
 			mp->gpio_config[i].gpio_name,
 			mp->gpio_config[i].gpio, mp->gpio_config[i].value);
 	}
@@ -760,6 +809,10 @@ static int dp_parser_mst(struct dp_parser *parser)
 	parser->has_mst = false;
 	DP_DEBUG("[secdp] mst disable!\n");
 #endif
+
+	parser->no_mst_encoder = of_property_read_bool(dev->of_node,
+			"qcom,no-mst-encoder");
+
 	parser->has_mst_sideband = parser->has_mst;
 
 	DP_DEBUG("mst parsing successful. mst:%d\n", parser->has_mst);
@@ -864,9 +917,418 @@ static void secdp_parse_misc(struct dp_parser *parser)
 	DP_DEBUG("secdp,dex-dft-res: %s, %s\n", data,
 		secdp_dex_res_to_string(parser->dex_dft_res));
 
-	parser->prefer_res = of_property_read_bool(dev->of_node,
+	parser->prefer_support = of_property_read_bool(dev->of_node,
 			"secdp,prefer-res");
-	DP_DEBUG("secdp,prefer-res: %d\n", parser->prefer_res);
+	DP_DEBUG("secdp,prefer-res: %d\n", parser->prefer_support);
+}
+
+static const char *secdp_get_phy_pre_emphasis(u32 lvl)
+{
+	switch (lvl) {
+	case PHY_PRE_EMP0:
+		return "secdp,vm-pre-emphasis-0";
+	case PHY_PRE_EMP1:
+		return "secdp,vm-pre-emphasis-1";
+	case PHY_PRE_EMP2:
+		return "secdp,vm-pre-emphasis-2";
+	case PHY_PRE_EMP3:
+		return "secdp,vm-pre-emphasis-3";
+	default:
+		return "secdp,vm-pre-emphasis-unknown";
+	}
+}
+
+static const char *secdp_get_phy_voltage_swing(u32 lvl)
+{
+	switch (lvl) {
+	case PHY_VOLTAGE_SWING0:
+		return "secdp,vm-voltage-swing-0";
+	case PHY_VOLTAGE_SWING1:
+		return "secdp,vm-voltage-swing-1";
+	case PHY_VOLTAGE_SWING2:
+		return "secdp,vm-voltage-swing-2";
+	case PHY_VOLTAGE_SWING3:
+		return "secdp,vm-voltage-swing-3";
+	default:
+		return "secdp,vm-voltage-swing-unknown";
+	}
+}
+
+static int _secdp_parse_phy_old(struct dp_parser *parser)
+{
+	struct device_node *of_node = parser->pdev->dev.of_node;
+	int len = 0, i = 0, j = 0;
+	const char *data;
+
+	DP_DEBUG("+++\n");
+
+	for (i = 0; i < MAX_PRE_EMP_LEVELS; i++) {
+		const char *property = secdp_get_phy_pre_emphasis(i);
+
+		data = of_get_property(of_node, property, &len);
+		if (!data || len != 4) {
+			DP_ERR("Unable to read %s, len:%d\n", property, len);
+			goto error;
+		}
+
+		for (j = 0; j < 4; j++)
+			parser->vm_pre_emphasis[i][j] = data[j];
+	}
+
+	for (i = 0; i < MAX_VOLTAGE_LEVELS; i++) {
+		const char *property = secdp_get_phy_voltage_swing(i);
+
+		data = of_get_property(of_node, property, &len);
+		if (!data || len != 4) {
+			DP_ERR("Unable to read %s, len:%d\n", property, len);
+			goto error;
+		}
+
+		for (j = 0; j < 4; j++)
+			parser->vm_voltage_swing[i][j] = data[j];
+	}
+	return 0;
+error:
+	return -EINVAL;
+}
+
+static const char *secdp_get_phy_pre_emphasis_hbr2_hbr3(u32 lvl)
+{
+	switch (lvl) {
+	case PHY_PRE_EMP0:
+		return "secdp,pre-emp-hbr2-hbr3-0";
+	case PHY_PRE_EMP1:
+		return "secdp,pre-emp-hbr2-hbr3-1";
+	case PHY_PRE_EMP2:
+		return "secdp,pre-emp-hbr2-hbr3-2";
+	case PHY_PRE_EMP3:
+		return "secdp,pre-emp-hbr2-hbr3-3";
+	default:
+		return "secdp,pre-emp-hbr2-hbr3-unknown";
+	}
+}
+
+static const char *secdp_get_phy_voltage_swing_hbr2_hbr3(u32 lvl)
+{
+	switch (lvl) {
+	case PHY_VOLTAGE_SWING0:
+		return "secdp,swing-hbr2-hbr3-0";
+	case PHY_VOLTAGE_SWING1:
+		return "secdp,swing-hbr2-hbr3-1";
+	case PHY_VOLTAGE_SWING2:
+		return "secdp,swing-hbr2-hbr3-2";
+	case PHY_VOLTAGE_SWING3:
+		return "secdp,swing-hbr2-hbr3-3";
+	default:
+		return "secdp,swing-hbr2-hbr3-unknown";
+	}
+}
+
+static int _secdp_parse_phy_hbr2_hbr3(struct dp_parser *parser)
+{
+	struct device_node *of_node = parser->pdev->dev.of_node;
+	int len = 0, i = 0, j = 0;
+	const char *data;
+
+	DP_DEBUG("+++\n");
+
+	for (i = 0; i < MAX_PRE_EMP_LEVELS; i++) {
+		const char *property = secdp_get_phy_pre_emphasis_hbr2_hbr3(i);
+
+		data = of_get_property(of_node, property, &len);
+		if (!data || len != 4) {
+			DP_ERR("Unable to read %s, len:%d\n", property, len);
+			goto error;
+		}
+
+		for (j = 0; j < 4; j++)
+			parser->dp_pre_emp_hbr2_hbr3[i][j] = data[j];
+	}
+
+	for (i = 0; i < MAX_VOLTAGE_LEVELS; i++) {
+		const char *property = secdp_get_phy_voltage_swing_hbr2_hbr3(i);
+
+		data = of_get_property(of_node, property, &len);
+		if (!data || len != 4) {
+			DP_ERR("Unable to read %s, len:%d\n", property, len);
+			goto error;
+		}
+
+		for (j = 0; j < 4; j++)
+			parser->dp_swing_hbr2_hbr3[i][j] = data[j];
+	}
+	return 0;
+error:
+	return -EINVAL;
+}
+
+static const char *secdp_get_phy_pre_emphasis_hbr_rbr(u32 lvl)
+{
+	switch (lvl) {
+	case PHY_PRE_EMP0:
+		return "secdp,pre-emp-hbr-rbr-0";
+	case PHY_PRE_EMP1:
+		return "secdp,pre-emp-hbr-rbr-1";
+	case PHY_PRE_EMP2:
+		return "secdp,pre-emp-hbr-rbr-2";
+	case PHY_PRE_EMP3:
+		return "secdp,pre-emp-hbr-rbr-3";
+	default:
+		return "secdp,pre-emp-hbr-rbr-unknown";
+	}
+}
+
+static const char *secdp_get_phy_voltage_swing_hbr_rbr(u32 lvl)
+{
+	switch (lvl) {
+	case PHY_VOLTAGE_SWING0:
+		return "secdp,swing-hbr-rbr-0";
+	case PHY_VOLTAGE_SWING1:
+		return "secdp,swing-hbr-rbr-1";
+	case PHY_VOLTAGE_SWING2:
+		return "secdp,swing-hbr-rbr-2";
+	case PHY_VOLTAGE_SWING3:
+		return "secdp,swing-hbr-rbr-3";
+	default:
+		return "secdp,swing-hbr-rbr-unknown";
+	}
+}
+
+static int _secdp_parse_phy_hbr_rbr(struct dp_parser *parser)
+{
+	struct device_node *of_node = parser->pdev->dev.of_node;
+	int len = 0, i = 0, j = 0;
+	const char *data;
+
+	DP_DEBUG("+++\n");
+
+	for (i = 0; i < MAX_PRE_EMP_LEVELS; i++) {
+		const char *property = secdp_get_phy_pre_emphasis_hbr_rbr(i);
+
+		data = of_get_property(of_node, property, &len);
+		if (!data || len != 4) {
+			DP_ERR("Unable to read %s, len:%d\n", property, len);
+			goto error;
+		}
+
+		for (j = 0; j < 4; j++)
+			parser->dp_pre_emp_hbr_rbr[i][j] = data[j];
+	}
+
+	for (i = 0; i < MAX_VOLTAGE_LEVELS; i++) {
+		const char *property = secdp_get_phy_voltage_swing_hbr_rbr(i);
+
+		data = of_get_property(of_node, property, &len);
+		if (!data || len != 4) {
+			DP_ERR("Unable to read %s, len:%d\n", property, len);
+			goto error;
+		}
+
+		for (j = 0; j < 4; j++)
+			parser->dp_swing_hbr_rbr[i][j] = data[j];
+	}
+	return 0;
+error:
+	return -EINVAL;
+}
+
+
+static void secdp_parse_phy_param(struct dp_parser *parser)
+{
+	_secdp_parse_phy_old(parser);
+	_secdp_parse_phy_hbr2_hbr3(parser);
+	_secdp_parse_phy_hbr_rbr(parser);
+}
+
+/*********************************************
+ ***         default DP PHY params         ***
+ ***    referred from dp_catalog_v420.c    ***
+ *********************************************/
+static u8 const vm_pre_emphasis[MAX_VOLTAGE_LEVELS][MAX_PRE_EMP_LEVELS] = {
+	{0x00, 0x0D, 0x15, 0xFF}, /* pe0,   0 db */
+	{0x00, 0x0D, 0x15, 0xFF}, /* pe1, 3.5 db */
+	{0x00, 0x0C, 0xFF, 0xFF}, /* pe2, 6.0 db */
+	{0xFF, 0xFF, 0xFF, 0xFF}  /* pe3, 9.5 db */
+};
+
+/* voltage swing, 0.2v and 1.0v are not support */
+static u8 const vm_voltage_swing[MAX_VOLTAGE_LEVELS][MAX_PRE_EMP_LEVELS] = {
+	{0x07, 0x0F, 0x14, 0xFF}, /* sw0, 0.4v  */
+	{0x11, 0x1D, 0x1F, 0xFF}, /* sw1, 0.6 v */
+	{0x18, 0x1F, 0xFF, 0xFF}, /* sw1, 0.8 v */
+	{0xFF, 0xFF, 0xFF, 0xFF}  /* sw1, 1.2 v, optional */
+};
+
+static u8 const dp_pre_emp_hbr2_hbr3[MAX_VOLTAGE_LEVELS][MAX_PRE_EMP_LEVELS] = {
+	{0x00, 0x0C, 0x14, 0x1A}, /* pe0,   0 db */
+	{0x00, 0x0C, 0x13, 0xFF}, /* pe1, 3.5 db */
+	{0x00, 0x0C, 0xFF, 0xFF}, /* pe2, 6.0 db */
+	{0xFF, 0xFF, 0xFF, 0xFF}  /* pe3, 9.5 db */
+};
+
+static u8 const dp_swing_hbr2_hbr3[MAX_VOLTAGE_LEVELS][MAX_PRE_EMP_LEVELS] = {
+	{0x09, 0x11, 0x19, 0x1F}, /* sw0, 0.4v */
+	{0x12, 0x1A, 0x1F, 0xFF}, /* sw1, 0.6v */
+	{0x1C, 0x1F, 0xFF, 0xFF}, /* sw1, 0.8v */
+	{0xFF, 0xFF, 0xFF, 0xFF}  /* sw1, 1.2v */
+};
+
+static u8 const dp_pre_emp_hbr_rbr[MAX_VOLTAGE_LEVELS][MAX_PRE_EMP_LEVELS] = {
+	{0x00, 0x0B, 0x13, 0x19}, /* pe0,   0 db */
+	{0x00, 0x0C, 0x14, 0xFF}, /* pe1, 3.5 db */
+	{0x00, 0x0B, 0xFF, 0xFF}, /* pe2, 6.0 db */
+	{0xFF, 0xFF, 0xFF, 0xFF}  /* pe3, 9.5 db */
+};
+
+static u8 const dp_swing_hbr_rbr[MAX_VOLTAGE_LEVELS][MAX_PRE_EMP_LEVELS] = {
+	{0x0A, 0x11, 0x19, 0x1F}, /* sw0, 0.4v */
+	{0x12, 0x1A, 0x1F, 0xFF}, /* sw1, 0.6v */
+	{0x1D, 0x1F, 0xFF, 0xFF}, /* sw1, 0.8v */
+	{0xFF, 0xFF, 0xFF, 0xFF}  /* sw1, 1.2v */
+};
+
+static void secdp_set_default_phy_param(struct dp_parser *parser)
+{
+	int i, j;
+
+	for (i = 0; i < MAX_VOLTAGE_LEVELS; i++) {
+		for (j = 0; j < MAX_PRE_EMP_LEVELS; j++) {
+			parser->vm_pre_emphasis[i][j]  = vm_pre_emphasis[i][j];
+			parser->vm_voltage_swing[i][j] = vm_voltage_swing[i][j];
+
+			parser->dp_pre_emp_hbr2_hbr3[i][j] = dp_pre_emp_hbr2_hbr3[i][j];
+			parser->dp_swing_hbr2_hbr3[i][j]   = dp_swing_hbr2_hbr3[i][j];
+
+			parser->dp_pre_emp_hbr_rbr[i][j] = dp_pre_emp_hbr_rbr[i][j];
+			parser->dp_swing_hbr_rbr[i][j]   = dp_swing_hbr_rbr[i][j];
+		}
+	}
+}
+#endif
+
+#ifdef CONFIG_SEC_DISPLAYPORT_ENG
+static u8 *_secdp_get_phy_param(enum secdp_hw_ver_t hw,
+			enum secdp_phy_param_t vxpx, int idx)
+{
+	struct dp_parser *parser = g_dp_parser;
+	u8 *val = NULL;
+
+	switch (hw) {
+	case DP_HW_LEGACY:
+		switch (vxpx) {
+		case DP_PARAM_VX:
+			val = parser->vm_voltage_swing[idx];
+			break;
+		case DP_PARAM_PX:
+			val = parser->vm_pre_emphasis[idx];
+			break;
+		default:
+			DP_ERR("unknown vxpx type: %d\n", vxpx);
+			break;
+		}
+		break;
+	case DP_HW_V123_HBR2_HBR3:
+		switch (vxpx) {
+		case DP_PARAM_VX:
+			val = parser->dp_swing_hbr2_hbr3[idx];
+			break;
+		case DP_PARAM_PX:
+			val = parser->dp_pre_emp_hbr2_hbr3[idx];
+			break;
+		default:
+			DP_ERR("unknown vxpx type: %d\n", vxpx);
+			break;
+		}
+		break;
+	case DP_HW_V123_HBR_RBR:
+		switch (vxpx) {
+		case DP_PARAM_VX:
+			val = parser->dp_swing_hbr_rbr[idx];
+			break;
+		case DP_PARAM_PX:
+			val = parser->dp_pre_emp_hbr_rbr[idx];
+			break;
+		default:
+			DP_ERR("unknown vxpx type: %d\n", vxpx);
+			break;
+		}
+		break;
+	default:
+		DP_ERR("unknown hw:%d\n", hw);
+		break;
+	}
+
+	return val;
+}
+
+int secdp_parse_vxpx_show(enum secdp_hw_ver_t hw,
+			enum secdp_phy_param_t vxpx, char *buf)
+{
+	u8 *val[MAX_VOLTAGE_LEVELS];
+	int i, rc = 0;
+
+	rc += scnprintf(buf + rc, PAGE_SIZE - rc, "\n%s | %s\n=====\n",
+				secdp_hw_to_string(hw),
+				secdp_phy_type_to_string(vxpx));
+
+	for (i = 0; i < MAX_VOLTAGE_LEVELS; i++) {
+		val[i] = _secdp_get_phy_param(hw, vxpx, i);
+		if (!val[i])
+			break;
+
+		rc += scnprintf(buf + rc, PAGE_SIZE - rc,
+				"%02x %02x %02x %02x\n",
+				val[i][0], val[i][1], val[i][2], val[i][3]);
+	}
+
+	return rc;
+}
+
+int secdp_parse_vxpx_store(enum secdp_hw_ver_t hw,
+			enum secdp_phy_param_t vxpx, char *buf)
+{
+	u8   *val[MAX_VOLTAGE_LEVELS];
+	char *tok;
+	u32  value;
+	int  i, j, rc = 0;
+
+	DP_DEBUG("+++, type:%s\n", secdp_hw_to_string(hw));
+
+	for (i = 0; i < MAX_VOLTAGE_LEVELS; i++) {
+		val[i] = _secdp_get_phy_param(hw, vxpx, i);
+		if (!val[i]) {
+			rc = -EINVAL;
+			break;
+		}
+
+		for (j = 0; j < MAX_PRE_EMP_LEVELS; j++) {
+			tok = strsep(&buf, ",");
+			if (!tok)
+				continue;
+
+			rc = kstrtouint(tok, 16, &value);
+			if (rc) {
+				DP_ERR("error: %s rc:%d\n", tok, rc);
+				goto end;
+			}
+
+			val[i][j] = value;
+		}
+	}
+end:
+	return rc;
+}
+
+int secdp_show_phy_param(char *buf)
+{
+	int  hw, rc = 0;
+
+	for (hw = 0; hw < DP_HW_MAX; hw++) {
+		rc += secdp_parse_vxpx_show(hw, DP_PARAM_PX, buf + rc);
+		rc += secdp_parse_vxpx_show(hw, DP_PARAM_VX, buf + rc);
+	}
+
+	return rc;
 }
 #endif
 
@@ -926,6 +1388,7 @@ static int dp_parser_parse(struct dp_parser *parser)
 	dp_parser_fec(parser);
 	dp_parser_widebus(parser);
 #ifdef CONFIG_SEC_DISPLAYPORT
+	secdp_parse_phy_param(parser);
 	secdp_parse_misc(parser);
 #endif
 
@@ -1015,6 +1478,10 @@ struct dp_parser *dp_parser_get(struct platform_device *pdev)
 	parser->clear_io_buf = dp_parser_clear_io_buf;
 	parser->pdev = pdev;
 
+#ifdef CONFIG_SEC_DISPLAYPORT
+	secdp_set_default_phy_param(parser);
+	g_dp_parser = parser;
+#endif
 	return parser;
 }
 
@@ -1039,4 +1506,8 @@ void dp_parser_put(struct dp_parser *parser)
 	dp_parser_clear_io_buf(parser);
 	devm_kfree(&parser->pdev->dev, parser->io.data);
 	devm_kfree(&parser->pdev->dev, parser);
+
+#ifdef CONFIG_SEC_DISPLAYPORT
+	g_dp_parser = NULL;
+#endif
 }

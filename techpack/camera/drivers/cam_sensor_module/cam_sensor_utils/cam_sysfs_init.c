@@ -2425,6 +2425,7 @@ static ssize_t rear2_type_show(struct device *dev,
 	char cam_type[] = "SLSI_S5K5E9\n";
 #elif defined(CONFIG_SEC_BLOOMXQ_PROJECT) || defined(CONFIG_SEC_F2Q_PROJECT) || defined(CONFIG_SEC_R8Q_PROJECT) || defined(CONFIG_SEC_VICTORY_PROJECT)
 	char cam_type[] = "SLSI_S5K3L6\n";
+
 #else
 	char cam_type[] = "SLSI_S5K2LA\n";
 #endif

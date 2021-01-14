@@ -2036,7 +2036,8 @@ QDF_STATUS wma_process_roaming_config(tp_wma_handle wma_handle,
 
 		if (roam_req->reason == REASON_ROAM_STOP_ALL ||
 		    roam_req->reason == REASON_DISCONNECTED ||
-		    roam_req->reason == REASON_ROAM_SYNCH_FAILED) {
+		    roam_req->reason == REASON_ROAM_SYNCH_FAILED ||
+		    roam_req->reason == REASON_SUPPLICANT_DISABLED_ROAMING) {
 			mode = WMI_ROAM_SCAN_MODE_NONE;
 		} else {
 			if (csr_is_roam_offload_enabled(mac))
@@ -2551,10 +2552,14 @@ static int wma_fill_roam_synch_buffer(tp_wma_handle wma,
 	} else {
 		wma_fill_data_synch_event(wma, roam_synch_ind_ptr, param_buf);
 	}
-
 	chan = param_buf->chan;
-	if (chan)
+	if (chan) {
 		roam_synch_ind_ptr->chan_freq = chan->mhz;
+		roam_synch_ind_ptr->phy_mode =
+			wma_fw_to_host_phymode(WMI_GET_CHANNEL_MODE(chan));
+	} else {
+		roam_synch_ind_ptr->phy_mode = WLAN_PHYMODE_AUTO;
+	}
 
 	key = param_buf->key;
 	key_ft = param_buf->key_ext;

@@ -919,14 +919,14 @@ config DISABLE_MFC_IC
 	  for unknown pad.
 	  disable mfc ic in this case.
 
-config CHECK_UNKNOWN_PAD
-    bool "check unknown pad"
+config CHECK_UNAUTH_PAD
+    bool "check unauthenticated pad"
     default n
     help
-	  Say Y to enable CONFIG_CHECK_UNKNOWN_PAD
+	  Say Y to enable CONFIG_CHECK_UNAUTH_PAD
 	  do not charge rapidly
 	  when put device
-	  on the unknown pad.
+	  on the unauthenticated pad.
 
 config TX_GEAR_PHM_VOUT_CTRL
     bool "control vout when gear`s phm"
@@ -936,3 +936,12 @@ config TX_GEAR_PHM_VOUT_CTRL
 	  Control vout 5v when enter gear`s phm with high voltage wired charging
 	  Recover vout when escape gear`s phm
 	  This is considered only if high vout with gear.
+
+config SEC_BATTERY_TEST
+    bool "KUnit test for sec_battery_test"
+    default n
+    depends on KUNIT
+    help
+        Say Y to enable CONFIG_SEC_BATTERY_TEST
+        This kunit test code is related to sec_battery.c.
+        Test the functions of sec_battery.c

@@ -1672,7 +1672,7 @@ int cam_ois_init(struct cam_ois_ctrl_t *o_ctrl)
 								if (hw_param != NULL) {
 									CAM_ERR(CAM_HWB, "[R][OIS] Err\n");
 									hw_param->i2c_ois_err_cnt++;
-									hw_param->need_update_to_file = TRUE;
+									hw_param->need_update_to_file = true;
 								}
 							}
 							break;
@@ -1683,7 +1683,7 @@ int cam_ois_init(struct cam_ois_ctrl_t *o_ctrl)
 								if (hw_param != NULL) {
 									CAM_ERR(CAM_HWB, "[F][OIS] Err\n");
 									hw_param->i2c_ois_err_cnt++;
-									hw_param->need_update_to_file = TRUE;
+									hw_param->need_update_to_file = true;
 								}
 							}
 							break;
@@ -1695,7 +1695,7 @@ int cam_ois_init(struct cam_ois_ctrl_t *o_ctrl)
 								if (hw_param != NULL) {
 									CAM_ERR(CAM_HWB, "[F3][OIS] Err\n");
 									hw_param->i2c_ois_err_cnt++;
-									hw_param->need_update_to_file = TRUE;
+									hw_param->need_update_to_file = true;
 								}
 							}
 							break;
@@ -1705,7 +1705,7 @@ int cam_ois_init(struct cam_ois_ctrl_t *o_ctrl)
 								if (hw_param != NULL) {
 									CAM_ERR(CAM_HWB, "[F2][OIS] Err\n");
 									hw_param->i2c_ois_err_cnt++;
-									hw_param->need_update_to_file = TRUE;
+									hw_param->need_update_to_file = true;
 								}
 							}
 							break;
@@ -1718,7 +1718,7 @@ int cam_ois_init(struct cam_ois_ctrl_t *o_ctrl)
 								if (hw_param != NULL) {
 									CAM_ERR(CAM_HWB, "[R2][OIS] Err\n");
 									hw_param->i2c_ois_err_cnt++;
-									hw_param->need_update_to_file = TRUE;
+									hw_param->need_update_to_file = true;
 								}
 							}
 							break;
@@ -1730,7 +1730,7 @@ int cam_ois_init(struct cam_ois_ctrl_t *o_ctrl)
 								if (hw_param != NULL) {
 									CAM_ERR(CAM_HWB, "[R3][OIS] Err\n");
 									hw_param->i2c_ois_err_cnt++;
-									hw_param->need_update_to_file = TRUE;
+									hw_param->need_update_to_file = true;
 								}
 							}
 							break;

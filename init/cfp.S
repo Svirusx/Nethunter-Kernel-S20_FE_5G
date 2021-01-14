@@ -40,40 +40,14 @@ nop
 	subs	RRX_32, RRX_32, #0xbe7, lsl #12
 	cmp	RRX_32, #0xbad
 	b.eq	1f
-#if 0
-	//Test code
-	push	x0, x1
-	push	x2, x3
-	push	x4, x5
-	push	x6, x7
-	push	x8, x9
-	push	x10, x11
-	push	x12, x13
-	push	x14, x15
-	push	RRX, x17
-	push	x29, x30
-	mov	x0, \reg
-	mov	x1, x30
-	bl	cfp_record_jopp
-	pop	x29, x30
-	pop	RRX, x17
-	pop	x14, x15
-	pop	x12, x13
-	pop	x10, x11
-	pop	x8, x9
-	pop	x6, x7
-	pop	x4, x5
-	pop	x2, x3
-	pop	x0, x1
-#else
 	.inst	0xdeadc0de //crash for sure
-#endif
 1:
 	pop	RRX, xzr
 	br 	\reg
 	.endm
 
-	// Only add springboards for a register rX if there exists a "BLR rX" instruction in vmlinux to instrument
+	/* Only add springboards for a register rX 
+	  if there exists a "BLR rX" instruction in vmlinux to instrument */
 	springboard_blr x0
 	springboard_blr	x1
 	springboard_blr	x2

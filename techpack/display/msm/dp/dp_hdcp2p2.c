@@ -16,8 +16,8 @@
 #include "sde_hdcp_2x.h"
 #include "dp_debug.h"
 
-#ifdef CONFIG_SEC_DISPLAYPORT
-#include "secdp.h"
+#ifdef CONFIG_SEC_DISPLAYPORT_ENG
+#include <linux/secdp_logger.h>
 #endif
 
 #define DP_INTR_STATUS2				(0x00000024)
@@ -562,7 +562,7 @@ static void dp_hdcp2p2_recv_msg(struct dp_hdcp2p2_ctrl *ctrl)
 
 static void dp_hdcp2p2_link_check(struct dp_hdcp2p2_ctrl *ctrl)
 {
-	int rc = 0, retries = 10;
+	int rc = 0;
 	struct sde_hdcp_2x_wakeup_data cdata = {HDCP_2X_CMD_INVALID};
 
 	if (!ctrl) {
@@ -594,10 +594,6 @@ static void dp_hdcp2p2_link_check(struct dp_hdcp2p2_ctrl *ctrl)
 		atomic_set(&ctrl->auth_state, HDCP_STATE_AUTH_FAIL);
 		goto exit;
 	}
-
-	/* wait for polling to start till spec allowed timeout */
-	while (!ctrl->polling && retries--)
-		msleep(20);
 
 	/* check if sink has made a message available */
 	if (ctrl->polling && (ctrl->sink_rx_status & ctrl->rx_status)) {
@@ -672,7 +668,7 @@ error:
 
 static int dp_hdcp2p2_cp_irq(void *input)
 {
-	int rc;
+	int rc, retries = 15;
 	struct dp_hdcp2p2_ctrl *ctrl = input;
 
 	rc = dp_hdcp2p2_valid_handle(ctrl);
@@ -699,7 +695,31 @@ static int dp_hdcp2p2_cp_irq(void *input)
 		return -EINVAL;
 	}
 
+	/*
+	 * Wait for link to be transitioned to polling mode. This wait
+	 * should be done in this CP_IRQ handler and NOT in the event thread
+	 * as the transition to link polling happens in the event thread
+	 * as part of the wake up from the HDCP engine.
+	 *
+	 * One specific case where this sequence of event commonly happens
+	 * is when executing HDCP 2.3 CTS test 1B-09 with Unigraf UCD-400
+	 * test equipment (TE). As part of this test, the TE issues a CP-IRQ
+	 * right after the successful completion of the HDCP authentication
+	 * part 2. This CP-IRQ handler gets invoked even before the HDCP
+	 * state engine gets transitioned to the polling mode, which can
+	 * cause the test to fail as we would not read the
+	 * RepeaterAuth_Send_ReceiverID_List from the TE in response to the
+	 * CP_IRQ.
+	 *
+	 * Skip this wait when any of the fields in the abort mask is set.
+	 */
+	if (ctrl->sink_rx_status & ctrl->abort_mask)
+		goto exit;
 
+	while (!ctrl->polling && retries--)
+		msleep(20);
+
+exit:
 	kfifo_put(&ctrl->cmd_q, HDCP_TRANSPORT_CMD_LINK_CHECK);
 	wake_up(&ctrl->wait_q);
 

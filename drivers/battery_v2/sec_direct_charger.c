@@ -571,7 +571,7 @@ static int sec_direct_chg_set_property(struct power_supply *psy,
 			charger->dc_err = false;
 			charger->dc_retry_cnt = 0;
 			break;
-        case POWER_SUPPLY_EXT_PROP_CHANGE_CHARGING_SOURCE:
+		case POWER_SUPPLY_EXT_PROP_CHANGE_CHARGING_SOURCE:
 			pr_info("%s: POWER_SUPPLY_EXT_PROP_CHANGE_CHARGING_SOURCE(%d, %d)\n",
 				__func__, val->strval[0], val->strval[1]);
 			if (val->strval[0] == SEC_STORE_MODE)
@@ -587,7 +587,7 @@ static int sec_direct_chg_set_property(struct power_supply *psy,
 				pr_info("%s: block to set charging_source (cable:%d, mode:%d, test:%d, store_mode:%d)\n",
 					__func__, charger->cable_type, charger->charger_mode, charger->test_mode_source, charger->store_mode);
 			}
-            break;
+			break;
  		default:
 			ret = psy_do_property(charger->pdata->main_charger_name, set, ext_psp, value);
 			return ret;

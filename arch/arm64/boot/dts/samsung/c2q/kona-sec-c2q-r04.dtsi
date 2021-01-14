@@ -1,0 +1,135 @@
+/* Copyright (c) 2020, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "kona-sec-c2q-r03.dtsi"
+#include "kona-sec-c2q-pinctrl-r04.dtsi"
+#include "../drivers/kona-sec-c2q-laf-sensor-r04.dtsi"
+
+&soc {
+	battery {
+		battery,chg_charging_limit_current = <1900>;
+		battery,charging_limit_current_by_tx = <1200>;
+		battery,wpc_charging_limit_current = <3150>;
+		battery,store_mode_buckoff;
+
+		battery,chg_float_voltage = <4420>;
+		battery,recharge_condition_vcell = <4350>;
+		battery,swelling_low_rechg_thr = <150>;
+
+		battery,swelling_low_temp_current = <1000>;	/* 0.24C */
+		battery,swelling_low_temp_current_2nd = <400>;	/* 0.1C */
+		battery,swelling_low_temp_current_3rd = <3100>;	/* 0.72C */
+		battery,swelling_low_temp_topoff = <218>;	/* 0.05C */
+		battery,swelling_high_temp_current = <1550>;	/* 0.36C */
+		battery,swelling_high_temp_topoff = <218>;	/* 0.05C */
+		battery,swelling_wc_high_temp_current = <1000>;	/* 0.24C */
+		battery,swelling_wc_low_temp_current = <1000>;	/* 0.24C */
+		battery,swelling_wc_low_temp_current_2nd = <400>;	/* 0.1C */
+		battery,swelling_wc_low_temp_current_3rd = <3100>;	/* 0.72C */
+
+		battery,swelling_drop_float_voltage = <4200>;
+		battery,swelling_high_rechg_voltage = <4050>;
+
+		battery,siop_charging_limit_current = <1800>;
+		battery,siop_apdo_input_limit_current = <1000>;
+		battery,siop_wireless_input_limit_current = <700>;
+		battery,siop_hv_wireless_input_limit_current = <700>;
+
+		battery,age_data = <0 4420 4350 4370 93
+				200 4400 4330 4350 92
+				300 4380 4310 4330 91
+				700 4360 4290 4310 90
+				1000 4310 4240 4260 89>;
+
+		battery,dc_step_chg_cond_vol = <4150 4265 4420>; /*<25w 3step> STEP_CHARGING_CONDITION_VOLTAGE */
+		battery,dc_step_chg_cond_iin = <2030 1625 0>; /* <25w 3step> STEP_CHARGING_CONDITION_INPUT_CURRENT */
+		battery,dc_step_chg_iin_check_cnt = <3>;
+		battery,dc_step_chg_cond_soc = <30 55 100
+						30 55 100
+						30 55 100
+						30 55 100
+						30 55 100>; /* <25w 3step> STEP_CHARGING_CONDITION_SOC */
+		battery,dc_step_chg_val_vfloat = <4150 4265 4420>; /* <25w 3step> STEP_CHARGING_CONDITION_FLOAT_VOLTAGE */
+		battery,dc_step_chg_val_iout = <5280 4060 3250>; /* <25w 3step> */
+
+		battery,battery_full_capacity = <4500>;
+		battery,cisd_max_voltage_thr = <4470>; /* batttery ovp dettection voltage */
+	};
+	max77705-fuelgauge {
+		fuelgauge,capacity = <0x0FDC>; /* capacity = fullcapnom = DesignCap */
+		fuelgauge,fg_reset_wa_data = <0x0FDC 0x3200 0x03F7 0x002D 0x1420>; /* fullcapnom(=capacity), dPacc, dQacc, rcomp0, tempco */
+	};
+	cable-info {
+		full_check_current_1st = <655>;
+		full_check_current_2nd = <218>;
+	};
+
+};
+
+&wacom {
+	wacom,fw_path = "epen/w9020_c2_dv2.bin";
+	wacom,bringup = <0>;
+	/delete-node/ wacom_elec0;
+	/delete-node/ wacom_elec1;
+	wacom_elec0 {
+		spec_ver = <2 0>; /* major minor */
+		max_channel = <25 12>; /* x y */
+		shift_value = <4>;
+
+		xx_ref = /bits/ 64 <4973 4988 4540 4603 4556 4603 4767 4813 4808 4881 4949 4877 4799 5017 5095 5198 5195 5421 5477 5415 5406 5433 5615 6534 6456>;
+		xy_ref = /bits/ 64 <760 1020 857 781 771 764 756 763 764 781 776 780 781 784 785 784 788 796 800 802 803 816 861 1155 944>;
+		yx_ref = /bits/ 64 <930 1164 938 706 802 706 1038 861 850 910 1212 983>;
+		yy_ref = /bits/ 64 <6056 6043 3413 3514 3654 3737 3419 3463 3448 3596 6191 6171>;
+
+		xx_spec = /bits/ 64 <5968 5986 5448 5524 5467 5524 5720 5776 5769 5857 5939 5853 5759 6020 6114 6237 6234 6506 6572 6498 6488 6519 6738 7841 7747>;
+		xy_spec = /bits/ 64 <912 1224 1028 938 926 917 907 915 917 937 932 936 937 940 943 941 945 955 960 962 964 979 1034 1386 1133>;
+		yx_spec = /bits/ 64 <1116 1397 1126 847 963 847 1245 1033 1020 1093 1455 1180>;
+		yy_spec = /bits/ 64 <7268 7252 4095 4217 4385 4484 4102 4156 4138 4315 7429 7406>;
+
+		rxx_ref = /bits/ 64 <10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000>;
+		rxy_ref = /bits/ 64 <10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000>;
+		ryx_ref = /bits/ 64 <10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000>;
+		ryy_ref = /bits/ 64 <10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000>;
+
+		drxx_spec = /bits/ 64 <10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000>;
+		drxy_spec = /bits/ 64 <10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000>;
+		dryx_spec = /bits/ 64 <10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000>;
+		dryy_spec = /bits/ 64 <10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000>;
+	};
+
+	/* for unit spec */
+	wacom_elec1 {
+		spec_ver = <2 0>; /* major minor */
+		max_channel = <25 12>; /* x y */
+		shift_value = <4>;
+
+		xx_ref = /bits/ 64 <4973 4988 4540 4603 4556 4603 4767 4813 4808 4881 4949 4877 4799 5017 5095 5198 5195 5421 5477 5415 5406 5433 5615 6534 6456>;
+		xy_ref = /bits/ 64 <760 1020 857 781 771 764 756 763 764 781 776 780 781 784 785 784 788 796 800 802 803 816 861 1155 944>;
+		yx_ref = /bits/ 64 <930 1164 938 706 802 706 1038 861 850 910 1212 983>;
+		yy_ref = /bits/ 64 <6056 6043 3413 3514 3654 3737 3419 3463 3448 3596 6191 6171>;
+
+		xx_spec = /bits/ 64 <5968 5986 5448 5524 5467 5524 5720 5776 5769 5857 5939 5853 5759 6020 6114 6237 6234 6506 6572 6498 6488 6519 6738 7841 7747>;
+		xy_spec = /bits/ 64 <912 1224 1028 938 926 917 907 915 917 937 932 936 937 940 943 941 945 955 960 962 964 979 1034 1386 1133>;
+		yx_spec = /bits/ 64 <1116 1397 1126 847 963 847 1245 1033 1020 1093 1455 1180>;
+		yy_spec = /bits/ 64 <7268 7252 4095 4217 4385 4484 4102 4156 4138 4315 7429 7406>;
+
+		rxx_ref = /bits/ 64 <10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000>;
+		rxy_ref = /bits/ 64 <10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000>;
+		ryx_ref = /bits/ 64 <10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000>;
+		ryy_ref = /bits/ 64 <10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000>;
+
+		drxx_spec = /bits/ 64 <10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000>;
+		drxy_spec = /bits/ 64 <10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000>;
+		dryx_spec = /bits/ 64 <10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000>;
+		dryy_spec = /bits/ 64 <10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000>;
+	};
+};

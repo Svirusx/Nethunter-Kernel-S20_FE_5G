@@ -751,6 +751,8 @@ struct dp_soc_stats {
 		uint32_t near_full;
 		/* Break ring reaping as not all scattered msdu received */
 		uint32_t msdu_scatter_wait_break;
+		/* Number of bar frames received */
+		uint32_t bar_frame;
 
 		struct {
 			/* Invalid RBM error count */
@@ -818,10 +820,10 @@ struct dp_soc_stats {
 			uint32_t msdu_count_mismatch;
 			/* RX raw frame dropped count */
 			uint32_t raw_frm_drop;
+			/* Stale link desc cookie count*/
+			uint32_t invalid_link_cookie;
 			/* Nbuf sanity failure */
 			uint32_t nbuf_sanity_fail;
-            /* Stale link desc cookie count*/
-            uint32_t invalid_link_cookie;
 		} err;
 
 		/* packet count per core - per ring */

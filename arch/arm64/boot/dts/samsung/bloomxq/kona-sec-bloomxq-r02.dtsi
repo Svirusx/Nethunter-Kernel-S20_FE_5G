@@ -1,0 +1,102 @@
+/* Copyright (c) 2020, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "kona-sec-bloomxq-r01.dtsi"
+#include "kona-sec-bloomxq-pinctrl-r02.dtsi"
+#include "../drivers/battery-data-bloomxq-r02.dtsi"
+#include "../drivers/kona-sec-sensor-vdd-lpm.dtsi"
+
+&apps_rsc {
+/*
+ * L1C source power is changed from VREG_S4A_1P8 to VREG_S5A_2P0.
+ * so, Need to be changed to LDO mode(HPM) for NFC.
+ */
+	rpmh-regulator-ldoc1 {
+		qcom,supported-modes =
+			<RPMH_REGULATOR_MODE_LPM
+			RPMH_REGULATOR_MODE_HPM>;
+		qcom,mode-threshold-currents = <0 10000>;
+		L1C: pm8150a_l1: regulator-pm8150a-l1 {
+			qcom,init-mode = <RPMH_REGULATOR_MODE_HPM>;
+		};
+	};
+
+	rpmh-regulator-ldoa14 {
+		L14A: pm8150_l14: regulator-pm8150-l14 {
+			regulator-min-microvolt = <1600000>;
+			regulator-max-microvolt = <1600000>;
+			qcom,init-voltage = <1600000>;
+		};
+	};
+};
+/delete-node/ &i2c_17;
+/delete-node/ &i2c_18;
+&soc {
+	vdd_sub_tsp: vdd_sub_tsp {
+		compatible = "regulator-fixed";
+		regulator-name = "sub_tsp_avdd";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpio = <&tlmm 128 0>;
+		enable-active-high;
+		regulator-boot-on;
+	};
+	i2c_17: i2c@17 { /* SW I2C */
+		status = "ok";
+
+		cell-index = <17>;
+		compatible = "i2c-gpio";
+		gpios = <&tlmm 144 0 /* sda */
+			 &tlmm 145 0 /* scl */
+		>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&grip_i2c_active>;
+
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		a96t3x6@20 {
+			compatible = "a96t3x6";
+			pinctrl-names = "default";
+			pinctrl-0 = <&grip_int_active>;
+			reg = <0x20>;
+
+			interrupt-parent = <&tlmm>;
+			interrupts = <111 0>;
+
+			a96t3x6,irq_gpio = <&tlmm 111 0>;
+			a96t3x6,dvdd_vreg_name = "pm8150_l10";
+			a96t3x6,fw_path = "a96t365_bloomxq_eur.bin";
+			a96t3x6,firmup_cmd = <0x60>;
+		};
+	};
+
+	i2c_18: i2c@18 { /* SW I2C */
+		status = "ok";
+
+		cell-index = <18>;
+		compatible = "i2c-gpio";
+		gpios = <&tlmm 40 0 /* sda */
+			 &tlmm 41 0 /* scl */
+		>;
+		i2c-gpio,delay-us = <2>;
+		address-cells = <1>;
+		size-cells = <0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&grip_sub_i2c_active &grip_sub_int_active>;
+	};
+};
+
+&sub_zinitix {
+	/delete-property/ zinitix,use_deep_sleep;
+	zinitix,regulator_avdd = "sub_tsp_avdd";
+};

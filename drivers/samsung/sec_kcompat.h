@@ -3,7 +3,7 @@
 
 #include <linux/version.h>
 
-#if defined(CONFIG_MSM_SMEM) && defined(CONFIG_QCOM_SMEM)
+#if IS_ENABLED(CONFIG_MSM_SMEM) && IS_ENABLED(CONFIG_QCOM_SMEM)
 #error "CONFIG_MSM_SMEM and CONFIG_QCOM_SMEM can not be enabled at the same time"
 #endif
 
@@ -11,7 +11,7 @@
 
 #define timer_setup(__timer, __fn, __data)	setup_timer(__timer, __fn, __data)
 
-#if defined(CONFIG_MSM_SMEM)
+#if IS_ENABLED(CONFIG_MSM_SMEM)
 
 #if defined(QCOM_SMEM_HOST_ANY)
 #undef QCOM_SMEM_HOST_ANY

@@ -2545,7 +2545,6 @@ static void __ref smpl_panic(struct work_struct *work)
 		panic("%s", buf);
 	}
 }
-
 static int qpnp_pon_read_hardware_info(struct qpnp_pon *pon, bool sys_reset)
 {
 	struct device *dev = pon->dev;

@@ -90,3 +90,13 @@ config USB_LEDS_TRIGGER_USBPORT
 	  This driver allows LEDs to be controlled by USB events. Enabling this
 	  trigger allows specifying list of USB ports that should turn on LED
 	  when some USB device gets connected.
+
+config USB_HOST_CERTIFICATION
+	bool "USB Embedded host certification"
+	depends on USB
+	depends on !SEC_FACTORY
+	help
+	 Added uevent for usb embedded host certification
+	 uevent includes information of notification
+	 The usb framework gets this uevent.
+	 It is made by samsung.

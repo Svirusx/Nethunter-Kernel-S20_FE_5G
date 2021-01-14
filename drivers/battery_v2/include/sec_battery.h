@@ -122,6 +122,8 @@ extern char *sec_cable_type[];
 #define BATT_MISC_EVENT_WIRELESS_AUTH_PASS      0x00001000
 #define BATT_MISC_EVENT_TEMP_HICCUP_TYPE	0x00002000
 #define BATT_MISC_EVENT_BATTERY_HEALTH			0x000F0000
+#define BATT_MISC_EVENT_HEALTH_OVERHEATLIMIT		0x00100000
+#define BATT_MISC_EVENT_ABNORMAL_PAD		0x00200000
 
 #define BATTERY_HEALTH_SHIFT                16
 enum misc_battery_health {
@@ -370,14 +372,11 @@ struct sec_battery_info {
 	struct adc_sample_info	adc_sample[ADC_CH_COUNT];
 
 	/* keep awake until monitor is done */
-	struct wakeup_source monitor_wake_lock;
+	struct wakeup_source *monitor_wake_lock;
 	struct workqueue_struct *monitor_wqueue;
-#if defined(CONFIG_DISABLE_MFC_IC)
-	struct delayed_work mfc_work;
-#endif
 	struct delayed_work monitor_work;
 #ifdef CONFIG_SAMSUNG_BATTERY_FACTORY
-	struct wakeup_source lpm_wake_lock;
+	struct wakeup_source *lpm_wake_lock;
 #endif
 	unsigned int polling_count;
 	unsigned int polling_time;
@@ -513,31 +512,31 @@ struct sec_battery_info {
 #if defined(CONFIG_BATTERY_SAMSUNG_MHS)
 	int charging_port;
 #endif
-	struct wakeup_source cable_wake_lock;
+	struct wakeup_source *cable_wake_lock;
 	struct delayed_work cable_work;
-	struct wakeup_source vbus_wake_lock;
+	struct wakeup_source *vbus_wake_lock;
 	struct delayed_work siop_work;
-	struct wakeup_source siop_wake_lock;
-	struct wakeup_source afc_wake_lock;
+	struct wakeup_source *siop_wake_lock;
+	struct wakeup_source *afc_wake_lock;
 	struct delayed_work afc_work;
 #if defined(CONFIG_WIRELESS_FIRMWARE_UPDATE)
 	struct delayed_work update_work;
 	struct delayed_work fw_init_work;
 #endif
 	struct delayed_work siop_level_work;
-	struct wakeup_source siop_level_wake_lock;
+	struct wakeup_source *siop_level_wake_lock;
 	struct delayed_work wc_headroom_work;
-	struct wakeup_source wc_headroom_wake_lock;
-	struct wakeup_source wpc_tx_wake_lock;
+	struct wakeup_source *wc_headroom_wake_lock;
+	struct wakeup_source *wpc_tx_wake_lock;
 	struct delayed_work wpc_tx_work;
 #if defined(CONFIG_UPDATE_BATTERY_DATA)
 	struct delayed_work batt_data_work;
-	struct wakeup_source batt_data_wake_lock;
+	struct wakeup_source *batt_data_wake_lock;
 	char *data_path;
 #endif
 #ifdef CONFIG_OF
 	struct delayed_work parse_mode_dt_work;
-	struct wakeup_source parse_mode_dt_wake_lock;
+	struct wakeup_source *parse_mode_dt_wake_lock;
 #endif
 	struct delayed_work init_chg_work;
 
@@ -674,11 +673,12 @@ struct sec_battery_info {
 	unsigned int prev_misc_event;
 	unsigned int tx_retry_case;
 	unsigned int tx_misalign_cnt;
+	unsigned int tx_ocp_cnt;
 	struct delayed_work ext_event_work;
 	struct delayed_work misc_event_work;
-	struct wakeup_source ext_event_wake_lock;
-	struct wakeup_source misc_event_wake_lock;
-	struct wakeup_source tx_event_wake_lock;
+	struct wakeup_source *ext_event_wake_lock;
+	struct wakeup_source *misc_event_wake_lock;
+	struct wakeup_source *tx_event_wake_lock;
 	struct mutex batt_handlelock;
 	struct mutex current_eventlock;
 	struct mutex typec_notylock;
@@ -686,6 +686,8 @@ struct sec_battery_info {
 	struct mutex init_soc_updatelock;
 	unsigned long tx_misalign_start_time;
 	unsigned long tx_misalign_passed_time;
+	unsigned long tx_ocp_start_time;
+	unsigned long tx_ocp_passed_time;
 
 	unsigned int hiccup_status;
 	bool hiccup_clear;
@@ -703,11 +705,7 @@ struct sec_battery_info {
 	bool boot_complete;
 	int raw_bat_temp;
 
-#if defined(CONFIG_DISABLE_MFC_IC)
-	bool mfc_unknown_swelling;
-	bool mfc_unknown_fullcharged;
-	bool mfc_work_check;
-#endif
+	bool support_unknown_wpcthm;
 };
 
 /* event check */
@@ -816,6 +814,6 @@ void sec_bat_parse_mode_dt_work(struct work_struct *work);
 u8 sec_bat_get_wireless20_power_class(struct sec_battery_info *battery);
 void sec_bat_check_battery_health(struct sec_battery_info *battery);
 #if defined(CONFIG_DISABLE_MFC_IC)
-void sec_bat_set_mfc_on(struct sec_battery_info *battery, bool always_on);
+void sec_bat_set_mfc_on(struct sec_battery_info *battery);
 #endif
 #endif /* __SEC_BATTERY_H */

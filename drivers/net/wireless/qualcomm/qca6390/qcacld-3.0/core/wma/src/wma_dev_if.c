@@ -1020,47 +1020,8 @@ static void wma_handle_hidden_ssid_restart(tp_wma_handle wma,
 				      0, NULL);
 }
 
-static void
-wma_update_peer_phymode_sta(tp_wma_handle wma, struct wma_txrx_node *iface)
-{
-	wmi_host_channel_width ch_width;
-	uint8_t vdev_id;
-	enum wlan_phymode bss_phymode;
-	uint32_t fw_phymode;
-	uint8_t *bssid;
-	struct wlan_channel *des_chan;
-	QDF_STATUS status;
-
-	vdev_id = wlan_vdev_get_id(iface->vdev);
-	/* for CSA case firmware expects phymode before ch_wd */
-	bssid = wma_get_vdev_bssid(iface->vdev);
-	if (!bssid) {
-		WMA_LOGE("%s:Failed to get bssid for vdev_id %d",
-			 __func__, vdev_id);
-		return;
-	}
-
-	des_chan = wlan_vdev_mlme_get_des_chan(iface->vdev);
-	bss_phymode = des_chan->ch_phymode;
-
-	/* update new phymode to peer */
-	wma_objmgr_set_peer_mlme_phymode(wma, bssid, bss_phymode);
-	fw_phymode = wma_host_to_fw_phymode(bss_phymode);
-
-	/* for CSA case firmware expects phymode before ch_wd */
-	status = wma_set_peer_param(wma, bssid, WMI_PEER_PHYMODE, fw_phymode,
-				    vdev_id);
-
-
-	ch_width = wmi_get_ch_width_from_phy_mode(wma->wmi_handle, fw_phymode);
-	status = wma_set_peer_param(wma, bssid, WMI_PEER_CHWIDTH, ch_width,
-				    vdev_id);
-	wma_debug("vdev_id %d fw_phy_mode %d bss_phymode %d chanwidth %d",
-		  vdev_id, fw_phymode, bss_phymode, ch_width);
-}
-
-static void wma_sap_peer_send_phymode(struct wlan_objmgr_vdev *vdev,
-				      void *object, void *arg)
+static void wma_peer_send_phymode(struct wlan_objmgr_vdev *vdev,
+				  void *object, void *arg)
 {
 	struct wlan_objmgr_peer *peer = object;
 	enum wlan_phymode old_peer_phymode;
@@ -1115,37 +1076,9 @@ static void wma_sap_peer_send_phymode(struct wlan_objmgr_vdev *vdev,
 	wma_set_peer_param(wma, peer_mac_addr, WMI_PEER_CHWIDTH,
 			   max_ch_width_supported, vdev_id);
 
-	wma_debug("old phymode %d new phymode %d bw %d macaddr "QDF_MAC_ADDR_STR,
-		  old_peer_phymode, new_phymode, max_ch_width_supported,
-		  QDF_MAC_ADDR_ARRAY(peer_mac_addr));
-}
-
-static void
-wma_update_peer_phymode_sap(struct wlan_objmgr_vdev *vdev)
-{
-	wlan_objmgr_iterate_peerobj_list(vdev,
-					 wma_sap_peer_send_phymode,
-					 NULL,
-					 WLAN_LEGACY_WMA_ID);
-}
-
-/**
- * wma_update_peer_phymode_after_vdev_restart() - Set new peer phymode after
- * vdev restart according to previous phymode and new chan width.
- *
- * @wma: wma handle
- * @iface: interfcae pointer
- *
- * Return: none
- */
-static
-void wma_update_peer_phymode_after_vdev_restart(tp_wma_handle wma,
-						struct wma_txrx_node *iface)
-{
-	if (iface->type == WMI_VDEV_TYPE_AP)
-		wma_update_peer_phymode_sap(iface->vdev);
-	else if (iface->type == WMI_VDEV_TYPE_STA)
-		wma_update_peer_phymode_sta(wma, iface);
+	wma_debug("FW phymode %d old phymode %d new phymode %d bw %d macaddr "QDF_MAC_ADDR_STR,
+		  fw_phymode, old_peer_phymode, new_phymode,
+		  max_ch_width_supported, QDF_MAC_ADDR_ARRAY(peer_mac_addr));
 }
 
 static
@@ -1226,7 +1159,9 @@ QDF_STATUS wma_handle_channel_switch_resp(tp_wma_handle wma,
 
 	if (QDF_IS_STATUS_SUCCESS(rsp->status) &&
 	    rsp->resp_type == WMI_VDEV_RESTART_RESP_EVENT) {
-		wma_update_peer_phymode_after_vdev_restart(wma, iface);
+		wlan_objmgr_iterate_peerobj_list(iface->vdev,
+					 wma_peer_send_phymode, NULL,
+					 WLAN_LEGACY_WMA_ID);
 		wma_update_rate_flags_after_vdev_restart(wma, iface);
 	}
 
@@ -3117,7 +3052,11 @@ int wma_peer_delete_handler(void *handle, uint8_t *cmd_param_info,
 
 		data = (struct del_sta_self_rsp_params *)req_msg->user_data;
 		WMA_LOGD(FL("Calling vdev detach handler"));
-		wma_handle_vdev_detach(wma, data->self_sta_param);
+		status = wma_handle_vdev_detach(wma, data->self_sta_param);
+		if (QDF_IS_STATUS_ERROR(status)) {
+			data->self_sta_param->status = status;
+			wma_send_vdev_del_resp(data->self_sta_param);
+		}
 		qdf_mem_free(data);
 	} else if (req_msg->type == WMA_SET_LINK_PEER_RSP ||
 		   req_msg->type == WMA_DELETE_PEER_RSP) {
@@ -3239,7 +3178,11 @@ void wma_hold_req_timer(void *data)
 			wma_trigger_recovery_assert_on_fw_timeout(
 				WMA_DELETE_STA_REQ,
 				QDF_PEER_DELETION_TIMEDOUT);
-		wma_handle_vdev_detach(wma, del_sta->self_sta_param);
+		status = wma_handle_vdev_detach(wma, del_sta->self_sta_param);
+		if (QDF_IS_STATUS_ERROR(status)) {
+			del_sta->self_sta_param->status = status;
+			wma_send_vdev_del_resp(del_sta->self_sta_param);
+		}
 		qdf_mem_free(tgt_req->user_data);
 	} else if ((tgt_req->msg_type == WMA_DELETE_STA_REQ) &&
 		   (tgt_req->type == WMA_SET_LINK_PEER_RSP ||
@@ -3899,7 +3842,7 @@ QDF_STATUS wma_send_peer_assoc_req(struct bss_params *add_bss)
 				      OL_TXRX_PEER_STATE_CONN);
 		status = wma_set_cdp_vdev_pause_reason(wma, vdev_id);
 		if (QDF_IS_STATUS_ERROR(status))
-			goto peer_cleanup;
+			goto send_resp;
 	}
 
 	wmi_unified_send_txbf(wma, &add_bss->staContext);
@@ -3920,7 +3863,7 @@ QDF_STATUS wma_send_peer_assoc_req(struct bss_params *add_bss)
 				     &add_bss->staContext);
 	if (QDF_IS_STATUS_ERROR(status)) {
 		WMA_LOGE("Failed to send peer assoc status:%d", status);
-		goto peer_cleanup;
+		goto send_resp;
 	}
 
 	/* we just had peer assoc, so install key will be done later */
@@ -3941,7 +3884,7 @@ QDF_STATUS wma_send_peer_assoc_req(struct bss_params *add_bss)
 	if (!mlme_obj) {
 		WMA_LOGE("Failed to mlme obj");
 		status = QDF_STATUS_E_FAILURE;
-		goto peer_cleanup;
+		goto send_resp;
 	}
 	/*
 	 * Store the bssid in interface table, bssid will
@@ -3966,14 +3909,11 @@ QDF_STATUS wma_send_peer_assoc_req(struct bss_params *add_bss)
 			 vdev_id);
 		wma_remove_req(wma, vdev_id, WMA_PEER_ASSOC_CNF_START);
 		status = QDF_STATUS_E_FAILURE;
-		goto peer_cleanup;
+		goto send_resp;
 	}
 
 	return QDF_STATUS_SUCCESS;
 
-peer_cleanup:
-	if (peer_exist)
-		wma_remove_peer(wma, add_bss->bssId, vdev_id, false);
 send_resp:
 	wma_send_add_bss_resp(wma, vdev_id, status);
 

@@ -77,7 +77,7 @@ enum sec_debug_upload_cause_t {
 	UPLOAD_CAUSE_QUEST_DDR_TEST_CAL,
 	UPLOAD_CAUSE_QUEST_DDR_TEST_SMD,
 	UPLOAD_CAUSE_SOD_RESULT,
-	UPLOAD_CAUSE_QUEST_ZIP_UNZIP,	
+	UPLOAD_CAUSE_QUEST_ZIP_UNZIP,
 	UPLOAD_CAUSE_QUEST_END = UPLOAD_CAUSE_QUEST_ZIP_UNZIP,
 /* --Quest : 0xC8_5153_xx -- */
 /* -- KP : 0xC8xx_xxxx -- */
@@ -101,6 +101,7 @@ enum sec_debug_upload_cause_t {
 /* -- MP -- */
 /* ++ PP ++ */
 	UPLOAD_CAUSE_EDL_FORCED_UPLOAD = 0x50500000,
+	UPLOAD_CAUSE_PM_OCP,
 /* -- PP -- */
 /* ++ SP -- */
 	UPLOAD_CAUSE_SMPL = 0x53500000,
@@ -222,6 +223,7 @@ enum pon_restart_reason {
 	/***********************************************/
 	PON_RESTART_REASON_MULTICMD = 0x2B,
 	PON_RESTART_REASON_CROSS_FAIL = 0x2C,
+	PON_RESTART_REASON_LIMITED_DRAM_SETTING = 0x2D,
 	PON_RESTART_REASON_SLT_COMPLETE = 0x2F,
 	PON_RESTART_REASON_DBG_LOW		= 0x30,
 	PON_RESTART_REASON_DBG_MID		= 0x31,
@@ -264,6 +266,10 @@ enum pon_restart_reason {
 #if IS_ENABLED(CONFIG_SEC_QUEST)
 	PON_RESTART_REASON_QUEST_REWORK	= 0x50,
 #endif
+#if IS_ENABLED(CONFIG_SEC_QUEST_UEFI_USER)
+	PON_RESTART_REASON_QUEST_QUEFI_USER_START = 0x51,
+	PON_RESTART_REASON_QUEST_SUEFI_USER_START = 0x52,
+#endif
 	PON_RESTART_REASON_MAX			= 0x80
 #endif
 };
@@ -279,6 +285,7 @@ DECLARE_PER_CPU(enum sec_debug_upload_cause_t, sec_debug_upload_cause);
 
 extern bool sec_debug_is_enabled(void);
 extern unsigned int sec_debug_level(void);
+extern void (*sec_nvmem_pon_write)(u8 pon_rr);
 
 static __always_inline void sec_debug_strcpy_task_comm(char *dst, char *src)
 {

@@ -1,0 +1,126 @@
+/* Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&tlmm {
+	laf_int_pins: laf_int_pins {
+		laf_int_active: laf_int_active {
+			mux {
+				pins = "gpio64";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio64";
+				drive-strength = <2>;
+				bias-disable;
+				input-enable;
+			};
+		};
+
+		laf_int_suspend: laf_int_suspend {
+			mux {
+				pins = "gpio64";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio64";
+				drive-strength = <2>;
+				bias-disable;
+				input-enable;
+			};
+		};
+	};
+
+	qupv3_se8_spi_pins: qupv3_se8_spi_pins {
+		qupv3_se8_spi_miso_active: qupv3_se8_spi_miso_active {
+			mux {
+				pins = "gpio24";
+				function = "qup8";
+			};
+
+			config {
+				pins = "gpio24";
+				drive-strength = <8>;
+				bias-disable;
+				input-enable;
+			};
+		};
+
+		qupv3_se8_spi_laf_active: qupv3_se8_spi_laf_active {
+			mux {
+				pins = "gpio25", "gpio26", "gpio27";
+				function = "qup8";
+			};
+
+			config {
+				pins = "gpio25", "gpio26", "gpio27";
+				drive-strength = <8>;
+				bias-disable;
+				output-high;
+			};
+		};
+
+		qupv3_se8_spi_laf_vddoff: qupv3_se8_spi_laf_vddoff {
+			mux {
+				pins = "gpio24", "gpio25", "gpio26", "gpio27";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio24", "gpio25", "gpio26", "gpio27";
+				drive-strength = <6>;
+				bias-pull-down;
+				output-low;
+			};
+		};
+	};
+};
+
+&qupv3_se8_spi {
+	pinctrl-names = "default", "sleep", "vddoff";
+	pinctrl-0 = <&qupv3_se8_spi_laf_active &qupv3_se8_spi_miso_active>;
+	pinctrl-1 = <&qupv3_se8_spi_laf_active &qupv3_se8_spi_miso_active>;
+	pinctrl-2 = <&qupv3_se8_spi_laf_vddoff>;
+	status = "ok";
+	spi-cpha;
+	spi-cpol;
+	vl53l5,pinctrl_vddoff;
+
+	vl53l5-spi@0 {
+		compatible = "vl53l5";
+		reg = <0>;
+		spi-max-frequency = <19200000>; // 19.2Mhz
+		pinctrl-names = "default", "sleep";
+		pinctrl-0 = <&laf_int_active>;
+		pinctrl-1 = <&laf_int_suspend>;
+		interrupt-parent = <&tlmm>;
+		interrupts = <64 0>;
+		stm,nirq-gpio = <&tlmm 64 0>;
+		stm,firmware_name = "range_sensor/vl53l5_c2.bin";
+		stm,genshape_name = "range_sensor/generic_xtalk_shape_c2_00.bin";
+		stm,io_vdd = "s2mpb02-ldo9";
+		stm,a_vdd = "s2mpb02-ldo17";
+		stm,fac_rotation_mode = <3>;
+		stm,spi_node = <&qupv3_se8_spi>;
+		spi-cpha;
+		spi-cpol;
+	};
+};
+
+&s2mpb02_l9 {
+	regulator-min-microvolt = <1800000>;
+	regulator-max-microvolt = <1800000>;
+};
+
+&s2mpb02_l17 {
+	regulator-min-microvolt = <3375000>;
+	regulator-max-microvolt = <3375000>;
+};

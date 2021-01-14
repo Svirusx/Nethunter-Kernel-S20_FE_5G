@@ -371,6 +371,8 @@ enum power_supply_property {
 	POWER_SUPPLY_PROP_CP_ILIM,
 	POWER_SUPPLY_PROP_IRQ_STATUS,
 	POWER_SUPPLY_PROP_PARALLEL_OUTPUT_MODE,
+	POWER_SUPPLY_PROP_FG_TYPE,
+	POWER_SUPPLY_PROP_CHARGER_STATUS,
 	/* Local extensions of type int64_t */
 	POWER_SUPPLY_PROP_CHARGE_COUNTER_EXT,
 	/* Properties of type `const char *' */
@@ -409,6 +411,7 @@ enum power_supply_type {
 	POWER_SUPPLY_TYPE_BMS,			/* Battery Monitor System */
 	POWER_SUPPLY_TYPE_PARALLEL,		/* Parallel Path */
 	POWER_SUPPLY_TYPE_MAIN,			/* Main Path */
+	POWER_SUPPLY_TYPE_WIPOWER,		/* Wipower */
 	POWER_SUPPLY_TYPE_UFP,			/* Type-C UFP */
 	POWER_SUPPLY_TYPE_DFP,			/* Type-C DFP */
 	POWER_SUPPLY_TYPE_CHARGE_PUMP,		/* Charge Pump */

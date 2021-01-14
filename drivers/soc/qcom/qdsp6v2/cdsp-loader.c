@@ -129,40 +129,6 @@ static ssize_t cdsp_boot_store(struct kobject *kobj,
 	return count;
 }
 
-int cdsp_ssr(void)
-{
-	struct subsys_device *cdsp_dev = NULL;
-	struct platform_device *pdev = cdsp_private;
-	struct cdsp_loader_private *priv = NULL;
-	int rc;
-
-	dev_dbg(&pdev->dev, "%s: going to call cdsp ssr\n ", __func__);
-
-	priv = platform_get_drvdata(pdev);
-	if (!priv)
-		return -EINVAL;
-
-	cdsp_dev = (struct subsys_device *)priv->pil_h;
-	if (!cdsp_dev)
-		return -EINVAL;
-
-	dev_info(&pdev->dev, "requesting for CDSP restart\n");
-	if (!sec_debug_is_enabled()) {
-		dev_info(&pdev->dev, "Set force cdsp ssr regardless of debug level\n");
-		subsys_set_cdsp_silent_ssr(true);
-	}
-
-	/* subsystem_restart_dev has worker queue to handle */
-	rc = subsystem_restart_dev(cdsp_dev);
-	if (rc) {
-		dev_err(&pdev->dev, "subsystem_restart_dev failed\n");
-		return rc;
-	}
-
-	dev_info(&pdev->dev, "CDSP restarted by intention\n");
-	return 0;
-}
-
 static void cdsp_loader_unload(struct platform_device *pdev)
 {
 	struct cdsp_loader_private *priv = NULL;

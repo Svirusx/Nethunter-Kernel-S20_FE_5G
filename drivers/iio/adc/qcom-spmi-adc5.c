@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2012-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012-2020, The Linux Foundation. All rights reserved.
  */
 
 #include <linux/bitops.h>
@@ -919,12 +919,16 @@ static const struct adc_channels adc_chans_pmic5[ADC_MAX_CHANNEL] = {
 #endif
 	[ADC_AMUX_THM4_PU2]	= ADC_CHAN_TEMP("amux_thm4_pu2", 1,
 					SCALE_HW_CALIB_THERM_100K_PULLUP)
-	[ADC_INT_EXT_ISENSE_VBAT_VDATA]	= ADC_CHAN_POWER("int_ext_isense", 1,
+	[ADC_PARALLEL_ISENSE]	= ADC_CHAN_VOLT("parallel_isense", 1,
 					SCALE_HW_CALIB_CUR)
-	[ADC_EXT_ISENSE_VBAT_VDATA]	= ADC_CHAN_POWER("ext_isense", 1,
+	[ADC_INT_EXT_ISENSE_VBAT_VDATA]	= ADC_CHAN_POWER(
+					"int_ext_vbat_isense", 1,
+						SCALE_HW_CALIB_CUR)
+	[ADC_EXT_ISENSE_VBAT_VDATA]	= ADC_CHAN_POWER("ext_vbat_isense", 1,
 					SCALE_HW_CALIB_CUR)
-	[ADC_PARALLEL_ISENSE_VBAT_VDATA] = ADC_CHAN_POWER("parallel_isense", 1,
-					SCALE_HW_CALIB_CUR)
+	[ADC_PARALLEL_ISENSE_VBAT_VDATA] = ADC_CHAN_POWER(
+					"parallel_vbat_isense", 1,
+						SCALE_HW_CALIB_CUR)
 	[ADC_AMUX_THM2]			= ADC_CHAN_TEMP("amux_thm2", 1,
 					SCALE_HW_CALIB_PM5_SMB_TEMP)
 	[ADC_AMUX_THM3]			= ADC_CHAN_TEMP("amux_thm3", 1,
@@ -1003,6 +1007,8 @@ static const struct adc_channels adc_chans_rev2[ADC_MAX_CHANNEL] = {
 					SCALE_HW_CALIB_THERM_100K_PULLUP)
 	[ADC_XO_THERM_PU2]	= ADC_CHAN_TEMP("xo_therm", 1,
 					SCALE_HW_CALIB_THERM_100K_PULLUP)
+	[ANA_IN]		= ADC_CHAN_TEMP("drax_temp", 1,
+					SCALE_HW_CALIB_PMIC_THERM)
 };
 
 static int adc_get_dt_channel_data(struct adc_chip *adc,
@@ -1137,6 +1143,16 @@ const struct adc_data data_pmic5 = {
 					800, 900, 1, 2, 4, 6, 8, 10},
 };
 
+const struct adc_data data_pmic5_lite = {
+	.full_scale_code_volt = 0x70e4,
+	/* On PMI632, IBAT LSB = 5A/32767 */
+	.full_scale_code_cur = 5000,
+	.adc_chans = adc_chans_pmic5,
+	.decimation = (unsigned int []) {250, 420, 840},
+	.hw_settle = (unsigned int []) {15, 100, 200, 300, 400, 500, 600, 700,
+					800, 900, 1, 2, 4, 6, 8, 10},
+};
+
 const struct adc_data adc7_data_pmic = {
 	.full_scale_code_volt = 0x70e4,
 	.adc_chans = adc7_chans_pmic,
@@ -1166,6 +1182,10 @@ static const struct of_device_id adc_match_table[] = {
 	{
 		.compatible = "qcom,spmi-adc-rev2",
 		.data = &data_pmic_rev2,
+	},
+	{
+		.compatible = "qcom,spmi-adc5-lite",
+		.data = &data_pmic5_lite,
 	},
 	{ }
 };

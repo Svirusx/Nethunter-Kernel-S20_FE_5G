@@ -54,6 +54,13 @@ config SEC_LOG_STORE_LAST_KMSG
 	help
 	  store sec log when power off or reboot.
 
+config SEC_LOG_STORE_LPM_KMSG
+	bool "store sec log when LPM Mode boot"
+	default n
+	depends on SEC_LOG_LAST_KMSG
+	help
+	  store sec log when LPM Mode boot
+
 config SEC_DEBUG_SCHED_LOG
 	bool "Samsung Scheduler Logging Feature"
 	default n
@@ -112,6 +119,16 @@ config SEC_DEBUG_SUMMARY
 	  When enabled provides kernel logs, modem logs, RPM registers,
 	  Schedule and IRQ logs at the time of crash along with the
 	  reason for crash, which can be extracted as a html in RAM dump mode.
+
+config SEC_DEBUG_SUMMARY_DRIVER
+	bool "Debug Summary Module"
+	default n
+        depends on SEC_DEBUG_SUMMARY
+	help
+	  register sec_debug_summary as platform_driver
+	  This config invoke sec_debug_summary_probe with auto_probe
+	  And of_dt of sec_debug_summary should be in devicetree with
+	  compatible = "samsung,sec-debug-summary"
 
 config SEC_DEBUG_LOW_LOG
 	bool "Kernel Message Logging for Debug Level Low"
@@ -256,3 +273,10 @@ config SEC_QPNP_PON_SPARE_BITS
 	default 7
 	help
 	  The number of available bits in QPNP_PON_SOFT_RB_SPARE register
+
+config SEC_DEBUG_TEST
+	bool "KUnit test for sec_debug_test"
+	depends on KUNIT
+	help
+	  TODO: Describe config fully.
+

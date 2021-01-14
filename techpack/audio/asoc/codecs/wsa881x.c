@@ -118,6 +118,7 @@ enum {
 	BOLERO_WSA_EVT_SSR_DOWN,
 	BOLERO_WSA_EVT_SSR_UP,
 	BOLERO_WSA_EVT_PA_ON_POST_FSCLK,
+	BOLERO_WSA_EVT_PA_ON_POST_FSCLK_ADIE_LB,
 };
 
 struct wsa_ctrl_platform_data {
@@ -1076,6 +1077,9 @@ static int wsa881x_spkr_pa_event(struct snd_soc_dapm_widget *w,
 					      0x80, 0x00);
 		if (wsa881x->visense_enable) {
 			wsa881x_visense_adc_ctrl(component, DISABLE);
+			snd_soc_component_update_bits(component,
+						WSA881X_ADC_EN_SEL_IBAIS,
+						0x07, 0x00);
 			wsa881x_visense_txfe_ctrl(component, DISABLE,
 						0x00, 0x01, 0x01);
 		}
@@ -1235,7 +1239,7 @@ static int32_t wsa881x_temp_reg_read(struct snd_soc_component *component,
 		}
 		if (retry == 0) {
 			dev_err(component->dev,
-				"%s get devnum %d for dev addr %lx failed\n",
+				"%s get devnum %d for dev addr %llx failed\n",
 				__func__, devnum, dev->addr);
 			return -EINVAL;
 		}
@@ -1393,6 +1397,7 @@ static int wsa881x_event_notify(struct notifier_block *nb,
 					      0x80, 0x00);
 		break;
 	case BOLERO_WSA_EVT_PA_ON_POST_FSCLK:
+	case BOLERO_WSA_EVT_PA_ON_POST_FSCLK_ADIE_LB:
 		if ((snd_soc_component_read32(wsa881x->component,
 				WSA881X_SPKR_DAC_CTL) & 0x80) == 0x80)
 			snd_soc_component_update_bits(wsa881x->component,
@@ -1482,7 +1487,7 @@ static int wsa881x_swr_probe(struct swr_device *pdev)
 	ret = swr_get_logical_dev_num(pdev, pdev->addr, &devnum);
 	if (ret) {
 		dev_dbg(&pdev->dev,
-			"%s get devnum %d for dev addr %lx failed\n",
+			"%s get devnum %d for dev addr %llx failed\n",
 			__func__, devnum, pdev->addr);
 		goto dev_err;
 	}
@@ -1607,8 +1612,6 @@ static int wsa881x_swr_down(struct swr_device *pdev)
 	else
 		wsa881x->state = WSA881X_DEV_DOWN;
 
-	if (delayed_work_pending(&wsa881x->ocp_ctl_work))
-		cancel_delayed_work_sync(&wsa881x->ocp_ctl_work);
 	return ret;
 }
 

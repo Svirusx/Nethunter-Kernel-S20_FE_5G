@@ -1,0 +1,108 @@
+/* Copyright (c) 2020, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "kona-sec-c2q-r06.dtsi"
+#include "kona-sec-c2q-pinctrl-r07.dtsi"
+#include "kona-sec-c2q-pm-r07.dtsi"
+#include "../drivers/kona-sec-sensor-vdd-lpm.dtsi"
+#include "../drivers/kona-sec-c2q-laf-sensor-r07.dtsi"
+
+&soc {
+	qcom,ssc@5c00000 {
+		pinctrl-names = "default";
+		pinctrl-0 = <&proxy_led_en_default>;
+	};
+};
+
+&tsp_lsi {
+	/delete-property/ sec,select_lcdid;
+	sec,firmware_name = "tsp_sec/y79a_c2_4layer.bin";
+	sec,bringup = <0>;
+	support_vrr;
+};
+
+&wacom {
+	wacom,fw_path = "epen/w9020_c2.bin";
+	wacom,support_garage_open_test = <1>;
+	wacom,bringup = <0>;
+	/delete-node/ wacom_elec0;
+	/delete-node/ wacom_elec1;
+	/* for main spec */
+	wacom_elec0 {
+		spec_ver = <3 2>; /* major minor */
+		max_channel = <25 12>; /* x y */
+		shift_value = <4>;
+
+		xx_ref = /bits/ 64 <4005 4028 3557 3569 3570 3644 3786 3854 3838 3966 3988 3992 3931 4040 4177 4262 4273 4496 4498 4490 4413 4496 4718 5575 5585>;
+		xy_ref = /bits/ 64 <525 769 557 521 524 508 496 507 507 512 512 512 513 514 515 518 518 524 520 514 505 522 577 885 678>;
+		yx_ref = /bits/ 64 <671 888 688 469 556 460 709 590 581 617 901 694>;
+		yy_ref = /bits/ 64 <4881 4879 2663 2692 2692 2736 2703 2676 2743 2704 4895 4886>;
+
+		xx_spec = /bits/ 64 <5407 5437 4802 4818 4820 4920 5111 5203 5181 5354 5384 5389 5306 5454 5639 5754 5769 6070 6072 6062 5958 6070 6370 7526 7540>;
+		xy_spec = /bits/ 64 <708 1039 752 704 707 686 670 685 685 691 692 692 692 694 696 699 699 708 702 695 681 704 779 1194 916>;
+		yx_spec = /bits/ 64 <906 1199 928 633 750 621 957 796 785 833 1217 937>;
+		yy_spec = /bits/ 64 <6590 6587 3595 3635 3634 3693 3648 3612 3703 3650 6608 6597>;
+
+		rxx_ref = /bits/ 64 <10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000>;
+		rxy_ref = /bits/ 64 <10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000>;
+		ryx_ref = /bits/ 64 <10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000>;
+		ryy_ref = /bits/ 64 <10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000>;
+
+		drxx_spec = /bits/ 64 <1200 1200 1200 1200 1200 1200 1200 1200 1200 1200 1200 1200 1200 1200 1200 1200 1200 1200 1200 1200 1200 1200 1200 1400 1400>;
+		drxy_spec = /bits/ 64 <1600 1600 1600 1600 1600 1600 1600 1600 1600 1600 1600 1600 1600 1600 1600 1600 1600 1600 1600 1600 1600 1600 1600 1600 1600>;
+		dryx_spec = /bits/ 64 <1600 1600 1600 1600 1600 1600 1600 1600 1600 1600 1600 1600>;
+		dryy_spec = /bits/ 64 <1200 1200 1200 1200 1200 1200 1200 1200 1200 1200 1400 1400>;
+	};
+
+	/* for unit spec */
+	wacom_elec1 {
+		spec_ver = <5 1>; /* major minor */
+		max_channel = <25 12>; /* x y */
+		shift_value = <4>;
+
+		xx_ref = /bits/ 64 <5330 5415 4927 4993 4924 4970 5066 5113 5089 5173 5234 5159 5042 5305 5402 5502 5516 5755 5848 5772 5794 5790 6002 6910 6817>;
+		xy_ref = /bits/ 64 <921 1101 918 855 849 858 874 897 960 867 752 696 862 909 958 1015 1116 1063 1028 1012 998 1002 1042 1324 1280>;
+		yx_ref = /bits/ 64 <954 1200 1007 839 919 929 1329 1091 1047 1073 1322 1077>;
+		yy_ref = /bits/ 64 <5514 5517 3498 3861 3944 4022 3757 3772 3706 3702 5837 5836>;
+
+		xx_spec = /bits/ 64 <6930 7039 6405 6491 6401 6461 6586 6647 6616 6725 6804 6707 6555 6896 7023 7152 7171 7481 7603 7503 7532 7527 7802 8983 8862>;
+		xy_spec = /bits/ 64 <1197 1431 1193 1112 1103 1115 1136 1166 1248 1127 977 905 1121 1182 1246 1320 1450 1382 1336 1316 1297 1303 1354 1721 1664>;
+		yx_spec = /bits/ 64 <1240 1560 1309 1091 1194 1208 1728 1418 1361 1394 1718 1400>;
+		yy_spec = /bits/ 64 <7169 7172 4547 5019 5128 5228 4885 4904 4818 4813 7588 7587>;
+
+		rxx_ref = /bits/ 64 <10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000>;
+		rxy_ref = /bits/ 64 <10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000>;
+		ryx_ref = /bits/ 64 <10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000>;
+		ryy_ref = /bits/ 64 <10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000>;
+
+		drxx_spec = /bits/ 64 <1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1200 1200>;
+		drxy_spec = /bits/ 64 <1300 1300 1300 1300 1300 1300 1300 1300 1300 1300 1300 1300 1300 1300 1300 1300 1300 1300 1300 1300 1300 1300 1300 1300 1300>;
+		dryx_spec = /bits/ 64 <1300 1300 1300 1300 1300 1300 1300 1300 1300 1300 1300 1300>;
+		dryy_spec = /bits/ 64 <1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 1200 1200>;
+	};
+};
+
+/*
+ * L1C source power is changed from VREG_S4A_1P8 to VREG_S5A_2P0.
+ * so, Need to be changed to LDO mode(HPM) for NFC.
+ */
+&apps_rsc {
+	rpmh-regulator-ldoc1 {
+		qcom,supported-modes =
+			<RPMH_REGULATOR_MODE_LPM
+			RPMH_REGULATOR_MODE_HPM>;
+		qcom,mode-threshold-currents = <0 10000>;
+		L1C: pm8150a_l1: regulator-pm8150a-l1 {
+			qcom,init-mode = <RPMH_REGULATOR_MODE_HPM>;
+		};
+	};
+};

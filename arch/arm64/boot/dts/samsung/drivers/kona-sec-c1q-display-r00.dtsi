@@ -1,0 +1,411 @@
+/* Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "../../../../../../techpack/display/msm/samsung/SELF_DISPLAY/self_display_cmd_HAB.dtsi"
+#include "../../../../../../techpack/display/msm/samsung/MAFPC/ss_dsi_mafpc_cmd_HAB.dtsi"
+#include "../../../../../../techpack/display/msm/samsung/S6E3HAB_AMB687TZ01/dsi_panel_S6E3HAB_AMB687TZ01_wqhd_octa_cmd.dtsi"
+#include "../../../../../../techpack/display/msm/samsung/S6E3FAB_AMB643VW01/dsi_panel_S6E3FAB_AMB643VW01_fhd_octa_cmd.dtsi"
+#include "../../../../../../techpack/display/msm/samsung/PBA_BOOTING/dsi_panel_PBA_BOOTING_fhd_video.dtsi"
+
+&tlmm {
+	pmx_sde: pmx_sde {
+		sde_dsi_active: sde_dsi_active {
+			mux {
+				pins = "gpio82";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio82";
+				drive-strength = <8>;   /* 8 mA */
+				bias-disable = <0>;   /* no pull */
+			};
+		};
+		sde_dsi_suspend: sde_dsi_suspend {
+			mux {
+				pins = "gpio82";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio82";
+				drive-strength = <2>;   /* 2 mA */
+				bias-pull-down;         /* PULL DOWN */
+			};
+		};
+	};
+	pmx_sde_te {
+		sde_te_active: sde_te_active {
+			mux {
+				pins = "gpio66";
+				function = "mdp_vsync";
+			};
+
+			config {
+				pins = "gpio66";
+				drive-strength = <2>;   /* 2 mA */
+				bias-pull-down;         /* PULL DOWN */
+			};
+		};
+
+		sde_te_suspend: sde_te_suspend {
+			mux {
+				pins = "gpio66";
+				function = "mdp_vsync";
+			};
+
+			config {
+				pins = "gpio66";
+				drive-strength = <2>;   /* 2 mA */
+				bias-pull-down;         /* PULL DOWN */
+			};
+		};
+	};
+	pmx_sde_ub_det {
+		sde_ub_det_active: sde_ub_det_active {
+			mux {
+				pins = "gpio46";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio46";
+				drive-strength = <2>;   /* 2 mA */
+				bias-disable = <0>;   /* no pull */
+			};
+		};
+
+		sde_ub_det_suspend: sde_ub_det_suspend {
+			mux {
+				pins = "gpio46";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio46";
+				drive-strength = <2>;   /* 2 mA */
+				bias-disable = <0>;   /* no pull */
+			};
+		};
+	};
+
+	qupv3_se3_spi_pins: qupv3_se3_spi_pins {
+		qupv3_se3_spi_active: qupv3_se3_spi_active {
+			mux {
+				pins = "gpio119", "gpio120", "gpio121";
+				function = "qup3";
+			};
+
+			config {
+				pins = "gpio119", "gpio120", "gpio121";
+				drive-strength = <6>;
+				bias-pull-down; /* prevent MISO floating */
+			};
+		};
+
+		qupv3_se3_spi_sleep: qupv3_se3_spi_sleep {
+			mux {
+				pins = "gpio119", "gpio120", "gpio121";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio119", "gpio120", "gpio121";
+				drive-strength = <6>;
+				bias-pull-down;
+				input-enable;
+			};
+		};
+
+		qupv3_se3_spi_cs_active: qupv3_se3_spi_cs_active {
+			mux {
+				pins = "gpio122";
+				function = "qup3";
+			};
+
+			config {
+				pins = "gpio122";
+				drive-strength = <6>;
+				bias-pull-down; /* prevent MISO floating */
+			};
+		};
+
+		qupv3_se3_spi_cs_sleep: qupv3_se3_spi_cs_sleep {
+			mux {
+				pins = "gpio122";
+				function = "gpio";
+			};
+
+			config {
+				pins = "gpio122";
+				drive-strength = <6>;
+				bias-disable;           /* NO PULL */
+				input-enable;
+			};
+		};
+	};
+};
+
+&pm8150l_gpios {
+    sde_fg_err_default: sde_fg_err_default {
+        pins = "gpio8";
+        function = "normal";
+        power-source = <1>;
+        bias-disable;
+	input-enable;
+    };
+};
+
+&pm8150_gpios {
+	sde_disp_det_default: sde_disp_det_default {
+		pins = "gpio1";
+		function = "normal";
+		input-enable;
+		bias-pull-down;
+	};
+};
+
+&soc {
+	qupv3_se3_spi: spi@98c000 {
+		status = "ok";
+
+		pinctrl-0 = <&qupv3_se3_spi_active &qupv3_se3_spi_cs_active>;
+		pinctrl-1 = <&qupv3_se3_spi_sleep &qupv3_se3_spi_cs_sleep>;
+
+		ddi_spi:ddi_spi@0  {	// LCD_SPI
+			compatible = "ss,ddi-spi";
+			reg = <0>;
+			spi-max-frequency = <13000000>;
+			spi-mode = <0>;
+			spi-bpw = <8>;
+		};
+	};
+};
+
+&soc {
+	/* C1 2340 panel (until baord rev04) */
+	ss_dsi_panel_S6E3FAB_AMB643VW01_FHD_display: qcom,dsi-display@2 {
+		label = "ss_dsi_panel_S6E3FAB_AMB643VW01_FHD";
+	};
+
+	/* Z3 3200 panel for brinup board (rev00~02) */
+	ss_dsi_panel_S6E3HAB_AMB687TZ01_WQHD_display: qcom,dsi-display@1 {
+		label = "ss_dsi_panel_S6E3HAB_AMB687TZ01_WQHD";
+	};
+
+	/* PBA */
+	ss_dsi_panel_PBA_BOOTING_FHD_display: qcom,dsi-display@0 {
+		label = "ss_dsi_panel_PBA_BOOTING_FHD";
+	};
+};
+
+
+/* display_panel_avdd node, in kona-sde-display.dtsi file, is gpio regualtor.
+ * So, even SS doesn't enable the regulator, gpio61 is always registered as fixed regulator,
+ * even it is for the other module, like audio i2c...
+ * change compatible name to unused name, prevent to call probe of fixed regulator.
+ */
+&display_panel_avdd {
+	compatible = "regulator-fixed-disable";
+};
+
+/* disp_rdump_memory mem node is reserved memory for upload mode bootloader framebuffer.
+ * In most all case, upload display has HD resolution, like 720x1520, and it requires
+ * only about 4MB for upload xbl framebuffer, so 8MB is enough for that. In that case,
+ * you can reduce disp_rdump_memory size to allow system utilize more system ram memory.
+ *
+ * In case of hubble, it uses WQHD (1440x3200) in upload mode, same with normal booting mode,
+ * hubble should increase disp_rdump_memory size up to 18 MB,
+ * to prevent memory corruption by upload framebuffer.
+ */
+&disp_rdump_memory {
+	/* size: 18 MB, hubble upload display (WQHD): 1440x3200x4 = about 17.58MB, round up to 18 MB */
+	reg = <0x0 0x9c000000 0x0 0x1200000>;
+};
+
+
+/* override display-list / supply for samsung panel */
+&sde_dsi {
+	vci-supply = <&s2dos05_l4>; /* 3.0V, S2DOS05 LDO4 */
+	vdd3-supply = <&s2dos05_l1>; /* 1.8V, S2DOS05 LDO1 */
+	vddr-supply = <&s2dos05_buck1>; /* 1.6V, S2DOS05 buck */
+
+	pinctrl-names = "panel_active", "panel_suspend";
+	pinctrl-0 = <&sde_dsi_active &sde_te_active &sde_ub_det_active &sde_fg_err_default &sde_disp_det_default>;
+	pinctrl-1 = <&sde_dsi_suspend &sde_te_suspend &sde_ub_det_suspend &sde_fg_err_default &sde_disp_det_default>;
+
+	qcom,dsi-default-panel = <&ss_dsi_panel_S6E3FAB_AMB643VW01_FHD>;
+};
+
+&ss_dsi_panel_PBA_BOOTING_FHD {
+	qcom,dsi-ctrl-num = <0>;
+	qcom,dsi-phy-num = <0>;
+	qcom,dsi-select-clocks = "mux_byte_clk0", "mux_pixel_clk0",
+				"src_byte_clk0", "src_pixel_clk0",
+				"shadow_byte_clk0", "shadow_pixel_clk0";
+
+
+	qcom,platform-reset-gpio = <&tlmm 82 0>;
+	qcom,platform-te-gpio = <&tlmm 66 0>;
+};
+
+&ss_dsi_panel_S6E3FAB_AMB643VW01_FHD {
+	qcom,dsi-ctrl-num = <0>;
+	qcom,dsi-phy-num = <0>;
+	qcom,dsi-select-clocks = "mux_byte_clk0", "mux_pixel_clk0",
+				"src_byte_clk0", "src_pixel_clk0",
+				"shadow_byte_clk0", "shadow_pixel_clk0";
+
+	qcom,platform-reset-gpio = <&tlmm 82 0>;
+	qcom,platform-te-gpio = <&tlmm 66 0>;
+
+	/delete-property/ qcom,panel-mode-gpio;
+
+	qcom,panel-supply-entries {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		qcom,panel-supply-entry@0 {
+		    reg = <0>;
+		    qcom,supply-name = "vdd3";
+		    qcom,supply-min-voltage = <1800000>;
+		    qcom,supply-max-voltage = <1800000>;
+		    qcom,supply-enable-load = <100000>;
+		    qcom,supply-disable-load = <100>;
+		    qcom,supply-pre-on-sleep = <0>; /* unit is ms*/
+		    qcom,supply-post-on-sleep = <0>;
+		};
+
+		qcom,panel-supply-entry@1 {
+		    reg = <1>;
+		    qcom,supply-name = "vddr";
+		    qcom,supply-min-voltage = <1800000>;
+		    qcom,supply-max-voltage = <1800000>;
+		    qcom,supply-enable-load = <100000>;
+		    qcom,supply-disable-load = <100>;
+		    qcom,supply-pre-on-sleep = <0>; /* unit is ms*/
+		    qcom,supply-post-on-sleep = <0>;
+		};
+
+		qcom,panel-supply-entry@2 {
+		    reg = <2>;
+		    qcom,supply-name = "vci";
+		    qcom,supply-min-voltage = <3000000>;
+		    qcom,supply-max-voltage = <3000000>;
+		    qcom,supply-enable-load = <100000>;
+		    qcom,supply-disable-load = <100>;
+		    qcom,supply-pre-on-sleep = <0>; /* unit is ms*/
+		    qcom,supply-post-on-sleep = <10>;
+		};
+	};
+};
+
+&ss_dsi_panel_S6E3FAB_AMB643VW01_FHD {
+	samsung,esd-irq-gpio1 = <&pm8150_gpios 1 0>; /* DISP_DET, PM8250 */
+	/* SW W/A: support panel recovery by FG_ERR interrupt under panel revision D (ID3=0x42)
+	 * TODO: check this in canvas...
+	 */
+	//samsung,esd-irq-gpio2 = <&pm8150l_gpios 8 0>; /* FG_ERR, PM8150C */
+	samsung,delayed-display-on = <1>;
+
+	samsung,ub-con-det = <&tlmm 46 0>;
+
+	samsung,lpm-power-control;
+	samsung,lpm-power-control-supply-name = "vddr";
+	samsung,lpm-power-control-supply-min-voltage = <1500000>;
+	samsung,lpm-power-control-supply-max-voltage = <1500000>;
+
+	/* should be controlled apart from qcom,panel-supply-entry */
+	regulators {
+		elvss {
+			reg,name = "s2dos05-elvss";
+			reg,type = "ssd";
+			reg,from-off = <2000>;
+			reg,from-lpm = <0>;
+		};
+	};
+};
+
+&ss_dsi_panel_S6E3HAB_AMB687TZ01_WQHD {
+	qcom,dsi-ctrl-num = <0>;
+	qcom,dsi-phy-num = <0>;
+	qcom,dsi-select-clocks = "mux_byte_clk0", "mux_pixel_clk0",
+				"src_byte_clk0", "src_pixel_clk0",
+				"shadow_byte_clk0", "shadow_pixel_clk0";
+
+	qcom,platform-reset-gpio = <&tlmm 82 0>;
+	qcom,platform-te-gpio = <&tlmm 66 0>;
+
+	/delete-property/ qcom,panel-mode-gpio;
+
+	qcom,panel-supply-entries {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		qcom,panel-supply-entry@0 {
+		    reg = <0>;
+		    qcom,supply-name = "vdd3";
+		    qcom,supply-min-voltage = <1800000>;
+		    qcom,supply-max-voltage = <1800000>;
+		    qcom,supply-enable-load = <100000>;
+		    qcom,supply-disable-load = <100>;
+		    qcom,supply-pre-on-sleep = <0>; /* unit is ms*/
+		    qcom,supply-post-on-sleep = <0>;
+		};
+
+		qcom,panel-supply-entry@1 {
+		    reg = <1>;
+		    qcom,supply-name = "vddr";
+		    qcom,supply-min-voltage = <1800000>;
+		    qcom,supply-max-voltage = <1800000>;
+		    qcom,supply-enable-load = <100000>;
+		    qcom,supply-disable-load = <100>;
+		    qcom,supply-pre-on-sleep = <0>; /* unit is ms*/
+		    qcom,supply-post-on-sleep = <0>;
+		};
+
+		qcom,panel-supply-entry@2 {
+		    reg = <2>;
+		    qcom,supply-name = "vci";
+		    qcom,supply-min-voltage = <3000000>;
+		    qcom,supply-max-voltage = <3000000>;
+		    qcom,supply-enable-load = <100000>;
+		    qcom,supply-disable-load = <100>;
+		    qcom,supply-pre-on-sleep = <0>; /* unit is ms*/
+		    qcom,supply-post-on-sleep = <10>;
+		};
+	};
+};
+
+&ss_dsi_panel_S6E3HAB_AMB687TZ01_WQHD {
+	samsung,esd-irq-gpio1 = <&pm8150_gpios 1 0>; /* DISP_DET, PM8250 */
+	/* SW W/A: support panel recovery by FG_ERR interrupt under panel revision D (ID3=0x42) */
+	//samsung,esd-irq-gpio2 = <&pm8150l_gpios 8 0>; /* FG_ERR, PM8150C */
+	samsung,delayed-display-on = <1>;
+
+	/*samsung,ub-con-det = <&tlmm 114 0>;*/
+
+	samsung,lpm-power-control;
+	samsung,lpm-power-control-supply-name = "vddr";
+	samsung,lpm-power-control-supply-min-voltage = <1500000>;
+	samsung,lpm-power-control-supply-max-voltage = <1500000>;
+
+	/* should be controlled apart from qcom,panel-supply-entry */
+	regulators {
+		elvss {
+			reg,name = "s2dos05-elvss";
+			reg,type = "ssd";
+			reg,from-off = <2000>;
+			reg,from-lpm = <0>;
+		};
+	};
+};

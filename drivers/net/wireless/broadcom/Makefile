@@ -20,7 +20,7 @@ obj-$(CONFIG_ARCH_KONA) += bcmdhd_101_10/dhd_custom_msm.o
 endif
 
 ifeq ($(CONFIG_BCM4375),y)
-obj-$(CONFIG_BCM4375)   += bcmdhd_101_12/
-obj-$(CONFIG_ARCH_KONA) += bcmdhd_101_12/dhd_custom_memprealloc.o
-obj-$(CONFIG_ARCH_KONA) += bcmdhd_101_12/dhd_custom_msm.o
+obj-$(CONFIG_BCM4375)   += bcmdhd_101_16/
+obj-$(CONFIG_ARCH_KONA) += bcmdhd_101_16/dhd_custom_memprealloc.o
+obj-$(CONFIG_ARCH_KONA) += bcmdhd_101_16/dhd_custom_msm.o
 endif

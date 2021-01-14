@@ -1,0 +1,90 @@
+/* Copyright (c) 2019, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "kona-sec-x1q-r07.dtsi"
+#include "kona-sec-x1q-pinctrl-r08.dtsi"
+#include "../y2q/kona-sec-picassoq-pm-r08.dtsi"
+
+&soc {
+	sound {
+		mixer-paths = "mixer_paths.xml";
+	};
+};
+
+&dai_mi2s1 {
+	pinctrl-0 = <>;
+	pinctrl-1 = <>;
+};
+
+&dai_mi2s3 {
+	qcom,msm-mi2s-rx-lines = <2>;
+	qcom,msm-mi2s-tx-lines = <1>;
+};
+
+&q6core {
+	quat_mi2s_gpios: quat_mi2s_pinctrl {
+		compatible = "qcom,msm-cdc-pinctrl";
+		pinctrl-names = "aud_active", "aud_sleep";
+		pinctrl-0 = <&quat_mi2s_sck_active &quat_mi2s_ws_active
+				&quat_mi2s_sd0_active &quat_mi2s_sd1_active>;
+		pinctrl-1 = <&quat_mi2s_sck_sleep &quat_mi2s_ws_sleep
+				&quat_mi2s_sd0_sleep &quat_mi2s_sd1_sleep>;
+		qcom,lpi-gpios;
+		qcom,tlmm-gpio = <147>;
+	};
+};
+
+&kona_snd {
+	qcom,quat-mi2s-gpios = <&quat_mi2s_gpios>;
+};
+
+&cs35l41_l {
+	cirrus,bd-max-temp = <105>;
+};
+
+&pcie0 {
+	wake-gpio = <>;
+	pinctrl-0 = <&pcie0_clkreq_default
+			&pcie0_perst_default
+			&pcie0_wake_nc_default>;
+	pinctrl-1 = <&pcie0_clkreq_sleep
+			&pcie0_perst_default
+			&pcie0_wake_nc_default>;
+};
+
+&soc {
+	battery {
+			battery,battery_full_capacity = <4000>;
+	};
+	max77705-fuelgauge {
+			/* for 4000mAh battery */
+			fuelgauge,capacity = <0x0E2E>;
+	};
+};
+
+&qupv3_se5_i2c {
+	touchscreen@48 {
+		sec,firmware_name = "tsp_sec/y79a_x1.bin";
+	};
+};
+
+&ssc_sensors {
+	/delete-property/ qcom,ssc_hw_rev;
+	qcom,ssc_hw_rev = <8>;
+};
+
+&qupv3_se0_i2c {
+	max77705@66 {
+		/delete-property/ max77705,extra_fw_enable;
+		max77705,extra_fw_enable = <0>;
+        };
+};

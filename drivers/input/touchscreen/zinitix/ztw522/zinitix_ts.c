@@ -7100,6 +7100,45 @@ static void get_reference(void *device_data)
 				(int)strnlen(sec->cmd_result, sizeof(sec->cmd_result)));
 }
 
+static void run_pba_linecheck(void *device_data)
+{
+	struct sec_cmd_data *sec = (struct sec_cmd_data *)device_data;
+	struct zt75xx_ts_info *info = container_of(sec, struct zt75xx_ts_info, sec);
+	struct i2c_client *client = info->client;
+	struct tsp_raw_data *raw_data = info->raw_data;
+	char buff[SEC_CMD_STR_LEN] = { 0 };
+	int ii, jj;
+	s16 dnd_min = 32767;
+	s16 dnd_max = -32768;
+	u16 ssr_min = 65535;
+	u16 ssr_max = 0;
+
+	sec_cmd_set_default_result(sec);
+
+	for (ii = 0; ii < info->cap_info.x_node_num; ii++) {
+		for (jj = 0; jj < info->cap_info.y_node_num; jj++) {
+			input_info(true, &client->dev, "%s: dnd(%d:%d) : %d\n", __func__,
+					ii, jj, raw_data->dnd_data[(ii * info->cap_info.y_node_num) + jj]);
+			dnd_min = min(dnd_min, raw_data->dnd_data[(ii * info->cap_info.y_node_num) + jj]);
+			dnd_max = max(dnd_max, raw_data->dnd_data[(ii * info->cap_info.y_node_num) + jj]);
+		}
+	}
+
+	for (ii = 0; ii < info->cap_info.x_node_num + info->cap_info.y_node_num; ii++) {
+		input_info(true, &client->dev, "%s: ssr(%d) : %d\n", __func__,
+				ii, raw_data->ssr_data[ii]);
+		ssr_min = min(ssr_min, raw_data->ssr_data[ii]);
+		ssr_max = max(ssr_max, raw_data->ssr_data[ii]);
+	}
+
+	snprintf(buff, sizeof(buff), "%d,%d,%d,%d", dnd_min, dnd_max, ssr_min, ssr_max);
+	sec_cmd_set_cmd_result(sec, buff, strnlen(buff, sizeof(buff)));
+	sec->cmd_state = SEC_CMD_STATUS_OK;
+
+	input_info(true, &client->dev, "%s: %s(%d)\n", __func__, sec->cmd_result,
+				(int)strnlen(sec->cmd_result, sizeof(sec->cmd_result)));
+}
+
 static void run_self_sat_dnd_read(void *device_data)
 {
 	struct sec_cmd_data *sec = (struct sec_cmd_data *)device_data;
@@ -9617,6 +9656,7 @@ static struct sec_cmd sec_cmds[] = {
 	{SEC_CMD("run_jitter_read_all", run_jitter_read_all),},
 	{SEC_CMD("run_reference_read", run_reference_read),},
 	{SEC_CMD("get_reference", get_reference),},
+	{SEC_CMD("run_pba_linecheck", run_pba_linecheck),},
 #ifdef TCLM_CONCEPT
 	{SEC_CMD("run_mis_cal_read", run_mis_cal_read),},
 	{SEC_CMD("get_mis_cal", get_mis_cal),},
@@ -10489,8 +10529,11 @@ static void zt75xx_run_rawdata(struct zt75xx_ts_info *info)
 #endif
 
 	input_raw_info(true, &info->client->dev, "%s: start ##\n", __func__);
+	zt75xx_fix_active_mode(info, true);
+	run_ssr_read(&info->sec);
 	zt75xx_run_dnd(info);
 	zt75xx_run_mis_cal(info);
+	zt75xx_fix_active_mode(info, false);
 	input_raw_info(true, &info->client->dev, "%s: done ##\n", __func__);
 
 	info->tsp_dump_lock = 0;

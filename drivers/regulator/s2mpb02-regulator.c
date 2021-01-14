@@ -745,12 +745,13 @@ err_pdata:
 
 static int s2mpb02_pmic_remove(struct platform_device *pdev)
 {
+#ifdef CONFIG_DRV_SAMSUNG_PMIC
 	struct s2mpb02_data *s2mpb02 = platform_get_drvdata(pdev);
 
-	dev_info(&pdev->dev, "%s\n", __func__);
-#ifdef CONFIG_DRV_SAMSUNG_PMIC
 	pmic_device_destroy(s2mpb02->dev->devt);
 #endif
+	dev_info(&pdev->dev, "%s\n", __func__);
+
 	return 0;
 }
 

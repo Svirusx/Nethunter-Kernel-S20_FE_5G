@@ -120,7 +120,27 @@ static int a6xx_load_pdc_ucode(struct kgsl_device *device)
 	void __iomem *cfg = NULL, *seq = NULL;
 	const struct adreno_a6xx_core *a6xx_core = to_a6xx_core(adreno_dev);
 	u32 vrm_resource_addr = cmd_db_read_addr("vrm.soc");
+	u32 xo_resource_addr = cmd_db_read_addr("xo.lvl");
+	u32 cx_res_addr = cmd_db_read_addr("cx.lvl");
+	u32 mx_res_addr = cmd_db_read_addr("mx.lvl");
 
+	if (!xo_resource_addr) {
+		dev_err(&gmu->pdev->dev,
+				"Failed to get 'xo.lvl' addr from cmd_db\n");
+		return -ENOENT;
+	}
+
+	if (!cx_res_addr) {
+		dev_err(&gmu->pdev->dev,
+				"Failed to get 'cx.lvl' addr from cmd_db\n");
+		return -ENOENT;
+	}
+
+	if (!mx_res_addr) {
+		dev_err(&gmu->pdev->dev,
+				"Failed to get 'mx.lvl' addr from cmd_db\n");
+		return -ENOENT;
+	}
 	/*
 	 * Older A6x platforms specified PDC registers in the DT using a
 	 * single base pointer that encompassed the entire PDC range. Current
@@ -198,15 +218,15 @@ static int a6xx_load_pdc_ucode(struct kgsl_device *device)
 	_regwrite(cfg, PDC_GPU_TCS1_CMD_WAIT_FOR_CMPL_BANK, 0);
 	_regwrite(cfg, PDC_GPU_TCS1_CONTROL, 0);
 	_regwrite(cfg, PDC_GPU_TCS1_CMD0_MSGID, 0x10108);
-	_regwrite(cfg, PDC_GPU_TCS1_CMD0_ADDR, 0x30010);
+	_regwrite(cfg, PDC_GPU_TCS1_CMD0_ADDR, mx_res_addr);
 	_regwrite(cfg, PDC_GPU_TCS1_CMD0_DATA, 1);
 	_regwrite(cfg, PDC_GPU_TCS1_CMD0_MSGID + PDC_CMD_OFFSET, 0x10108);
-	_regwrite(cfg, PDC_GPU_TCS1_CMD0_ADDR + PDC_CMD_OFFSET, 0x30000);
+	_regwrite(cfg, PDC_GPU_TCS1_CMD0_ADDR + PDC_CMD_OFFSET, cx_res_addr);
 	_regwrite(cfg, PDC_GPU_TCS1_CMD0_DATA + PDC_CMD_OFFSET, 0x0);
 	_regwrite(cfg, PDC_GPU_TCS1_CMD0_MSGID + PDC_CMD_OFFSET * 2, 0x10108);
 
 	_regwrite(cfg, PDC_GPU_TCS1_CMD0_ADDR + PDC_CMD_OFFSET * 2,
-			a6xx_core->pdc_address_offset);
+			xo_resource_addr);
 
 	_regwrite(cfg, PDC_GPU_TCS1_CMD0_DATA + PDC_CMD_OFFSET * 2, 0x0);
 
@@ -223,10 +243,10 @@ static int a6xx_load_pdc_ucode(struct kgsl_device *device)
 	_regwrite(cfg, PDC_GPU_TCS3_CMD_WAIT_FOR_CMPL_BANK, 0);
 	_regwrite(cfg, PDC_GPU_TCS3_CONTROL, 0);
 	_regwrite(cfg, PDC_GPU_TCS3_CMD0_MSGID, 0x10108);
-	_regwrite(cfg, PDC_GPU_TCS3_CMD0_ADDR, 0x30010);
+	_regwrite(cfg, PDC_GPU_TCS3_CMD0_ADDR, mx_res_addr);
 	_regwrite(cfg, PDC_GPU_TCS3_CMD0_DATA, 2);
 	_regwrite(cfg, PDC_GPU_TCS3_CMD0_MSGID + PDC_CMD_OFFSET, 0x10108);
-	_regwrite(cfg, PDC_GPU_TCS3_CMD0_ADDR + PDC_CMD_OFFSET, 0x30000);
+	_regwrite(cfg, PDC_GPU_TCS3_CMD0_ADDR + PDC_CMD_OFFSET, cx_res_addr);
 
 	if (adreno_is_a618(adreno_dev) || adreno_is_a619(adreno_dev) ||
 			adreno_is_a650_family(adreno_dev))
@@ -237,7 +257,7 @@ static int a6xx_load_pdc_ucode(struct kgsl_device *device)
 	_regwrite(cfg, PDC_GPU_TCS3_CMD0_MSGID + PDC_CMD_OFFSET * 2, 0x10108);
 
 	_regwrite(cfg, PDC_GPU_TCS3_CMD0_ADDR + PDC_CMD_OFFSET * 2,
-			a6xx_core->pdc_address_offset);
+			xo_resource_addr);
 
 	_regwrite(cfg, PDC_GPU_TCS3_CMD0_DATA + PDC_CMD_OFFSET * 2, 0x3);
 
@@ -1146,9 +1166,10 @@ static int a6xx_gmu_load_firmware(struct kgsl_device *device)
 
 	/* GMU fw already saved and verified so do nothing new */
 	if (!gmu->fw_image) {
-
-		if (a6xx_core->gmufw_name == NULL)
+		if (a6xx_core->gmufw_name == NULL) {
+			dev_err(&gmu->pdev->dev, "Invalid gmufw_name\n");
 			return -EINVAL;
+		}
 
 		ret = request_firmware(&gmu->fw_image, a6xx_core->gmufw_name,
 				device->dev);
@@ -1181,6 +1202,8 @@ static int a6xx_gmu_load_firmware(struct kgsl_device *device)
 		if (blk->type == GMU_BLK_TYPE_PREALLOC_REQ ||
 				blk->type == GMU_BLK_TYPE_PREALLOC_PERSIST_REQ)
 			ret = gmu_prealloc_req(device, blk);
+
+		BUG_ON(ret);
 
 		if (ret)
 			return ret;
@@ -1615,6 +1638,8 @@ static void a6xx_gmu_snapshot(struct kgsl_device *device,
 {
 	unsigned int val;
 
+	dev_err(device->dev, "GMU snapshot started at 0x%llx ticks\n",
+			a6xx_gmu_read_ao_counter(device));
 	a6xx_gmu_snapshot_versions(device, snapshot);
 
 	a6xx_gmu_snapshot_memories(device, snapshot);

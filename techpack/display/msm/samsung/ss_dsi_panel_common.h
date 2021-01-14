@@ -66,6 +66,7 @@ Copyright (C) 2012, Samsung Electronics. All rights reserved.
 
 #include "dsi_display.h"
 #include "dsi_panel.h"
+#include "dsi_drm.h"
 #include "sde_kms.h"
 #include "sde_connector.h"
 #include "sde_encoder.h"
@@ -707,6 +708,48 @@ struct POC {
 	bool need_sleep_in;
 };
 
+/* FirmWare Update */
+struct FW_UP {
+	bool is_support;
+
+	u32 start_addr;
+	u32 image_size;
+	u32 sector_size;
+	u8 *image_buf;
+
+	/* ERASE */
+	int er_try_cnt;
+	int er_fail_cnt;
+	u32 erase_delay_us; /* usleep */
+	u32 erase_data_size;
+	int erase_addr_idx[3];
+	int erase_size_idx[3];
+
+	/* WRITE */
+	int wr_try_cnt;
+	int wr_fail_cnt;
+	u32 write_delay_us; /* usleep */
+	u32 write_data_size;
+	int write_addr_idx[3];
+	int write_size_idx[3];
+
+	/* READ */
+	u32 read_data_size;
+	u32 read_delay_us;	/* usleep */
+	u32 read_status_value;
+	u32 read_done_check;
+
+	bool need_sleep_in;
+};
+
+enum fw_up_state {
+	FW_UP_DONE,
+	FW_UP_ERR_UPDATE_FAIL,
+	FW_UP_ERR_ALREADY_DONE,
+	FW_UP_ERR_NOT_SUPPORT,
+	MAX_FW_UP_STATE,
+};
+
 #define GCT_RES_CHECKSUM_PASS	(1)
 #define GCT_RES_CHECKSUM_NG	(0)
 #define GCT_RES_CHECKSUM_OFF	(-2)
@@ -1033,6 +1076,10 @@ struct panel_func {
 
 	/* POC */
 	int (*samsung_poc_ctrl)(struct samsung_display_driver_data *vdd, u32 cmd, const char *buf);
+
+	/* FirmWare Update */
+	int (*samsung_fw_up)(struct samsung_display_driver_data *vdd);
+
 
 	/* Gram Checksum Test */
 	int (*samsung_gct_read)(struct samsung_display_driver_data *vdd);
@@ -1744,6 +1791,9 @@ struct samsung_display_driver_data {
 	 */
 	struct POC poc_driver;
 
+	/*  FirmWare Update */
+	struct FW_UP fw_up;
+
 	/*
 	 *  Dynamic MIPI Clock
 	 */
@@ -1873,6 +1923,9 @@ struct samsung_display_driver_data {
 	 * W/A: select four frame RSC idle policy.
 	 */
 	bool rsc_4_frame_idle;
+
+	/* flag to support reading module id at probe timing */
+	bool support_early_id_read;
 };
 
 extern struct list_head vdds_list;
@@ -1982,6 +2035,8 @@ void ss_stm_set_cmd(struct samsung_display_driver_data *vdd, struct STM_CMD *cmd
 void ss_send_ub_uevent(struct samsung_display_driver_data *vdd);
 
 void ss_set_panel_state(struct samsung_display_driver_data *vdd, enum ss_panel_pwr_state panel_state);
+
+int ss_early_display_init(struct samsung_display_driver_data *vdd);
 
 void ss_notify_queue_work(struct samsung_display_driver_data *vdd,
 	enum panel_notifier_event_t event);

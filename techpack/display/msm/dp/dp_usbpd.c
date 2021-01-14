@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2012-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012-2020, The Linux Foundation. All rights reserved.
  */
 
 #include <linux/usb/usbpd.h>
@@ -260,7 +260,7 @@ static void dp_usbpd_connect_cb(struct usbpd_svid_handler *hdlr,
 		return;
 	}
 
-	DP_DEBUG("peer_usb_comm: %d\n");
+	DP_DEBUG("peer_usb_comm: %d\n", peer_usb_comm);
 	pd->dp_usbpd.base.peer_usb_comm = peer_usb_comm;
 	dp_usbpd_send_event(pd, DP_USBPD_EVT_DISCOVER);
 }
@@ -536,14 +536,18 @@ static void dp_usbpd_wakeup_phy(struct dp_hpd *dp_hpd, bool wakeup)
 
 	usbpd_vdm_in_suspend(usbpd->pd, wakeup);
 }
+#endif
 
 struct dp_hpd *dp_usbpd_get(struct device *dev, struct dp_hpd_cb *cb)
 {
 	int rc = 0;
+#ifndef CONFIG_SEC_DISPLAYPORT
 	const char *pd_phandle = "qcom,dp-usbpd-detection";
 	struct usbpd *pd = NULL;
+#endif
 	struct dp_usbpd_private *usbpd;
 	struct dp_usbpd *dp_usbpd;
+#ifndef CONFIG_SEC_DISPLAYPORT
 	struct usbpd_svid_handler svid_handler = {
 		.svid		= USB_C_DP_SID,
 		.vdm_received	= NULL,
@@ -564,6 +568,7 @@ struct dp_hpd *dp_usbpd_get(struct device *dev, struct dp_hpd_cb *cb)
 		rc = PTR_ERR(pd);
 		goto error;
 	}
+#endif
 
 	usbpd = devm_kzalloc(dev, sizeof(*usbpd), GFP_KERNEL);
 	if (!usbpd) {
@@ -572,45 +577,24 @@ struct dp_hpd *dp_usbpd_get(struct device *dev, struct dp_hpd_cb *cb)
 	}
 
 	usbpd->dev = dev;
+#ifndef CONFIG_SEC_DISPLAYPORT
 	usbpd->pd = pd;
 	usbpd->svid_handler = svid_handler;
+#endif
 	usbpd->dp_cb = cb;
 
 	dp_usbpd = &usbpd->dp_usbpd;
 	dp_usbpd->base.simulate_connect = dp_usbpd_simulate_connect;
 	dp_usbpd->base.simulate_attention = dp_usbpd_simulate_attention;
+#ifndef CONFIG_SEC_DISPLAYPORT
 	dp_usbpd->base.register_hpd = dp_usbpd_register;
 	dp_usbpd->base.wakeup_phy = dp_usbpd_wakeup_phy;
+#endif
 
 	return &dp_usbpd->base;
 error:
 	return ERR_PTR(rc);
 }
-#else
-struct dp_hpd *secdp_usbpd_get(struct device *dev, struct dp_hpd_cb *cb)
-{
-	int rc = 0;
-	struct dp_usbpd_private *usbpd;
-	struct dp_usbpd *dp_usbpd;
-
-	usbpd = devm_kzalloc(dev, sizeof(*usbpd), GFP_KERNEL);
-	if (!usbpd) {
-		rc = -ENOMEM;
-		goto error;
-	}
-
-	usbpd->dev = dev;
-	usbpd->dp_cb = cb;
-
-	dp_usbpd = &usbpd->dp_usbpd;
-	dp_usbpd->base.simulate_connect = dp_usbpd_simulate_connect;
-	dp_usbpd->base.simulate_attention = dp_usbpd_simulate_attention;
-
-	return &dp_usbpd->base;
-error:
-	return ERR_PTR(rc);
-}
-#endif/*CONFIG_SEC_DISPLAYPORT*/
 
 void dp_usbpd_put(struct dp_hpd *dp_hpd)
 {

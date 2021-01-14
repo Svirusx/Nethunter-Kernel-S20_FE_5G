@@ -1677,6 +1677,15 @@ static void sec_ts_read_event(struct sec_ts_data *ts)
 						__func__, p_gesture_status->gesture_id ? "" : "LONG");
 #endif
 				break;
+			case SEC_TS_GESTURE_CODE_LARGEPALM:
+				input_info(true, &ts->client->dev, "%s: LARGE PALM: %d\n", __func__, p_gesture_status->gesture_id);
+
+				if (p_gesture_status->gesture_id == 0)
+					input_report_key(ts->input_dev, BTN_LARGE_PALM, 1);
+				else
+					input_report_key(ts->input_dev, BTN_LARGE_PALM, 0);
+				input_sync(ts->input_dev);
+				break;
 			case SEC_TS_GESTURE_CODE_DUMPFLUSH:
 				if (ts->sponge_inf_dump) {
 					if (ts->power_status == SEC_TS_STATE_LPM) {
@@ -2637,6 +2646,7 @@ static void sec_ts_set_input_prop(struct sec_ts_data *ts, struct input_dev *dev,
 	set_bit(EV_SW, dev->evbit);
 	set_bit(BTN_TOUCH, dev->keybit);
 	set_bit(BTN_TOOL_FINGER, dev->keybit);
+	set_bit(BTN_LARGE_PALM, dev->keybit);
 	set_bit(KEY_BLACK_UI_GESTURE, dev->keybit);
 	set_bit(KEY_INT_CANCEL, dev->keybit);
 
@@ -3189,6 +3199,7 @@ void sec_ts_unlocked_release_all_finger(struct sec_ts_data *ts)
 
 	input_report_key(ts->input_dev, BTN_TOUCH, false);
 	input_report_key(ts->input_dev, BTN_TOOL_FINGER, false);
+	input_report_key(ts->input_dev, BTN_LARGE_PALM, 0);
 	ts->touch_count = 0;
 	ts->check_multi = 0;
 
@@ -3247,6 +3258,7 @@ void sec_ts_locked_release_all_finger(struct sec_ts_data *ts)
 
 	input_report_key(ts->input_dev, BTN_TOUCH, false);
 	input_report_key(ts->input_dev, BTN_TOOL_FINGER, false);
+	input_report_key(ts->input_dev, BTN_LARGE_PALM, 0);
 	ts->touch_count = 0;
 	ts->check_multi = 0;
 
@@ -3381,6 +3393,19 @@ static void sec_ts_read_info_work(struct work_struct *work)
 
 	ret = sec_tclm_check_cal_case(ts->tdata);
 	input_info(true, &ts->client->dev, "%s: sec_tclm_check_cal_case ret: %d \n", __func__, ret);
+
+	if (ts->plat_data->support_multi_cal) {
+		if (ts->tdata2->nvdata.cal_count == 0xFF || ts->tdata2->nvdata.cal_position >= CALPOSITION_MAX) {
+			ts->tdata2->nvdata.cal_count = 0;
+			ts->tdata2->nvdata.cal_position = 0;
+			ts->tdata2->nvdata.tune_fix_ver = 0;
+			ts->tdata2->nvdata.cal_pos_hist_cnt = 0;
+			ts->tdata2->nvdata.cal_pos_hist_lastp = 0;
+			input_info(true, &ts->client->dev, "%s: HS cal data is abnormal, set None\n", __func__);
+
+			ts->tdata2->tclm_write(ts->tdata->client, SEC_TCLM_NVM_ALL_DATA);
+		}
+	}
 
 	enable_irq(ts->client->irq);
 #endif

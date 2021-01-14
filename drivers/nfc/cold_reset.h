@@ -39,4 +39,5 @@ void ese_reset_resource_destroy(void);
 void rcv_prop_resp_status(const char * const buf);
 int ese_cold_reset(enum ese_cold_reset_origin src);
 int do_reset_protection(bool type);
+void set_force_reset(bool value);
 #endif /* _NFC_COMMON_H_ */

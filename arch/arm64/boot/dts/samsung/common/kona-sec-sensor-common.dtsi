@@ -1,0 +1,35 @@
+/* Copyright (c) 2016-2017, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&soc {
+	qcom,ssc@5c00000 {
+		sensor_vdd-supply = <&pm8150a_l8>;
+		qcom,sensor_vdd-uV-uA = <1800000 0>;
+		qcom,active-reg-names = "sensor_vdd";
+		pinctrl-names = "default";
+		pinctrl-0 = <&proxy_int_default>;
+	};
+};
+
+&tlmm {
+	proxy_int_default: proxy_int_default {
+		mux {
+			pins = "gpio67";
+			function = "gpio";
+		};
+		config {
+			pins = "gpio67";
+			drive-strength = <2>;   /* 2 mA */
+			bias-disable; /* No PULL */
+		};
+	};
+};

@@ -1697,7 +1697,10 @@ int32_t cam_sensor_driver_cmd(struct cam_sensor_ctrl_t *s_ctrl,
 #endif
 
 #if defined(CONFIG_CAMERA_SSM_I2C_ENV)
-		g_s_ctrl_ssm = s_ctrl;
+		if (s_ctrl->id == CAMERA_0)
+		{
+			g_s_ctrl_ssm = s_ctrl;
+		}
 #endif
 		if (copy_to_user(u64_to_user_ptr(cmd->handle),
 			&sensor_acq_dev,

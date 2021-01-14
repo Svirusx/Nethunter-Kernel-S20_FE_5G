@@ -28,13 +28,6 @@
 #include <linux/cdev.h>
 #include "input-compat.h"
 
-enum evdev_clock_type {
-	EV_CLK_REAL = 0,
-	EV_CLK_MONO,
-	EV_CLK_BOOT,
-	EV_CLK_MAX
-};
-
 struct evdev {
 	int open;
 	struct input_handle handle;
@@ -56,12 +49,23 @@ struct evdev_client {
 	struct fasync_struct *fasync;
 	struct evdev *evdev;
 	struct list_head node;
-	unsigned int clk_type;
+	enum input_clock_type clk_type;
 	bool revoked;
 	unsigned long *evmasks[EV_CNT];
 	unsigned int bufsize;
+
+#ifdef CONFIG_SEC_INPUT_BOOSTER
+	int device_type;
+	int touch_slot_cnt;
+	int ev_cnt;
+#endif
+
 	struct input_event buffer[];
 };
+
+#ifdef CONFIG_SEC_INPUT_BOOSTER
+#include <linux/input/input_booster.h>
+#endif
 
 static size_t evdev_get_mask_cnt(unsigned int type)
 {
@@ -152,17 +156,10 @@ static void __evdev_flush_queue(struct evdev_client *client, unsigned int type)
 
 static void __evdev_queue_syn_dropped(struct evdev_client *client)
 {
+	ktime_t *ev_time = input_get_timestamp(client->evdev->handle.dev);
+	struct timespec64 ts = ktime_to_timespec64(ev_time[client->clk_type]);
 	struct input_event ev;
-	ktime_t time;
-	struct timespec64 ts;
 
-	time = client->clk_type == EV_CLK_REAL ?
-			ktime_get_real() :
-			client->clk_type == EV_CLK_MONO ?
-				ktime_get() :
-				ktime_get_boottime();
-
-	ts = ktime_to_timespec64(time);
 	ev.input_event_sec = ts.tv_sec;
 	ev.input_event_usec = ts.tv_nsec / NSEC_PER_USEC;
 	ev.type = EV_SYN;
@@ -191,18 +188,18 @@ static void evdev_queue_syn_dropped(struct evdev_client *client)
 static int evdev_set_clk_type(struct evdev_client *client, unsigned int clkid)
 {
 	unsigned long flags;
-	unsigned int clk_type;
+	enum input_clock_type clk_type;
 
 	switch (clkid) {
 
 	case CLOCK_REALTIME:
-		clk_type = EV_CLK_REAL;
+		clk_type = INPUT_CLK_REAL;
 		break;
 	case CLOCK_MONOTONIC:
-		clk_type = EV_CLK_MONO;
+		clk_type = INPUT_CLK_MONO;
 		break;
 	case CLOCK_BOOTTIME:
-		clk_type = EV_CLK_BOOT;
+		clk_type = INPUT_CLK_BOOT;
 		break;
 	default:
 		return -EINVAL;
@@ -228,9 +225,21 @@ static int evdev_set_clk_type(struct evdev_client *client, unsigned int clkid)
 	return 0;
 }
 
+#ifdef CONFIG_SEC_INPUT_BOOSTER
+#include "evdev_booster.c"
+#endif //--CONFIG_SEC_INPUT_BOOSTER
+
 static void __pass_event(struct evdev_client *client,
 			 const struct input_event *event)
 {
+#ifdef CONFIG_SEC_INPUT_BOOSTER
+	unsigned long flags;
+
+	pr_booster("Raw Input Data : %d, code : %d, Val : %d",
+		event->type, event->code, event->value);
+	client->ev_cnt++;
+#endif
+
 	client->buffer[client->head++] = *event;
 	client->head &= client->bufsize - 1;
 
@@ -241,19 +250,26 @@ static void __pass_event(struct evdev_client *client,
 		 */
 		client->tail = (client->head - 2) & (client->bufsize - 1);
 
-		client->buffer[client->tail].input_event_sec =
-						event->input_event_sec;
-		client->buffer[client->tail].input_event_usec =
-						event->input_event_usec;
-		client->buffer[client->tail].type = EV_SYN;
-		client->buffer[client->tail].code = SYN_DROPPED;
-		client->buffer[client->tail].value = 0;
+		client->buffer[client->tail] = (struct input_event) {
+			.input_event_sec = event->input_event_sec,
+			.input_event_usec = event->input_event_usec,
+			.type = EV_SYN,
+			.code = SYN_DROPPED,
+			.value = 0,
+		};
 
 		client->packet_head = client->tail;
 	}
 
 	if (event->type == EV_SYN && event->code == SYN_REPORT) {
 		client->packet_head = client->head;
+#ifdef CONFIG_SEC_INPUT_BOOSTER
+		pr_booster("IB Triggered :: HEAD(%d) TAIL(%d)", client->head, client->tail);
+		spin_lock_irqsave(&ib_type_lock, flags);
+		input_booster(client, client->head);
+		client->ev_cnt = 0;
+		spin_unlock_irqrestore(&ib_type_lock, flags);
+#endif
 		kill_fasync(&client->fasync, SIGIO, POLL_IN);
 	}
 }
@@ -310,12 +326,7 @@ static void evdev_events(struct input_handle *handle,
 {
 	struct evdev *evdev = handle->private;
 	struct evdev_client *client;
-	ktime_t ev_time[EV_CLK_MAX];
-
-	ev_time[EV_CLK_MONO] = ktime_get();
-	ev_time[EV_CLK_REAL] = ktime_mono_to_real(ev_time[EV_CLK_MONO]);
-	ev_time[EV_CLK_BOOT] = ktime_mono_to_any(ev_time[EV_CLK_MONO],
-						 TK_OFFS_BOOT);
+	ktime_t *ev_time = input_get_timestamp(handle->dev);
 
 	rcu_read_lock();
 
@@ -1467,6 +1478,9 @@ static struct input_handler evdev_handler = {
 
 static int __init evdev_init(void)
 {
+#ifdef CONFIG_SEC_INPUT_BOOSTER
+	input_booster_init();
+#endif
 	return input_register_handler(&evdev_handler);
 }
 

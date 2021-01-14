@@ -445,6 +445,18 @@ bool write_debug_partition(enum debug_partition_index index, void *value)
 			mutex_unlock(&debug_partition_mutex);
 			break;
 #endif
+#if IS_ENABLED(CONFIG_SEC_LOG_STORE_LPM_KMSG)
+		case debug_index_reset_lpm_klog:
+			mutex_lock(&debug_partition_mutex);
+			sched_debug_data.value = value;
+			sched_debug_data.offset = SEC_DEBUG_RESET_LPM_KLOG_OFFSET;
+			sched_debug_data.size = SEC_DEBUG_RESET_LPM_KLOG_SIZE;
+			sched_debug_data.direction = PARTITION_WR;
+			schedule_work(&sched_debug_data.debug_partition_work);
+			wait_for_completion(&sched_debug_data.work);
+			mutex_unlock(&debug_partition_mutex);
+			break;
+#endif
 		default:
 			return false;
 	}

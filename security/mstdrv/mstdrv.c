@@ -22,7 +22,7 @@
 #include <linux/gpio.h>
 #include <linux/of_gpio.h>
 #include <linux/platform_device.h>
-#include <linux/wakelock.h>
+//#include <linux/wakelock.h>
 #include <linux/delay.h>
 #include <linux/qseecom.h>
 #include <linux/pinctrl/consumer.h>
@@ -200,7 +200,7 @@ static int mst_support_check;
 static int escape_loop = 1;                 // for HW reliability test
 static struct class *mst_drv_class;         // mst_drv class
 struct device *mst_drv_dev;                 // mst_drv driver handle
-static struct wake_lock mst_wakelock;       // wake_lock used for HW reliability test
+//static struct wake_lock mst_wakelock;       // wake_lock used for HW reliability test
 static DEVICE_ATTR(transmit, 0770, show_mst_drv, store_mst_drv);        // define device attribute
 static struct qseecom_handle *qhandle;
 static int nfc_state;
@@ -738,10 +738,10 @@ static ssize_t store_mst_drv(struct device *dev,
                         break;
 
                 case CMD_HW_RELIABILITY_TEST_START:
-                        if (escape_loop) {
-                                wake_lock_init(&mst_wakelock, WAKE_LOCK_SUSPEND, "mst_wakelock");
-                                wake_lock(&mst_wakelock);
-                        }
+//                        if (escape_loop) {
+//                                wake_lock_init(&mst_wakelock, WAKE_LOCK_SUSPEND, "mst_wakelock");
+//                                wake_lock(&mst_wakelock);
+//                        }
                         escape_loop = 0;
                         while (1) {
                                 if (escape_loop == 1)
@@ -763,8 +763,8 @@ static ssize_t store_mst_drv(struct device *dev,
                         break;
 
                 case CMD_HW_RELIABILITY_TEST_STOP:
-                        if (!escape_loop)
-                                wake_lock_destroy(&mst_wakelock);
+//                        if (!escape_loop)
+//                                wake_lock_destroy(&mst_wakelock);
                         escape_loop = 1;
                         printk("[MST] MST escape_loop value = 1\n");
                         break;

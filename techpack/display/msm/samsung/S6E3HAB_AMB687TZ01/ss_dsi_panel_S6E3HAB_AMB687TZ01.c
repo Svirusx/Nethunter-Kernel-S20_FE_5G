@@ -397,6 +397,7 @@ static int ss_module_info_read(struct samsung_display_driver_data *vdd)
 	int hour, min;
 	int x, y;
 	int mdnie_tune_index = 0;
+	int ret;
 
 	if (IS_ERR_OR_NULL(vdd)) {
 		LCD_ERR("Invalid data vdd : 0x%zx", (size_t)vdd);
@@ -404,7 +405,11 @@ static int ss_module_info_read(struct samsung_display_driver_data *vdd)
 	}
 
 	if (ss_get_cmds(vdd, RX_MODULE_INFO)->count) {
-		ss_panel_data_read(vdd, RX_MODULE_INFO, buf, LEVEL1_KEY);
+		ret = ss_panel_data_read(vdd, RX_MODULE_INFO, buf, LEVEL1_KEY);
+		if (ret) {
+			LCD_ERR("fail to read module ID, ret: %d", ret);
+			return false;
+		}
 
 		/* Manufacture Date */
 
@@ -2720,6 +2725,35 @@ static int ss_vrr_init(struct vrr_info *vrr)
 	return 0;
 }
 
+static bool ss_check_support_mode(struct samsung_display_driver_data *vdd, enum CHECK_SUPPORT_MODE mode)
+{
+	bool is_support = true;
+	int cur_rr = vdd->vrr.cur_refresh_rate;
+	bool cur_hs = vdd->vrr.cur_sot_hs_mode;
+
+	switch (mode) {
+	case CHECK_SUPPORT_MCD:
+		if (!(cur_rr == 60 && !cur_hs)) {
+			is_support = false;
+			LCD_ERR("MCD fail: supported on 60NS(cur: %dNS)\n",
+					cur_rr);
+		}
+		break;
+	case CHECK_SUPPORT_HMD:
+		if (!(cur_rr == 60 && !cur_hs)) {
+			is_support = false;
+			LCD_ERR("HMD fail: supported on 60NS(cur: %d%s)\n",
+					cur_rr, cur_hs ? "HS" : "NS");
+		}
+
+		break;
+
+	default:
+		break;
+	}
+
+	return is_support;
+}
 
 static void samsung_panel_init(struct samsung_display_driver_data *vdd)
 {
@@ -2853,6 +2887,8 @@ static void samsung_panel_init(struct samsung_display_driver_data *vdd)
 
 	/* VRR */
 	ss_vrr_init(&vdd->vrr);
+
+	vdd->panel_func.samsung_check_support_mode = ss_check_support_mode;
 }
 
 static int __init samsung_panel_initialize(void)

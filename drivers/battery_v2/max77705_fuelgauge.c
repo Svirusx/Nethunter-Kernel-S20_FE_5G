@@ -57,7 +57,7 @@ static void max77705_fg_adaptation_wa(struct max77705_fuelgauge_data *fuelgauge)
 		pr_err("%s: Failed to read TEMPCO\n", __func__);
 		return;
 	}
-	/* tempcohot = data[1]; 	tempcocold = data[0]; */
+	/* tempcohot = data[1];	tempcocold = data[0]; */
 	temp = (fg_reset_data->tempco & 0xFF00) >> 8;
 	if ((data[1] > (temp * 14 / 10)) || (data[1] < (temp * 7 / 10))) {
 		pr_err("%s: abnormal TempCoHot (0x%x / 0x%x)\n", __func__, data[1], temp);
@@ -93,8 +93,6 @@ re_calculation:
 	temp &= 0xFF0F;
 	max77705_write_word(fuelgauge->i2c, LEARN_CFG_REG, temp);
 	max77705_write_word(fuelgauge->i2c, CYCLES_REG, 0);
-
-	return;
 }
 
 static void max77705_fg_periodic_read(struct max77705_fuelgauge_data *fuelgauge)
@@ -2070,9 +2068,9 @@ static int max77705_fg_get_property(struct power_supply *psy,
 					ocv_data[k] = ocv;
 				}
 				ocv = 0;
-				for (j = 2; j < 8; j++) {
+				for (j = 2; j < 8; j++)
 					ocv += ocv_data[j];
-				}
+
 				val->intval = ocv / 6;
 			}
 			break;
@@ -2247,7 +2245,7 @@ static void max77705_fg_isr_work(struct work_struct *work)
 	/* process for fuel gauge chip */
 	max77705_fg_fuelalert_process(fuelgauge);
 
-	__pm_relax(&fuelgauge->fuel_alert_wake_lock);
+	__pm_relax(fuelgauge->fuel_alert_wake_lock);
 }
 
 static irqreturn_t max77705_fg_irq_thread(int irq, void *irq_data)
@@ -2264,7 +2262,7 @@ static irqreturn_t max77705_fg_irq_thread(int irq, void *irq_data)
 		return IRQ_HANDLED;
 	}
 
-	__pm_stay_awake(&fuelgauge->fuel_alert_wake_lock);
+	__pm_stay_awake(fuelgauge->fuel_alert_wake_lock);
 	fuelgauge->is_fuel_alerted = true;
 	schedule_delayed_work(&fuelgauge->isr_work, 0);
 
@@ -2677,7 +2675,8 @@ static int max77705_fuelgauge_probe(struct platform_device *pdev)
 	if (fuelgauge->pdata->fuel_alert_soc >= 0) {
 		if (max77705_fg_fuelalert_init(fuelgauge,
 					       fuelgauge->pdata->fuel_alert_soc)) {
-			wakeup_source_init(&fuelgauge->fuel_alert_wake_lock, "fuel_alerted");
+			//wakeup_source_add(fuelgauge->fuel_alert_wake_lock);
+			fuelgauge->fuel_alert_wake_lock = wakeup_source_register(fuelgauge->dev, "fuel_alerted");
 			if (fuelgauge->fg_irq) {
 				INIT_DELAYED_WORK(&fuelgauge->isr_work,
 						  max77705_fg_isr_work);
@@ -2692,7 +2691,7 @@ static int max77705_fuelgauge_probe(struct platform_device *pdev)
 				if (ret) {
 					pr_err("%s: Failed to Request IRQ\n",
 					       __func__);
-					wakeup_source_trash(&fuelgauge->fuel_alert_wake_lock);
+					wakeup_source_remove(fuelgauge->fuel_alert_wake_lock);
 					goto err_supply_unreg;
 				}
 			}
@@ -2745,7 +2744,7 @@ static int max77705_fuelgauge_remove(struct platform_device *pdev)
 		power_supply_unregister(fuelgauge->psy_fg);
 
 	free_irq(fuelgauge->fg_irq, fuelgauge);
-	wakeup_source_trash(&fuelgauge->fuel_alert_wake_lock);
+	wakeup_source_remove(fuelgauge->fuel_alert_wake_lock);
 #if defined(CONFIG_OF)
 	kfree(fuelgauge->battery_data);
 #endif

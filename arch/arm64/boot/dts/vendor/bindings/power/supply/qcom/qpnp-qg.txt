@@ -449,6 +449,19 @@ First Level Node - QGAUGE device
 		    when there is variation in system-SOC due to
 		    changes in the load.
 
+	Usage:      optional
+	Value type: bool
+	Definition: Enable Battery SOC based SOC scaling. This logic
+		    allows monotonic-SOC scaling at low-temperatures
+		    when there is variation in system-SOC due to
+		    changes in the load.
+
+- qcom,esr-low-temp-threshold
+	Usage:      optional
+	Value type: <int>
+	Definition: Battery temperature threshold below which ESR is ignored.
+		    The default value is 10degC.
+
 ==========================================================
 Second Level Nodes - Peripherals managed by QGAUGE driver
 ==========================================================

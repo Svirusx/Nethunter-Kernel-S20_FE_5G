@@ -55,6 +55,7 @@
 #define SDE_HW_VER_610	SDE_HW_VER(6, 1, 0) /* sm7250 */
 #define SDE_HW_VER_630	SDE_HW_VER(6, 3, 0) /* bengal */
 #define SDE_HW_VER_640	SDE_HW_VER(6, 4, 0) /* lagoon */
+#define SDE_HW_VER_650	SDE_HW_VER(6, 5, 0) /* scuba */
 
 #define IS_MSM8996_TARGET(rev) IS_SDE_MAJOR_MINOR_SAME((rev), SDE_HW_VER_170)
 #define IS_MSM8998_TARGET(rev) IS_SDE_MAJOR_MINOR_SAME((rev), SDE_HW_VER_300)
@@ -69,6 +70,7 @@
 #define IS_SAIPAN_TARGET(rev) IS_SDE_MAJOR_MINOR_SAME((rev), SDE_HW_VER_610)
 #define IS_BENGAL_TARGET(rev) IS_SDE_MAJOR_MINOR_SAME((rev), SDE_HW_VER_630)
 #define IS_LAGOON_TARGET(rev) IS_SDE_MAJOR_MINOR_SAME((rev), SDE_HW_VER_640)
+#define IS_SCUBA_TARGET(rev) IS_SDE_MAJOR_MINOR_SAME((rev), SDE_HW_VER_650)
 
 #define SDE_HW_BLK_NAME_LEN	16
 
@@ -260,7 +262,6 @@ enum {
  * @SDE_PERF_SSPP_TS_PREFILL      Supports prefill with traffic shaper
  * @SDE_PERF_SSPP_TS_PREFILL_REC1 Supports prefill with traffic shaper multirec
  * @SDE_PERF_SSPP_CDP             Supports client driven prefetch
- * @SDE_PERF_SSPP_QOS_FL_NOCALC   Avoid fill level calc for QoS/danger/safe
  * @SDE_PERF_SSPP_SYS_CACHE,      SSPP supports system cache
  * @SDE_PERF_SSPP_UIDLE,          sspp supports uidle
  * @SDE_PERF_SSPP_MAX             Maximum value
@@ -271,7 +272,6 @@ enum {
 	SDE_PERF_SSPP_TS_PREFILL,
 	SDE_PERF_SSPP_TS_PREFILL_REC1,
 	SDE_PERF_SSPP_CDP,
-	SDE_PERF_SSPP_QOS_FL_NOCALC,
 	SDE_PERF_SSPP_SYS_CACHE,
 	SDE_PERF_SSPP_UIDLE,
 	SDE_PERF_SSPP_MAX
@@ -569,26 +569,6 @@ enum sde_qos_lut_usage {
 };
 
 /**
- * struct sde_qos_lut_entry - define QoS LUT table entry
- * @fl: fill level, or zero on last entry to indicate default lut
- * @lut: lut to use if equal to or less than fill level
- */
-struct sde_qos_lut_entry {
-	u32 fl;
-	u64 lut;
-};
-
-/**
- * struct sde_qos_lut_tbl - define QoS LUT table
- * @nentry: number of entry in this table
- * @entries: Pointer to table entries
- */
-struct sde_qos_lut_tbl {
-	u32 nentry;
-	struct sde_qos_lut_entry *entries;
-};
-
-/**
  * struct sde_sspp_sub_blks : SSPP sub-blocks
  * @maxdwnscale: max downscale ratio supported(without DECIMATION)
  * @maxupscale:  maxupscale ratio supported
@@ -621,8 +601,10 @@ struct sde_qos_lut_tbl {
  * @in_rot_maxdwnscale_rt_denom: max downscale ratio for inline rotation
  *                                 rt clients - denominator
  * @in_rot_maxdwnscale_nrt: max downscale ratio for inline rotation nrt clients
- * @in_rot_minpredwnscale_num: min downscale ratio to enable pre-downscale
- * @in_rot_minpredwnscale_denom: min downscale ratio to enable pre-downscale
+ * @in_rot_maxdwnscale_rt_nopd_num: downscale threshold for when pre-downscale
+ *                                    must be enabled on HW with this support.
+ * @in_rot_maxdwnscale_rt_nopd_denom: downscale threshold for when pre-downscale
+ *                                    must be enabled on HW with this support.
  * @in_rot_maxheight: max pre rotated height for inline rotation
  * @llcc_scid: scid for the system cache
  * @llcc_slice size: slice size of the system cache
@@ -659,8 +641,8 @@ struct sde_sspp_sub_blks {
 	u32 in_rot_maxdwnscale_rt_num;
 	u32 in_rot_maxdwnscale_rt_denom;
 	u32 in_rot_maxdwnscale_nrt;
-	u32 in_rot_minpredwnscale_num;
-	u32 in_rot_minpredwnscale_denom;
+	u32 in_rot_maxdwnscale_rt_nopd_num;
+	u32 in_rot_maxdwnscale_rt_nopd_denom;
 	u32 in_rot_maxheight;
 	int llcc_scid;
 	size_t llcc_slice_size;
@@ -1154,12 +1136,15 @@ struct sde_sc_cfg {
  * @downscaling_prefill_lines  downscaling latency in lines
  * @amortizable_theshold minimum y position for traffic shaping prefill
  * @min_prefill_lines  minimum pipeline latency in lines
- * @danger_lut_tbl: LUT tables for danger signals
- * @sfe_lut_tbl: LUT tables for safe signals
- * @qos_lut_tbl: LUT tables for QoS signals
+ * @danger_lut:		linear, macrotile, etc. danger luts
+ * @safe_lut: linear, macrotile, macrotile_qseed, etc. safe luts
+ * @creq_lut: linear, macrotile, non_realtime, cwb, etc. creq luts
+ * @qos_refresh_count: total refresh count for possible different luts
+ * @qos_refresh_rate: different refresh rates for luts
  * @cdp_cfg            cdp use case configurations
  * @cpu_mask:          pm_qos cpu mask value
  * @cpu_dma_latency:   pm_qos cpu dma latency value
+ * @cpu_irq_latency:   pm_qos cpu irq latency value
  * @axi_bus_width:     axi bus width value in bytes
  * @num_mnoc_ports:    number of mnoc ports
  */
@@ -1182,12 +1167,15 @@ struct sde_perf_cfg {
 	u32 downscaling_prefill_lines;
 	u32 amortizable_threshold;
 	u32 min_prefill_lines;
-	u32 danger_lut_tbl[SDE_QOS_LUT_USAGE_MAX];
-	struct sde_qos_lut_tbl sfe_lut_tbl[SDE_QOS_LUT_USAGE_MAX];
-	struct sde_qos_lut_tbl qos_lut_tbl[SDE_QOS_LUT_USAGE_MAX];
+	u64 *danger_lut;
+	u64 *safe_lut;
+	u64 *creq_lut;
+	u32 qos_refresh_count;
+	u32 *qos_refresh_rate;
 	struct sde_perf_cdp_cfg cdp_cfg[SDE_PERF_CDP_USAGE_MAX];
 	u32 cpu_mask;
 	u32 cpu_dma_latency;
+	u32 cpu_irq_latency;
 	u32 axi_bus_width;
 	u32 num_mnoc_ports;
 };
@@ -1276,10 +1264,11 @@ struct sde_limit_cfg {
  * @has_qsync	       Supports qsync feature
  * @has_3d_merge_reset Supports 3D merge reset
  * @has_decimation     Supports decimation
- * @has_qos_fl_nocalc  flag to indicate QoS fill level needs no calculation
  * @update_tcsr_disp_glitch  flag to enable HW workaround to avoid spurious
  *                            transactions during suspend
  * @has_base_layer     Supports staging layer as base layer
+ * @allow_gdsc_toggle  Flag to check if gdsc toggle is needed after crtc is
+ *                           disabled when external vote is present
  * @sc_cfg: system cache configuration
  * @uidle_cfg		Settings for uidle feature
  * @sui_misr_supported  indicate if secure-ui-misr is supported
@@ -1335,9 +1324,9 @@ struct sde_mdss_cfg {
 	bool has_qsync;
 	bool has_3d_merge_reset;
 	bool has_decimation;
-	bool has_qos_fl_nocalc;
 	bool update_tcsr_disp_glitch;
 	bool has_base_layer;
+	bool allow_gdsc_toggle;
 
 	struct sde_sc_cfg sc_cfg;
 
