@@ -13,7 +13,7 @@ VERSION=Nethunter_WirusMOD_${VARIANT}_v1.2
 
 
 BUILD_CROSS_COMPILE=$PARENT_DIR/toolchains/aarch64-linux-android-4.9/bin/aarch64-linux-android-
-KERNEL_LLVM_BIN=$PARENT_DIR/toolchains/llvm-arm-toolchain-ship_8.0.6/bin/clang
+KERNEL_LLVM_BIN=$PARENT_DIR/toolchains/llvm-arm-toolchain-ship-10.0/bin/clang
 CLANG_TRIPLE=aarch64-linux-gnu-
 KERNEL_MAKE_ENV="DTC_EXT=$(pwd)/tools/dtc CONFIG_BUILD_ARM64_DT_OVERLAY=y LOCALVERSION=-${VERSION}"
 
