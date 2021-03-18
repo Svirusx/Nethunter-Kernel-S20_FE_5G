@@ -96,6 +96,10 @@
 #include "wmi_unified_sta_api.h"
 #endif
 
+#ifdef WLAN_FEATURE_PKT_CAPTURE
+#include "wlan_pkt_capture_public_structs.h"
+#endif
+
 #ifdef WLAN_FW_OFFLOAD
 #include "wmi_unified_fwol_api.h"
 #endif
@@ -3817,6 +3821,22 @@ QDF_STATUS wmi_unified_extract_ani_level(wmi_unified_t wmi_handle,
 					 struct wmi_host_ani_level_event **info,
 					 uint32_t *num_freqs);
 #endif /* FEATURE_ANI_LEVEL_REQUEST */
+
+#ifdef WLAN_FEATURE_PKT_CAPTURE
+/**
+ * wmi_unified_extract_vdev_mgmt_offload_event() - Extract mgmt offload params
+ * @wmi: WMI handle
+ * @evt_buf: Event buffer
+ * @params: Management offload event params
+ *
+ * WMI function to extract management offload event params
+ *
+ * Return: QDF_STATUS
+ */
+QDF_STATUS
+wmi_unified_extract_vdev_mgmt_offload_event(wmi_unified_t wmi, void *evt_buf,
+				struct mgmt_offload_event_params *params);
+#endif
 
 #ifdef FEATURE_WLAN_TIME_SYNC_FTM
 /**

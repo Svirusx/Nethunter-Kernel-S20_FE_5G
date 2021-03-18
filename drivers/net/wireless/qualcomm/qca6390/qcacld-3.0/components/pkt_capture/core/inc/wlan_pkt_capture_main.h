@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2020-2021 The Linux Foundation. All rights reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for
  * any purpose with or without fee is hereby granted, provided that the
@@ -30,6 +30,10 @@
 #include <qdf_types.h>
 #include "wlan_pkt_capture_priv.h"
 #include "wlan_pkt_capture_objmgr.h"
+#include "wlan_objmgr_vdev_obj.h"
+#ifdef WLAN_FEATURE_PKT_CAPTURE_V2
+#include "cdp_txrx_stats_struct.h"
+#endif
 
 #define pkt_capture_log(level, args...) \
 	QDF_TRACE(QDF_MODULE_ID_PKT_CAPTURE, level, ## args)
@@ -50,6 +54,27 @@
 
 #define PKT_CAPTURE_ENTER() pkt_capture_debug("enter")
 #define PKT_CAPTURE_EXIT() pkt_capture_debug("exit")
+
+/**
+ * enum pkt_capture_tx_status - packet capture tx status
+ * @pktcapture_tx_status_ok: successfully sent + acked
+ * @pktcapture_tx_status_discard: discard - not sent
+ * @pktcapture_tx_status_no_ack: no_ack - sent, but no ack
+ *
+ * This enum has tx status types for packet capture mode
+ */
+enum pkt_capture_tx_status {
+	pkt_capture_tx_status_ok,
+	pkt_capture_tx_status_discard,
+	pkt_capture_tx_status_no_ack,
+};
+
+/**
+ * pkt_capture_get_vdev() - Get pkt capture objmgr vdev.
+ *
+ * Return: pkt capture objmgr vdev
+ */
+struct wlan_objmgr_vdev *pkt_capture_get_vdev(void);
 
 /**
  * pkt_capture_vdev_create_notification() - Handler for vdev create notify.
@@ -106,4 +131,96 @@ pkt_capture_psoc_create_notification(struct wlan_objmgr_psoc *psoc, void *arg);
  */
 QDF_STATUS
 pkt_capture_psoc_destroy_notification(struct wlan_objmgr_psoc *psoc, void *arg);
+
+/**
+ * pkt_capture_register_callbacks - Register packet capture callbacks
+ * @vdev: pointer to wlan vdev object manager
+ * @mon_cb: callback to call
+ * @context: callback context
+ *
+ * Return: QDF_STATUS
+ */
+QDF_STATUS
+pkt_capture_register_callbacks(struct wlan_objmgr_vdev *vdev,
+			       QDF_STATUS (*mon_cb)(void *, qdf_nbuf_t),
+			       void *context);
+
+/**
+ * pkt_capture_deregister_callbacks - De-register packet capture callbacks
+ * @vdev: pointer to wlan vdev object manager
+ *
+ * Return: QDF_STATUS
+ */
+QDF_STATUS pkt_capture_deregister_callbacks(struct wlan_objmgr_vdev *vdev);
+
+/**
+ * pkt_capture_set_pktcap_mode - Set packet capture mode
+ * @psoc: pointer to psoc object
+ * @mode: mode to be set
+ *
+ * Return: None
+ */
+void pkt_capture_set_pktcap_mode(struct wlan_objmgr_psoc *psoc,
+				 enum pkt_capture_mode mode);
+
+/**
+ * pkt_capture_get_pktcap_mode - Get packet capture mode
+ * @psoc: pointer to psoc object
+ *
+ * Return: enum pkt_capture_mode
+ */
+enum pkt_capture_mode
+pkt_capture_get_pktcap_mode(struct wlan_objmgr_psoc *psoc);
+
+/**
+ * pkt_capture_drop_nbuf_list() - drop an nbuf list
+ * @buf_list: buffer list to be dropepd
+ *
+ * Return: number of buffers dropped
+ */
+uint32_t pkt_capture_drop_nbuf_list(qdf_nbuf_t buf_list);
+
+/**
+ * pkt_capture_record_channel() - Update Channel Information
+ * for packet capture mode
+ * @vdev: pointer to vdev
+ *
+ * Return: None
+ */
+void pkt_capture_record_channel(struct wlan_objmgr_vdev *vdev);
+
+/**
+ * pkt_capture_mon() - Wrapper function to invoke mon cb
+ * @cb_ctx: packet capture callback context
+ * @msdu: packet
+ * @vdev: pointer to vdev
+ * @ch_freq: channel frequency
+ *
+ * Return: None
+ */
+void pkt_capture_mon(struct pkt_capture_cb_context *cb_ctx, qdf_nbuf_t msdu,
+		     struct wlan_objmgr_vdev *vdev, uint16_t ch_freq);
+
+#ifdef WLAN_FEATURE_PKT_CAPTURE_V2
+/**
+ * pkt_capture_get_pktcap_mode_v2 - Get packet capture mode
+ *
+ * Return: enum pkt_capture_mode
+ */
+enum pkt_capture_mode
+pkt_capture_get_pktcap_mode_v2(void);
+
+/**
+ * pkt_capture_callback() - callback function for dp wdi events
+ * @soc: dp_soc handle
+ * @event: wdi event
+ * @log_data: nbuf data
+ * @vdev_id: vdev id
+ * @status: status
+ *
+ * Return: None
+ */
+void pkt_capture_callback(void *soc, enum WDI_EVENT event, void *log_data,
+			  u_int16_t vdev_id, uint32_t status);
+#endif
 #endif /* end of _WLAN_PKT_CAPTURE_MAIN_H_ */

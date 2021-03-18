@@ -2201,6 +2201,13 @@ QDF_STATUS (*extract_multi_vdev_restart_resp_event)(
 		wmi_unified_t wmi_handle, void *evt_buf,
 		struct multi_vdev_restart_resp *restart_rsp);
 
+#ifdef WLAN_FEATURE_PKT_CAPTURE
+QDF_STATUS (*extract_vdev_mgmt_offload_event)(
+				void *handle,
+				void *event_buf,
+				struct mgmt_offload_event_params *params);
+#endif /* WLAN_FEATURE_PKT_CAPTURE */
+
 #ifdef FEATURE_WLAN_TIME_SYNC_FTM
 QDF_STATUS (*send_wlan_time_sync_ftm_trigger_cmd)(wmi_unified_t wmi_handle,
 						  uint32_t vdev_id,
