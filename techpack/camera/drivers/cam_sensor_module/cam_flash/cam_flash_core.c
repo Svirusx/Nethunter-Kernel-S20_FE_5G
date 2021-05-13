@@ -479,7 +479,7 @@ static int cam_flash_low(
 		return -EINVAL;
 	}
 
-	CAM_INFO(CAM_FLASH, "CAM Low Flash ON");
+	CAM_INFO(CAM_FLASH, "CAM Low Flash ON 280mA");
 	rc = s2mpb02_led_en(S2MPB02_TORCH_LED_1, S2MPB02_TORCH_OUT_I_280MA, S2MPB02_LED_TURN_WAY_I2C);/* low, on */
 	if (rc)
 		CAM_ERR(CAM_FLASH, "Fire Low Flash failed: %d", rc);
@@ -494,17 +494,19 @@ static int cam_flash_high(
 	int rc = 0;
 
 	if (flash_data->led_current_ma[0] == 100) {
+		CAM_INFO(CAM_FLASH, "CAM Low cam_flash 120mA");
 		rc = s2mpb02_led_en(S2MPB02_TORCH_LED_1, S2MPB02_TORCH_OUT_I_120MA, S2MPB02_LED_TURN_WAY_I2C);/* low, on */
 	}
 	else if (flash_data->led_current_ma[0] == 240) {
+		CAM_INFO(CAM_FLASH, "CAM Low cam_flash 280mA");
 		rc = s2mpb02_led_en(S2MPB02_TORCH_LED_1, S2MPB02_TORCH_OUT_I_280MA, S2MPB02_LED_TURN_WAY_I2C);/* low, on */
 	}
 	else {
 #if defined(CONFIG_SEC_GTS7L_PROJECT) || defined(CONFIG_SEC_GTS7XL_PROJECT)
-		CAM_INFO(CAM_FLASH, "CAM Low cam_flash_high 1200mA\n");
+		CAM_INFO(CAM_FLASH, "CAM Low cam_flash_high 1200mA");
 		rc = s2mpb02_led_en(S2MPB02_FLASH_LED_1, S2MPB02_FLASH_OUT_I_1200MA, S2MPB02_LED_TURN_WAY_I2C);/* low, on */
 #else
-		CAM_INFO(CAM_FLASH, "CAM Low cam_flash_high 1400mA\n");
+		CAM_INFO(CAM_FLASH, "CAM Low cam_flash_high 1400mA");
 		rc = s2mpb02_led_en(S2MPB02_FLASH_LED_1, S2MPB02_FLASH_OUT_I_1400MA, S2MPB02_LED_TURN_WAY_I2C);/* low, on */
 #endif
 	}
@@ -528,13 +530,14 @@ static int cam_flash_torch(
 	}
 
 #if defined(CONFIG_FLASH_CURRENT_JAPAN)
-	CAM_INFO(CAM_FLASH, "CAM Torch Flash ON");
+	CAM_INFO(CAM_FLASH, "CAM Torch Flash ON 60mA");
 	rc = s2mpb02_led_en(S2MPB02_TORCH_LED_1, S2MPB02_TORCH_OUT_I_60MA, S2MPB02_LED_TURN_WAY_I2C);/* torch, on */
 #else
-	CAM_INFO(CAM_FLASH, "CAM Torch Flash ON, %d mA", flash_data->led_current_ma[0]);
 	if (flash_data->led_current_ma[0] == 140) {
+		CAM_INFO(CAM_FLASH, "CAM Torch Flash ON, 120mA");
 		rc = s2mpb02_led_en(S2MPB02_TORCH_LED_1, S2MPB02_TORCH_OUT_I_120MA, S2MPB02_LED_TURN_WAY_I2C);/* torch, on */
 	} else {
+		CAM_INFO(CAM_FLASH, "CAM Torch Flash ON, 220mA");
 		rc = s2mpb02_led_en(S2MPB02_TORCH_LED_1, S2MPB02_TORCH_OUT_I_220MA, S2MPB02_LED_TURN_WAY_I2C);/* torch, on */
 	}
 #endif

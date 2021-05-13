@@ -3153,6 +3153,7 @@ static int ext4_rmdir(struct inode *dir, struct dentry *dentry)
 	inode->i_size = 0;
 	ext4_orphan_add(handle, inode);
 	inode->i_ctime = dir->i_ctime = dir->i_mtime = current_time(inode);
+	/* @fs.sec -- 868333f69f69eab81cceeb26fac51f0b4de49c70 -- */
 	/* log unlinker's uid or first 4 bytes of comm
 	 * to ext4_inode->i_version_hi */
 	if (current_uid().val) {

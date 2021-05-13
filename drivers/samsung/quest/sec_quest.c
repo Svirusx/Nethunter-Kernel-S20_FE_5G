@@ -101,6 +101,7 @@ char *STR_ITEM[ITEM_ITEMSCOUNT] = {
 	"DDR_SCAN_RAMDUMP_DISCACHE",
 	"DDR_SCAN_UEFI",
 	"SMDDL_QDAF",
+	"DDRTRAINING",
 };
 
 
@@ -108,9 +109,25 @@ char *STR_ITEM[ITEM_ITEMSCOUNT] = {
 char *STR_SUBITEM[SUBITEM_ITEMSCOUNT] = {
 	"",
 	"DDR_SCAN",
+#if defined(CONFIG_SEC_QUEST_EDL)
+	"SUEFI_GROUP1",
+	"SUEFI_GROUP2",
+	"SUEFI_GROUP3",
+	"SUEFI_GROUP4",
+	"SUEFI_GROUP5",
+	"QUEFI_GROUP1",
+	"QUEFI_GROUP2",	
+	"QUEFI_GROUP3",	
+	"QUEFI_GROUP4",	
+	"QUEFI_GROUP5",	
+	"QUEFI_GROUP6",	
+	"QUEFI_GROUP7",	
+	"QUEFI_GROUP8",		
+#else
 	"QUEFI",
 	"SUEFI_CRYPTO",
 	"SUEFI_COMPLEX",
+#endif	
 #if defined(CONFIG_SEC_QUEST_HLOS_DUMMY_SMD)
 	"HLOS_DUMMY",
 #elif defined(CONFIG_SEC_QUEST_HLOS_NATURESCENE_SMD)
@@ -899,6 +916,12 @@ static ssize_t show_quest_acat(struct device *dev,
 	QUEST_PRINT("%s : CONFIG_SEC_QUEST_ALWAYS_RETURN_PASS_FOR_ACAT enabled, so return pass\n", __func__);
 	total_result = ITEM_RESULT_PASS;
 #endif
+
+	if( param_quest_data.curr_step == STEP_TESTMODE && total_result == ITEM_RESULT_FAIL )
+	{
+		QUEST_PRINT("%s : in the case of STEP_TESTMODEC, force to return ITEM_RESULT_PASS to continue repeating\n", __func__);
+		total_result = ITEM_RESULT_PASS;		
+	}
 
 	switch (total_result) {
 		case ITEM_RESULT_PASS: {

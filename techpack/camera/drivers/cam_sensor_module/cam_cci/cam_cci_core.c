@@ -7,6 +7,8 @@
 #include "cam_cci_core.h"
 #include "cam_cci_dev.h"
 
+#define DUMP_CCI_REGISTERS
+
 static int32_t cam_cci_convert_type_to_num_bytes(
 	enum camera_sensor_i2c_type type)
 {
@@ -188,12 +190,11 @@ static void cam_cci_dump_registers(struct cci_device *cci_dev,
 	enum cci_i2c_master_t master, enum cci_i2c_queue_t queue)
 {
 	uint32_t read_val = 0;
-	uint32_t i = 0;
+	uint32_t i = 0, count = 0;
 	uint32_t reg_offset = 0;
 	void __iomem *base = cci_dev->soc_info.reg_map[0].mem_base;
 
-	CAM_INFO(CAM_CCI, "**** CCI:%d register dump ****",
-		cci_dev->soc_info->index);
+	CAM_INFO(CAM_CCI, "**** CCI:%d register dump ****",cci_dev->soc_info.index);
 
 	/* CCI Top Registers */
 	CAM_INFO(CAM_CCI, "****CCI TOP Registers ****");
@@ -202,6 +203,10 @@ static void cam_cci_dump_registers(struct cci_device *cci_dev,
 		read_val = cam_io_r_mb(base + reg_offset);
 		CAM_INFO(CAM_CCI, "offset = 0x%X value = 0x%X",
 			reg_offset, read_val);
+		CAM_INFO(CAM_CCI, "before reset offset = 0x%X value = 0x%X",
+			cci_dev->cci_dump[count].reg_addr,
+			cci_dev->cci_dump[count].reg_data);
+		count++;
 	}
 
 	/* CCI Master registers */
@@ -210,11 +215,14 @@ static void cam_cci_dump_registers(struct cci_device *cci_dev,
 	for (i = 0; i < DEBUG_MASTER_REG_COUNT; i++) {
 		if ((i * 4) == 0x18)
 			continue;
-
 		reg_offset = DEBUG_MASTER_REG_START + master*0x100 + i * 4;
 		read_val = cam_io_r_mb(base + reg_offset);
 		CAM_INFO(CAM_CCI, "offset = 0x%X value = 0x%X",
 			reg_offset, read_val);
+		CAM_INFO(CAM_CCI, "before reset offset = 0x%X value = 0x%X",
+			cci_dev->cci_dump[count].reg_addr,
+			cci_dev->cci_dump[count].reg_data);
+		count++;
 	}
 
 	/* CCI Master Queue registers */
@@ -226,6 +234,10 @@ static void cam_cci_dump_registers(struct cci_device *cci_dev,
 		read_val = cam_io_r_mb(base + reg_offset);
 		CAM_INFO(CAM_CCI, "offset = 0x%X value = 0x%X",
 			reg_offset, read_val);
+		CAM_INFO(CAM_CCI, "before reset offset = 0x%X value = 0x%X",
+			cci_dev->cci_dump[count].reg_addr,
+			cci_dev->cci_dump[count].reg_data);
+		count++;
 	}
 
 	/* CCI Interrupt registers */
@@ -235,6 +247,10 @@ static void cam_cci_dump_registers(struct cci_device *cci_dev,
 		read_val = cam_io_r_mb(base + reg_offset);
 		CAM_INFO(CAM_CCI, "offset = 0x%X value = 0x%X",
 			reg_offset, read_val);
+		CAM_INFO(CAM_CCI, "before reset offset = 0x%X value = 0x%X",
+			cci_dev->cci_dump[count].reg_addr,
+			cci_dev->cci_dump[count].reg_data);
+		count++;
 	}
 }
 #endif

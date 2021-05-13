@@ -9,5 +9,4 @@ obj-$(CONFIG_SEC_MISC)		+= misc/
 obj-$(CONFIG_SEC_QUEST)		+= quest/
 
 obj-$(CONFIG_SEC_DEBUG_TEST)	+= debug/
-obj-$(CONFIG_KUNIT)			+= kunit_test/
 GCOV_PROFILE_sec_class.o		:=y

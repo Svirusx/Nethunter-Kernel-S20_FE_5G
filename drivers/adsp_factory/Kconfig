@@ -360,3 +360,10 @@ config SUPPORT_SSC_AOD_RECT
 	default n
 	help
 	  Support getting AOD rec.
+
+config SUPPORT_LIGHT_DUALIZATION
+	tristate "Support dual light sensors"
+	default n
+	help
+	  Select y to support light sensor dualization.
+	  Select n not to support light sensor dualization

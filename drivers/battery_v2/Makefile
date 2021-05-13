@@ -72,5 +72,4 @@ obj-$(CONFIG_WIRELESS_CHARGER_MFC_S2MIW04)	+= mfc_s2miw04_charger.o
 obj-$(CONFIG_SWITCHING_S2ASL01)   += s2asl01_switching.o
 obj-$(CONFIG_CHARGER_PCA9468)	+= pca9468_charger.o
 
-obj-$(CONFIG_KUNIT)			+= kunit_test/
 GCOV_PROFILE_sec_battery.o		:=y

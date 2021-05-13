@@ -1,7 +1,7 @@
 /*
  * Misc system wide definitions
  *
- * Copyright (C) 2020, Broadcom.
+ * Copyright (C) 2021, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -627,13 +627,8 @@ extern uint32 gFWID;
 #define PAD             _XSTR(__LINE__)
 #endif
 
-#define MODULE_DETACH(var, detach_func)\
-	if (var) { \
-		detach_func(var); \
-		(var) = NULL; \
-	}
+#define MODULE_DETACH(var, detach_func) detach_func(var)
 #define MODULE_DETACH_2(var1, var2, detach_func) detach_func(var1, var2)
-#define MODULE_DETACH_TYPECASTED(var, detach_func) detach_func(var)
 
 /* When building ROML image use runtime conditional to cause the compiler
  * to compile everything but not to complain "defined but not used"
@@ -645,11 +640,8 @@ extern uint32 gFWID;
 #define BCM_ATTACH_REF()	(1)
 
 /* For ROM builds, keep it in const section so that it gets ROMmed. If abandoned, move it to
- * RO section but before ro region start so that FATAL log buf doesn't use this.
+ * RO section but after the other ro data so that FATAL log buf doesn't use this.
  */
-// Temporary - leave old definition in place until all references are removed elsewhere
-#define BCMRODATA_ONTRAP(_data)	_data
-// Renamed for consistency with post trap function definition
 #define BCMPOST_TRAP_RODATA(_data)	_data
 
 /* Similar to RO data on trap, we want code that's used after a trap to be placed in a special area

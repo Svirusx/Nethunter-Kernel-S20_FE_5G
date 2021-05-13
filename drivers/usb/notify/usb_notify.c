@@ -1041,6 +1041,8 @@ void send_usb_err_uevent(int err_type, int mode)
 	switch (err_type) {
 	case USB_ERR_ABNORMAL_RESET:
 		words = "WORDS=abnormal_reset";
+		if (mode)
+			inc_hw_param(o_notify, USB_CLIENT_ANDROID_AUTO_RESET_POPUP_COUNT);
 		break;
 	default:
 		pr_err("%s invalid input\n", __func__);
@@ -1391,7 +1393,7 @@ static void otg_notify_state(struct otg_notify *n,
 			}
 			u_notify->ndev.mode = NOTIFY_HOST_MODE;
 			if (n->is_host_wakelock)
-				__pm_relax(&u_notify->ws);
+				__pm_stay_awake(&u_notify->ws);
 			host_state_notify(&u_notify->ndev, NOTIFY_HOST_ADD);
 			if (gpio_is_valid(n->redriver_en_gpio))
 				gpio_direction_output
@@ -1473,7 +1475,7 @@ static void otg_notify_state(struct otg_notify *n,
 		if (enable) {
 			u_notify->ndev.mode = NOTIFY_HOST_MODE;
 			if (n->is_host_wakelock)
-				__pm_relax(&u_notify->ws);
+				__pm_stay_awake(&u_notify->ws);
 			if (n->set_host)
 				n->set_host(true);
 		} else {

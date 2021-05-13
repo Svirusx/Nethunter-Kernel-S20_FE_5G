@@ -58,6 +58,51 @@ static long cam_cci_subdev_compat_ioctl(struct v4l2_subdev *sd,
 }
 #endif
 
+#ifdef DUMP_CCI_REGISTERS
+static void cam_cci_irq_dump_registers(struct cci_device *cci_dev,
+	enum cci_i2c_master_t master, enum cci_i2c_queue_t queue)
+{
+	uint32_t read_val = 0;
+	uint32_t i = 0, count = 0;
+	uint32_t reg_offset = 0;
+	void __iomem *base = cci_dev->soc_info.reg_map[0].mem_base;
+
+	/* CCI Top Registers */
+	for (i = 0; i < DEBUG_TOP_REG_COUNT; i++) {
+		reg_offset = DEBUG_TOP_REG_START + i * 4;
+		read_val = cam_io_r_mb(base + reg_offset);
+		cci_dev->cci_dump[count].reg_addr=reg_offset;
+		cci_dev->cci_dump[count++].reg_data= read_val;
+	}
+
+	/* CCI Master registers */
+	for (i = 0; i < DEBUG_MASTER_REG_COUNT; i++) {
+		reg_offset = DEBUG_MASTER_REG_START + master*0x100 + i * 4;
+		read_val = cam_io_r_mb(base + reg_offset);
+		cci_dev->cci_dump[count].reg_addr=reg_offset;
+		cci_dev->cci_dump[count++].reg_data= read_val;
+	}
+
+	/* CCI Master Queue registers */
+	for (i = 0; i < DEBUG_MASTER_QUEUE_REG_COUNT; i++) {
+		reg_offset = DEBUG_MASTER_QUEUE_REG_START +  master*0x200 +
+			queue*0x100 + i * 4;
+		read_val = cam_io_r_mb(base + reg_offset);
+		cci_dev->cci_dump[count].reg_addr=reg_offset;
+		cci_dev->cci_dump[count++].reg_data= read_val;
+	}
+
+	/* CCI Interrupt registers */
+	for (i = 0; i < DEBUG_INTR_REG_COUNT; i++) {
+		reg_offset = DEBUG_INTR_REG_START + i * 4;
+		read_val = cam_io_r_mb(base + reg_offset);
+		cci_dev->cci_dump[count].reg_addr=reg_offset;
+		cci_dev->cci_dump[count++].reg_data= read_val;
+	}
+}
+#endif
+
+
 irqreturn_t cam_cci_irq(int irq_num, void *data)
 {
 	uint32_t irq_status0, irq_status1, reg_bmsk;
@@ -217,11 +262,19 @@ irqreturn_t cam_cci_irq(int irq_num, void *data)
 
 	if (irq_status0 & CCI_IRQ_STATUS_0_I2C_M0_Q0Q1_HALT_ACK_BMSK) {
 		cci_dev->cci_master_info[MASTER_0].reset_pending = true;
+		CAM_INFO(CAM_CCI, "got HALT_ACK for M0");
+#ifdef DUMP_CCI_REGISTERS
+		cam_cci_irq_dump_registers(cci_dev,MASTER_0,QUEUE_0);
+#endif
 		cam_io_w_mb(CCI_M0_RESET_RMSK,
 			base + CCI_RESET_CMD_ADDR);
 	}
 	if (irq_status0 & CCI_IRQ_STATUS_0_I2C_M1_Q0Q1_HALT_ACK_BMSK) {
 		cci_dev->cci_master_info[MASTER_1].reset_pending = true;
+#ifdef DUMP_CCI_REGISTERS
+		CAM_INFO(CAM_CCI, "got HALT_ACK for M1");
+		cam_cci_irq_dump_registers(cci_dev,MASTER_1,QUEUE_0);
+#endif
 		cam_io_w_mb(CCI_M1_RESET_RMSK,
 			base + CCI_RESET_CMD_ADDR);
 	}

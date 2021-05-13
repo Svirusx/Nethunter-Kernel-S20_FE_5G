@@ -44,14 +44,6 @@
 #define CONSERVATIVE_BOOST 2
 #define RESTRAINED_BOOST 3
 
-struct cpufreq_limit_handle {
-	struct list_head node;
-	unsigned long min;
-	unsigned long max;
-	char label[20];
-	u64 start_msecs;
-};
-
 static DEFINE_MUTEX(cpufreq_limit_lock);
 static LIST_HEAD(cpufreq_limit_requests);
 
@@ -65,6 +57,7 @@ struct cpufreq_limit_parameter {
 	unsigned int	ltl_cpu_policy;
 	unsigned int	ltl_cpu_start;
 	unsigned int	ltl_cpu_end;
+	unsigned int	mid_cpu_policy;
 	unsigned int	big_cpu_policy;
 	unsigned int	big_cpu_start;
 	unsigned int	big_cpu_end;
@@ -77,15 +70,20 @@ struct cpufreq_limit_parameter {
 	unsigned int	ltl_min_lock;
 	unsigned int	ltl_divider;
 
-	bool		use_hotplug_out;
+	bool			use_hotplug_out;
 	unsigned int	hmp_boost_type;
 	unsigned int	hmp_boost_active;
-	int		hmp_prev_boost_type;
+	int				hmp_prev_boost_type;
 
 	/* set limit of max freq limit for guarantee performance */
 	unsigned int	ltl_limit_max_freq;
+
+	unsigned int	over_limit;
+	int				cur_orig_min;
+	int				cur_orig_max;
 };
 
+/* for SM8250 */
 struct cpufreq_limit_parameter param = {
 	.freq_count		= 0,
 	.table_initialized	= false,
@@ -93,6 +91,7 @@ struct cpufreq_limit_parameter param = {
 	.ltl_cpu_policy		= 0,
 	.ltl_cpu_start		= 0,
 	.ltl_cpu_end		= 3,
+	.mid_cpu_policy		= 4,
 	.big_cpu_policy		= 7,
 	.big_cpu_start		= 4,
 	.big_cpu_end		= 7,
@@ -107,10 +106,57 @@ struct cpufreq_limit_parameter param = {
 
 	.hmp_boost_type		= CONSERVATIVE_BOOST,
 	.hmp_boost_active	= 0,
-	.hmp_prev_boost_type	= 0,
+	.hmp_prev_boost_type = 0,
 
 	.ltl_limit_max_freq	= 1113600,
+
+	.over_limit			= -1,
+	.cur_orig_min		= -1,
+	.cur_orig_max		= -1,
 };
+
+static struct cpufreq_limit_handle
+	cpufreq_limit_handle_list[DVFS_MAX_ID] = {
+	{
+		.name = "none",
+		.id = DVFS_NO_ID
+	},
+	{
+		.name = "touch",
+		.id = DVFS_TOUCH_ID
+	},
+	{
+		.name = "finger",
+		.id = DVFS_FINGER_ID
+	},
+	{
+		.name = "multi-touch",
+		.id = DVFS_MULTI_TOUCH_ID
+	},
+	{
+		.name = "argos",
+		.id = DVFS_ARGOS_ID
+	},
+#ifdef CONFIG_USB_AUDIO_ENHANCED_DETECT_TIME
+	{
+		.name = "boost-host",
+		.id = DVFS_BOOST_HOST_ID
+	},
+#endif
+	{
+		.name = "user_min",
+		.id = DVFS_USER_MIN_ID
+	},
+	{
+		.name = "user_max",
+		.id = DVFS_USER_MAX_ID
+	},
+};
+
+struct cpufreq_limit_handle *cpufreq_limit_get_handle(int id)
+{
+	return &cpufreq_limit_handle_list[id];
+}
 
 void cpufreq_limit_corectl(int freq)
 {
@@ -139,7 +185,7 @@ void cpufreq_limit_corectl(int freq)
 	}
 }
 
-bool cpufreq_limit_make_table(void)
+static bool cpufreq_limit_make_table(void)
 {
 	int i, count = 0;
 	int freq_count = 0;
@@ -386,14 +432,14 @@ static int cpufreq_limit_adjust_freq(struct cpufreq_policy *policy,
 			*min *= param.ltl_divider;
 
 		if (*max >= param.big_min_freq)
-			*max = policy->cpuinfo.max_freq;
+			*max = policy->user_policy.max;
 		else
 			*max *= param.ltl_divider;
 	} else {
 		if (*min >= param.big_min_freq) {
 			hmp_boost_active = 1;
 		} else {
-			*min = policy->cpuinfo.min_freq;
+			*min = policy->user_policy.min;
 			hmp_boost_active = 0;
 		}
 
@@ -401,7 +447,7 @@ static int cpufreq_limit_adjust_freq(struct cpufreq_policy *policy,
 			pr_debug("%s: big_min_freq(%u), max(%lu)\n", __func__,
 				param.big_min_freq, *max);
 		} else {
-			*max = policy->cpuinfo.min_freq;
+			*max = policy->user_policy.min;
 			hmp_boost_active = 0;
 		}
 
@@ -414,114 +460,78 @@ static int cpufreq_limit_adjust_freq(struct cpufreq_policy *policy,
 	return 0;
 }
 
-
-/**
- * cpufreq_limit_get - limit min_freq or max_freq, return cpufreq_limit_handle
- * @min_freq	limit minimum frequency (0: none)
- * @max_freq	limit maximum frequency (0: none)
- * @label	a literal description string of this request
- */
-struct cpufreq_limit_handle *cpufreq_limit_get(unsigned long min_freq,
-		unsigned long max_freq, char *label)
+int cpufreq_limit_get(unsigned long freq,
+						struct cpufreq_limit_handle *handle)
 {
-	struct cpufreq_limit_handle *handle;
-	int i, found;
 	ktime_t curr_time;
 	u64 msecs64;
 
-	if (max_freq && max_freq < min_freq)
-		return ERR_PTR(-EINVAL);
+	if (!param.table_initialized)
+		return -EAGAIN;
 
 	mutex_lock(&cpufreq_limit_lock);
-	found = 0;
-	list_for_each_entry(handle, &cpufreq_limit_requests, node) {
-		if (!strncmp(handle->label, label, strlen(handle->label))) {
-			found = 1;
-			pr_debug("%s: %s is found in list\n", __func__,
-							handle->label);
-			break;
-		}
-	}
 
-	if (found) {
-		if (handle->min == min_freq
-			 && handle->max == max_freq) {
-			pr_info("%s: %s same values(%lu,%lu) entered. just return.\n",
-						__func__, handle->label,
-						handle->min, handle->max);
-			mutex_unlock(&cpufreq_limit_lock);
-			return handle;
-		}
-	}
-
-	if (!found) {
-		handle = kzalloc(sizeof(*handle), GFP_KERNEL);
-		if (!handle) {
-			pr_err("%s: alloc fail for %s .\n", __func__, label);
-			mutex_unlock(&cpufreq_limit_lock);
-			return ERR_PTR(-ENOMEM);
-		}
-
-		if (strlen(label) < sizeof(handle->label))
-			strlcpy(handle->label, label,
-				sizeof(handle->label));
-		else
-			strlcpy(handle->label, label,
-				sizeof(handle->label) - 1);
-
-		list_add_tail(&handle->node, &cpufreq_limit_requests);
-	}
-
-	handle->min = min_freq;
-	handle->max = max_freq;
-
+	handle->freq = freq;
 	curr_time = ktime_get();
 	msecs64 = ktime_to_ns(curr_time);
 	do_div(msecs64, NSEC_PER_MSEC);
 	handle->start_msecs = msecs64;
+	if (!handle->requested) {
+		list_add_tail(&handle->node, &cpufreq_limit_requests);
+		handle->requested = true;
+	}
 
-	pr_debug("%s: %s,%lu,%lu\n", __func__, handle->label, handle->min,
-			handle->max);
+	pr_debug("%s: %s, %lu\n", __func__, handle->name, handle->freq);
 
 	mutex_unlock(&cpufreq_limit_lock);
 
-	/* Re-evaluate policy to trigger adjust notifier for online CPUs */
-	get_online_cpus();
+	cpufreq_update_policy(param.ltl_cpu_policy);
+	cpufreq_update_policy(param.mid_cpu_policy);
+	cpufreq_update_policy(param.big_cpu_policy);
 
-	for_each_online_cpu(i)
-		cpufreq_update_policy(i);
-
-	put_online_cpus();
-
-	return handle;
+	return 0;
 }
 
-/**
- * cpufreq_limit_put - release of a limit of min_freq or max_freq, free
- *			a cpufreq_limit_handle
- * @handle	a cpufreq_limit_handle that has been requested
- */
 int cpufreq_limit_put(struct cpufreq_limit_handle *handle)
 {
-	int i;
-
-	if (handle == NULL || IS_ERR(handle))
-		return -EINVAL;
-
-	pr_debug("%s: %s,%lu,%lu\n", __func__, handle->label, handle->min,
-			handle->max);
+	pr_debug("%s: %s, %lu\n", __func__, handle->name, handle->freq);
 
 	mutex_lock(&cpufreq_limit_lock);
-	list_del(&handle->node);
+	if (handle->requested) {
+		list_del(&handle->node);
+		handle->requested = false;
+	}
 	mutex_unlock(&cpufreq_limit_lock);
 
-	get_online_cpus();
-	for_each_online_cpu(i)
-		cpufreq_update_policy(i);
-	put_online_cpus();
+	cpufreq_update_policy(param.ltl_cpu_policy);
+	cpufreq_update_policy(param.mid_cpu_policy);
+	cpufreq_update_policy(param.big_cpu_policy);
 
-	kfree(handle);
 	return 0;
+}
+
+int cpufreq_limit_get_cur_min(void)
+{
+	return param.cur_orig_min;
+}
+
+int cpufreq_limit_get_cur_max(void)
+{
+	return param.cur_orig_max;
+}
+
+void cpufreq_limit_set_over_limit(unsigned int val)
+{
+	param.over_limit = val;
+
+	cpufreq_update_policy(param.ltl_cpu_policy);
+	cpufreq_update_policy(param.mid_cpu_policy);
+	cpufreq_update_policy(param.big_cpu_policy);
+}
+
+unsigned int cpufreq_limit_get_over_limit(void)
+{
+	return param.over_limit;
 }
 
 static int cpufreq_limit_notifier_policy(struct notifier_block *nb,
@@ -530,6 +540,7 @@ static int cpufreq_limit_notifier_policy(struct notifier_block *nb,
 	struct cpufreq_policy *policy = data;
 	struct cpufreq_limit_handle *handle;
 	unsigned long min = 0, max = ULONG_MAX;
+	int min_id = DVFS_NO_ID;
 #if defined(USE_MATCH_CPU_VOL_MIN_FREQ)
 	unsigned long adjust_min = 0;
 #endif
@@ -537,21 +548,23 @@ static int cpufreq_limit_notifier_policy(struct notifier_block *nb,
 	unsigned long adjust_max = 0;
 #endif
 
-
 	if (val != CPUFREQ_ADJUST)
 		goto done;
 
 	mutex_lock(&cpufreq_limit_lock);
+
 	list_for_each_entry(handle, &cpufreq_limit_requests, node) {
-		if (handle->min > min)
-			min = handle->min;
-		if (handle->max && handle->max < max)
-			max = handle->max;
+		if (handle->id == DVFS_USER_MAX_ID && handle->freq < max)
+			max = handle->freq;
+		else if (handle->freq > min) {
+			min = handle->freq;
+			min_id = handle->id;
+		}
 	}
 
-	pr_debug("CPUFREQ(%d): %s: umin=%d,umax=%d\n",
+	pr_debug("++ CPUFREQ(%d): %s: user(%d ~ %d), pol(%d ~ %d), set(%lu ~ %lu), over(%d)\n",
 		policy->cpu, __func__,
-		policy->user_policy.min, policy->user_policy.max);
+		policy->user_policy.min, policy->user_policy.max, policy->min, policy->max, min, max, param.over_limit);
 
 	mutex_unlock(&cpufreq_limit_lock);
 
@@ -579,18 +592,25 @@ static int cpufreq_limit_notifier_policy(struct notifier_block *nb,
 	}
 #endif
 
+	param.cur_orig_min = min;
+	param.cur_orig_max = max;
+
 	if (!min && max == ULONG_MAX) {
 		cpufreq_limit_hmp_boost(0);
+		param.cur_orig_min = -1;
+		param.cur_orig_max = -1;
 		goto done;
 	}
 
 	if (!min) {
-		min = policy->cpuinfo.min_freq;
+		min = policy->user_policy.min;
 		set_ltl_divider(policy, &min);
+		param.cur_orig_min = -1;
 	}
 	if (max == ULONG_MAX) {
-		max = policy->cpuinfo.max_freq;
+		max = policy->user_policy.max;
 		set_ltl_divider(policy, &max);
+		param.cur_orig_max = -1;
 	}
 
 	/*
@@ -613,11 +633,25 @@ static int cpufreq_limit_notifier_policy(struct notifier_block *nb,
 	pr_debug("%s: limiting cpu%d cpufreq to %lu-%lu\n", __func__,
 			policy->cpu, min, max);
 
+	/* for over limit */
+	if (param.over_limit != -1 && param.cur_orig_max != -1
+		&& (int)param.over_limit > param.cur_orig_max
+		&& (param.cur_orig_min >= param.big_min_freq)
+		&& (min_id == DVFS_USER_MIN_ID || min_id == DVFS_TOUCH_ID)) {
+		max = param.over_limit;
+
+		pr_debug("%s: min over max: cpu%d cpufreq to %lu-%lu\n", __func__,
+				policy->cpu, min, max);
+	}
+
 	cpufreq_verify_within_limits(policy, min, max);
 
 	pr_debug("%s: limited cpu%d cpufreq to %u-%u\n", __func__,
 			policy->cpu, policy->min, policy->max);
 done:
+	pr_debug("-- CPUFREQ(%d): %s: user(%d ~ %d), pol(%d ~ %d), set(%lu ~ %lu), over(%d)\n",
+		policy->cpu, __func__,
+		policy->user_policy.min, policy->user_policy.max, policy->min, policy->max, min, max, param.over_limit);
 	return 0;
 }
 
@@ -641,15 +675,15 @@ static ssize_t show_cpufreq_limit_requests(struct kobject *kobj,
 
 	mutex_lock(&cpufreq_limit_lock);
 	len += snprintf(buf + len, MAX_BUF_SIZE,
-			"%s\t\t%s\t%s\t\%s\n",
-			"label", "min", "max", "since");
+			"%s\t\t%s\t\t%s\n",
+			"name", "freq", "since");
 
 	list_for_each_entry(handle, &cpufreq_limit_requests, node) {
 		sincesecs64 = msecs64 - handle->start_msecs;
 
 		len += snprintf(buf + len, MAX_BUF_SIZE,
-				"%s\t%lu\t%lu\t\%llu\n", handle->label,
-				handle->min, handle->max, sincesecs64);
+				"%s\t\t%lu\t\t%llu\n", handle->name,
+				handle->freq, sincesecs64);
 	}
 	mutex_unlock(&cpufreq_limit_lock);
 

@@ -176,15 +176,45 @@ static inline int __sec_last_kmsg_init(void)
 
 
 #if IS_ENABLED(CONFIG_SEC_LOG_STORE_LPM_KMSG)
+static void lpm_klog_store(void)
+{
+	struct sec_log_buf *lpm_klog_buf = NULL;
+	char *lpm_klog_write_buf = NULL;
+	uint32_t idx = 0, len = 0;
+
+	pr_info("booting lpm mode, store lpm_klog\n");
+	lpm_klog_buf = vmalloc(sec_log_size);
+	lpm_klog_write_buf = vmalloc(max_t(size_t, sec_log_size, SEC_DEBUG_RESET_LPM_KLOG_SIZE));
+	if (lpm_klog_buf && lpm_klog_write_buf) {
+		memcpy_fromio(lpm_klog_buf, s_log_buf, sec_log_size);
+		
+		if (lpm_klog_buf->idx > sec_log_buf_size) {
+			idx = lpm_klog_buf->idx % sec_log_buf_size; 
+			len = sec_log_buf_size - idx;
+			if (len != 0)
+				memcpy(lpm_klog_write_buf, &(lpm_klog_buf->buf[idx]), len);
+		}
+
+		memcpy(lpm_klog_write_buf + len, lpm_klog_buf->buf, idx);                
+		write_debug_partition(debug_index_reset_lpm_klog, lpm_klog_write_buf);
+	} else {
+		pr_err("fail - vmalloc\n");
+		write_debug_partition(debug_index_reset_lpm_klog, s_log_buf);
+	}
+
+	if (lpm_klog_write_buf)
+		vfree(lpm_klog_write_buf);
+	if (lpm_klog_buf)
+		vfree(lpm_klog_buf);
+}
+
 static int sec_log_store_lpm_kmsg(
 		struct notifier_block *nb, unsigned long action, void *data)
 {
 	switch (action) {
 		case DBG_PART_DRV_INIT_DONE:
-			if (lpm_mode && sec_log_buf_init_done) {
-				pr_info("booting lpm mode, store klog\n");
-				write_debug_partition(debug_index_reset_lpm_klog, s_log_buf);
-			}
+			if (lpm_mode && sec_log_buf_init_done) 
+				lpm_klog_store();
 			break;
 		default:
 			return NOTIFY_DONE;

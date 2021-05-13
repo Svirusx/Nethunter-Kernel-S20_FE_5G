@@ -1626,14 +1626,21 @@ unsigned long reclaim_pages_from_list(struct list_head *page_list,
 	};
 
 	unsigned long nr_reclaimed;
-	struct page *page;
+	struct page *page, *next;
+	LIST_HEAD(unevictable_pages);
 
-	list_for_each_entry(page, page_list, lru)
+	list_for_each_entry_safe(page, next, page_list, lru) {
+		if (PageUnevictable(page)) {
+			list_move(&page->lru, &unevictable_pages);
+			continue;
+		}
 		ClearPageActive(page);
+	}
 
 	nr_reclaimed = shrink_page_list(page_list, NULL, &sc,
 			TTU_IGNORE_ACCESS, NULL, true);
 
+	list_splice(&unevictable_pages, page_list);
 	while (!list_empty(page_list)) {
 		page = lru_to_page(page_list);
 		list_del(&page->lru);
@@ -2522,7 +2529,7 @@ static inline bool mem_boost_pgdat_wmark(struct pglist_data *pgdat)
 }
 
 #define MEM_BOOST_THRESHOLD ((600 * 1024 * 1024) / (PAGE_SIZE))
-static inline bool need_memory_boosting(struct pglist_data *pgdat)
+inline bool need_memory_boosting(struct pglist_data *pgdat)
 {
 	bool ret;
 	unsigned long pgdatfile = node_page_state(pgdat, NR_ACTIVE_FILE) +
@@ -2976,6 +2983,9 @@ static void shrink_node_memcg(struct pglist_data *pgdat, struct mem_cgroup *memc
 	}
 	blk_finish_plug(&plug);
 	sc->nr_reclaimed += nr_reclaimed;
+
+	if (need_memory_boosting(NULL))
+		return;
 
 	/*
 	 * Even if we did not try to evict anon pages at all, we want to

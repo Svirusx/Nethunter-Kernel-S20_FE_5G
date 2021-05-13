@@ -1,7 +1,7 @@
 /*
  * Linux cfg80211 driver
  *
- * Copyright (C) 2020, Broadcom.
+ * Copyright (C) 2021, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -1628,6 +1628,32 @@ typedef struct wl_event_idx {
 	u32 event_type;
 	u32 min_connect_idx;
 } wl_event_idx_t;
+#ifdef TPUT_DEBUG_DUMP
+struct tput_debug_cmd_config {
+	char cmd[WLC_IOCTL_SMLEN];
+	char sub_cmd[WLC_IOCTL_SMLEN];
+};
+#define TPUT_DBG_CMD_CONFIG_MAX 2
+#endif /* TPUT_DEBUG_DUMP */
+
+#ifdef DEBUG_SETROAMMODE
+typedef struct wl_roamoff_info {
+	uint64 roam_disable_time;
+	uint64 roam_enable_time;
+	uint roam_disable_rsn;
+	uint roam_enable_rsn;
+} wl_roamoff_info_t;
+#endif /* DEBUG_SETROAMMODE */
+
+#ifdef CONFIG_COMPAT
+typedef struct compat_buf_data {
+	u32 ver; /* version of struct */
+	u32 len; /* Total len */
+	/* size of each buffer in case of split buffers (0 - single buffer). */
+	u32 buf_threshold;
+	u32 data_buf; /* array of user space buffer pointers. */
+} compat_buf_data_t;
+#endif /* CONFIG_COMPAT */
 
 /* private data of cfg80211 interface */
 struct bcm_cfg80211 {
@@ -1888,6 +1914,19 @@ struct bcm_cfg80211 {
 	struct ether_addr af_randmac;
 	bool randomized_gas_tx;
 	u8 country[WLC_CNTRY_BUF_SZ];
+#ifdef TPUT_DEBUG_DUMP
+	struct tput_debug_cmd_config tput_dbg_cmds[TPUT_DBG_CMD_CONFIG_MAX];
+	struct delayed_work tput_debug_work;
+	bool tput_dbg_mode_enable;
+	bool tput_dbg_cmd_config;
+	uint8 tput_dbg_ifindex;
+#endif /* TPUT_DEBUG_DUMP */
+#ifdef DEBUG_SETROAMMODE
+	wl_roamoff_info_t *roamoff_info;
+#endif /* DEBUG_SETROAMMODE */
+#ifdef WL_SCHED_SCAN
+	struct delayed_work sched_scan_stop_work;
+#endif /* WL_SCHED_SCAN */
 };
 
 /* Max auth timeout allowed in case of EAP is 70sec, additional 5 sec for
@@ -3058,4 +3097,36 @@ typedef enum auth_assoc_status_ext {
 extern s32 wl_get_auth_assoc_status_ext(struct bcm_cfg80211 *cfg,
 	struct net_device *ndev, const wl_event_msg_t *e);
 #endif	/* AUTH_ASSOC_STATUS_EXT */
+
+#ifdef DEBUG_SETROAMMODE
+#define CMD_ROAMOFF	"roam_off"
+typedef enum wl_roamoff_dbg_reason {
+	SET_ROAM_RF_TEST	= 0,
+	SET_ROAM_DHD_SUSPEND,
+	SET_ROAM_PREINIT,
+	SET_ROAM_FILS_TOGGLE,
+	SET_ROAM_ROAMMODE,
+	SET_ROAM_IOLIST_ADD,
+	SET_ROAM_IOLIST_RESUME,
+	SET_ROAM_P2P_GC,
+	SET_ROAM_CONCRT_MODE,
+	SET_ROAM_VNDR_POLICY,
+	SET_ROAM_MAX			/* Max set roam_off reason */
+} wl_roamoff_dbg_reason_t;
+
+extern void wl_android_roamoff_dbg_clr(struct bcm_cfg80211 *cfg);
+extern void wl_android_roamoff_dbg_save(struct net_device *dev, uint rsn, uint roamvar);
+extern void wl_android_roamoff_dbg_dump(struct bcm_cfg80211 *cfg);
+
+#define ROAMOFF_DBG_CLR(cfg)	\
+    wl_android_roamoff_dbg_clr((cfg));
+#define ROAMOFF_DBG_SAVE(dev, rsn, var)	\
+    wl_android_roamoff_dbg_save((dev), (rsn), (var));
+#define ROAMOFF_DBG_DUMP(cfg)	\
+    wl_android_roamoff_dbg_dump((cfg));
+#else
+#define ROAMOFF_DBG_CLR(cfg)
+#define ROAMOFF_DBG_SAVE(dev, rsn, var)
+#define ROAMOFF_DBG_DUMP(cfg)
+#endif /* DEBUG_SETROAMMODE */
 #endif /* _wl_cfg80211_h_ */

@@ -30,13 +30,13 @@ int __read_mostly factory_mode;
 EXPORT_SYMBOL(factory_mode);
 module_param(factory_mode, int, 0444);
 
-int __read_mostly pd_disable;
+unsigned int __read_mostly pd_disable;
 EXPORT_SYMBOL(pd_disable);
-module_param(pd_disable, int, 0444);
+module_param(pd_disable, uint, 0444);
 
-int __read_mostly wireless_ic;
+unsigned int __read_mostly wireless_ic;
 EXPORT_SYMBOL(wireless_ic);
-module_param(wireless_ic, int, 0444);
+module_param(wireless_ic, uint, 0444);
 
 int __read_mostly pmic_info;
 EXPORT_SYMBOL(pmic_info);
@@ -46,9 +46,9 @@ int __read_mostly ccic_info;
 EXPORT_SYMBOL(ccic_info);
 module_param(ccic_info, int, 0444);
 
-int __read_mostly charging_mode;
+unsigned int __read_mostly charging_mode;
 EXPORT_SYMBOL(charging_mode);
-module_param(charging_mode, int, 0444);
+module_param(charging_mode, uint, 0444);
 
 static int sec_mparam_init(void)
 {

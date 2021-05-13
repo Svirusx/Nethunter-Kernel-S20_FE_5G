@@ -748,7 +748,8 @@ int32_t cam_actuator_i2c_pkt_parse(struct cam_actuator_ctrl_t *a_ctrl,
 	struct cam_sensor_power_ctrl_t  *power_info = NULL;
 #if defined(CONFIG_SEC_X1Q_PROJECT) || defined(CONFIG_SEC_Y2Q_PROJECT) || defined(CONFIG_SEC_C1Q_PROJECT)\
 	|| defined(CONFIG_SEC_BLOOMXQ_PROJECT) || defined(CONFIG_SEC_C2Q_PROJECT) || defined(CONFIG_SEC_F2Q_PROJECT)\
-	|| defined(CONFIG_SEC_VICTORY_PROJECT) || defined(CONFIG_SEC_R8Q_PROJECT)
+	|| defined(CONFIG_SEC_VICTORY_PROJECT) || defined(CONFIG_SEC_R8Q_PROJECT)\
+	|| defined(CONFIG_SEC_GTS7L_PROJECT) || defined(CONFIG_SEC_GTS7XL_PROJECT)
 	int32_t retry = 0;
 	uint32_t status;
 #endif
@@ -911,7 +912,8 @@ int32_t cam_actuator_i2c_pkt_parse(struct cam_actuator_ctrl_t *a_ctrl,
 
 #if defined(CONFIG_SEC_X1Q_PROJECT) || defined(CONFIG_SEC_Y2Q_PROJECT) || defined(CONFIG_SEC_C1Q_PROJECT)\
 	|| defined(CONFIG_SEC_BLOOMXQ_PROJECT) || defined(CONFIG_SEC_C2Q_PROJECT) || defined(CONFIG_SEC_F2Q_PROJECT)\
-	|| defined(CONFIG_SEC_VICTORY_PROJECT) || defined(CONFIG_SEC_R8Q_PROJECT)
+	|| defined(CONFIG_SEC_VICTORY_PROJECT) || defined(CONFIG_SEC_R8Q_PROJECT)\
+	|| defined(CONFIG_SEC_GTS7L_PROJECT) || defined(CONFIG_SEC_GTS7XL_PROJECT)
 		if (a_ctrl->soc_info.index == 0) {
 			rc = camera_io_dev_read(&a_ctrl->io_master_info,
 				0x02, &status,

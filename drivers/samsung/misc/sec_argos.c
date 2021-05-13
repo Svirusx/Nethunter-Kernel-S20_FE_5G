@@ -28,6 +28,11 @@
 #include <linux/cpumask.h>
 #include <linux/interrupt.h>
 
+#if defined(CONFIG_ARCH_LAHAINA)
+#define ARGOS_VOTING_DDR_CLK
+#include <linux/interconnect.h>
+#endif
+
 #ifdef CONFIG_CPU_FREQ_LIMIT
 #include <linux/cpufreq.h>
 #include <linux/cpufreq_limit.h>
@@ -46,9 +51,29 @@ int set_freq_limit(unsigned long id, unsigned int freq)
 }
 #endif
 
+#if defined(CONFIG_ARCH_LAHAINA)
+#define ARGOS_VOTING_DDR_CLK
+#endif
+
 #define ARGOS_NAME "argos"
 #define TYPE_SHIFT 4
 #define TYPE_MASK_BIT ((1 << TYPE_SHIFT) - 1)
+
+#define LOCK_RELEASE 	0
+#define FREQ_UNLOCK		-1
+#define SKIP_FREQ_UPDATE	0
+#define FREQ_UPDATE 	1
+
+#define CPU_UNLOCK_FREQ -1
+#ifdef ARGOS_VOTING_DDR_CLK
+#define DDR_UNLOCK_FREQ 0
+#endif
+
+//Refer to "include/dt-bindings/interconnect/qcom,lahaina.h"
+#define MASTER_APPSS_PROC                              2
+#define SLAVE_EBI1                             512
+#define BUS_W 4        /* SM8350 DDR Voting('w' for DDR is 4) */
+#define MHZ_TO_KBPS(mhz, w) ((uint64_t)mhz * 1000 * w)
 
 static DEFINE_SPINLOCK(argos_irq_lock);
 static DEFINE_SPINLOCK(argos_task_lock);
@@ -60,12 +85,20 @@ enum {
 	BIG_MAX_FREQ,
 	LITTLE_MIN_FREQ,
 	LITTLE_MAX_FREQ,
-	BIMC1FREQ,
-	BIMC2FREQ,
+	DDR_FREQ,
+	RESERVED,
 	TASK_AFFINITY_EN,
 	IRQ_AFFINITY_EN,
 	SCHED_BOOST_EN,
 	ITEM_MAX,
+};
+
+enum {
+	BOOST_CPU,
+#ifdef ARGOS_VOTING_DDR_CLK
+	BOOST_DDR,
+#endif
+	BOOST_MAX
 };
 
 struct boost_table {
@@ -105,14 +138,24 @@ struct argos {
 
 struct argos_platform_data {
 	struct argos *devices;
+	struct device *dev;
 	int ndevice;
 	struct notifier_block pm_qos_nfb;
-	int *boost_list;
-	int boost_max;
+	int *boost_list[BOOST_MAX];
+	int boost_max[BOOST_MAX];
 };
 
 static struct argos_platform_data *argos_pdata;
-
+static int boost_unlock_freq[BOOST_MAX] = {
+CPU_UNLOCK_FREQ
+#ifdef ARGOS_VOTING_DDR_CLK
+, DDR_UNLOCK_FREQ
+#endif
+};
+#ifdef ARGOS_VOTING_DDR_CLK
+struct icc_path *path_argos_bw;
+int argos_icc_register = 0;
+#endif
 static int argos_find_index(const char *label)
 {
 	int i;
@@ -375,80 +418,75 @@ int argos_hmpboost_apply(int dev_num, bool enable)
 	return 0;
 }
 
-/* Returns 1 if max frequency is updated */
-static int argos_boost_list_set(int type, int frequency)
-{
-	int *boost_list = argos_pdata->boost_list;
-	int i, ret = 0, prev_freq;
-
-	/*
-	 * Update max if new frequency is higher than current max.
-	 * Need to do nothing when new frequency is equal to previous max.
-	 */
-	spin_lock(&argos_boost_list_lock);
-
-	prev_freq = boost_list[type];
-	boost_list[type] = frequency;
-	if (frequency >= argos_pdata->boost_max) {
-		ret = (argos_pdata->boost_max == frequency) ? 0 : 1;
-		argos_pdata->boost_max = frequency;
-	} else if (prev_freq == argos_pdata->boost_max) {
-		/* now new frqeuncy is less then previous max,
-		 * and prev-max could be of this type of device.
-		 * We have to find new max frequency.
-		 */
-		int max = -1;
-
-		for (i = 0; i < argos_pdata->ndevice; i++)
-			if (boost_list[i] > max) max = boost_list[i];
-		argos_pdata->boost_max = max;
-		ret = 1;
+static int find_max(int dev_type, int *freq, int ndevice){
+	int i, max = boost_unlock_freq[dev_type];
+	for (i = 0; i < ndevice; i++){
+		if(freq[i] > max) max = freq[i];
 	}
-
-	spin_unlock(&argos_boost_list_lock);
-	return ret;
+	
+	return max;
 }
 
-static void argos_freq_unlock(int type)
+static int check_update_freq(int boost_type, int dev_type, int target)
 {
-	const char *cname;
+	int ret = SKIP_FREQ_UPDATE, new_max, prev;
 
-	cname = argos_pdata->devices[type].desc;
-	if (argos_boost_list_set(type, -1)) {
-		set_freq_limit(DVFS_ARGOS_ID, argos_pdata->boost_max);
-		pr_info("name:%s, updated boost-frequency %d\n",
-			cname, argos_pdata->boost_max);
+	spin_lock(&argos_boost_list_lock);
+
+	prev = argos_pdata->boost_list[boost_type][dev_type];
+	argos_pdata->boost_list[boost_type][dev_type] = target;
+	
+	new_max = find_max(boost_type, argos_pdata->boost_list[boost_type], \
+		argos_pdata->ndevice);
+	spin_unlock(&argos_boost_list_lock);
+	
+	if(new_max > argos_pdata->boost_max[boost_type] \
+		|| (prev == argos_pdata->boost_max[boost_type] \
+			&& new_max != argos_pdata->boost_max[boost_type])){
+		argos_pdata->boost_max[boost_type] = new_max;
+		ret = FREQ_UPDATE;
 	}
-
-	pr_info("name:%s\n", cname);
+	return ret;
 }
 
 static void argos_freq_lock(int type, int level)
 {
-	unsigned int big_min_freq, big_max_freq, little_min_freq, little_max_freq;
-	unsigned int target_freq;
+	unsigned int big_min_freq, little_min_freq;
+	int target_freq, need_update;
 	struct boost_table *t = &argos_pdata->devices[type].tables[level];
 	const char *cname;
 
-
 	cname = argos_pdata->devices[type].desc;
 
-	big_min_freq = t->items[BIG_MIN_FREQ];
-	big_max_freq = t->items[BIG_MAX_FREQ];
-	little_min_freq = t->items[LITTLE_MIN_FREQ];
-	little_max_freq = t->items[LITTLE_MAX_FREQ];
-
-	target_freq = (big_min_freq > little_min_freq) ?
-				big_min_freq : little_min_freq;
-
-	pr_info("name:%s, BIG_MIN=%d, BIG_MAX=%d , LITTLE_MIN=%d, LITTLE_MAX=%d\n",
-		cname, big_min_freq, big_max_freq, little_min_freq, little_max_freq);
-	if (argos_boost_list_set(type, target_freq)) {
-		set_freq_limit(DVFS_ARGOS_ID, argos_pdata->boost_max);
-		pr_info("name:%s, updated boost-frequency %d\n",
-			cname, argos_pdata->boost_max);
+	if(level != FREQ_UNLOCK){
+		t = &argos_pdata->devices[type].tables[level];
+		big_min_freq = t->items[BIG_MIN_FREQ];
+		little_min_freq = t->items[LITTLE_MIN_FREQ];
 	}
+	
+	if(level != FREQ_UNLOCK)
+		target_freq = (big_min_freq > little_min_freq) ?
+				big_min_freq : little_min_freq;	
+	else
+		target_freq = boost_unlock_freq[BOOST_CPU];
 
+	need_update = check_update_freq(BOOST_CPU, type, target_freq);
+	if(need_update != SKIP_FREQ_UPDATE){
+		pr_info("update cpu freq %d\n", argos_pdata->boost_max[BOOST_CPU]);
+		set_freq_limit(DVFS_ARGOS_ID, argos_pdata->boost_max[BOOST_CPU]);
+	}
+#ifdef ARGOS_VOTING_DDR_CLK	
+	if(level != FREQ_UNLOCK)
+		target_freq = t->items[DDR_FREQ];
+	else
+		target_freq = boost_unlock_freq[BOOST_DDR];
+	
+	need_update = check_update_freq(BOOST_DDR, type, target_freq);
+	if(need_update != SKIP_FREQ_UPDATE){
+		pr_info("update ddr freq %d\n", argos_pdata->boost_max[BOOST_DDR]);
+		icc_set_bw(path_argos_bw, 0, MHZ_TO_KBPS(argos_pdata->boost_max[BOOST_DDR], BUS_W));
+	}
+#endif
 }
 
 void argos_block_enable(char *req_name, bool set)
@@ -468,7 +506,7 @@ void argos_block_enable(char *req_name, bool set)
 	if (set) {
 		cnode->argos_block = true;
 		mutex_lock(&cnode->level_mutex);
-		argos_freq_unlock(dev_num);
+		argos_freq_lock(dev_num, FREQ_UNLOCK);
 		argos_task_affinity_apply(dev_num, 0);
 		argos_irq_affinity_apply(dev_num, 0);
 		argos_hmpboost_apply(dev_num, 0);
@@ -500,6 +538,26 @@ static struct notifier_block argos_cpuidle_reboot_nb = {
 	.notifier_call = argos_cpuidle_reboot_notifier,
 };
 
+#ifdef ARGOS_VOTING_DDR_CLK	
+static void get_icc_path(void)
+{
+	struct device *dev = argos_pdata->dev;
+	int bus_ret = 0;
+	
+	path_argos_bw = icc_get(dev, MASTER_APPSS_PROC, SLAVE_EBI1);
+	if (IS_ERR(path_argos_bw)) {
+		bus_ret = PTR_ERR(path_argos_bw);
+		dev_err(dev, "Failed to get path_argos_bw. ret=%d\n", bus_ret);
+		if (bus_ret != -EPROBE_DEFER)
+			dev_err(dev, "Failed to get icc path. ret=%d\n", bus_ret);
+	} else {
+		dev_info(dev, "Success to get path_argos_bw.\n");
+		argos_icc_register = 1;
+	}
+
+}
+#endif
+
 static int argos_pm_qos_notify(struct notifier_block *nfb,
 			       unsigned long speedtype, void *arg)
 
@@ -515,6 +573,12 @@ static int argos_pm_qos_notify(struct notifier_block *nfb,
 		       type, argos_pdata->ndevice);
 		return NOTIFY_BAD;
 	}
+	
+#ifdef ARGOS_VOTING_DDR_CLK	
+	if (argos_icc_register == 0){
+		get_icc_path();
+	}
+#endif
 
 	speed = speedtype >> TYPE_SHIFT;
 	cnode = &argos_pdata->devices[type];
@@ -554,14 +618,14 @@ static int argos_pm_qos_notify(struct notifier_block *nfb,
 			pr_info("name:%s, speed:%ldMbps, prev level:%d, request level:%d\n",
 				cnode->desc, speed, prev_level, level);
 
-			if (level == -1) {
+			if (level == FREQ_UNLOCK) {
 				if (cnode->argos_notifier.head) {
 					pr_debug("Call argos notifier(%s lev:%d)\n",
 						 cnode->desc, level);
 					blocking_notifier_call_chain(&cnode->argos_notifier,
 								     speed, NULL);
 				}
-				argos_freq_unlock(type);
+				argos_freq_lock(type, FREQ_UNLOCK);
 				argos_task_affinity_apply(type, 0);
 				argos_irq_affinity_apply(type, 0);
 				argos_hmpboost_apply(type, 0);
@@ -671,7 +735,7 @@ err_out:
 
 static int argos_probe(struct platform_device *pdev)
 {
-	int i, ret = 0;
+	int i, j, ret = 0;
 	struct argos_platform_data *pdata;
 
 	pr_info("Start probe\n");
@@ -694,15 +758,19 @@ static int argos_probe(struct platform_device *pdev)
 			return ret;
 		}
 		pr_info("parse dt done\n");
+		
+		for(i = 0; i < BOOST_MAX; i++){
+			pdata->boost_list[i] = devm_kzalloc(&pdev->dev, sizeof(int) * pdata->ndevice, GFP_KERNEL);
+			if (!pdata->boost_list[i]) {
+				dev_err(&pdev->dev, "Failed to allocate boosting frequency list\n");
+				return -ENOMEM;
+			}
 
-		pdata->boost_list = devm_kzalloc(&pdev->dev, sizeof(int) * pdata->ndevice, GFP_KERNEL);
-		if (!pdata->boost_list) {
-			dev_err(&pdev->dev, "Failed to allocate boosting frequency list\n");
-			return -ENOMEM;
+			for (j = 0; j < pdata->ndevice; j++){
+				pdata->boost_list[i][j] = boost_unlock_freq[i];	
+			}
+			pdata->boost_max[i] = boost_unlock_freq[i];
 		}
-		for (i = 0; i < pdata->ndevice; i++) pdata->boost_list[i] = -1;
-		pdata->boost_max = -1;
-
 	} else {
 		pdata = pdev->dev.platform_data;
 	}
@@ -716,11 +784,13 @@ static int argos_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev, "There are no devices\n");
 		return -EINVAL;
 	}
+	
 
 	pdata->pm_qos_nfb.notifier_call = argos_pm_qos_notify;
 	pm_qos_add_notifier(PM_QOS_NETWORK_THROUGHPUT, &pdata->pm_qos_nfb);
 	register_reboot_notifier(&argos_cpuidle_reboot_nb);
 	argos_pdata = pdata;
+	argos_pdata->dev = &pdev->dev;
 	platform_set_drvdata(pdev, pdata);
 
 	return 0;
@@ -734,7 +804,10 @@ static int argos_remove(struct platform_device *pdev)
 		return 0;
 	pm_qos_remove_notifier(PM_QOS_NETWORK_THROUGHPUT, &pdata->pm_qos_nfb);
 	unregister_reboot_notifier(&argos_cpuidle_reboot_nb);
-
+#ifdef ARGOS_VOTING_DDR_CLK	
+	if (argos_icc_register == 1)
+		icc_put(path_argos_bw);
+#endif
 	return 0;
 }
 
@@ -766,8 +839,7 @@ static void __exit argos_exit(void)
 {
 	return platform_driver_unregister(&argos_driver);
 }
-
-subsys_initcall(argos_init);
+late_initcall(argos_init);
 module_exit(argos_exit);
 
 MODULE_LICENSE("GPL");

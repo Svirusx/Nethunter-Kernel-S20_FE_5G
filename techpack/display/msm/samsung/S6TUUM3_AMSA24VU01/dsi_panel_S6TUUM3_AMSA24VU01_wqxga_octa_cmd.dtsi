@@ -195,13 +195,11 @@
 			39 01 00 00 00 00 01 00
 		];
 
-		//samsung,mdnie_tx_cmds_revA = [
-		//	39 01 00 00 00 00 00 00 00
-		//];
-
-		//samsung,packet_size_tx_cmds_revA = [
-		//7 01 00 00 00 00 02 07 00
-		//];
+		samsung,normal_brightness_etc_tx_cmds_revA = [
+			/* Stress Profiler Off */
+			39 01 00 00 00 00 03 B0 00 09
+			39 01 00 00 00 00 02 5D 00  /* off */
+		];
 
 		samsung,reg_read_pos_tx_cmds_revA = [
 			39 00 00 00 00 03 B0 00 00
@@ -213,6 +211,10 @@
 
 		samsung,display_on_tx_cmds_revA = [
 			05 01 00 00 11 00 01 29
+
+			/* UPI sync 70us */
+			39 01 00 00 00 00 03 B0 00 78
+			39 01 00 00 00 00 03 CB 70 33
 		];
 
 		samsung,first_display_on_tx_cmds_revA = [
@@ -271,11 +273,19 @@
 		 */
 		samsung,support_firmware_update;
 
+		//samsung,support_fw_update;
+
+		samsung,fw_start_addr = <0x10000>; /* 10000h~1FFFF */
+		samsung,fw_image_size = <65536>;		/* 64K <-196608(0x30000) bytes (0x0 ~ 0x02FFFF) */
+		samsung,fw_sector_size = <4096>;			/* 4KB */
+
 		// Erase
-		samsung,firmware_update_erase_delay_us = <400000>;	/* 400ms */
+		samsung,firmware_update_erase_delay_us = <500000>;	/* 500ms */
+		samsung,fw_erase_addr_idx = <3 4 5>;
+		samsung,fw_erase_size_idx = <6 7 8>;
 		samsung,firmware_update_erase_tx_cmds_revA = [
 				39 01 00 00 00 00 11
-					C0 00 44 03 20 00 00 10 00 00 00 00 00 00 00 00 00
+					C0 00 44 00 00 00 00 10 00 00 00 00 00 00 00 00 00 /* 4k unit erase */
 		];
 		samsung,firmware_update_mtp_id_erase_tx_cmds_revA = [
 				39 01 00 00 00 00 11
@@ -284,6 +294,9 @@
 
 		// Write
 		samsung,firmware_update_write_delay_us = <100000>;	/* 100ms */
+		samsung,fw_write_addr_idx = <3 4 5>;
+		samsung,fw_write_size_idx = <6 7 8>;
+		samsung,fw_write_data_size = <128>;
 		samsung,firmware_update_write_tx_cmds_revA = [
 				39 01 00 00 00 00 91
 					C0 00 22 00 00 00 00 00 80 00 00 00 00 00 00 00 00
@@ -306,18 +319,38 @@
 		];
 
 		// Read
-		samsung,firmware_update_read_delay_us = <100000>;	/* 100ms */
+		samsung,firmware_update_read_delay_us = <50000>;	/* 40ms */
+		//samsung,fw_read_data_size = <128>;
 		samsung,firmware_update_done_check_read_value = <0x0E>;
 		samsung,firmware_update_status_read_value = <0x04>;	/* Expected C1 Read Value */
 		samsung,firmware_update_read_rx_cmds_revA = [06 01 00 00 00 00 01 C2 80 00];	/* Read C2 128(0x80) byte */
 		samsung,firmware_update_status_read_rx_cmds_revA = [06 01 00 00 00 00 01 C1 01 00];	/* Read C1 1 byte */
 		samsung,firmware_update_mtp_id_read_rx_cmds_revA = [06 01 00 00 00 00 01 D8 22 00];	/* Read E8 34(0x22) byte */
-		samsung,firmware_update_read_tx_cmds_revA = [
-					39 01 00 00 00 00 11 C0 00 11 03 28 80 00 00 83 00 00 00 00 00 00 00 00
-				];
+		samsung,firmware_update_read_tx_cmds_revA = [ /* Read 0x83 bytes instead of 80 to avoid 3byte garbage */
+				39 01 00 00 00 00 11 C0 00 11 00 00 00 00 00 83 00 00 00 00 00 00 00 00
+		];
 
 		samsung,firmware_update_done_check_rx_cmds_revA = [06 01 00 00 00 00 01 D3 01 03];	/* Read D3 4th 1 byte */
 
+		samsung,flash_clear_buffer_tx_cmds_revA = [
+				39 01 00 00 00 00 05 F8 20 02 6A 00
+				39 01 00 00 00 00 91 F9
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00
+		];
 
 		/* *************************************************************
 		 *  SELF DISPLAY
@@ -425,19 +458,19 @@
 		samsung,candela_map_table_revA = < /* THIS TABLE USED FOR DIMMING */
 		/* <idx> <from> <till> <gm2_wrdisbv> <cd> */
 			0	0	0	10	2
-			1	1	1	14	3
-			2	2	2	24	5
-			3	3	3	29	6
-			4	4	4	38	8
+			1	1	1	25	5
+			2	2	2	25	5
+			3	3	3	32	7
+			4	4	4	32	7
 			5	5	5	43	9
-			6	6	6	48	10
-			7	7	7	58	12
-			8	8	8	62	13
-			9	9	9	72	15
-			10	10	10	77	16
-			11	11	11	87	18
-			12	12	12	92	19
-			13	13	13	101	21
+			6	6	6	49	10
+			7	7	7	54	11
+			8	8	8	64	13
+			9	9	9	74	15
+			10	10	10	80	16
+			11	11	11	85	17
+			12	12	12	91	19
+			13	13	13	98	20
 			14	14	14	106	22
 			15	15	15	111	23
 			16	16	16	120	25
@@ -447,24 +480,24 @@
 			20	20	20	148	30
 			21	21	21	155	32
 			22	22	22	162	33
-			23	23	23	168	34
-			24	24	24	175	36
-			25	25	25	182	37
-			26	26	26	189	39
-			27	27	27	196	40
-			28	28	28	203	42
-			29	29	29	210	43
-			30	30	30	217	45
-			31	31	31	224	46
-			32	32	32	230	47
-			33	33	33	237	49
-			34	34	34	244	50
-			35	35	35	251	51
-			36	36	36	258	53
-			37	37	37	265	54
-			38	38	38	272	56
-			39	39	39	279	57
-			40	40	40	286	59
+			23	23	23	162	33
+			24	24	24	168	34
+			25	25	25	168	34
+			26	26	26	175	36
+			27	27	27	175	36
+			28	28	28	182	37
+			29	29	29	182	37
+			30	30	30	189	39
+			31	31	31	189	39
+			32	32	32	196	40
+			33	33	33	196	40
+			34	34	34	203	42
+			35	35	35	203	42
+			36	36	36	210	43
+			37	37	37	210	43
+			38	38	38	217	45
+			39	39	39	217	45
+			40	40	40	292	60
 			41	41	41	292	60
 			42	42	42	299	61
 			43	43	43	306	63
@@ -1128,6 +1161,12 @@
 
 					/* DIA Setting: ON */
 					39 01 00 00 00 00 02 79 02
+
+					/* Poc rework only to 120 */
+					39 01 00 00 00 00 03 B0 00 0E
+					39 01 00 00 00 00 02 8D 01
+					39 01 00 00 00 00 03 B0 00 62
+					39 01 00 00 00 00 02 8D 01
  				];
 
 				qcom,mdss-dsi-off-command=[
@@ -1248,6 +1287,12 @@
 
 					/* DIA Setting: ON */
 					39 01 00 00 00 00 02 79 02
+
+					/* Poc rework only to 120 */
+					39 01 00 00 00 00 03 B0 00 0E
+					39 01 00 00 00 00 02 8D 01
+					39 01 00 00 00 00 03 B0 00 62
+					39 01 00 00 00 00 02 8D 01
 				];
 
 				qcom,mdss-dsi-off-command=[

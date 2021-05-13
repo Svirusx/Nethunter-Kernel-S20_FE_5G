@@ -1,7 +1,7 @@
 /*
  * Header for Linux cfg80211 scan
  *
- * Copyright (C) 2020, Broadcom.
+ * Copyright (C) 2021, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -175,4 +175,7 @@ extern s32 wl_cfgscan_get_band_freq_list(struct bcm_cfg80211 *cfg, int band,
         uint16 *list, uint32 *num_channels);
 #endif /* DHD_GET_VALID_CHANNELS */
 extern int wl_android_get_sta_channel(struct bcm_cfg80211 *cfg);
+#ifdef WL_SCHED_SCAN
+extern void wl_cfgscan_sched_scan_stop_work(struct work_struct *work);
+#endif /* WL_SCHED_SCAN */
 #endif /* _wl_cfgscan_h_ */

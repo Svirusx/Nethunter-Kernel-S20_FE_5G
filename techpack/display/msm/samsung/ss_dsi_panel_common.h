@@ -526,6 +526,10 @@ struct samsung_display_debug_data {
 	bool print_cmds;
 	bool *is_factory_mode;
 	bool panic_on_pptimeout;
+
+	/* misc */
+	struct miscdevice dev;
+	bool report_once;
 };
 
 struct self_display {
@@ -740,6 +744,7 @@ struct FW_UP {
 	u32 read_done_check;
 
 	bool need_sleep_in;
+	bool cmd_done;
 };
 
 enum fw_up_state {
@@ -1078,7 +1083,7 @@ struct panel_func {
 	int (*samsung_poc_ctrl)(struct samsung_display_driver_data *vdd, u32 cmd, const char *buf);
 
 	/* FirmWare Update */
-	int (*samsung_fw_up)(struct samsung_display_driver_data *vdd);
+	int (*samsung_fw_up)(struct samsung_display_driver_data *vdd, int mode);
 
 
 	/* Gram Checksum Test */

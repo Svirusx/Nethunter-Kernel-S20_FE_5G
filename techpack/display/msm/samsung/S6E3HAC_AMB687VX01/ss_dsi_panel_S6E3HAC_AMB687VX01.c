@@ -2156,7 +2156,7 @@ static int dsi_update_mdnie_data(struct samsung_display_driver_data *vdd)
 	mdnie_data->dsi_adjust_ldu_table = adjust_ldu_data;
 	mdnie_data->dsi_max_adjust_ldu = 6;
 	mdnie_data->dsi_night_mode_table = night_mode_data;
-	mdnie_data->dsi_max_night_mode_index = 11;
+	mdnie_data->dsi_max_night_mode_index = 102;
 	mdnie_data->dsi_color_lens_table = color_lens_data;
 	mdnie_data->dsi_white_default_r = 0xff;
 	mdnie_data->dsi_white_default_g = 0xff;

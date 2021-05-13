@@ -18,6 +18,7 @@
 #include <linux/pinctrl/consumer.h>
 #include <linux/wakelock.h>
 #include <linux/ctype.h>
+#include <linux/msm-bus.h>
 #ifdef CONFIG_MUIC_SUPPORT_KEYBOARDDOCK
 #include <linux/muic/muic.h>
 #include <linux/muic/muic_notifier.h>
@@ -186,6 +187,13 @@ typedef struct
 
 #define STM32_DEV_FW_UPDATE_PACKET_SIZE		(256)
 
+/* keyboard bus vote */
+enum stm32_bus_vote {
+	STM32_BUS_VOTING_NONE,
+	STM32_BUS_VOTING_UP
+};
+
+
 /* Memory map specific */
 
 typedef struct
@@ -341,6 +349,7 @@ struct stm32_dev {
 	struct delayed_work			print_info_work;
 	struct delayed_work			check_conn_work;
 	struct delayed_work			check_init_work;
+	struct delayed_work			bus_voting_work;
 	bool					check_ic_flag;
 	volatile bool				check_conn_flag;
 
@@ -365,6 +374,9 @@ struct stm32_dev {
 	int					debug_flag;
 	bool					hall_flag;
 	struct completion			i2c_done;
+	u32					stm32_bus_perf_client;
+	struct msm_bus_scale_pdata		*stm32_bus_scale_table;
+	int					voting_flag;
 };
 
 struct stm32_devicetree_data {

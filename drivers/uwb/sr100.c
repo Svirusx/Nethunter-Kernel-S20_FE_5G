@@ -496,7 +496,7 @@ static int sr100_dev_transceive(struct sr100_dev* sr100_dev, int op_mode, int co
         sr100_dev->totalBtyesToRead = ((sr100_dev->totalBtyesToRead << 8) | sr100_dev->rx_buffer[EXTENDED_LENGTH_OFFSET]);
       }
       if(sr100_dev->totalBtyesToRead > MAX_UCI_PKT_SIZE) {
-        SR100_ERR_MSG("Length %d  exceeds the max limit %d....\n",(int)sr100_dev->totalBtyesToRead,(int)SR100_RXBUF_SIZE);
+        SR100_ERR_MSG("Length %d  exceeds the max limit %d....\n",(int)sr100_dev->totalBtyesToRead,(int)MAX_UCI_PKT_SIZE);
         ret = -1;
         goto transcive_end;
       }
@@ -630,6 +630,11 @@ write_end:
  ****************************************************************************/
 static ssize_t sr100_hbci_read(struct sr100_dev *sr100_dev,char* buf, size_t count){
   int ret = -EIO;
+  if(count > SR100_RXBUF_SIZE) {
+    SR100_ERR_MSG("count(%d) out of range(0-%d)\n", count, SR100_RXBUF_SIZE);
+    ret = -EINVAL;
+    goto hbci_fail;
+  }
   /* wait for inetrrupt upto 500ms after that timeout will happen and returns read fail */
   ret = wait_event_interruptible_timeout(sr100_dev->read_wq, sr100_dev->irq_received, sr100_dev->timeOutInMs);
   if (ret == 0) {

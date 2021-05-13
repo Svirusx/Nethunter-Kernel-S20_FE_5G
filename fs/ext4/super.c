@@ -392,6 +392,7 @@ static void __save_error_info(struct super_block *sb, const char *func,
 	le32_add_cpu(&es->s_error_count, 1);
 }
 
+/* @fs.sec -- ed6287f38b4c758f36cd7864940cdbd81e26efee -- */
 extern int ignore_fs_panic;
 
 static void save_error_info(struct super_block *sb, const char *func,
@@ -463,6 +464,7 @@ static bool system_going_down(void)
  * that error until we've noted it down and cleared it.
  */
 
+/* @fs.sec -- 10e386db3959e3c02220744400a053e7807e07ad -- */
 static void ext4_handle_error(struct super_block *sb, char *buf)
 {
 	if (test_opt(sb, WARN_ON_ERROR))

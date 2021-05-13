@@ -1011,11 +1011,14 @@ static int sec_audio_sb_rotation_put(struct snd_kcontrol *kcontrol,
 	rotation = (uint32_t)ucontrol->value.integer.value[1];
 
 	switch (stream) {
-	case LEGACY_PCM_MODE:
+	case DEEP_OFFLOAD_MODE:
 		func_type = SB_ROTATION;
 		break;
-	case LOW_LATENCY_PCM_MODE:
+	case LOW_LATENCY_MODE:
 		func_type = SB_ROTATION_LL;
+		break;
+	case RINGTONE_MODE:
+		func_type = SB_ROTATION_RINGTONE;
 		break;
 	default:
 		pr_info("%s: unknown stream type\n", __func__);

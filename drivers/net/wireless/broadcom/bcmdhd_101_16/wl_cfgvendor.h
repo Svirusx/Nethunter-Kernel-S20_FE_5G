@@ -1,7 +1,7 @@
 /*
  * Linux cfg80211 Vendor Extension Code
  *
- * Copyright (C) 2020, Broadcom.
+ * Copyright (C) 2021, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -223,6 +223,7 @@ enum andr_vendor_subcmd {
 	DEBUG_SET_HAL_START,
 	DEBUG_SET_HAL_STOP,
 	DEBUG_SET_HAL_PID,
+	DEBUG_SET_TPUT_DEBUG_DUMP_CMD,
 
 	WIFI_OFFLOAD_SUBCMD_START_MKEEP_ALIVE = ANDROID_NL80211_SUBCMD_WIFI_OFFLOAD_RANGE_START,
 	WIFI_OFFLOAD_SUBCMD_STOP_MKEEP_ALIVE,
@@ -543,6 +544,14 @@ enum mkeep_alive_attributes {
 	MKEEP_ALIVE_ATTRIBUTE_ETHER_TYPE	= 7,
 	MKEEP_ALIVE_ATTRIBUTE_MAX
 };
+#ifdef TPUT_DEBUG_DUMP
+enum tput_debug_attributes {
+	DUMP_TPUT_DEBUG_ATTR_INVALID = 0,
+	DUMP_TPUT_DEBUG_ATTR_FILE_NAME  = 1,
+	DUMP_TPUT_DEBUG_ATTR_CMD = 2,
+	DUMP_TPUT_DEBUG_ATTR_BUF = 3
+};
+#endif /* TPUT_DEBUG_DUMP */
 
 typedef enum wl_vendor_event {
 	BRCM_VENDOR_EVENT_UNSPEC		= 0,
@@ -594,6 +603,8 @@ typedef enum wl_vendor_event {
 	NAN_ASYNC_RESPONSE_DISABLED		= 40,
 	BRCM_VENDOR_EVENT_RCC_INFO		= 41,
 	BRCM_VENDOR_EVENT_ACS			= 42,
+	BRCM_VENDOR_EVENT_TWT			= 43,
+	BRCM_VENDOR_EVENT_TPUT_DUMP		= 44,
 	BRCM_VENDOR_EVENT_LAST
 } wl_vendor_event_t;
 
@@ -765,6 +776,14 @@ typedef enum {
 #define DUTY_CYCLE_EMERGENCY	10u
 #endif /* WL_THERMAL_MITIGATION */
 
+#ifdef TPUT_DEBUG_DUMP
+typedef enum {
+	TPUT_DEBUG_ATTRIBUTE_CMD_STR = 0x0001,
+	TPUT_DEBUG_ATTRIBUTE_SUB_CMD_STR_AMPDU = 0x0002,
+	TPUT_DEBUG_ATTRIBUTE_SUB_CMD_STR_CLEAR = 0x0003,
+	TPUT_DEBUG_ATTRIBUTE_MAX
+} TPUT_DEBUG_ATTRIBUTE;
+#endif /* TPUT_DEBUG_DUMP */
 /* Capture the BRCM_VENDOR_SUBCMD_PRIV_STRINGS* here */
 #define BRCM_VENDOR_SCMD_CAPA	"cap"
 #define MEMDUMP_PATH_LEN	128
@@ -884,4 +903,10 @@ wl_cfgscan_acs(struct wiphy *wiphy,
 #ifdef WL_CFGVENDOR_SEND_ALERT_EVENT
 void wl_cfgvendor_send_alert_event(struct net_device *dev, uint32 reason);
 #endif /* WL_CFGVENDOR_SEND_ALERT_EVENT */
+#ifdef TPUT_DEBUG_DUMP
+void wl_cfgdbg_tput_debug_mode(struct net_device *ndev, bool enable);
+void wl_cfgdbg_tput_debug_work(struct work_struct *work);
+int wl_cfgdbg_tput_debug_get_cmd(struct wiphy *wiphy,
+	struct wireless_dev *wdev, const void *data, int len);
+#endif /* TPUT_DEBUG_DUMP */
 #endif /* _wl_cfgvendor_h_ */

@@ -39,6 +39,9 @@
 
 #define CCI_TIMEOUT msecs_to_jiffies(1500)
 
+#define DUMP_CCI_REGISTERS
+#define CCI_REG_MAX_SIZE 50
+
 #define NUM_MASTERS 2
 #define NUM_QUEUES 2
 
@@ -225,6 +228,9 @@ struct cci_device {
 	bool is_burst_read;
 	uint32_t irqs_disabled;
 	struct mutex init_mutex;
+#ifdef DUMP_CCI_REGISTERS
+	struct cam_sensor_i2c_reg_array cci_dump[CCI_REG_MAX_SIZE];
+#endif
 };
 
 enum cam_cci_i2c_cmd_type {

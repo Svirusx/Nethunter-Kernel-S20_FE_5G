@@ -1,7 +1,7 @@
 /*
  * Linux cfgp2p driver
  *
- * Copyright (C) 2020, Broadcom.
+ * Copyright (C) 2021, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -212,13 +212,6 @@ enum wl_cfgp2p_status {
 		}									\
 	} while (0)
 
-#define INIT_TIMER(timer, func, duration, extra_delay)	\
-	do {				   \
-		init_timer_compat(timer, func, cfg); \
-		timer_expires(timer) = jiffies + msecs_to_jiffies(duration + extra_delay); \
-		add_timer(timer); \
-	} while (0);
-
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)) && !defined(WL_CFG80211_P2P_DEV_IF)
 #define WL_CFG80211_P2P_DEV_IF
 
@@ -354,12 +347,8 @@ wl_cfgp2p_action_tx_complete(struct bcm_cfg80211 *cfg, bcm_struct_cfgdev *cfgdev
 	const wl_event_msg_t *e, void *data);
 
 extern s32
-wl_cfgp2p_tx_action_frame(struct bcm_cfg80211 *cfg, struct net_device *dev,
-	wl_af_params_t *af_params, s32 bssidx, const u8 *sa);
-
-extern s32
-wl_actframe_fillup_v2(struct net_device *dev, wl_af_params_v2_t *af_params_v2_p,
-	wl_af_params_t *af_params, const u8 *sa, uint16 wl_af_params_size);
+wl_cfgp2p_tx_action_frame(struct bcm_cfg80211 *cfg, bcm_struct_cfgdev *cfgdev,
+	struct net_device *dev, wl_af_params_t *af_params, s32 bssidx, const u8 *sa);
 
 extern void
 wl_cfgp2p_generate_bss_mac(struct bcm_cfg80211 *cfg, struct ether_addr *primary_addr);

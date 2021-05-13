@@ -957,7 +957,6 @@ struct backing_dev_info *sec_bdi_alloc_node(gfp_t gfp_mask, int node_id)
 		return NULL;
 	}
 	spin_lock_init(&sec_bdi->bdp_debug.lock);
-	sec_bdi->bdi.capabilities = BDI_CAP_SEC_DEBUG;
 
 	return (struct backing_dev_info *)sec_bdi;
 }

@@ -2473,6 +2473,8 @@ static int fts_parse_dt(struct i2c_client *client)
 
 	pdata->enable_settings_aot = of_property_read_bool(np, "stm,enable_settings_aot");
 	pdata->sync_reportrate_120 = of_property_read_bool(np, "sync-reportrate-120");
+	pdata->support_open_short_test = of_property_read_bool(np, "support_open_short_test");
+	pdata->support_mis_calibration_test = of_property_read_bool(np, "support_mis_calibration_test");
 
 	pdata->enable_vbus_noti = of_property_read_bool(np, "stm,enable_vbus_noti");
 

@@ -55,6 +55,7 @@ struct panel_dms_data {
 	int lfd_min_freq;
 	int lfd_max_freq;
 	int display_idx;
+	int finger_mask_hbm_on;
 };
 
 enum panel_state {

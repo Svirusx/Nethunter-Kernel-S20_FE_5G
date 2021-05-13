@@ -110,13 +110,11 @@
 
 #define REO_CMD_EVENT_HIST_MAX 64
 
-#ifndef REMOVE_PKT_LOG
 enum rx_pktlog_mode {
 	DP_RX_PKTLOG_DISABLED = 0,
 	DP_RX_PKTLOG_FULL,
 	DP_RX_PKTLOG_LITE,
 };
-#endif
 
 struct msdu_list {
 	qdf_nbuf_t head;
@@ -284,6 +282,28 @@ enum dp_cpu_ring_map_types {
 };
 
 /**
+ * enum dp_desc_type - source type for multiple pages allocation
+ * @DP_TX_DESC_TYPE: DP SW TX descriptor
+ * @DP_TX_EXT_DESC_TYPE: DP TX msdu extension descriptor
+ * @DP_TX_EXT_DESC_LINK_TYPE: DP link descriptor for msdu ext_desc
+ * @DP_TX_TSO_DESC_TYPE: DP TX TSO descriptor
+ * @DP_TX_TSO_NUM_SEG_TYPE: DP TX number of segments
+ * @DP_RX_DESC_BUF_TYPE: DP RX SW descriptor
+ * @DP_RX_DESC_STATUS_TYPE: DP RX SW descriptor for monitor status
+ * @DP_HW_LINK_DESC_TYPE: DP HW link descriptor
+ */
+enum dp_desc_type {
+	DP_TX_DESC_TYPE,
+	DP_TX_EXT_DESC_TYPE,
+	DP_TX_EXT_DESC_LINK_TYPE,
+	DP_TX_TSO_DESC_TYPE,
+	DP_TX_TSO_NUM_SEG_TYPE,
+	DP_RX_DESC_BUF_TYPE,
+	DP_RX_DESC_STATUS_TYPE,
+	DP_HW_LINK_DESC_TYPE,
+};
+
+/**
  * struct rx_desc_pool
  * @pool_size: number of RX descriptor in the pool
  * @elem_size: Element size
@@ -294,6 +314,7 @@ enum dp_cpu_ring_map_types {
  * @owner: owner for nbuf
  * @buf_size: Buffer size
  * @buf_alignment: Buffer alignment
+ * @desc_type: type of desc this pool serves
  */
 struct rx_desc_pool {
 	uint32_t pool_size;
@@ -308,6 +329,7 @@ struct rx_desc_pool {
 	uint8_t owner;
 	uint16_t buf_size;
 	uint8_t buf_alignment;
+	enum dp_desc_type desc_type;
 };
 
 /**
@@ -505,6 +527,9 @@ struct dp_srng {
 	uint8_t cached;
 	int irq;
 	uint32_t num_entries;
+#ifdef DP_MEM_PRE_ALLOC
+	uint8_t is_mem_prealloc;
+#endif
 };
 
 struct dp_rx_reorder_array_elem {
@@ -802,6 +827,8 @@ struct dp_soc_stats {
 			uint32_t scatter_msdu;
 			/* RX msdu drop count due to invalid cookie */
 			uint32_t invalid_cookie;
+			/* Count of stale cookie read in RX path */
+			uint32_t stale_cookie;
 			/* Delba sent count due to RX 2k jump */
 			uint32_t rx_2k_jump_delba_sent;
 			/* RX 2k jump msdu indicated to stack count */
@@ -824,6 +851,10 @@ struct dp_soc_stats {
 			uint32_t invalid_link_cookie;
 			/* Nbuf sanity failure */
 			uint32_t nbuf_sanity_fail;
+			/* Duplicate link desc refilled */
+			uint32_t dup_refill_link_desc;
+			/* Non Eapol pkt drop cnt due to peer not authorized */
+			uint32_t peer_unauth_rx_pkt_drop;
 		} err;
 
 		/* packet count per core - per ring */
@@ -957,6 +988,14 @@ static inline uint32_t dp_history_get_next_index(qdf_atomic_t *curr_idx,
 
 	return idx & (max_entries - 1);
 }
+
+/* structure to record recent operation related variable */
+struct dp_last_op_info {
+	/* last link desc buf info through WBM release ring */
+	struct hal_buf_info wbm_rel_link_desc;
+	/* last link desc buf info through REO reinject ring */
+	struct hal_buf_info reo_reinject_link_desc;
+};
 
 /* SOC level structure for data path */
 struct dp_soc {
@@ -1332,6 +1371,8 @@ struct dp_soc {
 	} skip_fisa_param;
 #endif
 #endif /* WLAN_SUPPORT_RX_FLOW_TAG || WLAN_SUPPORT_RX_FISA */
+	/* Save recent operation related variable */
+	struct dp_last_op_info last_op_info;
 };
 
 #ifdef IPA_OFFLOAD
@@ -1723,10 +1764,8 @@ struct dp_pdev {
 	/* map this pdev to a particular Reo Destination ring */
 	enum cdp_host_reo_dest_ring reo_dest;
 
-#ifndef REMOVE_PKT_LOG
 	/* Packet log mode */
 	uint8_t rx_pktlog_mode;
-#endif
 
 	/* WDI event handlers */
 	struct wdi_event_subscribe_t **wdi_event_list;

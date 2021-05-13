@@ -1350,14 +1350,14 @@ int cam_ois_gyro_sensor_calibration(struct cam_ois_ctrl_t *o_ctrl,
 	XGZERO = (X_ZRO) / 8.75 * 1000;
 	YGZERO = (Y_ZRO) / 8.75 * 1000;
 
+	if((X_ZRO > 15 || X_ZRO < -15)&&(Y_ZRO > 15 || Y_ZRO < -15)) result = 0;
+	else result = 1;
+
 	pr_info("[FACTORY] XYGZERO %s -%d %d %d, %d", __func__,
 		X_ZRO,Y_ZRO,XGZERO, YGZERO);
 
 	*raw_data_x = XGZERO * 1000 / scale_factor;
 	*raw_data_y = YGZERO * 1000 / scale_factor;
-
-	if((*raw_data_x > 15000 || *raw_data_x < -15000)||(*raw_data_y > 15000 || *raw_data_y < -15000)) result = 0;
-	else result = 1;
 
 	CAM_INFO(CAM_OIS, "result %d, raw_data_x %ld, raw_data_y %ld", result, *raw_data_x, *raw_data_y);
 
@@ -1365,10 +1365,10 @@ int cam_ois_gyro_sensor_calibration(struct cam_ois_ctrl_t *o_ctrl,
 }
 
 /* get offset from module for line test */
-int cam_ois_offset_test(struct cam_ois_ctrl_t *o_ctrl,
+void cam_ois_offset_test(struct cam_ois_ctrl_t *o_ctrl,
 	long *raw_data_x, long *raw_data_y, bool is_need_cal)
 {
-	int i = 0, result = 0;
+	int i = 0;
 	uint16_t val = 0;
 	uint16_t x = 0, y = 0;
 	int x_sum = 0, y_sum = 0, sum = 0;
@@ -1388,7 +1388,6 @@ int cam_ois_offset_test(struct cam_ois_ctrl_t *o_ctrl,
 
 			if (--retries < 0) {
 				CAM_ERR(CAM_OIS, "Read register failed!, data 0x0014 val = 0x%04x", val);
-				result = -1;
 				break;
 			}
 		} while (val);
@@ -1428,7 +1427,6 @@ int cam_ois_offset_test(struct cam_ois_ctrl_t *o_ctrl,
 	CAM_INFO(CAM_OIS, "end");
 
 	cam_ois_version(o_ctrl);
-	return result;
 }
 
 /* ois module itselt has selftest function for line test. */

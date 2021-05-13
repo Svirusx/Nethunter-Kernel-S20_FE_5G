@@ -6,7 +6,7 @@
  * as published by the Free Software Foundation.
 */
 
-#include <asm/uaccess.h>
+#include <linux/uaccess.h>
 #include <linux/device.h>
 #include <linux/init.h>
 #include <linux/kernel.h>

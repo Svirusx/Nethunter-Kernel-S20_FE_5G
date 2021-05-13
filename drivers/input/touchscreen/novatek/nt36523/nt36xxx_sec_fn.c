@@ -3507,6 +3507,65 @@ out:
 	sec_cmd_set_cmd_exit(sec);
 }
 
+static void clear_cover_mode(void *device_data)
+{
+	struct sec_cmd_data *sec = (struct sec_cmd_data *)device_data;
+	struct nvt_ts_data *ts = container_of(sec, struct nvt_ts_data, sec);
+	char buff[SEC_CMD_STR_LEN] = { 0 };
+	u8 wbuf[2] = { 0 };
+	int ret = 0;
+
+	sec_cmd_set_default_result(sec);
+
+	if (sec->cmd_param[0] > 3 || sec->cmd_param[0] < 0) {
+		input_err(true, &ts->client->dev,
+				"%s: wrong param %d\n", __func__, sec->cmd_param[0]);
+		snprintf(buff, sizeof(buff), "%s", "NG");
+		sec->cmd_state = SEC_CMD_STATUS_FAIL;
+		goto out;
+	}
+
+	if (mutex_lock_interruptible(&ts->lock)) {
+		input_err(true, &ts->client->dev, "%s: another task is running\n",
+			__func__);
+		goto out;
+	}
+
+	input_info(true, &ts->client->dev, "%s: %d, %d\n", __func__, sec->cmd_param[0], sec->cmd_param[1]);
+
+	if (sec->cmd_param[0] > 1)
+		ts->flip_enable = true;
+	else
+		ts->flip_enable = false;
+
+	/* disable tsp scan when cover is closed (for Tablet) */
+	if (ts->platdata->scanoff_cover_close) {
+		if (ts->flip_enable) {
+			input_info(true, &ts->client->dev, "%s: enter deep standby mode\n", __func__);
+			wbuf[0] = EVENT_MAP_HOST_CMD;
+			wbuf[1] = NVT_CMD_DEEP_SLEEP_MODE;
+			ret = nvt_ts_i2c_write(ts, I2C_FW_Address, wbuf, 2);
+
+			nvt_ts_release_all_finger(ts);
+		} else {
+			input_info(true, &ts->client->dev, "%s: reset to normal mode\n", __func__);
+			nvt_ts_bootloader_reset(ts);
+		}
+	}
+
+	mutex_unlock(&ts->lock);
+	if (ret < 0) {
+		snprintf(buff, sizeof(buff), "NG");
+		sec->cmd_state = SEC_CMD_STATUS_FAIL;
+	} else {
+		snprintf(buff, sizeof(buff), "OK");
+		sec->cmd_state = SEC_CMD_STATUS_OK;
+	}
+out:
+	sec_cmd_set_cmd_result(sec, buff, strnlen(buff, sizeof(buff)));
+	sec_cmd_set_cmd_exit(sec);
+}
+
 static void debug(void *device_data)
 {
 	struct sec_cmd_data *sec = (struct sec_cmd_data *)device_data;
@@ -3577,6 +3636,7 @@ static struct sec_cmd sec_cmds[] = {
 	{SEC_CMD("run_sram_test", run_sram_test),},
 	{SEC_CMD("get_func_mode", get_func_mode),},
 	{SEC_CMD_H("aot_enable", aot_enable),},
+	{SEC_CMD_H("clear_cover_mode", clear_cover_mode),},
 	{SEC_CMD("debug", debug),},
 	{SEC_CMD("not_support_cmd", not_support_cmd),},
 };

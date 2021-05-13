@@ -654,23 +654,24 @@ retry:
 static void free_block_bdev(struct zram *zram, unsigned long blk_idx)
 {
 	int was_set;
-
 #ifdef CONFIG_ZRAM_LRU_WRITEBACK
-	spin_lock(&zram->wb_table_lock);
+	unsigned long flags;
+
+	spin_lock_irqsave(&zram->wb_table_lock, flags);
 	if (zram->wb_table[blk_idx] == 0) {
 		count_vm_events(SQZR_COUNT, -1);
 		atomic64_dec(&zram->stats.bd_count);
-		spin_unlock(&zram->wb_table_lock);
+		spin_unlock_irqrestore(&zram->wb_table_lock, flags);
 		return;
 	}
 	zram->wb_table[blk_idx]--;
 	atomic64_dec(&zram->stats.bd_objcnt);
 	count_vm_events(SQZR_OBJCNT, -1);
 	if (zram->wb_table[blk_idx] > 0) {
-		spin_unlock(&zram->wb_table_lock);
+		spin_unlock_irqrestore(&zram->wb_table_lock, flags);
 		return;
 	}
-	spin_unlock(&zram->wb_table_lock);
+	spin_unlock_irqrestore(&zram->wb_table_lock, flags);
 	count_vm_events(SQZR_COUNT, -1);
 #endif
 	was_set = test_and_clear_bit(blk_idx, zram->bitmap);
@@ -964,10 +965,11 @@ static void zram_writeback_done(struct zram *zram, unsigned long blk_idx,
 	unsigned int offset;
 	unsigned int size;
 	int i;
+	unsigned long flags;
 
-	spin_lock(&zram->wb_table_lock);
+	spin_lock_irqsave(&zram->wb_table_lock, flags);
 	zram->wb_table[blk_idx] = count;
-	spin_unlock(&zram->wb_table_lock);
+	spin_unlock_irqrestore(&zram->wb_table_lock, flags);
 	atomic64_add(count, &zram->stats.bd_objcnt);
 	count_vm_events(SQZR_OBJCNT, count);
 
@@ -1499,6 +1501,7 @@ static void zram_handle_comp_page(struct work_struct *work)
 	unsigned int size = zw->handle & (PAGE_SIZE - 1);
 	u8 *src, *dst;
 	int ret;
+	unsigned long flags;
 
 	src = kmap_atomic(src_page);
 	zhdr = (struct zram_wb_header *)(src + offset);
@@ -1525,9 +1528,9 @@ static void zram_handle_comp_page(struct work_struct *work)
 	zram_slot_unlock(zram, handle);
 
 	/* increment refcount to prevent freeing block */
-	spin_lock(&zram->wb_table_lock);
+	spin_lock_irqsave(&zram->wb_table_lock, flags);
 	zram->wb_table[blk_idx]++;
-	spin_unlock(&zram->wb_table_lock);
+	spin_unlock_irqrestore(&zram->wb_table_lock, flags);
 
 	page_endio(dst_page, op_is_write(bio_op(bio)),
 			blk_status_to_errno(bio->bi_status));

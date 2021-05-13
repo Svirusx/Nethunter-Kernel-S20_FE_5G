@@ -1,7 +1,7 @@
 /*
  * Driver O/S-independent utility routines
  *
- * Copyright (C) 2020, Broadcom.
+ * Copyright (C) 2021, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -336,8 +336,8 @@ BCMFASTPATH(pktsetprio)(void *pkt, bool update_vtag)
 	struct ether_header *eh;
 	struct ethervlan_header *evh;
 	uint8 *pktdata;
-	int priority = 0;
-	int rc = 0;
+	uint priority = 0;
+	uint rc = 0;
 
 	pktdata = (uint8 *)PKTDATA(OSH_NULL, pkt);
 	ASSERT_FP(ISALIGNED((uintptr)pktdata, sizeof(uint16)));
@@ -346,18 +346,18 @@ BCMFASTPATH(pktsetprio)(void *pkt, bool update_vtag)
 
 	if (eh->ether_type == hton16(ETHER_TYPE_8021Q)) {
 		uint16 vlan_tag;
-		int vlan_prio, dscp_prio = 0;
+		uint vlan_prio, dscp_prio = 0;
 
 		evh = (struct ethervlan_header *)eh;
 
 		vlan_tag = ntoh16(evh->vlan_tag);
-		vlan_prio = (int) (vlan_tag >> VLAN_PRI_SHIFT) & VLAN_PRI_MASK;
+		vlan_prio = (vlan_tag >> VLAN_PRI_SHIFT) & VLAN_PRI_MASK;
 
 		if ((evh->ether_type == hton16(ETHER_TYPE_IP)) ||
 			(evh->ether_type == hton16(ETHER_TYPE_IPV6))) {
 			uint8 *ip_body = pktdata + sizeof(struct ethervlan_header);
 			uint8 tos_tc = IP_TOS46(ip_body);
-			dscp_prio = (int)(tos_tc >> IPV4_TOS_PREC_SHIFT);
+			dscp_prio = tos_tc >> IPV4_TOS_PREC_SHIFT;
 		}
 
 		/* DSCP priority gets precedence over 802.1P (vlan tag) */
@@ -377,7 +377,7 @@ BCMFASTPATH(pktsetprio)(void *pkt, bool update_vtag)
 		 */
 		if (update_vtag && (priority != vlan_prio)) {
 			vlan_tag &= ~(VLAN_PRI_MASK << VLAN_PRI_SHIFT);
-			vlan_tag |= (uint16)priority << VLAN_PRI_SHIFT;
+			vlan_tag |= priority << VLAN_PRI_SHIFT;
 			evh->vlan_tag = hton16(vlan_tag);
 			rc |= PKTPRIO_UPD;
 		}
@@ -424,14 +424,14 @@ BCMFASTPATH(pktsetprio)(void *pkt, bool update_vtag)
 			priority = PRIO_8021D_NC;
 			break;
 		default:
-			priority = (int)(tos_tc >> IPV4_TOS_PREC_SHIFT);
+			priority = tos_tc >> IPV4_TOS_PREC_SHIFT;
 			break;
 		}
 
 		rc |= PKTPRIO_DSCP;
 	}
 
-	ASSERT_FP(priority >= 0 && priority <= MAXPRIO);
+	ASSERT_FP(priority <= MAXPRIO);
 	PKTSETPRIO(pkt, priority);
 	return (rc | priority);
 }
@@ -1432,7 +1432,7 @@ void
 dll_pool_detach(void * osh, dll_pool_t * pool, uint16 elems_max, uint16 elem_size)
 {
 	uint32 mem_size;
-	mem_size = sizeof(dll_pool_t) + (elems_max * elem_size);
+	mem_size = (uint32)sizeof(dll_pool_t) + ((uint32)elems_max * (uint32)elem_size);
 	if (pool)
 		MFREE(osh, pool, mem_size);
 }
@@ -1445,7 +1445,7 @@ dll_pool_init(void * osh, uint16 elems_max, uint16 elem_size)
 
 	ASSERT(elem_size > sizeof(dll_t));
 
-	mem_size = sizeof(dll_pool_t) + (elems_max * elem_size);
+	mem_size = (uint32)sizeof(dll_pool_t) + ((uint32)elems_max * (uint32)elem_size);
 
 	if ((dll_pool_p = (dll_pool_t *)MALLOCZ(osh, mem_size)) == NULL) {
 		ASSERT(0);
@@ -4549,7 +4549,7 @@ getbits(const uint8 *addr, uint size, uint stbit, uint nbits)
 
 	ASSERT(fbyte < size);
 	ASSERT(lbyte < size);
-	ASSERT(nbits <= (sizeof(val) << 3));
+	ASSERT(nbits < (sizeof(val) << 3));
 
 	/* all bits are in the same byte */
 	if (fbyte == lbyte) {

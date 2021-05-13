@@ -933,7 +933,9 @@ int ipa3_qmi_add_offload_request_send(
 	}
 
 	/* currently set total max to 64 */
-	if (req->filter_spec_ex2_list_len +
+	mutex_lock(&ipa3_qmi_lock);
+	if (req->filter_spec_ex2_list_len > QMI_IPA_MAX_FILTERS_V01 ||
+		req->filter_spec_ex2_list_len +
 		ipa3_qmi_ctx->num_ipa_offload_connection
 		>= QMI_IPA_MAX_FILTERS_V01) {
 		IPAWANDBG(
@@ -941,8 +943,10 @@ int ipa3_qmi_add_offload_request_send(
 			ipa3_qmi_ctx->num_ipa_offload_connection,
 			req->filter_spec_ex2_list_len,
 			QMI_IPA_MAX_FILTERS_V01);
+		mutex_unlock(&ipa3_qmi_lock);
 		return -EINVAL;
 	}
+	mutex_unlock(&ipa3_qmi_lock);
 
 	for (i = 0; i < req->filter_spec_ex2_list_len; i++) {
 		if ((req->filter_spec_ex2_list[i].ip_type !=
@@ -1078,6 +1082,7 @@ int ipa3_qmi_rmv_offload_request_send(
 	req->filter_handle_list_len,
 	ipa3_qmi_ctx->num_ipa_offload_connection);
 
+	mutex_lock(&ipa3_qmi_lock);
 	/*  max as num_ipa_offload_connection */
 	if (req->filter_handle_list_len >
 		ipa3_qmi_ctx->num_ipa_offload_connection) {
@@ -1085,10 +1090,10 @@ int ipa3_qmi_rmv_offload_request_send(
 		"cur(%d), req_rmv(%d)\n",
 			ipa3_qmi_ctx->num_ipa_offload_connection,
 			req->filter_handle_list_len);
+		mutex_unlock(&ipa3_qmi_lock);
 		return -EINVAL;
 	}
 
-	mutex_lock(&ipa3_qmi_lock);
 	for (i = 0; i < req->filter_handle_list_len; i++) {
 		/* check if rule-id match */
 		id =

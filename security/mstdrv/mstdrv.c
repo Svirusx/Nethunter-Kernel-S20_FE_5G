@@ -861,13 +861,13 @@ static int sec_mst_gpio_init(struct device *dev)
 static int mfc_get_chip_id()
 {
 	u8 chip_id = 0;
-	int retry_cnt = 3;
+	int retry_cnt = 9;
 	int ret = 0;
 	struct power_supply *psy = NULL;
 	struct mfc_charger_data *charger = NULL;
 
 	while (retry_cnt-- > 0) {
-		msleep(30);
+		msleep(10);
 		
 		psy = get_power_supply_by_name("mfc-charger");
 		if (psy == NULL) {

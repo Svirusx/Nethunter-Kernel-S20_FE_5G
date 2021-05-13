@@ -2,7 +2,7 @@
  * Linux-specific abstractions to gain some independence from linux kernel versions.
  * Pave over some 2.2 versus 2.4 versus 2.6 kernel differences.
  *
- * Copyright (C) 2020, Broadcom.
+ * Copyright (C) 2021, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -667,7 +667,9 @@ static inline bool binary_sema_up(tsk_ctl_t *tsk)
 	return sem_up;
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 0))
+#if  (LINUX_VERSION_CODE > KERNEL_VERSION(5, 6, 0))
+#define SMP_RD_BARRIER_DEPENDS(x)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 0))
 #define SMP_RD_BARRIER_DEPENDS(x) smp_read_barrier_depends(x)
 #else
 #define SMP_RD_BARRIER_DEPENDS(x) smp_rmb(x)
@@ -913,14 +915,22 @@ int kernel_read_compat(struct file *file, loff_t offset, char *addr, unsigned lo
 #define kernel_read_compat(file, offset, addr, count) kernel_read(file, offset, addr, count)
 #endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0) */
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 20, 0)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3, 17, 0)
+#define timespec64 timespec
+#define ktime_get_real_ts64(timespec) ktime_get_real_ts(timespec)
+#define ktime_to_timespec64(timespec) ktime_to_timespec(timespec)
+#endif /* LINUX_VERSION_CODE < KERNEL_VERSION(3, 17, 0) */
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 6, 0)) && (LINUX_VERSION_CODE >= \
+	KERNEL_VERSION(4, 20, 0))
 static inline void get_monotonic_boottime(struct timespec *ts)
 {
 	*ts = ktime_to_timespec(ktime_get_boottime());
 }
 #endif /* LINUX_VER >= 4.20 */
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 0, 0)
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 6, 0)) && (LINUX_VERSION_CODE >= \
+	KERNEL_VERSION(5, 0, 0))
 static inline void do_gettimeofday(struct timeval *tv)
 {
 	struct timespec64 now;

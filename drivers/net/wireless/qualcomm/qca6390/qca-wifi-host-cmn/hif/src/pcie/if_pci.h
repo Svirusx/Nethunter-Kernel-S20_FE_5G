@@ -200,6 +200,10 @@ struct hif_pci_softc {
 	void (*hif_pci_get_soc_info)(struct hif_pci_softc *sc,
 				     struct device *dev);
 	struct hif_pci_stats stats;
+#ifdef HIF_CPU_PERF_AFFINE_MASK
+	/* Stores the affinity hint mask for each CE IRQ */
+	qdf_cpu_mask ce_irq_cpu_mask[CE_COUNT_MAX];
+#endif
 };
 
 bool hif_pci_targ_is_present(struct hif_softc *scn, void *__iomem *mem);
@@ -278,4 +282,15 @@ static inline int hif_pm_runtime_put_auto(struct device *dev)
 }
 
 #endif /* FEATURE_RUNTIME_PM */
+
+#ifdef HIF_BUS_LOG_INFO
+void hif_log_pcie_info(struct hif_softc *scn, uint8_t *data,
+		       unsigned int *offset);
+#else
+static inline
+void hif_log_pcie_info(struct hif_softc *scn, uint8_t *data,
+		       unsigned int *offset)
+{
+}
+#endif
 #endif /* __ATH_PCI_H__ */

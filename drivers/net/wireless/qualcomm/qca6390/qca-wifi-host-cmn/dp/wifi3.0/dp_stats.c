@@ -4153,6 +4153,7 @@ void dp_peer_stats_update_protocol_cnt(struct cdp_soc_t *soc,
 }
 #endif
 
+#ifdef WDI_EVENT_ENABLE
 QDF_STATUS dp_peer_stats_notify(struct dp_pdev *dp_pdev, struct dp_peer *peer)
 {
 	struct cdp_interface_peer_stats peer_stats_intf;
@@ -4187,6 +4188,7 @@ QDF_STATUS dp_peer_stats_notify(struct dp_pdev *dp_pdev, struct dp_peer *peer)
 
 	return QDF_STATUS_SUCCESS;
 }
+#endif
 
 #ifdef QCA_ENH_V3_STATS_SUPPORT
 /**
@@ -5539,6 +5541,8 @@ void dp_txrx_path_stats(struct dp_soc *soc)
 			       pdev->soc->stats.rx.err.pkt_delivered_no_peer);
 		DP_PRINT_STATS("RX invalid cookie: %d",
 			       soc->stats.rx.err.invalid_cookie);
+		DP_PRINT_STATS("RX stale cookie: %d",
+			       soc->stats.rx.err.stale_cookie);
 		DP_PRINT_STATS("2k jump delba sent: %u",
 			       pdev->soc->stats.rx.err.rx_2k_jump_delba_sent);
 		DP_PRINT_STATS("2k jump msdu to stack: %u",
@@ -5557,6 +5561,8 @@ void dp_txrx_path_stats(struct dp_soc *soc)
 			       pdev->soc->stats.rx.err.invalid_link_cookie);
 		DP_PRINT_STATS("Rx nbuf sanity fails: %d",
 			       pdev->soc->stats.rx.err.nbuf_sanity_fail);
+		DP_PRINT_STATS("Rx refill duplicate link desc: %d",
+			       pdev->soc->stats.rx.err.dup_refill_link_desc);
 
 		DP_PRINT_STATS("Reo Statistics");
 		DP_PRINT_STATS("near_full: %u ", soc->stats.rx.near_full);
@@ -6034,6 +6040,8 @@ dp_print_soc_rx_stats(struct dp_soc *soc)
 		       soc->stats.rx.err.defrag_peer_uninit);
 	DP_PRINT_STATS("Pkts delivered no peer = %d",
 		       soc->stats.rx.err.pkt_delivered_no_peer);
+	DP_PRINT_STATS("Pkts drop due to no peer auth :%d",
+		       soc->stats.rx.err.peer_unauth_rx_pkt_drop);
 	DP_PRINT_STATS("Invalid Pdev = %d",
 		       soc->stats.rx.err.invalid_pdev);
 	DP_PRINT_STATS("Invalid Peer = %d",
@@ -6069,6 +6077,9 @@ dp_print_soc_rx_stats(struct dp_soc *soc)
 
 	DP_PRINT_STATS("RX invalid cookie: %d",
 		       soc->stats.rx.err.invalid_cookie);
+
+	DP_PRINT_STATS("RX stale cookie: %d",
+		       soc->stats.rx.err.stale_cookie);
 
 	DP_PRINT_STATS("RX wait completed msdu break: %d",
 		       soc->stats.rx.msdu_scatter_wait_break);

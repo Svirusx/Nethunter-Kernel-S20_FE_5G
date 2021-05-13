@@ -172,6 +172,7 @@ struct otg_notify {
 	int (*set_chg_current)(int state);
 	void (*set_ldo_onoff)(void *data, unsigned int onoff);
 	int (*get_gadget_speed)(void);
+	int (*is_skip_list)(int index);
 	void *o_data;
 	void *u_notify;
 };

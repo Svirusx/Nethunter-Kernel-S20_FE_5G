@@ -888,6 +888,7 @@ config MMAP_READAROUND_LIMIT
 
 config KSWAPD_PERFTUNE
 	bool "kswapd cpumask can be limited"
+	depends on !SAMSUNG_PRODUCT_SHIP
 	default y
 	help
 	  This provides sysctl node to set kswapd cpu affinity.

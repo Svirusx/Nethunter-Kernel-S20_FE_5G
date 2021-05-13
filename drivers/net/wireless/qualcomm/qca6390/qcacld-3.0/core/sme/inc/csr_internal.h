@@ -653,6 +653,7 @@ struct csr_roam_session {
 	bool discon_in_progress;
 	bool is_adaptive_11r_connection;
 	struct csr_disconnect_stats disconnect_stats;
+	qdf_mc_timer_t join_retry_timer;
 };
 
 struct csr_roamstruct {
@@ -680,7 +681,10 @@ struct csr_roamstruct {
 	uint32_t deauthRspStatus;
 	uint8_t *pReassocResp;          /* reassociation response from new AP */
 	uint16_t reassocRespLen;        /* length of reassociation response */
+#if defined(WLAN_LOGGING_SOCK_SVC_ENABLE) && \
+	defined(FEATURE_PKTLOG) && !defined(REMOVE_PKT_LOG)
 	qdf_mc_timer_t packetdump_timer;
+#endif
 	spinlock_t roam_state_lock;
 };
 

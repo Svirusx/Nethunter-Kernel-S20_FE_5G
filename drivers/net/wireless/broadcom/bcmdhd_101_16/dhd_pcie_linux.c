@@ -1,7 +1,7 @@
 /*
  * Linux DHD Bus Module for PCIE
  *
- * Copyright (C) 2020, Broadcom.
+ * Copyright (C) 2021, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -123,6 +123,9 @@ typedef struct dhdpcie_info
 	unsigned int	total_wake_count;
 	int		pkt_wake;
 	int		wake_irq;
+#if defined(EWP_EDL)
+	int		edl_wake;
+#endif /* EWP_EDL */
 #endif /* DHD_WAKE_STATUS */
 #ifdef USE_SMMU_ARCH_MSM
 	void *smmu_cxt;
@@ -202,7 +205,7 @@ static int dhdpcie_pm_system_resume_noirq(struct device * dev);
 
 #ifdef SUPPORT_EXYNOS7420
 void exynos_pcie_pm_suspend(int ch_num) {}
-void exynos_pcie_pm_resume(int ch_num) {}
+int exynos_pcie_pm_resume(int ch_num) {}
 #endif /* SUPPORT_EXYNOS7420 */
 
 static void dhdpcie_config_save_restore_coherent(dhd_bus_t *bus, bool state);
@@ -256,6 +259,10 @@ static struct pci_driver dhdpcie_driver = {
 };
 
 int dhdpcie_init_succeeded = FALSE;
+
+#if defined(CUSTOMER_HW4_DEBUG)
+char dhd_suspend_resume_time_str[DEBUG_DUMP_TIME_BUF_LEN];
+#endif /* CUSTOMER_HW4_DEBUG */
 
 #ifdef USE_SMMU_ARCH_MSM
 static int dhdpcie_smmu_init(struct pci_dev *pdev, void *smmu_cxt)
@@ -1031,7 +1038,13 @@ static int dhdpcie_suspend_dev(struct pci_dev *dev)
 		return BCME_ERROR;
 	}
 #endif /* OEM_ANDROID && LINUX_VERSION_CODE >= KERNEL_VERSION(3, 0, 0) */
+#if defined(CUSTOMER_HW4_DEBUG)
+	clear_debug_dump_time(dhd_suspend_resume_time_str);
+	get_debug_dump_time(dhd_suspend_resume_time_str);
+	DHD_ERROR(("%s: Enter: TS(%s)\n", __FUNCTION__, dhd_suspend_resume_time_str));
+#else
 	DHD_ERROR(("%s: Enter\n", __FUNCTION__));
+#endif /* CUSTOMER_HW4_DEBUG */
 #if defined(CONFIG_SOC_EXYNOS9810) || defined(CONFIG_SOC_EXYNOS9820) || \
 	defined(CONFIG_SOC_EXYNOS9830) || defined(CONFIG_SOC_EXYNOS2100) || \
 	defined(CONFIG_SOC_EXYNOS1000)
@@ -1082,10 +1095,26 @@ int bcmpcie_set_get_wake(struct dhd_bus *bus, int flag)
 	ret = pch->pkt_wake;
 	pch->total_wake_count += flag;
 	pch->pkt_wake = flag;
-
+#if defined(EWP_EDL)
+	pch->edl_wake = flag;
+#endif /* EWP_EDL */
 	DHD_PKT_WAKE_UNLOCK(&pch->pkt_wake_lock, flags);
 	return ret;
 }
+
+#if defined(EWP_EDL)
+int
+bcmpcie_get_edl_wake(struct dhd_bus *bus)
+{
+	int ret;
+	dhdpcie_info_t *pch = pci_get_drvdata(bus->dev);
+
+	ret = pch->edl_wake;
+	pch->edl_wake = 0;
+
+	return ret;
+}
+#endif /* EWP_EDL */
 #endif /* DHD_WAKE_STATUS */
 
 static int dhdpcie_resume_dev(struct pci_dev *dev)
@@ -1095,7 +1124,13 @@ static int dhdpcie_resume_dev(struct pci_dev *dev)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 0, 0))
 	pci_load_and_free_saved_state(dev, &pch->state);
 #endif /* OEM_ANDROID && LINUX_VERSION_CODE >= KERNEL_VERSION(3, 0, 0) */
+#if defined(CUSTOMER_HW4_DEBUG)
+	clear_debug_dump_time(dhd_suspend_resume_time_str);
+	get_debug_dump_time(dhd_suspend_resume_time_str);
+	DHD_ERROR(("%s: Enter: TS(%s)\n", __FUNCTION__, dhd_suspend_resume_time_str));
+#else
 	DHD_ERROR(("%s: Enter\n", __FUNCTION__));
+#endif /* CUSTOMER_HW4_DEBUG */
 	dev->state_saved = TRUE;
 	pci_restore_state(dev);
 
@@ -1351,8 +1386,8 @@ int dhdpcie_pci_suspend_resume(dhd_bus_t *bus, bool state)
 #if !defined(BCMPCIE_OOB_HOST_WAKE)
 			dhdpcie_pme_active(bus->osh, state);
 #endif
+			dhdpcie_config_save_restore_coherent(bus, state);
 		}
-		dhdpcie_config_save_restore_coherent(bus, state);
 #if defined(DHD_HANG_SEND_UP_TEST)
 		if (bus->is_linkdown ||
 			bus->dhd->req_hang_type == HANG_REASON_PCIE_RC_LINK_UP_FAIL) {
@@ -2236,7 +2271,7 @@ dhdpcie_start_host_dev(dhd_bus_t *bus)
 	}
 
 #ifdef CONFIG_ARCH_EXYNOS
-	exynos_pcie_pm_resume(pcie_ch_num);
+	ret = exynos_pcie_pm_resume(pcie_ch_num);
 #endif /* CONFIG_ARCH_EXYNOS */
 #ifdef CONFIG_ARCH_MSM
 #ifdef SUPPORT_LINKDOWN_RECOVERY
@@ -2867,6 +2902,11 @@ bool dhd_runtimepm_state(dhd_pub_t *dhd)
 #ifdef WL_CFG80211
 	uint32 ps_mode_off_dur;
 #endif /* WL_CFG80211 */
+#if defined(DHD_KERNEL_SCHED_DEBUG) && defined(DHD_FW_COREDUMP)
+	uint64 d3_ack_latency_ms;
+	uint64 wait_event_latency_ms;
+	uint64 curr_time_ns;
+#endif /* DHD_KERNEL_SCHED_DEBUG && DHD_FW_COREDUMP */
 
 	bus = dhd->bus;
 
@@ -2921,14 +2961,46 @@ bool dhd_runtimepm_state(dhd_pub_t *dhd)
 				wake_up(&bus->rpm_queue);
 				return FALSE;
 			}
-
+			DHD_ERROR(("%s, update suspend states\n", __FUNCTION__));
 			DHD_GENERAL_LOCK(dhd, flags);
 			DHD_BUS_BUSY_CLEAR_RPM_SUSPEND_IN_PROGRESS(dhd);
 			DHD_BUS_BUSY_SET_RPM_SUSPEND_DONE(dhd);
 			/* For making sure NET TX Queue active  */
 			dhd_bus_start_queue(bus);
 			DHD_GENERAL_UNLOCK(dhd, flags);
+#if defined(DHD_KERNEL_SCHED_DEBUG) && defined(DHD_FW_COREDUMP)
+			curr_time_ns = OSL_LOCALTIME_NS();
+			d3_ack_latency_ms =
+				DIV_U64_BY_U64((bus->last_d3_ack_time - bus->last_d3_inform_time),
+				NSEC_PER_MSEC);
+			wait_event_latency_ms =
+				DIV_U64_BY_U64((curr_time_ns - bus->last_d3_ack_time),
+				NSEC_PER_MSEC);
+			/*
+			 * RPM thread should go to wait state with in D3_ACK_RESP_TIMEOUT(
+			 * Same Macro is used or overloaded) after receiving D3 ACK. Else ASSERT.
+			 *
+			 * Before tasklet or workqueue information disappears,
+			 * trigger kernel panic to catch the reason for delay in scheduling.
+			 */
+			if ((d3_ack_latency_ms < D3_ACK_RESP_TIMEOUT) &&
+				(wait_event_latency_ms > D3_ACK_RESP_TIMEOUT)) {
+				uint32 cur_memdump_mode = bus->dhd->memdump_enabled;
 
+				DHD_ERROR(("d3_inform:"SEC_USEC_FMT" d3_ack:"SEC_USEC_FMT
+					" curr_time:"SEC_USEC_FMT"\n",
+					GET_SEC_USEC(bus->last_d3_inform_time),
+					GET_SEC_USEC(bus->last_d3_ack_time),
+					GET_SEC_USEC(curr_time_ns)));
+
+				if (cur_memdump_mode == DUMP_MEMFILE_BUGON) {
+					/* change g_assert_type to trigger Kernel panic */
+					g_assert_type = 2;
+					/* use ASSERT() to trigger panic */
+					ASSERT(0);
+				}
+			}
+#endif /* DHD_KERNEL_SCHED_DEBUG && DHD_FW_COREDUMP */
 			wait_event(bus->rpm_queue, bus->bus_wake);
 
 			DHD_GENERAL_LOCK(dhd, flags);

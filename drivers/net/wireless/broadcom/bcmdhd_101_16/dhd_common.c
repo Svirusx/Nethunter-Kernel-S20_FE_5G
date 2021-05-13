@@ -1,7 +1,7 @@
 /*
  * Broadcom Dongle Host Driver (DHD), common DHD core.
  *
- * Copyright (C) 2020, Broadcom.
+ * Copyright (C) 2021, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -29,6 +29,7 @@
 #include <bcmutils.h>
 #include <bcmstdlib_s.h>
 
+#include <bcmdevs_legacy.h>
 #include <bcmdevs.h>
 #include <bcmendian.h>
 #include <dngl_stats.h>
@@ -440,12 +441,6 @@ dhd_query_bus_erros(dhd_pub_t *dhdp)
 {
 	bool ret = FALSE;
 
-	if (dhdp->dongle_reset) {
-		DHD_ERROR_RLMT(("%s: Dongle Reset occurred, cannot proceed\n",
-			__FUNCTION__));
-		ret = TRUE;
-	}
-
 	if (dhdp->dongle_trap_occured) {
 		DHD_ERROR_RLMT(("%s: FW TRAP has occurred, cannot proceed\n",
 			__FUNCTION__));
@@ -474,6 +469,11 @@ dhd_query_bus_erros(dhd_pub_t *dhdp)
 
 	if (dhdp->pktid_audit_failed) {
 		DHD_ERROR_RLMT(("%s: pktid_audit_failed, cannot proceed\n",
+			__FUNCTION__));
+		ret = TRUE;
+	}
+	if (dhdp->pktid_invalid_occured) {
+		DHD_ERROR_RLMT(("%s: invalid pktid, cannot proceed\n",
 			__FUNCTION__));
 		ret = TRUE;
 	}
@@ -539,6 +539,7 @@ dhd_clear_bus_errors(dhd_pub_t *dhdp)
 	dhdp->d3ack_timeout_occured = FALSE;
 	dhdp->livelock_occured = FALSE;
 	dhdp->pktid_audit_failed = FALSE;
+	dhdp->pktid_invalid_occured = FALSE;
 #endif
 	dhdp->iface_op_failed = FALSE;
 	dhdp->scan_timeout_occurred = FALSE;
@@ -1138,8 +1139,8 @@ dhd_dump(dhd_pub_t *dhdp, char *buf, int buflen)
 	            dhdp->rx_ctlpkts, dhdp->rx_ctlerrs, dhdp->rx_dropped);
 	bcm_bprintf(strbuf, "rx_readahead_cnt %lu tx_realloc %lu\n",
 	            dhdp->rx_readahead_cnt, dhdp->tx_realloc);
-	bcm_bprintf(strbuf, "tx_pktgetfail %lu rx_pktgetfail %lu\n",
-	            dhdp->tx_pktgetfail, dhdp->rx_pktgetfail);
+	bcm_bprintf(strbuf, "tx_pktgetfail %lu rx_pktgetfail %lu rx_pktgetpool_fail %lu\n",
+	            dhdp->tx_pktgetfail, dhdp->rx_pktgetfail, dhdp->rx_pktgetpool_fail);
 	bcm_bprintf(strbuf, "tx_big_packets %lu\n",
 	            dhdp->tx_big_packets);
 	bcm_bprintf(strbuf, "\n");
@@ -6334,10 +6335,11 @@ int dhd_get_download_buffer(dhd_pub_t	*dhd, char *file_path, download_type_t com
 				*length = fw->size;
 				goto err;
 			}
-			*buffer = MALLOCZ(dhd->osh, fw->size);
+			*buffer = VMALLOCZ(dhd->osh, fw->size);
 			if (*buffer == NULL) {
 				DHD_ERROR(("%s: Failed to allocate memory %d bytes\n",
 					__FUNCTION__, (int)fw->size));
+				ret = BCME_NOMEM;
 				goto err;
 			}
 			*length = fw->size;
@@ -6383,11 +6385,11 @@ int dhd_get_download_buffer(dhd_pub_t	*dhd, char *file_path, download_type_t com
 				goto err;
 			}
 		}
-
 		buf = MALLOCZ(dhd->osh, file_len);
 		if (buf == NULL) {
 			DHD_ERROR(("%s: Failed to allocate memory %d bytes\n",
 				__FUNCTION__, file_len));
+			ret = BCME_NOMEM;
 			goto err;
 		}
 
@@ -6549,7 +6551,7 @@ int
 dhd_apply_default_clm(dhd_pub_t *dhd, char *clm_path)
 {
 	char *clm_blob_path;
-	int len;
+	int len = 0, memblock_len = 0;
 	char *memblock = NULL;
 	int err = BCME_OK;
 	char iovbuf[WLC_IOCTL_SMLEN];
@@ -6578,17 +6580,21 @@ dhd_apply_default_clm(dhd_pub_t *dhd, char *clm_path)
 #if defined(DHD_LINUX_STD_FW_API)
 	DHD_ERROR(("Clmblob file : %s\n", clm_blob_path));
 	len = MAX_CLM_BUF_SIZE;
-	dhd_get_download_buffer(dhd, clm_blob_path, CLM_BLOB, &memblock, &len);
+	err = dhd_get_download_buffer(dhd, clm_blob_path, CLM_BLOB, &memblock, &len);
+#ifdef DHD_LINUX_STD_FW_API
+	memblock_len = len;
+#else
+	memblock_len = MAX_CLM_BUF_SIZE;
+#endif /* DHD_LINUX_STD_FW_API */
 #else
 	memblock = dhd_os_open_image1(dhd, (char *)clm_blob_path);
 	len = dhd_os_get_image_size(memblock);
+	BCM_REFERENCE(memblock_len);
 #endif /* !LINUX && !linux || DHD_LINUX_STD_FW_API */
 
 	if (memblock == NULL) {
 #if defined(DHD_BLOB_EXISTENCE_CHECK)
-		if (dhd->is_blob) {
-			err = BCME_ERROR;
-		} else {
+		if (!dhd->is_blob) {
 			status = dhd_check_current_clm_data(dhd);
 			if (status == TRUE) {
 				err = BCME_OK;
@@ -6666,7 +6672,7 @@ exit:
 #if !defined(DHD_LINUX_STD_FW_API)
 		dhd_os_close_image1(dhd, memblock);
 #else
-		dhd_free_download_buffer(dhd, memblock, MAX_CLM_BUF_SIZE);
+		dhd_free_download_buffer(dhd, memblock, memblock_len);
 #endif /* LINUX || linux */
 	}
 
@@ -6675,7 +6681,11 @@ exit:
 
 void dhd_free_download_buffer(dhd_pub_t	*dhd, void *buffer, int length)
 {
+#if defined(DHD_LINUX_STD_FW_API)
+	VMFREE(dhd->osh, buffer, length);
+#else
 	MFREE(dhd->osh, buffer, length);
+#endif /* DHD_LINUX_STD_FW_API */
 }
 
 #ifdef SHOW_LOGTRACE
@@ -6893,7 +6903,7 @@ int dhd_parse_map_file(osl_t *osh, void *ptr, uint32 *ramstart, uint32 *rodata_s
 	*ramstart = 0;
 	*rodata_start = 0;
 	*rodata_end = 0;
-	size = (((struct firmware *)ptr)->size);
+	size = (uint32)(((struct firmware *)ptr)->size);
 
 	/* Allocate 1 byte more than read_size to terminate it with NULL */
 	raw_fmts = MALLOCZ(osh, read_size + 1);
@@ -9075,7 +9085,7 @@ dhd_iovar(dhd_pub_t *pub, int ifidx, char *name, char *param_buf, uint param_len
 	 * to avoid the length check error in fw
 	 */
 	if (!set && !param_len) {
-		input_len += sizeof(int);
+		input_len += (uint) sizeof(int);
 	}
 	if (input_len > WLC_IOCTL_MAXLEN)
 		return BCME_BADARG;

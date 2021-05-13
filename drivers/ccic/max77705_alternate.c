@@ -177,6 +177,16 @@ static char DP_Pin_Assignment_Print[7][40] = {
 	{"DP_Pin_Assignment_F"},
 };
 
+static uint8_t DP_Pin_Assignment_Data[7] = {
+	DP_PIN_ASSIGNMENT_NODE,
+	DP_PIN_ASSIGNMENT_A,
+	DP_PIN_ASSIGNMENT_B,
+	DP_PIN_ASSIGNMENT_C,
+	DP_PIN_ASSIGNMENT_D,
+	DP_PIN_ASSIGNMENT_E,
+	DP_PIN_ASSIGNMENT_F,
+};
+
 bool max77705_check_hmd_dev(struct max77705_usbc_platform_data *usbpd_data)
 {
 	struct max77705_hmd_power_dev *hmd_list;
@@ -539,12 +549,58 @@ static int max77705_vdm_process_enter_mode(void *data, char *vdm_data, int len)
 	return 0;
 }
 
+static int max77705_vdm_dp_select_pin(void *data, int multi)
+{
+	struct max77705_usbc_platform_data *usbpd_data = data;
+	int pin_sel = 0;
+
+	if (multi) {
+		if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_D)
+			pin_sel = CCIC_NOTIFY_DP_PIN_D;
+		else if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_B)
+			pin_sel = CCIC_NOTIFY_DP_PIN_B;
+		else if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_F)
+			pin_sel = CCIC_NOTIFY_DP_PIN_F;
+		else if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_C)
+			pin_sel = CCIC_NOTIFY_DP_PIN_C;
+		else if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_E)
+			pin_sel = CCIC_NOTIFY_DP_PIN_E;
+		else if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_A)
+			pin_sel = CCIC_NOTIFY_DP_PIN_A;
+		else
+			msg_maxim("wrong pin assignment value");
+	} else {
+		if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_C)
+			pin_sel = CCIC_NOTIFY_DP_PIN_C;
+		else if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_E)
+			pin_sel = CCIC_NOTIFY_DP_PIN_E;
+		else if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_A)
+			pin_sel = CCIC_NOTIFY_DP_PIN_A;
+		else if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_D)
+			pin_sel = CCIC_NOTIFY_DP_PIN_D;
+		else if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_B)
+			pin_sel = CCIC_NOTIFY_DP_PIN_B;
+		else if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_F)
+			pin_sel = CCIC_NOTIFY_DP_PIN_F;
+		else
+			msg_maxim("wrong pin assignment value");
+	}
+#if IS_ENABLED(CONFIG_ARCH_QCOM) && !defined(CONFIG_USB_ARCH_EXYNOS)
+	if (pin_sel == CCIC_NOTIFY_DP_PIN_C ||
+			pin_sel == CCIC_NOTIFY_DP_PIN_E ||
+			pin_sel == CCIC_NOTIFY_DP_PIN_A)
+		dwc3_restart_usb_host_mode_hs();
+#endif
+
+	return pin_sel;
+}
+
 static int max77705_vdm_dp_status_update(void *data, char *vdm_data, int len)
 {
 	struct max77705_usbc_platform_data *usbpd_data = data;
 	int i;
-	u8 multi_func_preference = 0;
-	int pin_assignment = 0;
+	uint8_t multi_func = 0;
+	int pin_sel = 0;
 	int hpd = 0;
 	int hpdirq = 0;
 	VDO_MESSAGE_Type *VDO_MSG;
@@ -560,52 +616,13 @@ static int max77705_vdm_dp_status_update(void *data, char *vdm_data, int len)
 			msg_maxim("port disconnected!");
 		} else {
 			if (usbpd_data->is_sent_pin_configuration == 0) {
-
-				multi_func_preference =
-					DP_STATUS->DATA_DP_STATUS_UPDATE.BITS.Multi_Function_Preference;
-				if (multi_func_preference == 1) {
-					if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_D) {
-						W_DATA = DP_PIN_ASSIGNMENT_D;
-						pin_assignment = CCIC_NOTIFY_DP_PIN_D;
-					} else if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_B) {
-						W_DATA = DP_PIN_ASSIGNMENT_B;
-						pin_assignment = CCIC_NOTIFY_DP_PIN_B;
-					} else if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_F) {
-						W_DATA = DP_PIN_ASSIGNMENT_F;
-						pin_assignment = CCIC_NOTIFY_DP_PIN_F;
-					} else {
-						msg_maxim("wrong pin assignment value");
-					}
-				} else {
-					dwc3_restart_usb_host_mode_hs();
-					if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_C) {
-						W_DATA = DP_PIN_ASSIGNMENT_C;
-						pin_assignment = CCIC_NOTIFY_DP_PIN_C;
-					} else if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_E) {
-						W_DATA = DP_PIN_ASSIGNMENT_E;
-						pin_assignment = CCIC_NOTIFY_DP_PIN_E;
-					} else if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_A) {
-						W_DATA = DP_PIN_ASSIGNMENT_A;
-						pin_assignment = CCIC_NOTIFY_DP_PIN_A;
-					} else if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_D) {
-						W_DATA = DP_PIN_ASSIGNMENT_D;
-						pin_assignment = CCIC_NOTIFY_DP_PIN_D;
-					} else if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_B) {
-						W_DATA = DP_PIN_ASSIGNMENT_B;
-						pin_assignment = CCIC_NOTIFY_DP_PIN_B;
-					} else if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_F) {
-						W_DATA = DP_PIN_ASSIGNMENT_F;
-						pin_assignment = CCIC_NOTIFY_DP_PIN_F;
-					} else {
-						msg_maxim("wrong pin assignment value");
-					}
-				}
-				usbpd_data->dp_selected_pin = pin_assignment;
+				multi_func = DP_STATUS->DATA_DP_STATUS_UPDATE.BITS.Multi_Function_Preference;
+				pin_sel = max77705_vdm_dp_select_pin(usbpd_data, multi_func);
+				usbpd_data->dp_selected_pin = pin_sel;
+				W_DATA = DP_Pin_Assignment_Data[pin_sel];
 
 				msg_maxim("multi_func_preference %d,  %s, W_DATA : %d",
-					multi_func_preference,
-					DP_Pin_Assignment_Print[pin_assignment],
-					W_DATA);
+					multi_func, DP_Pin_Assignment_Print[pin_sel], W_DATA);
 
 				max77705_vdm_process_set_DP_configure_mode_req(data, W_DATA);
 
@@ -642,11 +659,11 @@ static int max77705_vdm_dp_attention(void *data, char *vdm_data, int len)
 	int i;
 	int hpd = 0;
 	int hpdirq = 0;
-	int pin_assignment = 0;
+	uint8_t multi_func = 0;
+	int pin_sel = 0;
 
 	VDO_MESSAGE_Type *VDO_MSG;
 	DIS_ATTENTION_MESSAGE_DP_STATUS_Type *DP_ATTENTION;
-	u8 multi_func_preference = 0;
 	uint8_t W_DATA = 0;
 
 	if (usbpd_data->SVID_DP == TypeC_DP_SUPPORT) {
@@ -655,52 +672,14 @@ static int max77705_vdm_dp_attention(void *data, char *vdm_data, int len)
 		msg_maxim("%s DP_ATTENTION = 0x%08X\n", __func__,
 			DP_ATTENTION->DATA_MSG_DP_STATUS.DATA);
 		if (usbpd_data->is_sent_pin_configuration == 0) {
-		/* to do list */
-			multi_func_preference =
-				DP_ATTENTION->DATA_MSG_DP_STATUS.BITS.Multi_Function_Preference;
-			if (multi_func_preference == 1) {
-				if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_D) {
-					W_DATA = DP_PIN_ASSIGNMENT_D;
-					pin_assignment = CCIC_NOTIFY_DP_PIN_D;
-				} else if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_B) {
-					W_DATA = DP_PIN_ASSIGNMENT_B;
-					pin_assignment = CCIC_NOTIFY_DP_PIN_B;
-				} else if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_F) {
-					W_DATA = DP_PIN_ASSIGNMENT_F;
-					pin_assignment = CCIC_NOTIFY_DP_PIN_F;
-				} else {
-					pin_assignment = CCIC_NOTIFY_DP_PIN_UNKNOWN;
-					msg_maxim("wrong pin assignment value\n");
-				}
-			} else {
-				dwc3_restart_usb_host_mode_hs();
-				if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_C) {
-					W_DATA = DP_PIN_ASSIGNMENT_C;
-					pin_assignment = CCIC_NOTIFY_DP_PIN_C;
-				} else if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_E) {
-					W_DATA = DP_PIN_ASSIGNMENT_E;
-					pin_assignment = CCIC_NOTIFY_DP_PIN_E;
-				} else if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_A) {
-					W_DATA = DP_PIN_ASSIGNMENT_A;
-					pin_assignment = CCIC_NOTIFY_DP_PIN_A;
-				} else if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_D) {
-					W_DATA = DP_PIN_ASSIGNMENT_D;
-					pin_assignment = CCIC_NOTIFY_DP_PIN_D;
-				} else if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_B) {
-					W_DATA = DP_PIN_ASSIGNMENT_B;
-					pin_assignment = CCIC_NOTIFY_DP_PIN_B;
-				} else if (usbpd_data->pin_assignment & DP_PIN_ASSIGNMENT_F) {
-					W_DATA = DP_PIN_ASSIGNMENT_F;
-					pin_assignment = CCIC_NOTIFY_DP_PIN_F;
-				} else {
-					pin_assignment = CCIC_NOTIFY_DP_PIN_UNKNOWN;
-					msg_maxim("wrong pin assignment value\n");
-				}
-			}
-			usbpd_data->dp_selected_pin = pin_assignment;
+			multi_func = DP_ATTENTION->DATA_MSG_DP_STATUS.BITS.Multi_Function_Preference;
+			pin_sel = max77705_vdm_dp_select_pin(usbpd_data, multi_func);
+			usbpd_data->dp_selected_pin = pin_sel;
+			W_DATA = DP_Pin_Assignment_Data[pin_sel];
 
-			msg_maxim("%s multi_func_preference %d  %s\n", __func__,
-				 multi_func_preference, DP_Pin_Assignment_Print[pin_assignment]);
+			msg_maxim("multi_func_preference %d, %s, W_DATA : %d\n",
+				 multi_func, DP_Pin_Assignment_Print[pin_sel], W_DATA);
+
 			max77705_vdm_process_set_DP_configure_mode_req(data, W_DATA);
 			usbpd_data->is_sent_pin_configuration = 1;
 		} else {
