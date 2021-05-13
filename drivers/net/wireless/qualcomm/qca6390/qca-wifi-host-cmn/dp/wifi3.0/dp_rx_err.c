@@ -134,8 +134,9 @@ static inline bool dp_rx_mcast_echo_check(struct dp_soc *soc,
 			qdf_spin_unlock_bh(&soc->ast_lock);
 			QDF_TRACE(QDF_MODULE_ID_DP,
 				QDF_TRACE_LEVEL_INFO,
-				"Detected DBDC Root AP %pM, %d %d",
-				&data[QDF_MAC_ADDR_SIZE], vdev->pdev->pdev_id,
+				"Detected DBDC Root AP "QDF_MAC_ADDR_FMT", %d %d",
+				QDF_MAC_ADDR_REF(&data[QDF_MAC_ADDR_SIZE]),
+				vdev->pdev->pdev_id,
 				ase->pdev_id);
 			return false;
 		}
@@ -145,14 +146,34 @@ static inline bool dp_rx_mcast_echo_check(struct dp_soc *soc,
 			qdf_spin_unlock_bh(&soc->ast_lock);
 			QDF_TRACE(QDF_MODULE_ID_DP,
 				QDF_TRACE_LEVEL_INFO,
-				"received pkt with same src mac %pM",
-				&data[QDF_MAC_ADDR_SIZE]);
+				"received pkt with same src mac "QDF_MAC_ADDR_FMT,
+				QDF_MAC_ADDR_REF(&data[QDF_MAC_ADDR_SIZE]));
 
 			return true;
 		}
 	}
 	qdf_spin_unlock_bh(&soc->ast_lock);
 	return false;
+}
+
+void dp_rx_link_desc_refill_duplicate_check(
+				struct dp_soc *soc,
+				struct hal_buf_info *buf_info,
+				hal_buff_addrinfo_t ring_buf_info)
+{
+	struct hal_buf_info current_link_desc_buf_info = { 0 };
+
+	/* do duplicate link desc address check */
+	hal_rx_buffer_addr_info_get_paddr(ring_buf_info,
+					  &current_link_desc_buf_info);
+	if (qdf_unlikely(current_link_desc_buf_info.paddr ==
+			 buf_info->paddr)) {
+		dp_info_rl("duplicate link desc addr: %llu, cookie: 0x%x",
+			   current_link_desc_buf_info.paddr,
+			   current_link_desc_buf_info.sw_cookie);
+		DP_STATS_INC(soc, rx.err.dup_refill_link_desc, 1);
+	}
+	*buf_info = current_link_desc_buf_info;
 }
 
 /**
@@ -180,6 +201,12 @@ dp_rx_link_desc_return_by_addr(struct dp_soc *soc,
 			"WBM RELEASE RING not initialized");
 		return status;
 	}
+
+	/* do duplicate link desc address check */
+	dp_rx_link_desc_refill_duplicate_check(
+				soc,
+				&soc->last_op_info.wbm_rel_link_desc,
+				link_desc_addr);
 
 	if (qdf_unlikely(hal_srng_access_start(hal_soc, wbm_rel_srng))) {
 
@@ -363,8 +390,8 @@ dp_rx_pn_error_handle(struct dp_soc *soc, hal_ring_desc_t ring_desc,
 		 * TODO: Check for peer specific policies & set peer_pn_policy
 		 */
 		QDF_TRACE(QDF_MODULE_ID_TXRX, QDF_TRACE_LEVEL_ERROR,
-			"discard rx due to PN error for peer  %pK  %pM",
-			peer, peer->mac_addr.raw);
+			"discard rx due to PN error for peer  %pK  "QDF_MAC_ADDR_FMT,
+			peer, QDF_MAC_ADDR_REF(peer->mac_addr.raw));
 
 		dp_peer_unref_del_find_by_id(peer);
 	}
@@ -736,13 +763,12 @@ dp_rx_bar_frame_handle(struct dp_soc *soc,
 	if (!peer)
 		goto next;
 
-
-	dp_info("BAR frame: peer = "/*QDF_MAC_ADDR_FMT*/
+	dp_info("BAR frame: peer = "QDF_MAC_ADDR_FMT
 		" peer_id = %d"
 		" tid = %u"
 		" SSN = %d"
 		" error status = %d",
-		/*QDF_MAC_ADDR_REF(peer->mac_addr.raw),*/
+		QDF_MAC_ADDR_REF(peer->mac_addr.raw),
 		peer_id,
 		tid,
 		mpdu_desc_info->mpdu_seq,
@@ -2311,7 +2337,10 @@ dp_rxdma_err_process(struct dp_intr *int_ctx, struct dp_soc *soc,
 	dp_srng_access_end(int_ctx, soc, err_dst_srng);
 
 	if (rx_bufs_used) {
-		dp_rxdma_srng = &soc->rx_refill_buf_ring[mac_id];
+		if (wlan_cfg_per_pdev_lmac_ring(soc->wlan_cfg_ctx))
+			dp_rxdma_srng = &soc->rx_refill_buf_ring[mac_id];
+		else
+			dp_rxdma_srng = &soc->rx_refill_buf_ring[pdev->lmac_id];
 		rx_desc_pool = &soc->rx_desc_buf[mac_id];
 
 		dp_rx_buffers_replenish(soc, mac_id, dp_rxdma_srng,

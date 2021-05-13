@@ -71,6 +71,7 @@ static void get_chip_vendor(void *device_data);
 static void get_chip_name(void *device_data);
 static void run_jitter_test(void *device_data);
 static void run_factory_miscalibration(void *device_data);
+static void run_miscalibration(void *device_data);
 static void get_wet_mode(void *device_data);
 static void get_x_num(void *device_data);
 static void get_y_num(void *device_data);
@@ -160,6 +161,7 @@ struct sec_cmd ft_commands[] = {
 	{SEC_CMD("get_chip_name", get_chip_name),},
 	{SEC_CMD("run_jitter_test", run_jitter_test),},
 	{SEC_CMD("run_factory_miscalibration", run_factory_miscalibration),},
+	{SEC_CMD("run_miscalibration", run_miscalibration),},
 	{SEC_CMD("get_wet_mode", get_wet_mode),},
 	{SEC_CMD("get_module_vendor", not_support_cmd),},
 	{SEC_CMD("get_x_num", get_x_num),},
@@ -584,6 +586,12 @@ static ssize_t read_support_feature(struct device *dev,
 
 	if (info->board->sync_reportrate_120)
 		feature |= INPUT_FEATURE_ENABLE_SYNC_RR120;
+
+	if (info->board->support_open_short_test)
+		feature |= INPUT_FEATURE_SUPPORT_OPEN_SHORT_TEST;
+
+	if (info->board->support_mis_calibration_test)
+		feature |= INPUT_FEATURE_SUPPORT_MIS_CALIBRATION_TEST;
 
 	snprintf(buff, sizeof(buff), "%d", feature);
 	input_info(true, &info->client->dev, "%s: %s\n", __func__, buff);
@@ -1629,6 +1637,85 @@ static void run_factory_miscalibration(void *device_data)
 	sec->cmd_state = SEC_CMD_STATUS_OK;
 }
 
+static void run_miscalibration(void *device_data)
+{
+	struct sec_cmd_data *sec = (struct sec_cmd_data *)device_data;
+	struct fts_ts_info *info = container_of(sec, struct fts_ts_info, sec);
+	char buff[SEC_CMD_STR_LEN];
+	char data[FTS_EVENT_SIZE];
+	char echo;
+	int ret;
+	int retry = 200;
+	short min, max;
+
+	sec_cmd_set_default_result(sec);
+
+	fts_interrupt_set(info, INT_DISABLE);
+
+	mutex_lock(&info->wait_for);
+
+	memset(data, 0x00, sizeof(data));
+	memset(buff, 0x00, sizeof(buff));
+
+	data[0] = 0xA4;
+	data[1] = 0x0B;
+	data[2] = 0x00;
+	data[3] = 0xC0;
+
+	ret = info->fts_write_reg(info, data, 4);
+	if (ret < 0) {
+		input_err(true, &info->client->dev, "%s: write failed: %d\n", __func__, ret);
+		goto error;
+	}
+
+	/* maximum timeout 2sec ? */
+	while (retry-- >= 0) {
+		memset(data, 0x00, sizeof(data));
+		echo = FTS_READ_ONE_EVENT;
+		ret = info->fts_read_reg(info, &echo, 1, data, FTS_EVENT_SIZE);
+		if (ret < 0) {
+			input_err(true, &info->client->dev, "%s: read failed: %d\n", __func__, ret);
+			goto error;
+		}
+
+		if (data[0] != 0)
+			input_info(true, &info->client->dev, "%s: %02X %02X %02X %02X %02X %02X %02X %02X\n",
+					__func__, data[0], data[1], data[2], data[3],
+					data[4], data[5], data[6], data[7]);
+		fts_delay(10);
+
+		if (data[0] == FTS_EVENT_PASS_REPORT || data[0] == FTS_EVENT_ERROR_REPORT) {
+			max = data[3] << 8 | data[2];
+			min = data[5] << 8 | data[4];
+
+			break;
+		}
+		if (retry == 0)
+			goto error;
+	}
+
+	mutex_unlock(&info->wait_for);
+
+	if (data[0] == FTS_EVENT_PASS_REPORT)
+		snprintf(buff, sizeof(buff), "OK,%d,%d", min, max);
+	else
+		snprintf(buff, sizeof(buff), "NG,%d,%d", min, max);
+	sec_cmd_set_cmd_result(sec, buff, strnlen(buff, sizeof(buff)));
+	sec->cmd_state = SEC_CMD_STATUS_OK;
+
+	fts_reinit(info, false);
+	fts_interrupt_set(info, INT_ENABLE);
+	return;
+error:
+	mutex_unlock(&info->wait_for);
+	snprintf(buff, sizeof(buff), "NG");
+	sec_cmd_set_cmd_result(sec, buff, strnlen(buff, sizeof(buff)));
+	sec->cmd_state = SEC_CMD_STATUS_FAIL;
+	fts_reinit(info, false);
+
+	fts_interrupt_set(info, INT_ENABLE);
+}
+
 int fts_panel_ito_test(struct fts_ts_info *info, int testmode)
 {
 	u8 cmd = FTS_READ_ONE_EVENT;
@@ -1707,7 +1794,7 @@ int fts_panel_ito_test(struct fts_ts_info *info, int testmode)
 			case ITO_SENSE_SHRT_GND:
 				input_info(true, &info->client->dev, "%s: Sense channel [%d] short to GND\n",
 						__func__, data[2]);
-				result = ITO_FAIL_SHORT;
+				result = -ITO_FAIL_SHORT;
 				break;
 
 			case ITO_FORCE_SHRT_VDD:

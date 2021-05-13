@@ -240,13 +240,6 @@ config WACOM_HALL
 	help
 	  Enable WACOM Hall Feature
 
-config WACOM_HALL_SUPPORT_COVER_DETECT
-	tristate "WACOM HALL SUPPORTING COVER DETECTION"
-	bool "WACOM HALL which also can detect cover attachment"
-	default n
-	help
-	  Enable input event report in WACOM Hall IC driver
-
 config KEYBOARD_GPIO
 	tristate "GPIO Buttons"
 	depends on GPIOLIB || COMPILE_TEST

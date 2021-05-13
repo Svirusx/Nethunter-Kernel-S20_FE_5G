@@ -1774,6 +1774,9 @@ static int reclaim_pte_range(pmd_t *pmd, unsigned long addr,
 	if (pmd_trans_unstable(pmd) || !rp->nr_to_reclaim)
 		return 0;
 cont:
+	if (rwsem_is_contended(&walk->mm->mmap_sem))
+		return -1;
+
 	isolated = 0;
 	pte = pte_offset_map_lock(vma->vm_mm, pmd, addr, &ptl);
 	for (; addr != end; pte++, addr += PAGE_SIZE) {
@@ -1789,6 +1792,9 @@ cont:
 			continue;
 
 		if (PageUnevictable(page))
+			continue;
+
+		if (!PageLRU(page))
 			continue;
 
 		if (isolate_lru_page(compound_head(page)))
@@ -1890,8 +1896,9 @@ struct reclaim_param reclaim_task_anon(struct task_struct *task,
 			break;
 
 		rp.vma = vma;
-		walk_page_range(vma->vm_start, vma->vm_end,
-			&reclaim_walk);
+		if (walk_page_range(vma->vm_start, vma->vm_end,
+			&reclaim_walk))
+			break;
 	}
 
 	flush_tlb_mm(mm);
@@ -1995,9 +2002,10 @@ static ssize_t reclaim_write(struct file *file, const char __user *buf,
 				continue;
 
 			rp.vma = vma;
-			walk_page_range(max(vma->vm_start, start),
+			if (walk_page_range(max(vma->vm_start, start),
 					min(vma->vm_end, end),
-					&reclaim_walk);
+					&reclaim_walk))
+				break;
 			vma = vma->vm_next;
 		}
 	} else {
@@ -2012,8 +2020,9 @@ static ssize_t reclaim_write(struct file *file, const char __user *buf,
 				continue;
 
 			rp.vma = vma;
-			walk_page_range(vma->vm_start, vma->vm_end,
-				&reclaim_walk);
+			if (walk_page_range(vma->vm_start, vma->vm_end,
+				&reclaim_walk))
+				break;
 		}
 	}
 

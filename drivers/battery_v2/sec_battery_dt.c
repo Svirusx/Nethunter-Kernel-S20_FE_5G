@@ -98,7 +98,18 @@ int sec_bat_parse_dt(struct device *dev,
 			pdata->wireless_power_info[i].rx_power = (unsigned int)rx_power;
 			i++;
 		}
-
+		if (i > 0) {
+			int len_wireless_power_info = i;
+			while (i < SEC_WIRELESS_RX_POWER_MAX) {
+				pdata->wireless_power_info[i].wireless_power_class = pdata->wireless_power_info[len_wireless_power_info-1].wireless_power_class;
+				pdata->wireless_power_info[i].vout = pdata->wireless_power_info[len_wireless_power_info-1].vout;
+				pdata->wireless_power_info[i].input_current_limit = pdata->wireless_power_info[len_wireless_power_info-1].input_current_limit;
+				pdata->wireless_power_info[i].fast_charging_current = pdata->wireless_power_info[len_wireless_power_info-1].fast_charging_current;
+				pdata->wireless_power_info[i].ttf_charge_current = pdata->wireless_power_info[len_wireless_power_info-1].ttf_charge_current;
+				pdata->wireless_power_info[i].rx_power = pdata->wireless_power_info[len_wireless_power_info-1].rx_power;
+				i++;
+			}
+		}
 		for (i = 0; i < SEC_WIRELESS_RX_POWER_MAX; i++) {
 			pr_info("%s : POWER_LIST(%d) POWER_CLASS(%d) VOUT(%d) INPUT(%d) CHARGING(%d) TTF(%d) POWER(%d)\n",
 				__func__, i,
@@ -1472,6 +1483,12 @@ int sec_bat_parse_dt(struct device *dev,
 	if (ret) {
 		pr_info("%s: swelling_low_rechg_thr is Empty\n", __func__);
 		pdata->swelling_low_rechg_thr = 150;
+	}
+
+	ret = of_property_read_u32(np, "battery,input_current_by_siop_20",
+			(unsigned int *)&pdata->input_current_by_siop_20);
+	if (ret) {
+		pr_info("%s: input_current_by_siop_20 is Empty. Not used\n", __func__);
 	}
 
 	pr_info("%s : SWELLING_HIGH_TEMP(%d) SWELLING_HIGH_TEMP_RECOVERY(%d)\n"

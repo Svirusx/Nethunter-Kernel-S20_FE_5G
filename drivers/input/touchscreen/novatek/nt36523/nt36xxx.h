@@ -2,7 +2,6 @@
  * Copyright (C) 2010 - 2017 Novatek, Inc.
  *
  * $Revision: 22429 $
- * $Date: 2018-01-30 19:42:59 +0800 (?�二, 30 一?? 2018) $
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -137,6 +136,7 @@ struct nvt_ts_platdata {
 	int diff_test_frame;
 	bool support_dex;
 	bool enable_settings_aot;
+	bool scanoff_cover_close;
 };
 
 struct nvt_ts_data {
@@ -195,6 +195,7 @@ struct nvt_ts_data {
 	bool noise_mode;
 
 	int debug_flag;
+	bool flip_enable;
 };
 
 typedef enum {
@@ -216,6 +217,9 @@ typedef enum {
 	EVENT_MAP_PROJECTID			= 0x9A,
 	EVENT_MAP_SENSITIVITY_DIFF		= 0x9D,
 } I2C_EVENT_MAP;
+
+#define NVT_CMD_GESTURE_MODE			0x13
+#define NVT_CMD_DEEP_SLEEP_MODE			0x11
 
 typedef enum {
 	SPONGE_LP_FEATURE = 0x0000,
@@ -240,6 +244,7 @@ int nvt_ts_i2c_write(struct nvt_ts_data *ts, u16 address, u8 *buf, u16 len);
 int nvt_ts_i2c_read(struct nvt_ts_data *ts, u16 address, u8 *buf, u16 len);
 int nvt_ts_read_from_sponge(struct nvt_ts_data *ts, u8 *data, int addr_offset, int len);
 int nvt_ts_write_to_sponge(struct nvt_ts_data *ts, u8 *data, int addr_offset, int len);
+void nvt_ts_release_all_finger(struct nvt_ts_data *ts);
 
 int nvt_ts_check_fw_reset_state(struct nvt_ts_data *ts, RST_COMPLETE_STATE check_reset_state);
 void nvt_ts_sw_reset_idle(struct nvt_ts_data *ts);

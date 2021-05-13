@@ -33,7 +33,8 @@ SEC_R8Q_EUR_DTBO := \
 		kona-sec-r8q-eur-overlay-r03.dtbo \
 		kona-sec-r8q-eur-overlay-r04.dtbo \
 		kona-sec-r8q-eur-overlay-r05.dtbo \
-		kona-sec-r8q-eur-overlay-r06.dtbo
+		kona-sec-r8q-eur-overlay-r06.dtbo \
+		kona-sec-r8q-eur-overlay-r07.dtbo
 
 # R8Q KOR
 SEC_R8Q_KOR_DTBO := \
@@ -55,6 +56,11 @@ SEC_R8Q_CHN_DTBO := \
 		kona-sec-r8q-chn-overlay-r05.dtbo \
 		kona-sec-r8q-chn-overlay-r06.dtbo
 
+# R8Q SEA
+SEC_R8Q_SEA_DTBO := \
+		kona-sec-r8q-sea-overlay-r06.dtbo \
+		kona-sec-r8q-sea-overlay-r07.dtbo
+
 $(eval $(call sec_dtbo_build, \
 		$(SEC_R8Q_USA_DTBO),$(CONFIG_MACH_R8Q_USA_SINGLE),$(SEC_KONA_BASE_DTB)))
 
@@ -67,4 +73,6 @@ $(eval $(call sec_dtbo_build, \
 $(eval $(call sec_dtbo_build, \
 		$(SEC_R8Q_CHN_DTBO),$(CONFIG_MACH_R8Q_CHN_OPEN),$(SEC_KONA_BASE_DTB)))
 
+$(eval $(call sec_dtbo_build, \
+		$(SEC_R8Q_SEA_DTBO),$(CONFIG_MACH_R8Q_SEA_OPEN),$(SEC_KONA_BASE_DTB)))
 endif

@@ -3767,6 +3767,25 @@ static ssize_t sde_evtlog_dump_read(struct file *file, char __user *buff,
 	return len;
 }
 
+
+#if defined(CONFIG_DISPLAY_SAMSUNG)
+void ss_sde_dbg_debugfs_open(void)
+{
+	mutex_lock(&sde_dbg_base.mutex);
+	sde_dbg_base.cur_evt_index = 0;
+	sde_dbg_base.evtlog->first = sde_dbg_base.evtlog->curr + 1;
+	sde_dbg_base.evtlog->last =
+		sde_dbg_base.evtlog->first + SDE_EVTLOG_ENTRY;
+	mutex_unlock(&sde_dbg_base.mutex);
+}
+
+ssize_t ss_sde_evtlog_dump_read(struct file *file, char __user *buff,
+		size_t count, loff_t *ppos)
+{
+	return sde_evtlog_dump_read(file, buff, count, ppos);
+}
+#endif
+
 /**
  * sde_evtlog_dump_write - debugfs write handler for evtlog dump
  * @file: file handler

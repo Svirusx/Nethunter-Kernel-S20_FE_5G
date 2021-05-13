@@ -1,7 +1,7 @@
 /*
  * Common header file for all error codes.
  *
- * Copyright (C) 2020, Broadcom.
+ * Copyright (C) 2021, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -634,6 +634,45 @@ enum {
 
 	/* Unsupported elliptic curve group */
 	BCM_CRYPTO_E_ASN1_UNSUPPORTED_ECG	= -7173
+};
+
+/* PASN authentication status codes. */
+/* Reserved from -8292 to -9315(1K). */
+enum {
+	/* Terminate PASN authentication if off channel. */
+	WL_PASN_E_OFF_CHANNEL		= -8292,
+	/* Terminate PASN authentication if infa attempt to join. */
+	WL_PASN_E_JOIN_ATTEMPT		= -8293,
+	/* Unexpected PASN auth frame. */
+	WL_PASN_E_AUTH_DISCARD		= -8294,
+	/* Received PASN auth frame carries failure status code. */
+	WL_PASN_E_AUTH_FAILURE		= -8295,
+	/* Transmitted PASN auth frame is not acknowledged by peer. */
+	WL_PASN_E_AUTH_NO_ACK		= -8296,
+	/* Timeout waiting for PASN auth frame. */
+	WL_PASN_E_AUTH_RX_TIMEOUT	= -8297,
+	/* RSN element in PASN auth frame is invalid. */
+	WL_PASN_E_AUTH_INVALID_RSNIE	= -8298,
+	/* PMKID in PASN auth frame is not found. */
+	WL_PASN_E_AUTH_PMKID_NOT_FOUND	= -8299,
+	/* Base AKM in PASN parameters element is not supported. */
+	WL_PASN_E_AUTH_BASE_AKM_NOT_SUPPORTED	= -8300,
+	/* PASN AKM is not supported. */
+	WL_PASN_E_AUTH_PASN_AKM_NOT_SUPPORTED	= -8301,
+	/* Timeout waiting for wrapped data processing completion. */
+	WL_PASN_E_AUTH_WRAPPED_DATA_TIMEOUT	= -8302,
+	/* Wrapped data handler returns error. */
+	WL_PASN_E_AUTH_WRAPPED_DATA_ERROR	= -8303,
+	/* MIC in PASN authentication frame is invalid. */
+	WL_PASN_E_AUTH_MIC_ERROR		= -8304,
+	/* Retry time is exhausted. */
+	WL_PASN_E_AUTH_RETRY_LIMIT_REACHED	= -8305,
+	/* Finite cyclic group indicated in PASN parameters element is not supported. */
+	WL_PASN_E_CRYPTO_UNSUPPORTED_GROUP	= -8306,
+	/* Ephemeral public key in PASN parameters element is not valid. */
+	WL_PASN_E_CRYPTO_INVALID_PUBLIC_KEY	= -8307,
+	/* Generic cryto failure. */
+	WL_PASN_E_CRYPTO_FAILURE		= -8308
 };
 
 #endif	/* BCMUTILS_ERR_CODES */

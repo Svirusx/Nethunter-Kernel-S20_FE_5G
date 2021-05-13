@@ -27,5 +27,4 @@ obj-$(CONFIG_KERNEL_MODE_NEON_DEBUG)	+= sec_kernel_mode_neon_debug.o
 
 obj-$(CONFIG_SEC_SLUB_DEBUG)		+= sec_slub_debug.o
 
-obj-$(CONFIG_KUNIT)			+= kunit_test/
 GCOV_PROFILE_sec_debug.o		:=y

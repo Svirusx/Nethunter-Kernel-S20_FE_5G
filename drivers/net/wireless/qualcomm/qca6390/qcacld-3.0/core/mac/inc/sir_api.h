@@ -92,7 +92,8 @@ typedef uint8_t tSirVersionString[SIR_VERSION_STRING_LEN];
 
 #define MAX_POWER_DBG_ARGS_SUPPORTED 8
 #define QOS_MAP_MAX_EX  21
-#define QOS_MAP_LEN_MIN 16
+#define QOS_MAP_RANGE_NUM 8
+#define QOS_MAP_LEN_MIN (QOS_MAP_RANGE_NUM * 2)
 #define QOS_MAP_LEN_MAX \
 	(QOS_MAP_LEN_MIN + 2 * QOS_MAP_MAX_EX)
 #define NUM_CHAINS_MAX  2
@@ -1313,6 +1314,18 @@ struct deauth_req {
 	uint16_t reasonCode;
 };
 
+/**
+ * struct deauth_retry_params - deauth retry params
+ * @peer_mac: peer mac
+ * @reason_code: reason for disconnect indication
+ * @retry_cnt: retry count
+ */
+struct deauth_retry_params {
+	struct qdf_mac_addr peer_macaddr;
+	uint16_t reason_code;
+	uint8_t retry_cnt;
+};
+
 /* / Definition for Deauthetication response */
 struct deauth_rsp {
 	uint16_t messageType;   /* eWNI_SME_DEAUTH_RSP */
@@ -1605,8 +1618,8 @@ typedef struct sSirAggrQosRsp {
 struct qos_map_set {
 	uint8_t present;
 	uint8_t num_dscp_exceptions;
-	uint8_t dscp_exceptions[21][2];
-	uint8_t dscp_range[8][2];
+	uint8_t dscp_exceptions[QOS_MAP_MAX_EX][2];
+	uint8_t dscp_range[QOS_MAP_RANGE_NUM][2];
 };
 
 typedef struct sSmeIbssPeerInd {
@@ -2103,6 +2116,9 @@ typedef enum {
  * @bg_scan_bad_rssi_thresh:    Bad RSSI threshold to perform bg scan.
  * @bad_rssi_thresh_offset_2g:  Offset from Bad RSSI threshold for 2G to 5G Roam
  * @bg_scan_client_bitmap:      Bitmap to identify the client scans to snoop.
+ * @roam_data_rssi_threshold_triggers:    Bad data RSSI threshold to roam
+ * @roam_data_rssi_threshold:    Bad data RSSI threshold to roam
+ * @rx_data_inactivity_time:    rx duration to check data RSSI
  *
  * This structure holds all the key parameters related to
  * initial connection and also roaming connections.
@@ -2136,6 +2152,9 @@ struct roam_ext_params {
 	int8_t bg_scan_bad_rssi_thresh;
 	uint8_t roam_bad_rssi_thresh_offset_2g;
 	uint32_t bg_scan_client_bitmap;
+	uint32_t roam_data_rssi_threshold_triggers;
+	int32_t roam_data_rssi_threshold;
+	uint32_t rx_data_inactivity_time;
 };
 
 /**

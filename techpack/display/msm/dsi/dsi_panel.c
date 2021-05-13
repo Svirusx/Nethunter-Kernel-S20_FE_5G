@@ -2110,7 +2110,8 @@ char *cmd_set_prop_map[SS_DSI_CMD_SET_MAX] = {
 	"samsung,irc_subdivision_tx_cmds_revA",
 	"samsung,pac_irc_subdivision_tx_cmds_revA",
 	"samsung,irc_off_tx_cmds_revA",
-
+	"samsung,smooth_dimming_on_tx_cmds_revA",
+	"samsung,smooth_dimming_off_tx_cmds_revA",
 	"samsung,normal_brightness_etc_tx_cmds_revA",
 
 	"samsung,micro_short_test_on_tx_cmds_revA",
@@ -2144,6 +2145,7 @@ char *cmd_set_prop_map[SS_DSI_CMD_SET_MAX] = {
 	"samsung,firmware_update_write_tx_cmds_revA",
 	"samsung,firmware_update_mtp_id_write_tx_cmds_revA",
 	"samsung,firmware_update_read_tx_cmds_revA",
+	"samsung,flash_clear_buffer_tx_cmds_revA",
 	"samsung,gct_enter_tx_cmds_revA",
 	"samsung,gct_mid_tx_cmds_revA",
 	"samsung,gct_exit_tx_cmds_revA",

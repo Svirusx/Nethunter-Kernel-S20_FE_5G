@@ -149,7 +149,6 @@ ssize_t rt8547_led_store(struct device *dev,
 		sysfs_flash_op = true;
 		global_rt8547data->mode_status = RT8547_ENABLE_TORCH_MODE;
 		spin_lock_irqsave(&global_rt8547data->int_lock, flags);
-		rt8547_led_write_data(RT8547_ADDR_HIDDEN_SETTING, RT8547_HIDDEN_LVP_DISABLE);
 		rt8547_led_write_data(RT8547_ADDR_LVP_SETTING, RT8547_3V);
 		if (value == 100) {
 			pr_info("%s: sysfs flash value %d\n", __func__, value);
@@ -247,7 +246,6 @@ int64_t rt8547_led_mode_ctrl(int state, int value)
 			pr_info("%s: Pre Flash ON E(%d)\n", __func__, state);
 			global_rt8547data->mode_status = RT8547_ENABLE_PRE_FLASH_MODE;
 			spin_lock_irqsave(&global_rt8547data->int_lock, flags);
-			rt8547_led_write_data(RT8547_ADDR_HIDDEN_SETTING, RT8547_HIDDEN_LVP_DISABLE);
 			rt8547_led_write_data(RT8547_ADDR_LVP_SETTING, global_rt8547data->LVP_Voltage);
 			rt8547_led_write_data(RT8547_ADDR_CURRENT_SETTING,
 								global_rt8547data->pre_current_value|RT8547_TORCH_SELECT);
@@ -264,7 +262,6 @@ int64_t rt8547_led_mode_ctrl(int state, int value)
 			spin_lock_irqsave(&global_rt8547data->int_lock, flags);
 			if(value == 0)
 			{
-				rt8547_led_write_data(RT8547_ADDR_HIDDEN_SETTING, RT8547_HIDDEN_LVP_DISABLE);
 				rt8547_led_write_data(RT8547_ADDR_LVP_SETTING, global_rt8547data->LVP_Voltage);
 				rt8547_led_write_data(RT8547_ADDR_CURRENT_SETTING,
 							global_rt8547data->torch_current_value|RT8547_TORCH_SELECT);
@@ -273,7 +270,6 @@ int64_t rt8547_led_mode_ctrl(int state, int value)
 			}
 			else
 			{
-				rt8547_led_write_data(RT8547_ADDR_HIDDEN_SETTING, RT8547_HIDDEN_LVP_DISABLE);
 				rt8547_led_write_data(RT8547_ADDR_LVP_SETTING, global_rt8547data->LVP_Voltage);
 				rt8547_led_write_data(RT8547_ADDR_CURRENT_SETTING, value|RT8547_TORCH_SELECT);
 				rt8547_led_write_data(RT8547_ADDR_FLASH_CURRENT_LEVEL_TIMEOUT_SETTING,
@@ -291,15 +287,12 @@ int64_t rt8547_led_mode_ctrl(int state, int value)
 			spin_lock_irqsave(&global_rt8547data->int_lock, flags);
 			if(value == 0)
 			{
-				rt8547_led_write_data(RT8547_ADDR_HIDDEN_SETTING, RT8547_HIDDEN_LVP_DISABLE);
 				rt8547_led_write_data(RT8547_ADDR_LVP_SETTING, global_rt8547data->LVP_Voltage); // LVP setting
 				rt8547_led_write_data(RT8547_ADDR_CURRENT_SETTING, RT8547_STROBE_SELECT); // Strobe select
 				rt8547_led_write_data(RT8547_ADDR_FLASH_CURRENT_LEVEL_TIMEOUT_SETTING,
 					(RT8547_TIMEOUT_CURRENT_400mA << 5) | global_rt8547data->flash_current_value);
 			}
-			else
 			{
-				rt8547_led_write_data(RT8547_ADDR_HIDDEN_SETTING, RT8547_HIDDEN_LVP_DISABLE);
 				rt8547_led_write_data(RT8547_ADDR_LVP_SETTING, global_rt8547data->LVP_Voltage); // LVP setting
 				rt8547_led_write_data(RT8547_ADDR_CURRENT_SETTING, RT8547_STROBE_SELECT); // Strobe select
 				rt8547_led_write_data(RT8547_ADDR_FLASH_CURRENT_LEVEL_TIMEOUT_SETTING,
@@ -355,7 +348,6 @@ int32_t rt8547_led_set_torch(int curr)
 	LED_INFO("RT8547-FLICKERTEST ON E(%d)\n", curr);
 
 	spin_lock_irqsave(&global_rt8547data->int_lock, flags);
-	rt8547_led_write_data(RT8547_ADDR_HIDDEN_SETTING, RT8547_HIDDEN_LVP_DISABLE);
 	rt8547_led_write_data(RT8547_ADDR_LVP_SETTING, global_rt8547data->LVP_Voltage);
 	rt8547_led_write_data(RT8547_ADDR_CURRENT_SETTING,
 			curr|RT8547_TORCH_SELECT);

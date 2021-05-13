@@ -33,13 +33,13 @@
  *  ------------------------------- default ---------------------------
  *  speed	rps	gro_cnt	napi_chain	pm_qos	tx_aggr
  *  -------------------------------------------------------------------
- *  0		0d	2	disable		disable	disable
- *  10		0d	2	disable		enable	disable
- *  30		0d	2	disable		enable	disable
- *  60		0d	2	disable		enable	disable
- *  100		0d	5	enable		enable	enable
- *  200		0d	5	enable		enable	enable
- *  300		c0	0(max)	enable		enable	enable
+ *  0		7d	2	disable		disable	disable
+ *  10		7d	2	disable		enable	disable
+ *  30		7d	2	disable		enable	disable
+ *  60		7d	2	disable		enable	disable
+ *  100		7d	5	enable		enable	enable
+ *  200		7d	5	enable		enable	enable
+ *  300		70	0(max)	enable		enable	enable
  *
  */
 
@@ -49,8 +49,8 @@ const char *ndev_prefix = "rmnet_data";
 static struct rmnet_data_pm_config *cfg;
 
 /* rps boosting */
-#define ARGOS_RMNET_RPS_BIG_MASK "c0" /* big core 2, 3 */
-#define ARGOS_RMNET_RPS_DEFAULT_MASK "0d" /* default */
+#define ARGOS_RMNET_RPS_BIG_MASK "70" /* big core*/
+#define ARGOS_RMNET_RPS_DEFAULT_MASK "7d" /* default */
 #define ARGOS_RMNET_RPS_BOOST_MBPS 300
 static unsigned int rmnet_rps_boost_mbps = ARGOS_RMNET_RPS_BOOST_MBPS;
 module_param(rmnet_rps_boost_mbps, uint, 0644);
@@ -297,9 +297,9 @@ static int rmnet_data_pm_argos_cb(struct notifier_block *nb,
 
 	if (cfg->ops->pm_qos)
 		cfg->ops->pm_qos(speed);
-	/*
 	if (cfg->ops->boost_rps)
 		cfg->ops->boost_rps(speed);
+	/*
 	if (cfg->ops->pnd_chain)
 		cfg->ops->pnd_chain(speed);
 	if (cfg->ops->gro_count)

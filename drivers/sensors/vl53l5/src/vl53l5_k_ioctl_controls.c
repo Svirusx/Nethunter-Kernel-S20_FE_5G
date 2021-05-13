@@ -767,7 +767,7 @@ int vl53l5_ioctl_init(struct vl53l5_k_module_t *p_module)
 
 	vl53l5_k_power_onoff(p_module, p_module->iovdd_vreg, p_module->iovdd_vreg_name, 0);
 	vl53l5_k_power_onoff(p_module, p_module->avdd_vreg, p_module->avdd_vreg_name, 0);
-	usleep_range(10000, 10100);
+	msleep(20);
 	vl53l5_k_power_onoff(p_module, p_module->avdd_vreg, p_module->avdd_vreg_name, 1);
 	usleep_range(1000, 1100);
 	vl53l5_k_power_onoff(p_module, p_module->iovdd_vreg, p_module->iovdd_vreg_name, 1);

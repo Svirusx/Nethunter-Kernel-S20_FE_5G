@@ -3713,13 +3713,17 @@ ssize_t sec_bat_store_attrs(
 					0, SEC_BAT_CURRENT_EVENT_HV_DISABLE);
 
 				if (is_pd_wire_type(battery->cable_type)) {
+					int target_pd_index = 0;
+
 					battery->update_pd_list = true;
 					pr_info("%s: update pd list\n", __func__);
 #if defined(CONFIG_PDIC_PD30)
-					select_pdo(battery->pd_list.pd_info[battery->pd_list.num_fpdo - 1].pdo_index);
+					target_pd_index = battery->pd_list.num_fpdo - 1;
 #else
-					select_pdo(battery->pd_list.pd_info[battery->pd_list.max_pd_count - 1].pdo_index);
+					target_pd_index = battery->pd_list.max_pd_count - 1;
 #endif
+					if (target_pd_index >= 0 && target_pd_index < MAX_PDO_NUM)
+						select_pdo(battery->pd_list.pd_info[target_pd_index].pdo_index);
 				}
 			}
 		}

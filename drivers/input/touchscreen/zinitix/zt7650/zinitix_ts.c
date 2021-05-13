@@ -43,6 +43,7 @@ extern unsigned int lpcharge;
 #include <linux/muic/muic.h>
 #include <linux/muic/muic_notifier.h>
 #include <linux/vbus_notifier.h>
+#include <linux/power_supply.h>
 #endif
 
 #include "zinitix_ts.h"
@@ -527,6 +528,7 @@ enum zt_cover_id {
 #define DEF_OPTIONAL_MODE_EAR_DETECT		6
 #define DEF_OPTIONAL_MODE_EAR_DETECT_MUTUAL		7
 #define DEF_OPTIONAL_MODE_POCKET_MODE		8
+#define DEF_OPTIONAL_MODE_OTG_MODE		15
 
 /* end header file */
 
@@ -941,6 +943,11 @@ retry:
 	return length;
 
 I2C_ERROR:
+	if (info->work_state == PROBE) {
+		input_err(true, &client->dev,
+				"%s work state is PROBE.\n", __func__);
+		return ret;
+	}
 	if (info->work_state == ESD_TIMER) {
 		input_err(true, &client->dev,
 				"%s reset work queue be working.\n", __func__);
@@ -1009,6 +1016,11 @@ retry:
 	mutex_unlock(&info->i2c_mutex);
 	return length;
 I2C_ERROR:
+	if (info->work_state == PROBE) {
+		input_err(true, &client->dev,
+				"%s work state is PROBE.\n", __func__);
+		return ret;
+	}
 	if (info->work_state == ESD_TIMER) {
 		input_err(true, &client->dev,
 				"%s reset work queue be working.\n", __func__);
@@ -1081,6 +1093,11 @@ retry:
 	return I2C_SUCCESS;
 
 I2C_ERROR:
+	if (info->work_state == PROBE) {
+		input_err(true, &client->dev,
+				"%s work state is PROBE.\n", __func__);
+		return ret;
+	}
 	if (info->work_state == ESD_TIMER) {
 		input_err(true, &client->dev,
 				"%s reset work queue be working.\n", __func__);
@@ -1158,6 +1175,11 @@ retry:
 	return length;
 
 I2C_ERROR:
+	if (info->work_state == PROBE) {
+		input_err(true, &client->dev,
+				"%s work state is PROBE.\n", __func__);
+		return ret;
+	}
 	if (info->work_state == ESD_TIMER) {
 		input_err(true, &client->dev,
 				"%s reset work be working.\n", __func__);
@@ -2284,6 +2306,9 @@ int tsp_vbus_notification(struct notifier_block *nb,
 {
 	struct zt_ts_info *info = container_of(nb, struct zt_ts_info, vbus_nb);
 	vbus_status_t vbus_type = *(vbus_status_t *)data;
+	struct power_supply *psy_otg;
+	union power_supply_propval val;
+	int ret = 0;
 
 	input_info(true, &info->client->dev, "%s cmd=%lu, vbus_type=%d\n", __func__, cmd, vbus_type);
 
@@ -2298,6 +2323,23 @@ int tsp_vbus_notification(struct notifier_block *nb,
 		break;
 	default:
 		break;
+	}
+
+	psy_otg = power_supply_get_by_name("otg");
+	if (psy_otg) {
+		ret = psy_otg->desc->get_property(psy_otg, POWER_SUPPLY_PROP_ONLINE, &val);
+		if (ret) {
+			input_err(true, &info->client->dev, "%s: fail to set power_suppy ONLINE property(%d)\n",
+					__func__, ret);
+		} else {
+			zt_set_optional_mode(info, DEF_OPTIONAL_MODE_OTG_MODE, val.intval);
+			input_info(true, &info->client->dev, "VBUS %s\n", val.intval ? "OTG" : "CHARGER");
+			if (val.intval) {
+				g_ta_connected = false;
+			}
+		}
+	} else {
+		input_err(true, &info->client->dev, "%s: Fail to get psy battery\n", __func__);
 	}
 
 #ifdef CONFIG_INPUT_SEC_SECURE_TOUCH
@@ -3993,7 +4035,8 @@ static int ts_upgrade_sequence(struct zt_ts_info *info, const u8 *firmware_data,
 		ret = sec_execute_tclm_package(info->tdata, 0);
 		if (ret < 0) {
 			input_err(true, &info->client->dev, "%s: sec_execute_tclm_package fail\n", __func__);
-			return -EIO;
+			ret = -EIO;
+			goto out;
 		}
 	}
 #else
@@ -9752,8 +9795,8 @@ static int zt_ts_probe(struct i2c_client *client,
 
 #ifdef CONFIG_DISPLAY_SAMSUNG
 	lcdtype = get_lcd_attached("GET");
-	if (lcdtype == 0xFFFFFF) {
-		input_err(true, &client->dev, "%s: lcd is not attached\n", __func__);
+	if (lcdtype == 0xFFFFFF || (lcdtype != 0x800042 && lcdtype != 0x800041 && lcdtype != 0x800040)) {
+		input_err(true, &client->dev, "%s: lcd is not attached %X\n", __func__, lcdtype);
 		return -ENODEV;
 	}
 #endif
@@ -9773,8 +9816,8 @@ static int zt_ts_probe(struct i2c_client *client,
 	input_info(true, &client->dev, "%s: lcd is connected\n", __func__);
 
 	lcdtype = get_lcd_info("id");
-	if (lcdtype < 0) {
-		input_err(true, &client->dev, "%s: Failed to get lcd info\n", __func__);
+	if (lcdtype < 0 || (lcdtype != 0x800042 && lcdtype != 0x800041 && lcdtype != 0x800040)) {
+		input_err(true, &client->dev, "%s: Failed to get lcd info %X\n", __func__, lcdtype);
 		return -EINVAL;
 	}
 #endif
@@ -9844,6 +9887,10 @@ static int zt_ts_probe(struct i2c_client *client,
 	mutex_init(&info->i2c_mutex);
 	mutex_init(&info->sponge_mutex);
 	mutex_init(&info->power_init);
+#if ESD_TIMER_INTERVAL
+	mutex_init(&info->lock);
+	INIT_WORK(&info->tmr_work, ts_tmr_work);
+#endif
 
 	info->input_dev = input_allocate_device();
 	if (!info->input_dev) {
@@ -9894,8 +9941,6 @@ static int zt_ts_probe(struct i2c_client *client,
 	misc_info = info;
 
 #if ESD_TIMER_INTERVAL
-	mutex_init(&info->lock);
-	INIT_WORK(&info->tmr_work, ts_tmr_work);
 	esd_tmr_workqueue =
 		create_singlethread_workqueue("esd_tmr_workqueue");
 

@@ -466,7 +466,16 @@ static void set_cp_trigger_index_for_dig_scale(struct cs40l2x_private *cs40l2x)
 	case 23:
 	case 24:
 	case 25:
-	case 31 ... 70:
+	case 31 ... 64:
+	case 71:
+	case 72:
+	case 75:
+	case 76:
+	case 81:
+	case 88:
+	case 89:
+	case 90:
+	case 92:
 		short_duration = 1;
 		break;
 	default:

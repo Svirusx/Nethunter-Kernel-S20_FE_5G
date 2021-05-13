@@ -617,6 +617,8 @@ struct fts_i2c_platform_data {
 	bool enable_vbus_noti;
 	bool support_fod;
 	bool disable_vsync_scan;
+	bool support_open_short_test;
+	bool support_mis_calibration_test;
 	int max_x;
 	int max_y;
 	int display_x;

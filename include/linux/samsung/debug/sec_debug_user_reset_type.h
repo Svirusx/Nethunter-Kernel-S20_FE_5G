@@ -11,6 +11,7 @@ enum extra_info_dbg_type {
 	DBG_MAX,
 };
 
+#define EXINFO_UPLOAD_CAUSE_STR_SIZE		64
 #define EXINFO_RPM_LOG_SIZE			50
 #define EXINFO_TZ_LOG_SIZE			40
 #define EXINFO_HYP_LOG_SIZE			460
@@ -68,6 +69,12 @@ typedef struct {
 } _kern_ex_info_t;
 
 typedef struct {
+	u32 magic;
+	u32 reserved;
+	char str[EXINFO_UPLOAD_CAUSE_STR_SIZE];
+} upload_cause_exinfo_t;
+
+typedef struct {
 	u64 nsec;
 	u32 arg[4];
 	char msg[EXINFO_RPM_LOG_SIZE];
@@ -105,12 +112,13 @@ typedef struct {
 	char msg[EXINFO_HYP_LOG_SIZE];
 } hyp_exinfo_t;
 
+#define EXINFO_UPLOAD_CAUSE_DATA_SIZE		sizeof(upload_cause_exinfo_t)
 #define EXINFO_RPM_DATA_SIZE			sizeof(rpm_exinfo_t)
 #define EXINFO_TZ_DATA_SIZE			sizeof(tz_exinfo_t)
 #define EXINFO_PIMEM_DATA_SIZE			sizeof(pimem_exinfo_t)
 #define EXINFO_CPU_STUCK_DATA_SIZE		sizeof(cpu_stuck_exinfo_t)
 #define EXINFO_HYP_DATA_SIZE			sizeof(hyp_exinfo_t)
-#define EXINFO_SUBSYS_DATA_SIZE			(EXINFO_RPM_DATA_SIZE + EXINFO_TZ_DATA_SIZE + EXINFO_PIMEM_DATA_SIZE + EXINFO_CPU_STUCK_DATA_SIZE + EXINFO_HYP_DATA_SIZE)
+#define EXINFO_SUBSYS_DATA_SIZE			(EXINFO_UPLOAD_CAUSE_DATA_SIZE + EXINFO_RPM_DATA_SIZE + EXINFO_TZ_DATA_SIZE + EXINFO_PIMEM_DATA_SIZE + EXINFO_CPU_STUCK_DATA_SIZE + EXINFO_HYP_DATA_SIZE)
 #define EXINFO_KERNEL_SPARE_SIZE		(2048 - EXINFO_SUBSYS_DATA_SIZE)
 #define EXINFO_KERNEL_DEFAULT_SIZE		2048
 
@@ -123,6 +131,7 @@ typedef union {
 
 typedef struct {
 	kern_exinfo_t kern_ex_info;
+	upload_cause_exinfo_t uc_ex_info;
 	rpm_exinfo_t rpm_ex_info;
 	tz_exinfo_t tz_ex_info;
 	pimem_exinfo_t pimem_info;
@@ -283,6 +292,19 @@ struct tzdbg_log_t {
 	struct tzdbg_log_pos_t	log_pos;
 	/* open ended array to the end of the 4K IMEM buffer */
 	uint8_t					log_buf[];
+};
+
+#define TZBSP_DIAG_VERSION_V9_2     0x00090002
+
+struct tzdbg_log_pos_v9_2_t {
+	uint32_t wrap;
+	uint32_t offset;
+};
+
+struct tzdbg_log_v9_2_t {
+	struct tzdbg_log_pos_v9_2_t       log_pos;
+	/* open ended array to the end of the 4K IMEM buffer */
+	uint8_t                                 log_buf[];
 };
 
 /*

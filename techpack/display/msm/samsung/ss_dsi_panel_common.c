@@ -2059,7 +2059,7 @@ int ss_panel_data_read_no_gpara(struct samsung_display_driver_data *vdd,
 	if (level_key & LEVEL0_KEY)
 		ss_send_cmd(vdd, TX_LEVEL0_KEY_DISABLE);
 
-	if (type != RX_FLASH_GAMMA && type != RX_POC_READ)
+	if (type != RX_FLASH_GAMMA && type != RX_POC_READ && type != RX_FW_UP_STATUS)
 		LCD_INFO("[%d]%s, addr: 0x%x, off: %d, len: %d, buf: %s\n",
 				type, ss_get_cmd_name(type),
 				set->cmds[0].msg.tx_buf[0], orig_offset, orig_rx_len,
@@ -2385,7 +2385,15 @@ int ss_panel_on_pre(struct samsung_display_driver_data *vdd)
 	if (vdd->other_line_panel_work_cnt)
 		vdd->other_line_panel_work_cnt = 0; /*stop open otherline dat file*/
 
+	/* Print debug data : fw up fail info */
+	if (vdd->fw_up.is_support)
+		ss_read_fw_up_debug_partition();
+
 	if (!ss_panel_attach_get(vdd)) {
+		ss_read_fw_up_debug_partition();
+#if defined(CONFIG_PANEL_S6TUUM3_AMSA24VU01_WQXGA)
+		BUG_ON(1);
+#endif
 		LCD_ERR("ss_panel_attach_get NG\n");
 		return false;
 	}
@@ -4517,18 +4525,64 @@ static void ss_panel_parse_dt(struct samsung_display_driver_data *vdd)
 		ss_panel_parse_spi_cmd(np, vdd);
 	}
 
-	/* SWIRE Rework */
+	/* SWIRE Rework, Firmware update */
 	vdd->fw_up.is_support = of_property_read_bool(np, "samsung,support_firmware_update");
 	LCD_INFO("[FW_UP]is_support = %d\n", vdd->fw_up.is_support);
 
 	if (vdd->fw_up.is_support) {
+		rc = of_property_read_u32(np, "samsung,fw_image_size", tmp);
+		vdd->fw_up.image_size = (!rc ? tmp[0] : 0);
+		rc = of_property_read_u32(np, "samsung,fw_sector_size", tmp);
+		vdd->fw_up.sector_size = (!rc ? tmp[0] : 0);
+		rc = of_property_read_u32(np, "samsung,fw_start_addr", tmp);
+		vdd->fw_up.start_addr = (!rc ? tmp[0] : 0);
+
+		LCD_INFO("[FW_UP]ADDRESS/SIZE (0x%x/%d)\n",
+			vdd->fw_up.start_addr, vdd->fw_up.image_size);
+
 		/* ERASE */
 		rc = of_property_read_u32(np, "samsung,firmware_update_erase_delay_us", tmp);
 		vdd->fw_up.erase_delay_us = (!rc ? tmp[0] : 0);
 
+		rc = of_property_read_u32_array(np, "samsung,fw_erase_addr_idx", vdd->fw_up.erase_addr_idx, 3);
+		if (rc) {
+			vdd->fw_up.erase_addr_idx[0] = -1;
+			LCD_INFO("fail to get fw_erase_addr_idx\n");
+		}
+
+		rc = of_property_read_u32_array(np, "samsung,fw_erase_size_idx", vdd->fw_up.erase_size_idx, 3);
+		if (rc) {
+			vdd->fw_up.erase_size_idx[0] = -1;
+			LCD_INFO("fail to get fw_erase_size_idx\n");
+		}
+		LCD_INFO("[FW_UP][ERASE] delay_us(%d) addr_idx(%d %d %d), size_idx(%d %d %d)\n",
+			vdd->fw_up.erase_delay_us,
+			vdd->fw_up.erase_addr_idx[0], vdd->fw_up.erase_addr_idx[1], vdd->fw_up.erase_addr_idx[2],
+			vdd->fw_up.erase_size_idx[0], vdd->fw_up.erase_size_idx[1], vdd->fw_up.erase_size_idx[2]);
+
+
 		/* WRITE */
 		rc = of_property_read_u32(np, "samsung,firmware_update_write_delay_us", tmp);
 		vdd->fw_up.write_delay_us = (!rc ? tmp[0] : 0);
+		rc = of_property_read_u32(np, "samsung,fw_write_data_size", tmp);
+		vdd->fw_up.write_data_size = (!rc ? tmp[0] : 0);
+
+		rc = of_property_read_u32_array(np, "samsung,fw_write_addr_idx", vdd->fw_up.write_addr_idx, 3);
+		if (rc) {
+			vdd->fw_up.write_addr_idx[0] = -1;
+			LCD_INFO("fail to get fw_write_addr_idx\n");
+		}
+
+		rc = of_property_read_u32_array(np, "samsung,fw_write_size_idx", vdd->fw_up.write_size_idx, 3);
+		if (rc) {
+			vdd->fw_up.write_size_idx[0] = -1;
+			LCD_INFO("fail to get fw_write_size_idx\n");
+		}
+		LCD_INFO("[FW_UP][WRITE] delay_us(%d) data_size(%d) addr_idx(%d %d %d), size_idx(%d %d %d)\n",
+			vdd->fw_up.write_delay_us,	vdd->fw_up.write_data_size,
+			vdd->fw_up.write_addr_idx[0], vdd->fw_up.write_addr_idx[1], vdd->fw_up.write_addr_idx[2],
+			vdd->fw_up.write_size_idx[0], vdd->fw_up.write_size_idx[1], vdd->fw_up.write_size_idx[2]);
+
 
 		/* READ */
 		rc = of_property_read_u32(np, "samsung,firmware_update_read_delay_us", tmp);
@@ -7804,6 +7858,14 @@ int ss_early_display_init(struct samsung_display_driver_data *vdd)
 				LCD_ERR("no samsung_module_info_read function\n");
 			else
 				vdd->module_info_loaded_dsi = vdd->panel_func.samsung_module_info_read(vdd);
+		}
+
+		/* Panel Unique Cell ID */
+		if (!vdd->cell_id_loaded_dsi) {
+			if (IS_ERR_OR_NULL(vdd->panel_func.samsung_cell_id_read))
+				LCD_ERR("no samsung_cell_id_read function\n");
+			else
+				vdd->cell_id_loaded_dsi = vdd->panel_func.samsung_cell_id_read(vdd);
 		}
 
 		/* restore panel_state to poweroff

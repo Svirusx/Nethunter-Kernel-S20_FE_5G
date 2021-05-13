@@ -1,7 +1,7 @@
 /*
  * Linux cfg80211 driver - Dongle Host Driver (DHD) related
  *
- * Copyright (C) 2020, Broadcom.
+ * Copyright (C) 2021, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -237,6 +237,7 @@ wl_dongle_roam(struct net_device *ndev, u32 roamvar, u32 bcn_timeout)
 		WL_ERR(("roam_off error (%d)\n", err));
 		goto dongle_rom_out;
 	}
+	ROAMOFF_DBG_SAVE(ndev, SET_ROAM_FILS_TOGGLE, roamvar);
 dongle_rom_out:
 	return err;
 }

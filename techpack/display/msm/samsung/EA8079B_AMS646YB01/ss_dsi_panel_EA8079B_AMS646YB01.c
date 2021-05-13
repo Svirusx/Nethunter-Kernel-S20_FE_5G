@@ -983,7 +983,7 @@ static int dsi_update_mdnie_data(struct samsung_display_driver_data *vdd)
 	mdnie_data->dsi_adjust_ldu_table = adjust_ldu_data;
 	mdnie_data->dsi_max_adjust_ldu = 6;
 	mdnie_data->dsi_night_mode_table = night_mode_data;
-	mdnie_data->dsi_max_night_mode_index = 11;
+	mdnie_data->dsi_max_night_mode_index = 102;
 	mdnie_data->dsi_color_lens_table = color_lens_data;
 	mdnie_data->dsi_white_default_r = 0xff;
 	mdnie_data->dsi_white_default_g = 0xff;
@@ -1525,7 +1525,7 @@ static void samsung_panel_init(struct samsung_display_driver_data *vdd)
 	/* SAMSUNG_FINGERPRINT */
 	vdd->panel_hbm_entry_delay = 1;
 	vdd->panel_hbm_entry_after_te = 0;
-	vdd->panel_hbm_exit_delay = 2;
+	vdd->panel_hbm_exit_delay = 1;
 
 	/* Gamma compensation (Gamma Offset) */
 	vdd->panel_func.samsung_gm2_gamma_comp_init = ss_gm2_gamma_comp_init;

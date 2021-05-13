@@ -22,6 +22,8 @@
 #include "dp_types.h"
 
 #define RX_BUFFER_SIZE_PKTLOG_LITE 1024
+/* Alignment for consistent memory for DP rings*/
+#define DP_RING_BASE_ALIGN 8
 
 
 #define DP_RSSI_INVAL 0x80
@@ -1614,6 +1616,11 @@ static inline QDF_STATUS dp_h2t_cfg_stats_msg_send(struct dp_pdev *pdev,
 }
 
 static inline void
+dp_pkt_log_init(struct cdp_soc_t *soc_hdl, uint8_t pdev_id, void *scn)
+{
+}
+
+static inline void
 dp_hif_update_pipe_callback(struct dp_soc *dp_soc, void *cb_context,
 			    QDF_STATUS (*callback)(void *, qdf_nbuf_t, uint8_t),
 			    uint8_t pipe_id)
@@ -2101,4 +2108,89 @@ void dp_set_max_page_size(struct qdf_mem_multi_page_t *pages,
 }
 #endif /* MAX_ALLOC_PAGE_SIZE */
 
+#ifdef DP_MEM_PRE_ALLOC
+/**
+ * dp_desc_multi_pages_mem_alloc() - alloc memory over multiple pages
+ * @soc: datapath soc handle
+ * @desc_type: memory request source type
+ * @pages: multi page information storage
+ * @element_size: each element size
+ * @element_num: total number of elements should be allocated
+ * @memctxt: memory context
+ * @cacheable: coherent memory or cacheable memory
+ *
+ * This function is a wrapper for memory allocation over multiple
+ * pages, if dp prealloc method is registered, then will try prealloc
+ * firstly. if prealloc failed, fall back to regular way over
+ * qdf_mem_multi_pages_alloc().
+ *
+ * Return: None
+ */
+void dp_desc_multi_pages_mem_alloc(struct dp_soc *soc,
+				   enum dp_desc_type desc_type,
+				   struct qdf_mem_multi_page_t *pages,
+				   size_t element_size,
+				   uint16_t element_num,
+				   qdf_dma_context_t memctxt,
+				   bool cacheable);
+
+/**
+ * dp_desc_multi_pages_mem_free() - free multiple pages memory
+ * @soc: datapath soc handle
+ * @desc_type: memory request source type
+ * @pages: multi page information storage
+ * @memctxt: memory context
+ * @cacheable: coherent memory or cacheable memory
+ *
+ * This function is a wrapper for multiple pages memory free,
+ * if memory is got from prealloc pool, put it back to pool.
+ * otherwise free by qdf_mem_multi_pages_free().
+ *
+ * Return: None
+ */
+void dp_desc_multi_pages_mem_free(struct dp_soc *soc,
+				  enum dp_desc_type desc_type,
+				  struct qdf_mem_multi_page_t *pages,
+				  qdf_dma_context_t memctxt,
+				  bool cacheable);
+
+#else
+static inline
+void dp_desc_multi_pages_mem_alloc(struct dp_soc *soc,
+				   enum dp_desc_type desc_type,
+				   struct qdf_mem_multi_page_t *pages,
+				   size_t element_size,
+				   uint16_t element_num,
+				   qdf_dma_context_t memctxt,
+				   bool cacheable)
+{
+	qdf_mem_multi_pages_alloc(soc->osdev, pages, element_size,
+				  element_num, memctxt, cacheable);
+}
+
+static inline
+void dp_desc_multi_pages_mem_free(struct dp_soc *soc,
+				  enum dp_desc_type desc_type,
+				  struct qdf_mem_multi_page_t *pages,
+				  qdf_dma_context_t memctxt,
+				  bool cacheable)
+{
+	qdf_mem_multi_pages_free(soc->osdev, pages,
+				 memctxt, cacheable);
+}
+
+#endif
+
+
+/**
+ * dp_peer_flush_frags() - Flush all fragments for a particular
+ *  peer
+ * @soc_hdl - data path soc handle
+ * @vdev_id - vdev id
+ * @peer_addr - peer mac address
+ *
+ * Return: None
+ */
+void dp_peer_flush_frags(struct cdp_soc_t *soc_hdl, uint8_t vdev_id,
+			 uint8_t *peer_mac);
 #endif /* #ifndef _DP_INTERNAL_H_ */

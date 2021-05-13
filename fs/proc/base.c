@@ -1965,67 +1965,6 @@ static const struct file_operations proc_pid_sched_autogroup_operations = {
 
 #endif /* CONFIG_SCHED_AUTOGROUP */
 
-#ifdef CONFIG_HUGEPAGE_POOL
-static ssize_t use_hugepage_pool_read(struct file *file, char __user *buf,
-					size_t count, loff_t *ppos)
-{
-	struct task_struct *task = get_proc_task(file_inode(file));
-	char buffer[PROC_NUMBUF];
-	int use;
-	size_t len;
-
-	if (!task)
-		return -ESRCH;
-
-	task_lock(task);
-	use = get_task_use_hugepage_pool(task);
-	task_unlock(task);
-	put_task_struct(task);
-	len = snprintf(buffer, sizeof(buffer), "%d\n", use);
-	return simple_read_from_buffer(buf, count, ppos, buffer, len);
-}
-
-static ssize_t use_hugepage_pool_write(struct file *file, const char __user *buf,
-					size_t count, loff_t *ppos)
-{
-	struct inode *inode = file_inode(file);
-	char buffer[PROC_NUMBUF];
-	struct task_struct *p;
-	int use;
-	int err;
-
-	memset(buffer, 0, sizeof(buffer));
-	if (count > sizeof(buffer) - 1)
-		count = sizeof(buffer) - 1;
-	if (copy_from_user(buffer, buf, count)) {
-		err = -EFAULT;
-		goto out;
-	}
-
-	err = kstrtoint(strstrip(buffer), 0, &use);
-	if (err)
-		goto out;
-
-	p = get_proc_task(inode);
-	if (!p)
-		return -ESRCH;
-
-	task_lock(p);
-	set_task_use_hugepage_pool(p, use);
-	task_unlock(p);
-
-	put_task_struct(p);
-out:
-	return count;
-}
-
-static const struct file_operations proc_use_hugepage_pool_operations = {
-	.read		= use_hugepage_pool_read,
-	.write		= use_hugepage_pool_write,
-	.llseek		= default_llseek,
-};
-#endif
-
 static ssize_t comm_write(struct file *file, const char __user *buf,
 				size_t count, loff_t *offset)
 {
@@ -3929,9 +3868,6 @@ static const struct pid_entry tgid_base_stuff[] = {
 #ifdef CONFIG_PAGE_BOOST_RECORDING
 	REG("io_record_control",      S_IRUGO|S_IWUGO, proc_pid_io_record_operations),
 #endif
-#endif
-#ifdef CONFIG_HUGEPAGE_POOL
-	REG("use_hugepage_pool", S_IRUGO|S_IWUGO, proc_use_hugepage_pool_operations),
 #endif
 #ifdef CONFIG_NUMA
 	REG("numa_maps",  S_IRUGO, proc_pid_numa_maps_operations),

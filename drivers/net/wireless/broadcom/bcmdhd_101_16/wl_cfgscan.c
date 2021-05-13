@@ -1,7 +1,7 @@
 /*
  * Linux cfg80211 driver scan related code
  *
- * Copyright (C) 2020, Broadcom.
+ * Copyright (C) 2021, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -137,6 +137,10 @@ int get_roam_channel_list(struct bcm_cfg80211 *cfg, chanspec_t target_chan, chan
 	int n_channels, const wlc_ssid_t *ssid, int ioctl_ver);
 void set_roam_band(int band);
 #endif /* ESCAN_CHANNEL_CACHE */
+
+#ifdef WL_SCHED_SCAN
+void wl_cfg80211_stop_pno(struct bcm_cfg80211 *cfg, struct net_device *dev);
+#endif /* WL_SCHED_SCAN */
 
 #ifdef ROAM_CHANNEL_CACHE
 void print_roam_cache(struct bcm_cfg80211 *cfg);
@@ -1072,6 +1076,13 @@ wl_escan_handler(struct bcm_cfg80211 *cfg, bcm_struct_cfgdev *cfgdev,
 		}
 	}
 	else if (status == WLC_E_STATUS_SUCCESS) {
+		dhd_pub_t *dhdp = (dhd_pub_t *)(cfg->pub);
+		if ((dhdp->dhd_induce_error == DHD_INDUCE_SCAN_TIMEOUT) ||
+			(dhdp->dhd_induce_error == DHD_INDUCE_SCAN_TIMEOUT_SCHED_ERROR)) {
+			WL_ERR(("%s: Skip escan complete to induce scantimeout\n", __FUNCTION__));
+			err = BCME_ERROR;
+			goto exit;
+		}
 		cfg->escan_info.escan_state = WL_ESCAN_STATE_IDLE;
 #ifdef DHD_SEND_HANG_ESCAN_SYNCID_MISMATCH
 		cfg->escan_info.prev_escan_aborted = FALSE;
@@ -1402,7 +1413,6 @@ wl_cfgscan_populate_scan_channels(struct bcm_cfg80211 *cfg,
 {
 	u32 i = 0, j = 0;
 	u32 chanspec = 0;
-	struct wireless_dev *wdev;
 	bool is_p2p_scan = false;
 #ifdef P2P_SKIP_DFS
 	int is_printed = false;
@@ -1411,13 +1421,6 @@ wl_cfgscan_populate_scan_channels(struct bcm_cfg80211 *cfg,
 	if (!channels || !n_channels) {
 		/* Do full channel scan */
 		return;
-	}
-
-	 wdev = GET_SCAN_WDEV(cfg->scan_request);
-	if (!skip_dfs && wdev && wdev->netdev &&
-			(wdev->netdev != bcmcfg_to_prmry_ndev(cfg))) {
-		/* SKIP DFS channels for Secondary interface */
-		skip_dfs = true;
 	}
 
 	/* Check if request is for p2p scans */
@@ -2084,6 +2087,12 @@ wl_cfgscan_handle_scanbusy(struct bcm_cfg80211 *cfg, struct net_device *ndev, s3
 		busy_count = 0;
 		return scanbusy_err;
 	}
+
+	if (!p2p_scan(cfg) && wl_get_drv_status_all(cfg, REMAINING_ON_CHANNEL)) {
+		WL_ERR(("Scan err = (%d) due to p2p scan, nothing to do\n", err));
+		busy_count = 0;
+	}
+
 	if (err == BCME_BUSY || err == BCME_NOTREADY) {
 		WL_ERR(("Scan err = (%d), busy?%d", err, -EBUSY));
 		scanbusy_err = -EBUSY;
@@ -2635,6 +2644,7 @@ wl_notify_escan_complete(struct bcm_cfg80211 *cfg,
 		err = BCME_ERROR;
 		goto out;
 	}
+
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 19, 0)) && \
 	defined(SUPPORT_RANDOM_MAC_SCAN) && !defined(WL_USE_RANDOMIZED_SCAN)
 	/* Disable scanmac if enabled */
@@ -2710,11 +2720,9 @@ wl_notify_escan_complete(struct bcm_cfg80211 *cfg,
 
 		if (cfg->bss_list && (cfg->bss_list->count == 0)) {
 			WL_INFORM_MEM(("bss list empty. report sched_scan_stop\n"));
-			/* Indicated sched scan stopped so that user space
-			 * can do a full scan incase found match is empty.
-			 */
-			CFG80211_SCHED_SCAN_STOPPED(wiphy, cfg->sched_scan_req);
-			cfg->sched_scan_req = NULL;
+			wl_cfg80211_stop_pno(cfg,  bcmcfg_to_prmry_ndev(cfg));
+			/* schedule the work to indicate sched scan stop to cfg layer */
+			schedule_delayed_work(&cfg->sched_scan_stop_work, 0);
 		}
 	}
 #endif /* WL_SCHED_SCAN */
@@ -3591,17 +3599,10 @@ exit:
 	return ret;
 }
 
-int
-#if (LINUX_VERSION_CODE > KERNEL_VERSION(4, 11, 0))
-wl_cfg80211_sched_scan_stop(struct wiphy *wiphy, struct net_device *dev, u64 reqid)
-#else
-wl_cfg80211_sched_scan_stop(struct wiphy *wiphy, struct net_device *dev)
-#endif /* LINUX_VER > 4.11 */
+void
+wl_cfg80211_stop_pno(struct bcm_cfg80211 *cfg, struct net_device *dev)
 {
-	struct bcm_cfg80211 *cfg = wiphy_priv(wiphy);
 	dhd_pub_t *dhdp = (dhd_pub_t *)(cfg->pub);
-
-	WL_INFORM((">>> SCHED SCAN STOP\n"));
 
 	if (dhd_dev_pno_stop_for_ssid(dev) < 0) {
 		WL_ERR(("PNO Stop for SSID failed"));
@@ -3612,6 +3613,21 @@ wl_cfg80211_sched_scan_stop(struct wiphy *wiphy, struct net_device *dev)
 		 */
 		DBG_EVENT_LOG(dhdp, WIFI_EVENT_DRIVER_PNO_REMOVE);
 	}
+}
+
+int
+#if (LINUX_VERSION_CODE > KERNEL_VERSION(4, 11, 0))
+wl_cfg80211_sched_scan_stop(struct wiphy *wiphy, struct net_device *dev, u64 reqid)
+#else
+wl_cfg80211_sched_scan_stop(struct wiphy *wiphy, struct net_device *dev)
+#endif /* LINUX_VER > 4.11 */
+{
+	struct bcm_cfg80211 *cfg = wiphy_priv(wiphy);
+
+	WL_INFORM((">>> SCHED SCAN STOP\n"));
+	wl_cfg80211_stop_pno(cfg, dev);
+
+	cancel_delayed_work(&cfg->sched_scan_stop_work);
 
 	mutex_lock(&cfg->scan_sync);
 	if (cfg->sched_scan_req) {
@@ -3630,6 +3646,36 @@ wl_cfg80211_sched_scan_stop(struct wiphy *wiphy, struct net_device *dev)
 	mutex_unlock(&cfg->scan_sync);
 
 	return 0;
+}
+
+void
+wl_cfgscan_sched_scan_stop_work(struct work_struct *work)
+{
+	struct bcm_cfg80211 *cfg = NULL;
+	struct wiphy *wiphy = NULL;
+	struct delayed_work *dw = to_delayed_work(work);
+
+	GCC_DIAGNOSTIC_PUSH_SUPPRESS_CAST();
+	cfg = container_of(dw, struct bcm_cfg80211, sched_scan_stop_work);
+	GCC_DIAGNOSTIC_POP();
+
+	/* Hold rtnl_lock -> scan_sync lock to be in sync with cfg80211_ops path */
+	rtnl_lock();
+	mutex_lock(&cfg->scan_sync);
+	if (cfg->sched_scan_req) {
+		wiphy = cfg->sched_scan_req->wiphy;
+		/* Indicate sched scan stopped so that user space
+		 * can do a full scan incase found match is empty.
+		 */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0))
+		cfg80211_sched_scan_stopped_rtnl(wiphy, cfg->sched_scan_req->reqid);
+#else
+		cfg80211_sched_scan_stopped_rtnl(wiphy);
+#endif /* KERNEL > 4.12.0 */
+		cfg->sched_scan_req = NULL;
+	}
+	mutex_unlock(&cfg->scan_sync);
+	rtnl_unlock();
 }
 #endif /* WL_SCHED_SCAN */
 
@@ -3736,6 +3782,10 @@ static void wl_scan_timeout(unsigned long data)
 	if (dhd_query_bus_erros(dhdp)) {
 		return;
 	}
+
+	if (dhdp->memdump_enabled) {
+		dhdp->hang_reason = HANG_REASON_SCAN_TIMEOUT;
+	}
 #if defined(DHD_KERNEL_SCHED_DEBUG) && defined(DHD_FW_COREDUMP)
 	/* DHD triggers Kernel panic if the SCAN timeout occurrs
 	 * due to tasklet or workqueue scheduling problems in the Linux Kernel.
@@ -3746,12 +3796,10 @@ static void wl_scan_timeout(unsigned long data)
 	 * For this reason, customer requestes us to trigger Kernel Panic rather than
 	 * taking a SOCRAM dump.
 	 */
-	if (dhdp->memdump_enabled == DUMP_MEMFILE_BUGON &&
-		((cfg->tsinfo.scan_deq < cfg->tsinfo.scan_enq) ||
-		dhd_bus_query_dpc_sched_errors(dhdp))) {
+	if ((cfg->tsinfo.scan_deq < cfg->tsinfo.scan_enq) ||
+		dhd_bus_query_dpc_sched_errors(dhdp) ||
+		(dhdp->dhd_induce_error == DHD_INDUCE_SCAN_TIMEOUT_SCHED_ERROR)) {
 		WL_ERR(("****SCAN event timeout due to scheduling problem\n"));
-		/* change g_assert_type to trigger Kernel panic */
-		g_assert_type = 2;
 #ifdef RTT_SUPPORT
 		rtt_status = GET_RTTSTATE(dhdp);
 #endif /* RTT_SUPPORT */
@@ -3786,9 +3834,15 @@ static void wl_scan_timeout(unsigned long data)
 			mutex_is_locked(&(rtt_status)->geofence_mutex)));
 #endif /* WL_NAN */
 #endif /* RTT_SUPPORT */
-
-		/* use ASSERT() to trigger panic */
-		ASSERT(0);
+		if (dhdp->memdump_enabled == DUMP_MEMFILE_BUGON) {
+			/* change g_assert_type to trigger Kernel panic */
+			g_assert_type = 2;
+			/* use ASSERT() to trigger panic */
+			ASSERT(0);
+		}
+		if (dhdp->memdump_enabled) {
+			dhdp->hang_reason = HANG_REASON_SCAN_TIMEOUT_SCHED_ERROR;
+		}
 	}
 #endif /* DHD_KERNEL_SCHED_DEBUG && DHD_FW_COREDUMP */
 	dhd_bus_intr_count_dump(dhdp);
@@ -3807,8 +3861,13 @@ static void wl_scan_timeout(unsigned long data)
 
 		bi = next_bss(bss_list, bi);
 		for_each_bss(bss_list, bi, i) {
-			channel = wf_chspec_ctlchan(wl_chspec_driver_to_host(bi->chanspec));
-			WL_ERR(("SSID :%s  Channel :%d\n", bi->SSID, channel));
+			if (wf_chspec_valid(bi->chanspec)) {
+				channel = wf_chspec_ctlchan(wl_chspec_driver_to_host(bi->chanspec));
+				WL_ERR(("SSID :%s  Channel :%d\n", bi->SSID, channel));
+			} else {
+				WL_ERR(("SSID :%s Invalid chanspec :0x%x\n",
+					bi->SSID, bi->chanspec));
+			}
 		}
 	}
 
@@ -3839,9 +3898,10 @@ static void wl_scan_timeout(unsigned long data)
 	 * For the memdump sanity, blocking bus transactions for a while
 	 * Keeping it TRUE causes the sequential private cmd error
 	 */
-	dhdp->scan_timeout_occurred = FALSE;
+	if (!dhdp->memdump_enabled) {
+		dhdp->scan_timeout_occurred = FALSE;
+	}
 #endif /* DHD_FW_COREDUMP */
-	wl_clr_drv_status(cfg, SCANNING, ndev);
 
 	msg.event_type = hton32(WLC_E_ESCAN_RESULT);
 	msg.status = hton32(WLC_E_STATUS_TIMEOUT);
@@ -3858,6 +3918,17 @@ static void wl_scan_timeout(unsigned long data)
 #endif /* WL_CFGVENDOR_SEND_ALERT_EVENT */
 
 	DHD_ENABLE_RUNTIME_PM(dhdp);
+
+#if defined(DHD_FW_COREDUMP)
+	if (dhdp->memdump_enabled) {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 27))
+		dhd_os_send_hang_message(dhdp);
+#else
+		WL_ERR(("%s: HANG event is unsupported\n", __FUNCTION__));
+#endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 27) && OEM_ANDROID */
+	}
+#endif /* BCMDONGLEHOST && DHD_FW_COREDUMP */
+
 }
 
 s32 wl_init_scan(struct bcm_cfg80211 *cfg)
@@ -4425,12 +4496,9 @@ out_err:
 		 */
 		if (cfg->sched_scan_req) {
 			WL_ERR(("sched_scan stopped\n"));
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0))
-			cfg80211_sched_scan_stopped(wiphy, cfg->sched_scan_req->reqid);
-#else
-			cfg80211_sched_scan_stopped(wiphy);
-#endif /* KERNEL > 4.11.0 */
-			cfg->sched_scan_req = NULL;
+			wl_cfg80211_stop_pno(cfg,  bcmcfg_to_prmry_ndev(cfg));
+			/* schedule the work to indicate sched scan stop to cfg layer */
+			schedule_delayed_work(&cfg->sched_scan_stop_work, 0);
 		} else {
 			WL_ERR(("sched scan req null!\n"));
 		}
@@ -4498,7 +4566,11 @@ wl_notify_pfn_status(struct bcm_cfg80211 *cfg, bcm_struct_cfgdev *cfgdev,
 	/* If cfg80211 scheduled scan is supported, report the pno results via sched
 	 * scan results
 	 */
-	wl_notify_sched_scan_results(cfg, ndev, e, data);
+	if (cfg->sched_scan_req) {
+		wl_notify_sched_scan_results(cfg, ndev, e, data);
+	} else {
+		WL_ERR(("No sched scan running. ignore.\n"));
+	}
 #endif /* WL_SCHED_SCAN */
 	return 0;
 }
@@ -4851,8 +4923,7 @@ wl_priortize_scan_over_listen(struct bcm_cfg80211 *cfg,
 
 	wl_clr_p2p_status(cfg, LISTEN_EXPIRED);
 
-	INIT_TIMER(&cfg->p2p->listen_timer,
-		wl_cfgp2p_listen_expired, duration, 0);
+	mod_timer(&cfg->p2p->listen_timer, jiffies + msecs_to_jiffies(duration));
 }
 #endif /* WL_CFG80211_VSDB_PRIORITIZE_SCAN_REQUEST */
 

@@ -38,6 +38,48 @@
 #include <cdp_txrx_peer_ops.h>
 
 #ifdef FEATURE_WLAN_WAPI
+#ifdef FEATURE_WAPI_BIG_ENDIAN
+/*
+ * All lithium firmware expects WAPI in big endian
+ * format , whereas helium firmware's expect otherwise
+ */
+
+static void wlan_crypto_set_wapi_key(struct wlan_objmgr_vdev *vdev,
+				     bool pairwise,
+				     enum wlan_crypto_cipher_type cipher_type,
+				     struct set_key_params *params)
+{
+	static const unsigned char tx_iv[16] = {0x5c, 0x36, 0x5c, 0x36, 0x5c,
+						0x36, 0x5c, 0x36, 0x5c, 0x36,
+						0x5c, 0x36, 0x5c, 0x36, 0x5c,
+						0x36};
+
+	static const unsigned char rx_iv[16] = {0x5c, 0x36, 0x5c, 0x36, 0x5c,
+						0x36, 0x5c, 0x36, 0x5c, 0x36,
+						0x5c, 0x36, 0x5c, 0x36, 0x5c,
+						0x37};
+
+	if (cipher_type != WLAN_CRYPTO_CIPHER_WAPI_SMS4 &&
+	    cipher_type != WLAN_CRYPTO_CIPHER_WAPI_GCM4)
+		return;
+
+	if (vdev->vdev_mlme.vdev_opmode == QDF_SAP_MODE ||
+	    vdev->vdev_mlme.vdev_opmode == QDF_P2P_GO_MODE) {
+			qdf_mem_copy(&params->rx_iv, &tx_iv,
+					 WLAN_CRYPTO_WAPI_IV_SIZE);
+			qdf_mem_copy(params->tx_iv, &rx_iv,
+					 WLAN_CRYPTO_WAPI_IV_SIZE);
+	} else {
+			qdf_mem_copy(params->rx_iv, &rx_iv,
+					 WLAN_CRYPTO_WAPI_IV_SIZE);
+			qdf_mem_copy(params->tx_iv, &tx_iv,
+					 WLAN_CRYPTO_WAPI_IV_SIZE);
+		}
+
+	params->key_txmic_len = WLAN_CRYPTO_MIC_LEN;
+	params->key_rxmic_len = WLAN_CRYPTO_MIC_LEN;
+}
+#else
 static void wlan_crypto_set_wapi_key(struct wlan_objmgr_vdev *vdev,
 				     bool pairwise,
 				     enum wlan_crypto_cipher_type cipher_type,
@@ -75,6 +117,7 @@ static void wlan_crypto_set_wapi_key(struct wlan_objmgr_vdev *vdev,
 	params->key_txmic_len = WLAN_CRYPTO_MIC_LEN;
 	params->key_rxmic_len = WLAN_CRYPTO_MIC_LEN;
 }
+#endif /* FEATURE_WAPI_BIG_ENDIAN */
 #else
 static inline void wlan_crypto_set_wapi_key(struct wlan_objmgr_vdev *vdev,
 					    bool pairwise,
@@ -210,7 +253,8 @@ QDF_STATUS target_if_crypto_set_key(struct wlan_objmgr_vdev *vdev,
 
 	target_if_debug("vdev_id:%d, key: idx:%d,len:%d", params.vdev_id,
 			params.key_idx, params.key_len);
-	target_if_debug("peer mac %pM", params.peer_mac);
+	target_if_debug("peer mac "QDF_MAC_ADDR_FMT,
+			 QDF_MAC_ADDR_REF(params.peer_mac));
 	QDF_TRACE_HEX_DUMP(QDF_MODULE_ID_CRYPTO, QDF_TRACE_LEVEL_DEBUG,
 			   &params.key_rsc_ctr, sizeof(uint64_t));
 	status = wmi_unified_setup_install_key_cmd(pdev_wmi_handle, &params);

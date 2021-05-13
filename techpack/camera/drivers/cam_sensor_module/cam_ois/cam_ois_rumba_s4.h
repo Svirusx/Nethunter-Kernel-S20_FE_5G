@@ -19,7 +19,7 @@ struct cam_ois_sinewave_t {
 	int sin_y;
 };
 
-int cam_ois_offset_test(struct cam_ois_ctrl_t *o_ctrl,
+void cam_ois_offset_test(struct cam_ois_ctrl_t *o_ctrl,
 	long *raw_data_x, long *raw_data_y, bool is_need_cal);
 int cam_ois_get_offset_data(struct cam_ois_ctrl_t *o_ctrl,
 	long *raw_data_x, long *raw_data_y);

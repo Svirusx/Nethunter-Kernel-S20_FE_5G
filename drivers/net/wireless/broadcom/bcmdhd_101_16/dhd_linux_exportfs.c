@@ -2,7 +2,7 @@
  * Broadcom Dongle Host Driver (DHD), Linux-specific network interface
  * Basically selected code segments from usb-cdc.c and usb-rndis.c
  *
- * Copyright (C) 2020, Broadcom.
+ * Copyright (C) 2021, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -1151,8 +1151,8 @@ set_proptx(struct dhd_info *dev, const char *buf, size_t count)
 	}
 
 	proptx = onoff;
-	DHD_ERROR(("[WIFI_SEC] %s: FRAMEBURST On/Off from sysfs = %u\n",
-		__FUNCTION__, txbf));
+	DHD_ERROR(("[WIFI_SEC] %s: proptx from sysfs = %u\n",
+		__FUNCTION__, proptx));
 	return count;
 }
 
@@ -1165,6 +1165,7 @@ static struct dhd_attr dhd_attr_proptx =
 
 #if defined(DHD_ADPS_BAM_EXPORT) && defined(WL_BAM)
 #define BAD_AP_MAC_ADDR_ELEMENT_NUM	6
+#define MACF_READ	"%02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx"
 wl_bad_ap_mngr_t *g_bad_ap_mngr = NULL;
 
 static ssize_t
@@ -1210,10 +1211,10 @@ store_adps_bam_list(struct dhd_info *dev, const char *buf, size_t count)
 	len = count;
 	offset = 0;
 	do {
-		ret = sscanf(buf + offset, MACF"\n",
-			(uint32 *)&bad_ap.bssid.octet[0], (uint32 *)&bad_ap.bssid.octet[1],
-			(uint32 *)&bad_ap.bssid.octet[2], (uint32 *)&bad_ap.bssid.octet[3],
-			(uint32 *)&bad_ap.bssid.octet[4], (uint32 *)&bad_ap.bssid.octet[5]);
+		ret = sscanf(buf + offset, MACF_READ"\n",
+			&bad_ap.bssid.octet[0], &bad_ap.bssid.octet[1],
+			&bad_ap.bssid.octet[2], &bad_ap.bssid.octet[3],
+			&bad_ap.bssid.octet[4], &bad_ap.bssid.octet[5]);
 		if (ret != BAD_AP_MAC_ADDR_ELEMENT_NUM) {
 			DHD_ERROR(("%s - fail to parse bad ap data\n", __FUNCTION__));
 			return -EINVAL;
@@ -1302,6 +1303,42 @@ __ATTR(control_logtrace, 0660, show_control_logtrace, set_control_logtrace);
 #if defined(DISABLE_HE_ENAB) || defined(CUSTOM_CONTROL_HE_ENAB)
 uint8 control_he_enab = 1;
 #endif /* DISABLE_HE_ENAB || CUSTOM_CONTROL_HE_ENAB */
+
+#ifdef RX_PKT_POOL
+static ssize_t
+show_max_rx_pkt_pool(struct dhd_info *dhd, char *buf)
+{
+	ssize_t ret = 0;
+	if (!dhd) {
+		DHD_ERROR(("%s: dhd is NULL\n", __FUNCTION__));
+		return ret;
+	}
+
+	ret = scnprintf(buf, PAGE_SIZE - 1, "%d\n", dhd->rx_pkt_pool.max_size);
+	return ret;
+}
+
+static ssize_t
+set_max_rx_pkt_pool(struct dhd_info *dhd, const char *buf, size_t count)
+{
+	uint32 val;
+
+	if (!dhd) {
+		DHD_ERROR(("%s: dhd is NULL\n", __FUNCTION__));
+		return count;
+	}
+
+	val = bcm_atoi(buf);
+
+	dhd->rx_pkt_pool.max_size = ((val > MAX_RX_PKT_POOL) &&
+		(val <= (MAX_RX_PKT_POOL * 8))) ? val : MAX_RX_PKT_POOL;
+	DHD_ERROR(("%s: MAX_RX_PKT_POOL: %d\n", __FUNCTION__, dhd->rx_pkt_pool.max_size));
+	return count;
+}
+
+static struct dhd_attr dhd_attr_max_rx_pkt_pool=
+__ATTR(dhd_max_rx_pkt_pool, 0660, show_max_rx_pkt_pool, set_max_rx_pkt_pool);
+#endif /* RX_PKT_POOL */
 
 #if defined(CUSTOM_CONTROL_HE_ENAB)
 static ssize_t
@@ -1600,6 +1637,9 @@ static struct attribute *default_file_attrs[] = {
 #endif /* DHD_FILE_DUMP_EVENT */
 #endif /* WL_CFG80211 */
 	&dhd_attr_dhd_debug_data.attr,
+#if defined(RX_PKT_POOL)
+	&dhd_attr_max_rx_pkt_pool.attr,
+#endif /* RX_PKT_POOL */
 	NULL
 };
 
@@ -1773,7 +1813,7 @@ set_lb_rxp_stop_thr(struct dhd_info *dev, const char *buf, size_t count)
 	}
 	dhdp = &dhd->pub;
 
-	lb_rxp_stop_thr = bcm_strtoul(buf, NULL, 10);
+	lb_rxp_stop_thr = (uint32)bcm_strtoul(buf, NULL, 10);
 	sscanf(buf, "%u", &lb_rxp_stop_thr);
 
 	/* disable lb_rxp flow ctrl */
@@ -1832,7 +1872,7 @@ set_lb_rxp_strt_thr(struct dhd_info *dev, const char *buf, size_t count)
 	}
 	dhdp = &dhd->pub;
 
-	lb_rxp_strt_thr = bcm_strtoul(buf, NULL, 10);
+	lb_rxp_strt_thr = (uint32)bcm_strtoul(buf, NULL, 10);
 	sscanf(buf, "%u", &lb_rxp_strt_thr);
 
 	/* disable lb_rxp flow ctrl */

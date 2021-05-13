@@ -1,7 +1,7 @@
 /*
  * DHD BT WiFi Coex RegON Coordinator
  *
- * Copyright (C) 2020, Broadcom.
+ * Copyright (C) 2021, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -169,7 +169,7 @@ static ssize_t wbrc_bt_dev_write(struct file *filep, const char *buffer,
 	WBRC_LOCK(wbrc_data);
 
 	pr_info("%s Received %zu bytes\n", __func__, len);
-	if (len < WBRC_MSG_LEN) {
+	if (len != WBRC_MSG_LEN) {
 		pr_err("%s: Received malformed packet:%d\n", __func__, (int)len);
 		ret = -EFAULT;
 		goto exit;

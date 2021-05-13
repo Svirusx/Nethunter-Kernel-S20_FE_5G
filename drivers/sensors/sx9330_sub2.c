@@ -70,7 +70,7 @@
 #define HALLIC_CERT_PATH	"/sys/class/sec/hall_ic/certify_hall_detect"
 #endif
 #ifdef CONFIG_FOLDER_HALL
-#define HALLIC_FOLD_PATH	"/sys/class/sec/sec_flip/flipStatus"
+#define HALLIC_FOLD_PATH	"/sys/class/sec/hall_ic/flip_status"
 #endif
 
 struct sx9330_p {

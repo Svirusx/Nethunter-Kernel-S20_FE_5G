@@ -226,4 +226,7 @@ int get_light_sidx(struct adsp_data *data);
 struct adsp_data* adsp_get_struct_data(void);
 void light_brightness_work_func(struct work_struct *work);
 #endif
+#ifdef CONFIG_SUPPORT_LIGHT_DUALIZATION
+void light_set_name_vendor(int32_t buf);
+#endif
 #endif /* __ADSP_SENSOR_H__ */

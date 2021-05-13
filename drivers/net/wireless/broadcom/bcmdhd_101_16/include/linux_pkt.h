@@ -1,7 +1,7 @@
 /*
  * Linux Packet (skb) interface
  *
- * Copyright (C) 2020, Broadcom.
+ * Copyright (C) 2021, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -124,6 +124,14 @@ extern void osl_pkt_orphan_partial(struct sk_buff *skb);
 #else
 #define PKTORPHAN(skb)          ({BCM_REFERENCE(skb); 0;})
 #endif /* Linux Version >= 3.6 */
+
+#ifdef RX_PKT_POOL
+#ifdef DHD_USE_ATOMIC_PKTGET
+#error "Don't enable both DHD_USE_ATOMIC_PKTGET and RX_PKT_POOL, "
+		"as RX_PKT_POOL runs in non atomic context"
+#endif /* DHD_USE_ATOMIC_PKTGET */
+#define	PKTGET_RX_POOL(osh, dhd, len, send) dhd_rxpool_pktget((osh), (dhd), (len))
+#endif /* RX_PKT_POOL */
 
 #define	PKTSETFAST(osh, skb)	({BCM_REFERENCE(osh); BCM_REFERENCE(skb);})
 #define	PKTCLRFAST(osh, skb)	({BCM_REFERENCE(osh); BCM_REFERENCE(skb);})

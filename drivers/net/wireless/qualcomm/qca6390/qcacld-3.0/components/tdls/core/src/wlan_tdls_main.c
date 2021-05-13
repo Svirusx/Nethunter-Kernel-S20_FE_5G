@@ -217,17 +217,17 @@ static QDF_STATUS tdls_vdev_init(struct tdls_vdev_priv_obj *vdev_obj)
 				WLAN_TDLS_PEER_SUB_LIST_SIZE);
 	}
 	qdf_mc_timer_init(&vdev_obj->peer_update_timer, QDF_TIMER_TYPE_SW,
-			  tdls_ct_handler, vdev_obj->vdev);
+			  tdls_ct_handler, soc_obj->soc);
 	qdf_mc_timer_init(&vdev_obj->peer_discovery_timer, QDF_TIMER_TYPE_SW,
-			  tdls_discovery_timeout_peer_cb, vdev_obj);
+			  tdls_discovery_timeout_peer_cb, soc_obj->soc);
 
 	return QDF_STATUS_SUCCESS;
 }
 
 static void tdls_vdev_deinit(struct tdls_vdev_priv_obj *vdev_obj)
 {
-	qdf_mc_timer_stop(&vdev_obj->peer_update_timer);
-	qdf_mc_timer_stop(&vdev_obj->peer_discovery_timer);
+	qdf_mc_timer_stop_sync(&vdev_obj->peer_update_timer);
+	qdf_mc_timer_stop_sync(&vdev_obj->peer_discovery_timer);
 
 	qdf_mc_timer_destroy(&vdev_obj->peer_update_timer);
 	qdf_mc_timer_destroy(&vdev_obj->peer_discovery_timer);
@@ -417,8 +417,8 @@ static int __tdls_get_all_peers_from_list(
 			if (buf_len < 32 + 1)
 				break;
 			len = qdf_scnprintf(buf, buf_len,
-				QDF_MAC_ADDR_STR "%4s%3s%5d\n",
-				QDF_MAC_ADDR_ARRAY(curr_peer->peer_mac.bytes),
+				QDF_MAC_ADDR_FMT "%4s%3s%5d\n",
+				QDF_MAC_ADDR_REF(curr_peer->peer_mac.bytes),
 				(curr_peer->tdls_support ==
 				 TDLS_CAP_SUPPORTED) ? "Y" : "N",
 				TDLS_IS_LINK_CONNECTED(curr_peer) ? "Y" :
@@ -504,8 +504,8 @@ static QDF_STATUS tdls_process_reset_all_peers(struct wlan_objmgr_vdev *vdev)
 		if (!curr_peer)
 			continue;
 
-		tdls_notice("indicate TDLS teardown %pM",
-			    curr_peer->peer_mac.bytes);
+		tdls_notice("indicate TDLS teardown "QDF_MAC_ADDR_FMT,
+			    QDF_MAC_ADDR_REF(curr_peer->peer_mac.bytes));
 
 		/* Indicate teardown to supplicant */
 		tdls_indicate_teardown(tdls_vdev,
@@ -692,7 +692,9 @@ void tdls_timer_restart(struct wlan_objmgr_vdev *vdev,
 				 qdf_mc_timer_t *timer,
 				 uint32_t expiration_time)
 {
-	qdf_mc_timer_start(timer, expiration_time);
+	if (QDF_TIMER_STATE_RUNNING !=
+	    qdf_mc_timer_get_current_state(timer))
+		qdf_mc_timer_start(timer, expiration_time);
 }
 
 /**

@@ -119,6 +119,61 @@ static bool is_initial_mem_debug_disabled;
 #endif
 
 /**
+ *  __qdf_nbuf_get_ip_offset - Get IPV4/V6 header offset
+ * @data: Pointer to network data buffer
+ *
+ * Get the IP header offset in case of 8021Q and 8021AD
+ * tag is present in L2 header.
+ *
+ * Return: IP header offset
+ */
+static inline uint8_t __qdf_nbuf_get_ip_offset(uint8_t *data)
+{
+	uint16_t ether_type;
+
+	ether_type = *(uint16_t *)(data +
+				   QDF_NBUF_TRAC_ETH_TYPE_OFFSET);
+
+	if (unlikely(ether_type == QDF_SWAP_U16(QDF_ETH_TYPE_8021Q)))
+		return QDF_NBUF_TRAC_VLAN_IP_OFFSET;
+	else if (unlikely(ether_type == QDF_SWAP_U16(QDF_ETH_TYPE_8021AD)))
+		return QDF_NBUF_TRAC_DOUBLE_VLAN_IP_OFFSET;
+
+	return QDF_NBUF_TRAC_IP_OFFSET;
+}
+
+qdf_export_symbol(__qdf_nbuf_get_ip_offset);
+
+/**
+ *  __qdf_nbuf_get_ether_type - Get the ether type
+ * @data: Pointer to network data buffer
+ *
+ * Get the ether type in case of 8021Q and 8021AD tag
+ * is present in L2 header, e.g for the returned ether type
+ * value, if IPV4 data ether type 0x0800, return 0x0008.
+ *
+ * Return ether type.
+ */
+static inline uint16_t __qdf_nbuf_get_ether_type(uint8_t *data)
+{
+	uint16_t ether_type;
+
+	ether_type = *(uint16_t *)(data +
+				   QDF_NBUF_TRAC_ETH_TYPE_OFFSET);
+
+	if (unlikely(ether_type == QDF_SWAP_U16(QDF_ETH_TYPE_8021Q)))
+		ether_type = *(uint16_t *)(data +
+				QDF_NBUF_TRAC_VLAN_ETH_TYPE_OFFSET);
+	else if (unlikely(ether_type == QDF_SWAP_U16(QDF_ETH_TYPE_8021AD)))
+		ether_type = *(uint16_t *)(data +
+				QDF_NBUF_TRAC_DOUBLE_VLAN_ETH_TYPE_OFFSET);
+
+	return ether_type;
+}
+
+qdf_export_symbol(__qdf_nbuf_get_ether_type);
+
+/**
  * qdf_nbuf_tx_desc_count_display() - Displays the packet counter
  *
  * Return: none
@@ -1322,12 +1377,21 @@ bool __qdf_nbuf_data_is_ipv4_dhcp_pkt(uint8_t *data)
 {
 	uint16_t sport;
 	uint16_t dport;
+	uint8_t ipv4_offset;
+	uint8_t ipv4_hdr_len;
+	struct iphdr *iphdr;
 
-	sport = (uint16_t)(*(uint16_t *)(data + QDF_NBUF_TRAC_IPV4_OFFSET +
-					 QDF_NBUF_TRAC_IPV4_HEADER_SIZE));
-	dport = (uint16_t)(*(uint16_t *)(data + QDF_NBUF_TRAC_IPV4_OFFSET +
-					 QDF_NBUF_TRAC_IPV4_HEADER_SIZE +
-					 sizeof(uint16_t)));
+	if (__qdf_nbuf_get_ether_type(data) !=
+	    QDF_SWAP_U16(QDF_NBUF_TRAC_IPV4_ETH_TYPE))
+		return false;
+
+	ipv4_offset = __qdf_nbuf_get_ip_offset(data);
+	iphdr = (struct iphdr *)(data + ipv4_offset);
+	ipv4_hdr_len = iphdr->ihl * QDF_NBUF_IPV4_HDR_SIZE_UNIT;
+
+	sport = *(uint16_t *)(data + ipv4_offset + ipv4_hdr_len);
+	dport = *(uint16_t *)(data + ipv4_offset + ipv4_hdr_len +
+			      sizeof(uint16_t));
 
 	if (((sport == QDF_SWAP_U16(QDF_NBUF_TRAC_DHCP_SRV_PORT)) &&
 	     (dport == QDF_SWAP_U16(QDF_NBUF_TRAC_DHCP_CLI_PORT))) ||
@@ -1352,8 +1416,7 @@ bool __qdf_nbuf_data_is_ipv4_eapol_pkt(uint8_t *data)
 {
 	uint16_t ether_type;
 
-	ether_type = (uint16_t)(*(uint16_t *)(data +
-				QDF_NBUF_TRAC_ETH_TYPE_OFFSET));
+	ether_type = __qdf_nbuf_get_ether_type(data);
 
 	if (ether_type == QDF_SWAP_U16(QDF_NBUF_TRAC_EAPOL_ETH_TYPE))
 		return true;
@@ -1421,8 +1484,7 @@ bool __qdf_nbuf_data_is_ipv4_arp_pkt(uint8_t *data)
 {
 	uint16_t ether_type;
 
-	ether_type = (uint16_t)(*(uint16_t *)(data +
-				QDF_NBUF_TRAC_ETH_TYPE_OFFSET));
+	ether_type = __qdf_nbuf_get_ether_type(data);
 
 	if (ether_type == QDF_SWAP_U16(QDF_NBUF_TRAC_ARP_ETH_TYPE))
 		return true;
@@ -1797,12 +1859,14 @@ bool __qdf_nbuf_data_is_ipv6_dhcp_pkt(uint8_t *data)
 {
 	uint16_t sport;
 	uint16_t dport;
+	uint8_t ipv6_offset;
 
-	sport = *(uint16_t *)(data + QDF_NBUF_TRAC_IPV6_OFFSET +
-				QDF_NBUF_TRAC_IPV6_HEADER_SIZE);
-	dport = *(uint16_t *)(data + QDF_NBUF_TRAC_IPV6_OFFSET +
-					QDF_NBUF_TRAC_IPV6_HEADER_SIZE +
-					sizeof(uint16_t));
+	ipv6_offset = __qdf_nbuf_get_ip_offset(data);
+	sport = *(uint16_t *)(data + ipv6_offset +
+			      QDF_NBUF_TRAC_IPV6_HEADER_SIZE);
+	dport = *(uint16_t *)(data + ipv6_offset +
+			      QDF_NBUF_TRAC_IPV6_HEADER_SIZE +
+			      sizeof(uint16_t));
 
 	if (((sport == QDF_SWAP_U16(QDF_NBUF_TRAC_DHCP6_SRV_PORT)) &&
 	     (dport == QDF_SWAP_U16(QDF_NBUF_TRAC_DHCP6_CLI_PORT))) ||
@@ -2876,6 +2940,51 @@ struct qdf_tso_cmn_seg_info_t {
 };
 
 /**
+ * qdf_nbuf_adj_tso_frag() - adjustment for buffer address of tso fragment
+ *
+ * @skb: network buffer
+ *
+ * Return: byte offset length of 8 bytes aligned.
+ */
+#ifdef FIX_TXDMA_LIMITATION
+static uint8_t qdf_nbuf_adj_tso_frag(struct sk_buff *skb)
+{
+	uint32_t eit_hdr_len;
+	uint8_t *eit_hdr;
+	uint8_t byte_8_align_offset;
+
+	eit_hdr = skb->data;
+	eit_hdr_len = (skb_transport_header(skb)
+		 - skb_mac_header(skb)) + tcp_hdrlen(skb);
+	byte_8_align_offset = ((unsigned long)(eit_hdr) + eit_hdr_len) & 0x7L;
+	if (qdf_unlikely(byte_8_align_offset)) {
+		TSO_DEBUG("%pK,Len %d %d",
+			  eit_hdr, eit_hdr_len, byte_8_align_offset);
+		if (unlikely(skb_headroom(skb) < byte_8_align_offset)) {
+			TSO_DEBUG("[%d]Insufficient headroom,[%pK],[%pK],[%d]",
+				  __LINE__, skb->head, skb->data,
+				 byte_8_align_offset);
+			return 0;
+		}
+		qdf_nbuf_push_head(skb, byte_8_align_offset);
+		qdf_mem_move(skb->data,
+			     skb->data + byte_8_align_offset,
+			     eit_hdr_len);
+		skb->len -= byte_8_align_offset;
+		skb->mac_header -= byte_8_align_offset;
+		skb->network_header -= byte_8_align_offset;
+		skb->transport_header -= byte_8_align_offset;
+	}
+	return byte_8_align_offset;
+}
+#else
+static uint8_t qdf_nbuf_adj_tso_frag(struct sk_buff *skb)
+{
+	return 0;
+}
+#endif
+
+/**
  * __qdf_nbuf_get_tso_cmn_seg_info() - get TSO common
  * information
  * @osdev: qdf device handle
@@ -3045,11 +3154,14 @@ uint32_t __qdf_nbuf_get_tso_info(qdf_device_t osdev, struct sk_buff *skb,
 	uint32_t skb_proc = skb->len; /* bytes of skb pending processing */
 	uint32_t tso_seg_size = skb_shinfo(skb)->gso_size;
 	int j = 0; /* skb fragment index */
+	uint8_t byte_8_align_offset;
 
 	memset(&tso_cmn_info, 0x0, sizeof(tso_cmn_info));
 	total_num_seg = tso_info->tso_num_seg_list;
 	curr_seg = tso_info->tso_seg_list;
 	total_num_seg->num_seg.tso_cmn_num_seg = 0;
+
+	byte_8_align_offset = qdf_nbuf_adj_tso_frag(skb);
 
 	if (qdf_unlikely(__qdf_nbuf_get_tso_cmn_seg_info(osdev,
 						skb, &tso_cmn_info))) {
@@ -3066,7 +3178,9 @@ uint32_t __qdf_nbuf_get_tso_info(qdf_device_t osdev, struct sk_buff *skb,
 	skb_proc -= tso_cmn_info.eit_hdr_len;
 
 	/* get the address to the next tso fragment */
-	tso_frag_vaddr = skb->data + tso_cmn_info.eit_hdr_len;
+	tso_frag_vaddr = skb->data +
+			 tso_cmn_info.eit_hdr_len +
+			 byte_8_align_offset;
 	/* get the length of the next tso fragment */
 	tso_frag_len = min(skb_frag_len, tso_seg_size);
 

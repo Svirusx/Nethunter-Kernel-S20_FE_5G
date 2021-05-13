@@ -1,7 +1,7 @@
 /*
  * Linux cfg80211 driver - Android related functions
  *
- * Copyright (C) 2020, Broadcom.
+ * Copyright (C) 2021, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -261,7 +261,6 @@
 #define CMD_GETSCANNPROBES "GETSCANNPROBES"
 #define CMD_SETSCANNPROBES "SETSCANNPROBES"
 #define CMD_GETDFSSCANMODE "GETDFSSCANMODE"
-#define CMD_SETDFSSCANMODE "SETDFSSCANMODE"
 #define CMD_SETJOINPREFER "SETJOINPREFER"
 
 #define CMD_SENDACTIONFRAME "SENDACTIONFRAME"
@@ -676,6 +675,11 @@ static const wl_natoe_sub_cmd_t natoe_cmd_list[] = {
 #define CMD_PKTLOG_DEBUG_DUMP	"PKTLOG_DEBUG_DUMP"
 #endif /* DHD_PKT_LOGGING */
 
+#ifdef TPUT_DEBUG_DUMP
+#define CMD_TPUT_DEBUG_MODE_ENABLE "TPUT_DEBUG_MODE_ENABLE"
+#define CMD_TPUT_DEBUG_MODE_DISABLE "TPUT_DEBUG_MODE_DISABLE"
+#endif /* TPUT_DEBUG_DUMP */
+
 #ifdef DHD_EVENT_LOG_FILTER
 #define CMD_EWP_FILTER		"EWP_FILTER"
 #endif /* DHD_EVENT_LOG_FILTER */
@@ -911,7 +915,7 @@ static char* ncho_cmdlist[] =
 	CMD_GETSCANHOMETIME, CMD_SETSCANHOMETIME,
 	CMD_GETSCANHOMEAWAYTIME, CMD_SETSCANHOMEAWAYTIME,
 	CMD_GETSCANNPROBES, CMD_SETSCANNPROBES,
-	CMD_GETDFSSCANMODE, CMD_SETDFSSCANMODE,
+	CMD_GETDFSSCANMODE,
 	CMD_SETJOINPREFER,
 	CMD_GETWESMODE,	CMD_SETWESMODE,
 	"\0"
@@ -974,7 +978,6 @@ int wl_android_set_scan_home_time(struct net_device *dev, char *command);
 int wl_android_set_scan_home_away_time(struct net_device *dev, char *command);
 int wl_android_set_scan_nprobes(struct net_device *dev, char *command);
 static int wl_android_set_band(struct net_device *dev, char *command);
-int wl_android_set_scan_dfs_channel_mode(struct net_device *dev, char *command);
 int wl_android_set_wes_mode(struct net_device *dev, char *command);
 int wl_android_set_okc_mode(struct net_device *dev, char *command);
 
@@ -1033,8 +1036,6 @@ static android_restore_scan_params_t restore_params[] =
 		RESTORE_TYPE_PRIV_CMD, .cmd_handler = wl_android_set_scan_home_away_time},
 	{ CMD_SETSCANNPROBES, DEFAULT_SCANPROBES,
 		RESTORE_TYPE_PRIV_CMD, .cmd_handler = wl_android_set_scan_nprobes},
-	{ CMD_SETDFSSCANMODE, DEFAULT_DFSSCANMODE,
-		RESTORE_TYPE_PRIV_CMD, .cmd_handler = wl_android_set_scan_dfs_channel_mode},
 	{ CMD_SETWESMODE, DEFAULT_WESMODE,
 		RESTORE_TYPE_PRIV_CMD, .cmd_handler = wl_android_set_wes_mode},
 #endif /* WES_SUPPORT */
@@ -2630,36 +2631,6 @@ wl_android_get_scan_dfs_channel_mode(struct net_device *dev, char *command, int 
 	return bytes_written;
 }
 
-int
-wl_android_set_scan_dfs_channel_mode(struct net_device *dev, char *command)
-{
-	int error = BCME_OK;
-	int mode = 0;
-	int scan_passive_time = 0;
-
-	if (sscanf(command, "%*s %d", &mode) != 1) {
-		WL_ERR(("Failed to get Parameter\n"));
-		return BCME_ERROR;
-	}
-
-	if (mode == 1) {
-		scan_passive_time = DHD_SCAN_PASSIVE_TIME;
-	} else if (mode == 0) {
-		scan_passive_time = 0;
-	} else {
-		WL_ERR(("Failed to set Scan DFS channel mode %d\n", mode));
-		return BCME_ERROR;
-	}
-	error = wldev_iovar_setint(dev, "scan_passive_time", scan_passive_time);
-	if (error) {
-		WL_ERR(("Failed to set Scan Passive Time %d, error = %d\n",
-			scan_passive_time, error));
-		return BCME_ERROR;
-	}
-
-	return error;
-}
-
 #define JOINPREFFER_BUF_SIZE 12
 
 static int
@@ -3263,9 +3234,6 @@ wl_android_ncho_private_command(struct net_device *net, char *command, int total
 	}
 	else if (strnicmp(command, CMD_GETDFSSCANMODE, strlen(CMD_GETDFSSCANMODE)) == 0) {
 		bytes_written = wl_android_get_scan_dfs_channel_mode(net, command, total_len);
-	}
-	else if (strnicmp(command, CMD_SETDFSSCANMODE, strlen(CMD_SETDFSSCANMODE)) == 0) {
-		bytes_written = wl_android_set_scan_dfs_channel_mode(net, command);
 	}
 	else if (strnicmp(command, CMD_SETJOINPREFER, strlen(CMD_SETJOINPREFER)) == 0) {
 		bytes_written = wl_android_set_join_prefer(net, command);
@@ -4947,11 +4915,11 @@ exit:
 	return ret;
 }
 
-int wl_android_wifi_off(struct net_device *dev, bool on_failure)
+int wl_android_wifi_off(struct net_device *dev, bool force_off)
 {
 	int ret = 0;
 
-	DHD_ERROR(("%s g_wifi_on=%d on_failure=%d\n", __FUNCTION__, g_wifi_on, on_failure));
+	DHD_ERROR(("%s g_wifi_on=%d force_off=%d\n", __FUNCTION__, g_wifi_on, force_off));
 	if (!dev) {
 		DHD_TRACE(("wl_android_wifi_off: dev is null\n"));
 		return -EINVAL;
@@ -4965,7 +4933,7 @@ int wl_android_wifi_off(struct net_device *dev, bool on_failure)
 	}
 #endif	/* BCMPCIE && DHD_DEBUG_UART */
 	dhd_net_if_lock(dev);
-	if (g_wifi_on || on_failure) {
+	if (g_wifi_on || force_off) {
 #if defined(BCMSDIO) || defined(BCMPCIE)
 		ret = dhd_net_bus_devreset(dev, TRUE);
 #ifdef BCMSDIO
@@ -6830,11 +6798,13 @@ wl_android_set_auto_channel(struct net_device *dev, const char* cmd_str,
 #ifdef WL_6G_BAND
 			case (WL_CHANSPEC_BAND_6G):
 			{
-				if (band == WLC_BAND_6G || band == WLC_BAND_AUTO) {
+				if ((CHSPEC_IS_6G_PSC((chanspec_t)sta_chanspec)) &&
+					(band == WLC_BAND_6G || band == WLC_BAND_AUTO)) {
 					/* scc */
 					channel = sta_channel;
 					acs_band = sta_band;
 				} else {
+					WL_INFORM_MEM(("Fall back to 2g default\n"));
 					channel = APCS_DEFAULT_2G_CH;
 					acs_band = wl_cfg80211_get_acs_band(WLC_BAND_2G);
 				}
@@ -7673,25 +7643,25 @@ wl_android_get_tid(struct net_device *dev, char* command, int total_len)
 
 int wl_android_set_roam_mode(struct net_device *dev, char *command)
 {
-	int error = 0;
+	int error = BCME_OK;
 	int mode = 0;
 
 	if (sscanf(command, "%*s %d", &mode) != 1) {
 		DHD_ERROR(("wl_android_set_roam_mode: Failed to get Parameter\n"));
-		return -1;
+		return BCME_ERROR;
 	}
 
 	error = wldev_iovar_setint(dev, "roam_off", mode);
 	if (error) {
-		DHD_ERROR(("wl_android_set_roam_mode: Failed to set roaming Mode %d, error = %d\n",
-		mode, error));
-		return -1;
+		WL_ERR(("Failed to set roaming Mode %d, error = %d\n",
+			mode, error));
+	} else {
+		WL_ERR(("succeeded to set roaming Mode %d,error = %d\n",
+			mode, error));
+		ROAMOFF_DBG_SAVE(dev, SET_ROAM_ROAMMODE, mode);
 	}
-	else
-		DHD_ERROR(("wl_android_set_roam_mode: succeeded to set roaming Mode %d,"
-		" error = %d\n",
-		mode, error));
-	return 0;
+
+	return error;
 }
 
 int wl_android_set_ibss_beacon_ouidata(struct net_device *dev, char *command, int total_len)
@@ -7965,8 +7935,12 @@ wl_android_iolist_add(struct net_device *dev, struct list_head *head, struct io_
 				config->iovar, config->param));
 			goto error;
 		}
-
 		resume_cfg->iovar = config->iovar;
+#ifdef DEBUG_SETROAMMODE
+		if (strnicmp(config->iovar, CMD_ROAMOFF, strlen(CMD_ROAMOFF)) == 0) {
+			ROAMOFF_DBG_SAVE(dev, SET_ROAM_IOLIST_ADD, config->param);
+		}
+#endif /* DEBUG_SETROAMMODE */
 	} else {
 		resume_cfg->arg = MALLOCZ(cfg->osh, config->len);
 		if (!resume_cfg->arg) {
@@ -8013,9 +7987,17 @@ wl_android_iolist_resume(struct net_device *dev, struct list_head *head)
 		config = list_entry(cur, struct io_cfg, list);
 		GCC_DIAGNOSTIC_POP();
 		if (config->iovar) {
-			if (!ret)
+			if (!ret) {
 				ret = wldev_iovar_setint(dev, config->iovar,
 					config->param);
+#ifdef DEBUG_SETROAMMODE
+				if (strnicmp(config->iovar, CMD_ROAMOFF,
+					strlen(CMD_ROAMOFF)) == 0) {
+					ROAMOFF_DBG_SAVE(dev, SET_ROAM_IOLIST_RESUME,
+						config->param);
+				}
+#endif /* DEBUG_SETROAMMODE */
+			}
 		} else {
 			if (!ret)
 				ret = wldev_ioctl_set(dev, config->ioctl + 1,
@@ -10862,7 +10844,6 @@ wl_android_get_channel_util(struct net_device *ndev, char *command, int total_le
 	s32 bytes_written, err = 0;
 	wl_bssload_t bssload;
 	u8 smbuf[WLC_IOCTL_SMLEN];
-	u8 chan_use_percentage = 0;
 
 	if ((err = wldev_iovar_getbuf(ndev, "bssload_report", NULL,
 		0, smbuf, WLC_IOCTL_SMLEN, NULL))) {
@@ -10871,12 +10852,8 @@ wl_android_get_channel_util(struct net_device *ndev, char *command, int total_le
 	}
 
 	(void)memcpy_s(&bssload, sizeof(wl_bssload_t), smbuf, sizeof(wl_bssload_t));
-	/* Convert channel usage to percentage value */
-	chan_use_percentage = (bssload.chan_util * 100) / 255;
-
-	bytes_written = snprintf(command, total_len, "CU %hhu",
-		chan_use_percentage);
-	WL_DBG(("Channel Utilization %u %u\n", bssload.chan_util, chan_use_percentage));
+	WL_DBG(("Channel Utilization %u\n", bssload.chan_util));
+	bytes_written = snprintf(command, total_len, "%hhu", bssload.chan_util);
 
 	return bytes_written;
 }
@@ -12603,6 +12580,16 @@ wl_handle_private_cmd(struct net_device *net, char *command, u32 cmd_len)
 		}
 	}
 #endif /* DHD_LOG_DUMP */
+#ifdef TPUT_DEBUG_DUMP
+	else if (strnicmp(command, CMD_TPUT_DEBUG_MODE_ENABLE,
+			strlen(CMD_TPUT_DEBUG_MODE_ENABLE)) == 0) {
+		wl_cfgdbg_tput_debug_mode(net, true);
+	}
+	else if (strnicmp(command, CMD_TPUT_DEBUG_MODE_DISABLE,
+			strlen(CMD_TPUT_DEBUG_MODE_DISABLE)) == 0) {
+		wl_cfgdbg_tput_debug_mode(net, false);
+	}
+#endif /* WL_TPUT_DEBUG_DUMP */
 #ifdef DHD_STATUS_LOGGING
 	else if (strnicmp(command, CMD_DUMP_STATUS_LOG, strlen(CMD_DUMP_STATUS_LOG)) == 0) {
 		dhd_statlog_dump_scr(wl_cfg80211_get_dhdp(net));

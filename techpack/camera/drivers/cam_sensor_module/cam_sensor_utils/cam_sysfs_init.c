@@ -2675,7 +2675,7 @@ static ssize_t gyro_selftest_show(struct device *dev, struct device_attribute *a
 #if defined(CONFIG_SAMSUNG_OIS_MCU_STM32)
 	result = cam_ois_offset_test(g_o_ctrl, &raw_data_x, &raw_data_y, 1);
 #else
-	result = cam_ois_offset_test(g_o_ctrl, &raw_data_x, &raw_data_y, 1);
+	cam_ois_offset_test(g_o_ctrl, &raw_data_x, &raw_data_y, 1);
 #endif
 	msleep(50);
 	selftest_ret = cam_ois_self_test(g_o_ctrl);

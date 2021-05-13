@@ -1839,10 +1839,10 @@ static int f2fs_disable_checkpoint(struct f2fs_sb_info *sbi)
 		goto restore_flag;
 	}
 
+	unusable = f2fs_get_unusable_blocks(sbi);
 // DISABLE_TIMEOUT -> 15s, Permit alloc SSR ==> Do not need cp_again
 // P191218-00524
 #if 0
-	unusable = f2fs_get_unusable_blocks(sbi);
 	if (f2fs_disable_cp_again(sbi, unusable)) {
 		err = -EAGAIN;
 		goto restore_flag;

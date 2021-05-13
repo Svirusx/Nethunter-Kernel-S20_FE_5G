@@ -162,14 +162,464 @@ static int ss_fw_id_read(struct samsung_display_driver_data *vdd)
 	/* Read mtp (F7h 1~4th) for DDI FW REV */
 	if (ss_get_cmds(vdd, RX_DDI_FW_ID)) {
 		ss_panel_data_read(vdd, RX_DDI_FW_ID, ddi_fw_id, LEVEL_KEY_NONE);
-		fw_id = ddi_fw_id[0] << 24 | ddi_fw_id[1] << 16 | ddi_fw_id[2] << 8 | ddi_fw_id[3];
-		LCD_INFO("DSI%d fw_id: %02x %02x %02x %02x => %x (%dbyte)\n", vdd->ndx,
-			ddi_fw_id[0], ddi_fw_id[1],	ddi_fw_id[2], ddi_fw_id[3], fw_id, sizeof(fw_id));
+		//fw_id = ddi_fw_id[0] << 24 | ddi_fw_id[1] << 16 | ddi_fw_id[2] << 8 | ddi_fw_id[3];
+		fw_id = ddi_fw_id[0];
+		LCD_INFO("DSI%d fw_id: %02x %02x %02x %02x => %x \n", vdd->ndx,
+			ddi_fw_id[0], ddi_fw_id[1], ddi_fw_id[2], ddi_fw_id[3], fw_id);
 	} else {
 		LCD_ERR("DSI%d no ddi_fw_id_rx_cmds cmds", vdd->ndx);
 		return false;
 	}
 	return fw_id;
+}
+
+static int ss_fw_up_send_cmd(struct samsung_display_driver_data *vdd, enum dsi_cmd_set_type type, u32 delay_us)
+{
+	int ret = 0;
+	u8 status_check[2] = {0,};
+
+	ss_send_cmd(vdd, type);
+	usleep_range(delay_us, delay_us + 10);
+	ss_panel_data_read(vdd, RX_FW_UP_STATUS, status_check, LEVEL_KEY_NONE);
+	if (status_check[0] != vdd->fw_up.read_status_value) {
+		usleep_range(400000, 400010);
+		ss_panel_data_read(vdd, RX_FW_UP_STATUS, status_check, LEVEL_KEY_NONE);
+		if (status_check[0] != vdd->fw_up.read_status_value) {
+			LCD_ERR("%s send Fail status_check = 0x%x\n", status_check[0]);
+			return FW_UP_ERR_UPDATE_FAIL;
+		}
+	}
+
+	return ret;
+}
+
+/* Flash erase related SP before fw_update */
+static int ss_flash_erase(struct samsung_display_driver_data *vdd)
+{
+	int ret;
+	struct dsi_panel_cmd_set *pcmds;
+
+	LCD_INFO("SP related FirmWare ERASE Start +++\n");
+	usleep_range(20000, 21000);
+
+	/* Replace to Tcon SPI Floating before erase */
+	pcmds = ss_get_cmds(vdd, TX_NORMAL_BRIGHTNESS_ETC);
+	if (SS_IS_CMDS_NULL(pcmds)) {
+		LCD_ERR("No cmds for TX_NORMAL_BRIGHTNESS_ETC..\n");
+		return -ENODEV;
+	}
+
+	/* SPI Floating */
+	/* [0] : B0 00 09 ->	B0 00 5C */
+	/* [1] : 5D 00 ->  AD 01 */
+	pcmds->cmds[0].msg.tx_buf[2] = 0x5C;
+	pcmds->cmds[1].msg.tx_buf[0] = 0xAD;
+	pcmds->cmds[1].msg.tx_buf[1] = 0x01;
+	ss_send_cmd(vdd, TX_NORMAL_BRIGHTNESS_ETC);
+	/* Restore data */
+	/* [0] : B0 00 09 */
+	/* [1] : 5D 00 */
+	pcmds->cmds[0].msg.tx_buf[2] = 0x09;
+	pcmds->cmds[1].msg.tx_buf[0] = 0x5D;
+	pcmds->cmds[1].msg.tx_buf[1] = 0x00;
+
+	pcmds = ss_get_cmds(vdd, TX_FW_UP_ERASE);
+	if (SS_IS_CMDS_NULL(pcmds)) {
+		LCD_ERR("No cmds for TX_FW_UP_ERASE..\n");
+		return -ENODEV;
+	}
+	/* Replace data */
+	/* flash# : tx_buf[0~1]  C0 00 -> C0 01 */
+	/* addr  : tx_buf[3~5]  03 20 00 -> 00 70 00 */
+	pcmds->cmds[0].msg.tx_buf[1] = 0x01;
+	pcmds->cmds[0].msg.tx_buf[3] = 0x00;
+	pcmds->cmds[0].msg.tx_buf[4] = 0x10;
+	ret = ss_fw_up_send_cmd(vdd, TX_FW_UP_ERASE, 500000);
+	if (ret)
+		LCD_ERR("FirmWare Erase Fail!!\n");
+
+	pcmds->cmds[0].msg.tx_buf[4] = 0x20;
+	ret = ss_fw_up_send_cmd(vdd, TX_FW_UP_ERASE, 500000);
+	if (ret)
+		LCD_ERR("FirmWare Erase Fail!!\n");
+	pcmds->cmds[0].msg.tx_buf[4] = 0x30;
+	ret = ss_fw_up_send_cmd(vdd, TX_FW_UP_ERASE, 500000);
+	if (ret)
+		LCD_ERR("FirmWare Erase Fail!!\n");
+	pcmds->cmds[0].msg.tx_buf[4] = 0x40;
+	ret = ss_fw_up_send_cmd(vdd, TX_FW_UP_ERASE, 500000);
+	if (ret)
+		LCD_ERR("FirmWare Erase Fail!!\n");
+	pcmds->cmds[0].msg.tx_buf[4] = 0x50;
+	ret = ss_fw_up_send_cmd(vdd, TX_FW_UP_ERASE, 500000);
+	if (ret)
+		LCD_ERR("FirmWare Erase Fail!!\n");
+	pcmds->cmds[0].msg.tx_buf[4] = 0x60;
+	ret = ss_fw_up_send_cmd(vdd, TX_FW_UP_ERASE, 500000);
+	if (ret)
+		LCD_ERR("FirmWare Erase Fail!!\n");
+	pcmds->cmds[0].msg.tx_buf[4] = 0x70;
+	ret = ss_fw_up_send_cmd(vdd, TX_FW_UP_ERASE, 500000);
+	if (ret)
+		LCD_ERR("FirmWare Erase Fail!!\n");
+
+	pcmds->cmds[0].msg.tx_buf[4] = 0x80;
+	pcmds->cmds[0].msg.tx_buf[7] = 0x80;
+	ret = ss_fw_up_send_cmd(vdd, TX_FW_UP_ERASE, 1000000);
+	if (ret)
+		LCD_ERR("FirmWare Erase Fail!!\n");
+
+	/* Restore data */
+	/* tx_buf[0~1]  C0 00 */
+	/* tx_buf[3~5] 03 20 00 */
+	pcmds->cmds[0].msg.tx_buf[1] = 0x00;
+	pcmds->cmds[0].msg.tx_buf[3] = 0x03;
+	pcmds->cmds[0].msg.tx_buf[4] = 0x20;
+	pcmds->cmds[0].msg.tx_buf[7] = 0x10;
+
+	// Test 5 minute 300, -33= 267 sec
+#if 0
+	wait_cnt = 267;
+	while (--wait_cnt)
+		msleep(1000);
+#endif
+
+	LCD_INFO("SP related flash ERASE END ---\n");
+
+	return ret;
+}
+
+/*(Full) 64K FW update ID 17, 18 -> 19 */
+static int ss_fw_write(struct samsung_display_driver_data *vdd)
+{
+	struct dsi_panel_cmd_set *erase_tx_cmds = NULL;
+	struct dsi_panel_cmd_set *read_tx_cmds = NULL;
+	struct dsi_panel_cmd_set *write_tx_cmds = NULL;
+	int cur_addr, last_addr, write_size, buf_pos;
+	int loop, mem_check_fail;
+	int ret = 0;
+	int retry_cnt;
+	int retry_all_cnt;
+	u8 read_data[128] = {0,}; //write_size
+	u8 read_check[2] = {0,};
+	u32 erase_delay_us, write_delay_us, read_delay_us;
+	u32 img_size, start_addr, sector_size;
+	char write_buffer[384] = {0,}; //write_size * 3
+
+	if (IS_ERR_OR_NULL(vdd)) {
+		LCD_ERR("no vdd\n");
+		return -EINVAL;
+	}
+
+	erase_tx_cmds = ss_get_cmds(vdd, TX_FW_UP_ERASE);
+	if (SS_IS_CMDS_NULL(erase_tx_cmds)) {
+		LCD_ERR("No cmds for TX_FW_ERASE..\n");
+		return -ENODEV;
+	}
+	/* Replace data */
+	//[0~1]  C0 00 Firmware //-> C0 01 Flash data
+	//erase_tx_cmds->cmds[0].msg.tx_buf[1] = 0x01;
+	//[3~5]  03 20 00 -> 00 00 00
+	erase_tx_cmds->cmds[0].msg.tx_buf[3] = 0x00;
+	erase_tx_cmds->cmds[0].msg.tx_buf[4] = 0x00;
+	//[6~8]  00 10 00 4k erase // -> 01 00 00
+	//erase_tx_cmds->cmds[0].msg.tx_buf[6] = 0x01;
+	//erase_tx_cmds->cmds[0].msg.tx_buf[7] = 0x00;
+
+	write_tx_cmds = ss_get_cmds(vdd, TX_FW_UP_WRITE);
+	if (SS_IS_CMDS_NULL(write_tx_cmds)) {
+		LCD_ERR("No cmds for TX_FW_UP_WRITE..\n");
+		return -ENODEV;
+	}
+
+	read_tx_cmds = ss_get_cmds(vdd, TX_FW_UP_READ);
+	if (SS_IS_CMDS_NULL(read_tx_cmds)) {
+		LCD_ERR("No cmds for TX_FW_UP_READ..\n");
+		return -ENODEV;
+	}
+
+	read_tx_cmds->cmds[0].msg.rx_buf = read_data;
+	read_tx_cmds->state = DSI_CMD_SET_STATE_HS;
+
+	retry_all_cnt = 10;
+retry_all:
+	start_addr = vdd->fw_up.start_addr;
+	img_size = vdd->fw_up.image_size;
+	last_addr = vdd->fw_up.start_addr + vdd->fw_up.image_size;
+	erase_delay_us = vdd->fw_up.erase_delay_us;
+	write_delay_us = vdd->fw_up.write_delay_us;
+	read_delay_us = vdd->fw_up.read_delay_us;
+	sector_size = vdd->fw_up.sector_size;
+	write_size = vdd->fw_up.write_data_size;
+	buf_pos = 0;
+
+	/* FW WRITE */
+	LCD_INFO("FW Write Start Address(0x%x), Sector Size(0x%x), Write Size(%d), Last Address(0x%x), delay %dus\n",
+		start_addr, sector_size, write_size, last_addr, write_delay_us);
+
+	for (cur_addr = start_addr; (cur_addr < last_addr) && (buf_pos < img_size); ) {
+		retry_cnt = 10;
+retry:
+		/* Erase 1 Sector */
+		if (sector_size && (cur_addr % sector_size == 0)) {
+			erase_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.erase_addr_idx[0]]
+								= (cur_addr & 0xFF0000) >> 16;
+			erase_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.erase_addr_idx[1]]
+								= (cur_addr & 0x00FF00) >> 8;
+			erase_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.erase_addr_idx[2]]
+								= (cur_addr & 0x0000FF);
+			erase_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.erase_size_idx[0]]
+								= (sector_size & 0xFF0000) >> 16;
+			erase_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.erase_size_idx[1]]
+								= (sector_size & 0x00FF00) >> 8;
+			erase_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.erase_size_idx[2]]
+								= (sector_size & 0x0000FF);
+
+			ss_send_cmd(vdd, TX_FW_UP_ERASE);
+			usleep_range(erase_delay_us, erase_delay_us + 5);
+
+			ss_panel_data_read(vdd, RX_FW_UP_STATUS, read_check, LEVEL_KEY_NONE);
+			if (read_check[0] != vdd->fw_up.read_status_value) {
+				ss_write_fw_up_debug_partition(FW_FAIL_LINE, __LINE__);
+				LCD_ERR("erase Fail status_check = 0x%x\n", read_check[0]);
+				return FW_UP_ERR_UPDATE_FAIL;
+			}
+
+			LCD_INFO("Erase 1 sector, Address [0x%02x%02x%02x], Sector Size[0x%x] ret:%x\n",
+				erase_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.erase_addr_idx[0]],
+				erase_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.erase_addr_idx[1]],
+				erase_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.erase_addr_idx[2]],
+				sector_size, read_check[0]);
+		}
+
+		/* Write 1 Sector */
+		for (; ; ) {
+			int pos = 0;
+
+			write_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[0]]
+								= (cur_addr & 0xFF0000) >> 16;
+			write_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[1]]
+								= (cur_addr & 0x00FF00) >> 8;
+			write_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[2]]
+								= (cur_addr & 0x0000FF);
+
+			write_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_size_idx[0]]
+								= (write_size & 0xFF0000) >> 16;
+			write_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_size_idx[1]]
+								= (write_size & 0x00FF00) >> 8;
+			write_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_size_idx[2]]
+								= (write_size & 0x0000FF);
+
+			if (cur_addr % sector_size == 0) {
+				LCD_INFO("Write Address [0x%02x%02x%02x], Size[0x%02x%02x%02x = %d] \n",
+					write_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[0]],
+					write_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[1]],
+					write_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[2]],
+					write_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_size_idx[0]],
+					write_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_size_idx[1]],
+					write_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_size_idx[2]],
+					write_size);
+			} else {
+				LCD_DEBUG("Write Address [0x%02x%02x%02x], Size[0x%02x%02x%02x = %d] \n",
+					write_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[0]],
+					write_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[1]],
+					write_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[2]],
+					write_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_size_idx[0]],
+					write_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_size_idx[1]],
+					write_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_size_idx[2]],
+					write_size);
+			}
+
+			memcpy(&write_tx_cmds->cmds[0].msg.tx_buf[17], &fw_data_64k[buf_pos], write_size);
+
+			for(loop = 0; loop < write_size; loop++)
+				pos += snprintf(write_buffer + pos, sizeof(write_buffer) - pos, "%02x ", 
+					write_tx_cmds->cmds[0].msg.tx_buf[17 + loop]);
+			LCD_INFO("Write Buffer = (%s)", write_buffer);
+
+			/* Write Data */
+			ss_send_cmd(vdd, TX_FW_UP_WRITE);
+			usleep_range(write_delay_us, write_delay_us + 5);
+
+			ss_panel_data_read(vdd, RX_FW_UP_STATUS, read_check, LEVEL_KEY_NONE);
+			if (read_check[0] != vdd->fw_up.read_status_value) {
+				/* Wait more time */
+				ss_write_fw_up_debug_partition(FW_FAIL_LINE, __LINE__);
+				LCD_ERR("TX_FW_UP_WRITE Fail [0x%02x%02x%02x], read_check = 0x%x, Wait %dus more \n",
+					write_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[0]],
+					write_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[1]],
+					write_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[2]],
+					read_check[0], write_delay_us * 3);
+				usleep_range(write_delay_us * 3, write_delay_us * 4);
+			}
+			/* Clear flash buffer */
+			ss_send_cmd(vdd, TX_FLASH_CLEAR_BUFFER);
+
+			cur_addr += write_size;
+			buf_pos += write_size;
+			if (sector_size && (cur_addr % sector_size == 0))
+				break;
+		}
+
+		/* Read & Compare 1 Sector */
+		cur_addr -= sector_size;
+		buf_pos -= sector_size;
+		for (; ; ) {
+			/* Read Data */
+			read_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[0]]
+								= (cur_addr & 0xFF0000) >> 16;
+			read_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[1]]
+								= (cur_addr & 0x00FF00) >> 8;
+			read_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[2]]
+								= (cur_addr & 0x0000FF);
+
+			/* Tx read size set 0x83 instead of 0x80 to avoid ddi read bug. */
+			ss_send_cmd(vdd, TX_FW_UP_READ);
+			usleep_range(read_delay_us, read_delay_us + 5);
+			/* Read 0x80 bytes in real */
+			ss_panel_data_read(vdd, RX_FW_UP_STATUS, read_check, LEVEL_KEY_NONE);
+			if (read_check[0] != vdd->fw_up.read_status_value) {
+				/* Wait more time */
+				ss_write_fw_up_debug_partition(FW_FAIL_LINE, __LINE__);
+				LCD_ERR("TX_FW_READ Fail [0x%02x%02x%02x], read_check = 0x%x, Wait %dus more \n",
+					read_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[0]],
+					read_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[1]],
+					read_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[2]],
+					read_check[0], write_delay_us);
+				usleep_range(write_delay_us, write_delay_us * 2);
+			}
+
+			/* Compare Write Data & Read Data */
+			memset(read_data, 0x00, 128);
+			ss_panel_data_read(vdd, RX_FW_UP_READ, read_data, LEVEL_KEY_NONE);
+			mem_check_fail = false;
+			for (loop = 0; loop < 128 ; loop++) {
+				if (read_data[loop] != fw_data_64k[buf_pos + loop]) {
+					mem_check_fail = true;
+
+					ss_write_fw_up_debug_partition(FW_UP_FAIL, cur_addr);
+					break;
+				}
+			}
+			if (mem_check_fail) {
+				usleep_range(write_delay_us * 2, write_delay_us * 3);
+				ss_write_fw_up_debug_partition(FW_FAIL_LINE, __LINE__);
+				LCD_ERR("FW Check Fail!! Address [0x%02x%02x%02x][%d] \n",
+					read_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[0]],
+					read_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[1]],
+					read_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[2]], loop);
+				retry_cnt--;
+				LCD_INFO("Retry Cnt = %d, cur_addr = 0x%x, buf_pos = 0x%x\n",
+									retry_cnt, cur_addr, buf_pos);
+				if (retry_cnt > 0) {
+					cur_addr &= ~(sector_size - 1);
+					buf_pos &= ~(sector_size - 1);
+					goto retry;
+				} else
+					return mem_check_fail;
+			} else {
+				LCD_DEBUG("FW Check Pass!! Address [0x%02x%02x%02x] \n",
+					read_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[0]],
+					read_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[1]],
+					read_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[2]]);
+			}
+			ret = mem_check_fail;
+
+			cur_addr += write_size;
+			buf_pos += write_size;
+			if (sector_size && (cur_addr % sector_size == 0))
+				break;
+		}
+	}
+
+	/* read entire fw 64kb */
+	if (!mem_check_fail) {
+		LCD_INFO("Check Entire Firmware Start ***\n");
+		cur_addr = vdd->fw_up.start_addr;
+		start_addr = vdd->fw_up.start_addr;
+		last_addr = vdd->fw_up.start_addr + vdd->fw_up.image_size;
+		buf_pos = 0;
+
+		LCD_INFO("FW Read Start Address(0x%x), Sector Size(0x%x), Read Size(%d), Last Address(0x%x)\n",
+			start_addr, sector_size, write_size, last_addr);
+		for (cur_addr = start_addr; (cur_addr < last_addr); ) {
+			/* Read Data */
+			read_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[0]]
+								= (cur_addr & 0xFF0000) >> 16;
+			read_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[1]]
+								= (cur_addr & 0x00FF00) >> 8;
+			read_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[2]]
+								= (cur_addr & 0x0000FF);
+
+			/* Tx read size set 0x83 instead of 0x80 to avoid ddi read bug. */
+			ss_send_cmd(vdd, TX_FW_UP_READ);
+			usleep_range(read_delay_us, read_delay_us + 5);
+			/* Read 0x80 bytes in real */
+			ss_panel_data_read(vdd, RX_FW_UP_STATUS, read_check, LEVEL_KEY_NONE);
+			if (read_check[0] != vdd->fw_up.read_status_value) {
+				ss_write_fw_up_debug_partition(FW_FAIL_LINE, __LINE__);
+				LCD_ERR("TX_FW_READ Fail [0x%02x%02x%02x], read_check = 0x%x, Wait %dus more \n",
+					read_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[0]],
+					read_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[1]],
+					read_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[2]],
+					read_check[0], write_delay_us);
+				/* Wait more time */
+				usleep_range(write_delay_us, write_delay_us * 2);
+			}
+
+			/* Compare Write Data & Read Data */
+			memset(read_data, 0x00, 128);
+			ss_panel_data_read(vdd, RX_FW_UP_READ, read_data, LEVEL_KEY_NONE);
+			mem_check_fail = false;
+			for (loop = 0; loop < 128 ; loop++) {
+				if (read_data[loop] != fw_data_64k[buf_pos + loop]) {
+					mem_check_fail = true;
+
+					ss_write_fw_up_debug_partition(FW_UP_FAIL, cur_addr);
+					break;
+				}
+			}
+			if (mem_check_fail) {
+				usleep_range(write_delay_us * 2, write_delay_us * 3);
+				ss_write_fw_up_debug_partition(FW_FAIL_LINE, __LINE__);
+				LCD_ERR("FW Check Fail!! Address [0x%02x%02x%02x][%d] \n",
+					read_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[0]],
+					read_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[1]],
+					read_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[2]], loop);
+				retry_all_cnt--;
+				LCD_INFO("Retry_all Cnt = %d, cur_addr = 0x%x, buf_pos = 0x%x\n",
+									retry_all_cnt, cur_addr, buf_pos);
+				if (retry_all_cnt > 0)
+					goto retry_all;
+				else
+					return mem_check_fail;
+			} else {
+				LCD_DEBUG("FW Check Pass!! Address [0x%02x%02x%02x] \n",
+					read_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[0]],
+					read_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[1]],
+					read_tx_cmds->cmds[0].msg.tx_buf[vdd->fw_up.write_addr_idx[2]]);
+			}
+			ret = mem_check_fail;
+
+			cur_addr += write_size;
+			buf_pos += write_size;
+		}
+		LCD_INFO("Read Entire Firmware End ***\n");
+	}
+
+	/* Restore data */
+	//[0~1]  C0 00
+	//rase_tx_cmds->cmds[0].msg.tx_buf[1] = 0x00;
+	//[3~5] 03 20 00
+	//erase_tx_cmds->cmds[0].msg.tx_buf[3] = 0x03;
+	//erase_tx_cmds->cmds[0].msg.tx_buf[4] = 0x20;
+	//[6~8] 00 10 00
+	//erase_tx_cmds->cmds[0].msg.tx_buf[6] = 0x00;
+	//erase_tx_cmds->cmds[0].msg.tx_buf[7] = 0x10;
+
+	LCD_INFO("FW Write Finish (ret = %d)\n", ret);
+
+	return ret;
 }
 
 static int samsung_panel_on_pre(struct samsung_display_driver_data *vdd)
@@ -188,26 +638,7 @@ static int samsung_panel_on_pre(struct samsung_display_driver_data *vdd)
 	time_vrr = 0;	/* make timestamp 0 for freq calculation */
 	init_smooth_off = 1;
 
-	if (vdd->manufacture_id_dsi == 0x801413) {
-		/* compare if 0x01010100 to distinguish if support Samsung IP*/
-		if (ss_fw_id_read(vdd) == 0x01010100) {
-			LCD_INFO("fw_id matches. Support mdnie, selfmask.\n");
-			vdd->check_fw_id = 0x01010100;
-		} else {
-			vdd->check_fw_id = 0;
-			vdd->mdnie.support_mdnie = false;
-			vdd->self_disp.is_support = false;
-			LCD_INFO("fw_id does not match. NO mdnie, selfmask.\n");
-		}
-
-		vdd->dtsi_data.samsung_delay_after_tcon_rdy = 100; /* For PV1, dtsi 50 for PV2*/
-	} else if (vdd->manufacture_id_dsi < 0x801413) {
-		/* Not support Samsung IP if lower revision*/
-		vdd->mdnie.support_mdnie = false;
-		vdd->self_disp.is_support = false;
-
-		vdd->dtsi_data.samsung_delay_after_tcon_rdy = 100; /* For PV1, dtsi 50 for PV2*/
-	} else if (vdd->manufacture_id_dsi > 0x801413) {/* Support Samsung IP if higher revision*/
+	if (vdd->manufacture_id_dsi > 0x801413) {/* Support Samsung IP if higher revision*/
 		LCD_INFO("Support mdnie, selfmask.\n");
 		/* For PV2 : 50ms from dtsi*/
 		/* For PV3 : 0ms from dtsi*/
@@ -256,28 +687,12 @@ static int samsung_panel_on_pre(struct samsung_display_driver_data *vdd)
 
 static int samsung_panel_on_post(struct samsung_display_driver_data *vdd)
 {
-	/* TABS7+ exception case : wait until fdone 1. (only for PV1[801413] panel) */
-	if (vdd->manufacture_id_dsi == 0x801413) {
-		char fdone = 0;
-		int ret, timeout = 7;
-
-		LCD_INFO("delay for manufacture_id_dsi:%x\n",vdd->manufacture_id_dsi);
-		do { /*  wait for DDI flash done */
-			msleep(50);
-			ret = ss_panel_data_read(vdd, RX_LDI_DEBUG1, &fdone, LEVEL_KEY_NONE);
-			if (ret) {
-				LCD_ERR("fail to read fdone(ret=%d)\n", ret);
-			}
-			LCD_INFO("wait time: %dms, fdone: %d\n", (8-timeout)*50, fdone);
-
-		} while (timeout-- && !(fdone & 0x01));
-	}
-
 	if (vdd->manufacture_id_dsi >= 0x801416) {
 		/* Read ddi fw id ([0] of 4bytes*/
-		vdd->check_fw_id = ss_fw_id_read(vdd);
-		if (!vdd->check_fw_id) {
-			LCD_DEBUG("Success to get proper ddi fw id.\n");
+		if (vdd->display_status_dsi.first_commit_disp_on) {
+			vdd->check_fw_id = ss_fw_id_read(vdd);
+			if (!vdd->check_fw_id)
+				LCD_INFO("check_fw_id : 0x%x\n", vdd->check_fw_id);
 		}
 
 		/* Write additioal TSP Vsync 120hz cmds for opcodeG (801416)
@@ -298,6 +713,11 @@ static int samsung_panel_on_post(struct samsung_display_driver_data *vdd)
 			ss_send_cmd(vdd, TX_HSYNC_ON);
 		}
 	}
+
+	/* MTP ID 17~18 && FW id 16 : SP Off write */
+	if ((vdd->manufacture_id_dsi > 0x801416) && (vdd->manufacture_id_dsi < 0x801419)
+		&& (vdd->check_fw_id == 0x16))
+		ss_send_cmd(vdd, TX_NORMAL_BRIGHTNESS_ETC);
 
 	/* Check if support selfmask */
 	if (!vdd->self_disp.is_support)
@@ -927,7 +1347,7 @@ static struct dsi_panel_cmd_set *ss_acl_on_hbm(struct samsung_display_driver_dat
 		LCD_ERR("No cmds for TX_ACL_ON..\n");
 		return NULL;
 	}
- 	if(vdd->br_info.common_br.bl_level <= MAX_BL_PF_LEVEL) {
+	if (vdd->br_info.common_br.bl_level <= MAX_BL_PF_LEVEL) {
 		LCD_ERR("Not a hbm level..:&d\n", vdd->br_info.common_br.bl_level);
 		return NULL;
  	}
@@ -956,9 +1376,9 @@ static struct dsi_panel_cmd_set *ss_acl_on(struct samsung_display_driver_data *v
 		return NULL;
 	}
 
-	if(vdd->br_info.common_br.bl_level <= MAX_BL_PF_LEVEL) {
+	if (vdd->br_info.common_br.bl_level <= MAX_BL_PF_LEVEL)
 		pcmds->cmds[0].msg.tx_buf[1] = 0x02;	/* 55h 0x02 ACL 15% */
-	} else
+	else
 		LCD_INFO("not normal bl_level for acl :%d\n");
 
 	LCD_INFO("gradual_acl: %d, acl per: 0x%x\n",
@@ -1273,6 +1693,7 @@ static void ss_update_panel_lpm_ctrl_cmd(struct samsung_display_driver_data *vdd
 }
 #endif
 
+#if 0
 static int ss_fw_up_send_cmd(struct samsung_display_driver_data *vdd, enum dsi_cmd_set_type type, u32 delay_us)
 {
 	int ret = 0;
@@ -1288,13 +1709,13 @@ static int ss_fw_up_send_cmd(struct samsung_display_driver_data *vdd, enum dsi_c
 
 	return ret;
 }
+#endif
 
 static int ss_swire_rework_check(struct samsung_display_driver_data *vdd)
 {
 	int ret = 0;
 	u8 read_data[256] = {0,};
-
-	return 0;
+	struct dsi_panel_cmd_set *pcmds = NULL;
 
 	if (ss_panel_id2_get(vdd) < 0x17) {
 		LCD_ERR("Does not support swire rework, ID3 = 0x%x\n", ss_panel_id2_get(vdd));
@@ -1305,6 +1726,13 @@ static int ss_swire_rework_check(struct samsung_display_driver_data *vdd)
 		LCD_ERR("Swire rework is already done, ID3 = 0x%x\n", ss_panel_id2_get(vdd));
 		return FW_UP_ERR_ALREADY_DONE;
 	}
+
+	pcmds = ss_get_cmds(vdd, TX_FW_UP_READ);
+	//[3~5] addr : 03 20 00
+	pcmds->cmds[0].msg.tx_buf[3] = 0x03;
+	pcmds->cmds[0].msg.tx_buf[4] = 0x20;
+	pcmds->cmds[0].msg.tx_buf[5] = 0x00;
+
 
 	ret = ss_fw_up_send_cmd(vdd, TX_FW_UP_READ, vdd->fw_up.write_delay_us);
 	if (ret) {
@@ -1327,6 +1755,7 @@ static int ss_swire_rework(struct samsung_display_driver_data *vdd)
 {
 	int ret = FW_UP_DONE;
 	int loop = 0;
+	struct dsi_panel_cmd_set *erase_tx_cmds = NULL;
 	struct dsi_panel_cmd_set *write_tx_cmds = NULL;
 
 	if (IS_ERR_OR_NULL(vdd)) {
@@ -1340,9 +1769,19 @@ static int ss_swire_rework(struct samsung_display_driver_data *vdd)
 		return FW_UP_ERR_UPDATE_FAIL;
 	}
 
+	erase_tx_cmds = ss_get_cmds(vdd, TX_FW_UP_ERASE);
+	if (SS_IS_CMDS_NULL(erase_tx_cmds)) {
+		LCD_ERR("No cmds for erase_tx_cmds..\n");
+		return FW_UP_ERR_UPDATE_FAIL;
+	}
+
 	LCD_INFO("Swire Rework ++\n");
 
 	/* FW ERASE */
+	/* ddr [3~5] : 03 20 00 */
+	erase_tx_cmds->cmds[0].msg.tx_buf[3] = 0x03;
+	erase_tx_cmds->cmds[0].msg.tx_buf[4] = 0x20;
+	erase_tx_cmds->cmds[0].msg.tx_buf[5] = 0x00;
 	ret = ss_fw_up_send_cmd(vdd, TX_FW_UP_ERASE, vdd->fw_up.erase_delay_us);
 	if (ret) {
 		LCD_ERR("FirmWare Erase Fail!!\n");
@@ -1351,7 +1790,7 @@ static int ss_swire_rework(struct samsung_display_driver_data *vdd)
 
 	/* FW WRITE */
 	for (loop = 0; loop < SWRIE_REWORK_SEQ_MAX; loop++) {
-		memcpy(&write_tx_cmds->cmds[0].msg.tx_buf[1], swrie_rework_seq[loop], SWRIE_REWORK_SEQ_SIZE);
+		memcpy(&write_tx_cmds->cmds[0].msg.tx_buf[1], swire_rework_seq[loop], SWRIE_REWORK_SEQ_SIZE);
 		ret = ss_fw_up_send_cmd(vdd, TX_FW_UP_WRITE, vdd->fw_up.write_delay_us);
 		if (ret) {
 			LCD_ERR("FirmWare Write [%d] Fail!!\n", loop);
@@ -1360,6 +1799,86 @@ static int ss_swire_rework(struct samsung_display_driver_data *vdd)
 	}
 
 	LCD_INFO("Swire Rework --\n");
+	return ret;
+}
+
+static int ss_fwid_back(struct samsung_display_driver_data *vdd)
+{
+	int ret = FW_UP_DONE;
+	int loop = 0;
+	uint32_t addr;
+	struct dsi_panel_cmd_set *erase_tx_cmds = NULL;
+	struct dsi_panel_cmd_set *write_tx_cmds = NULL;
+
+	if (IS_ERR_OR_NULL(vdd)) {
+		LCD_ERR("no vdd\n");
+		return FW_UP_ERR_UPDATE_FAIL;
+	}
+
+	write_tx_cmds = ss_get_cmds(vdd, TX_FW_UP_WRITE);
+	if (SS_IS_CMDS_NULL(write_tx_cmds)) {
+		LCD_ERR("No cmds for TX_FW_WRITE..\n");
+		return FW_UP_ERR_UPDATE_FAIL;
+	}
+
+	erase_tx_cmds = ss_get_cmds(vdd, TX_FW_UP_ERASE);
+	if (SS_IS_CMDS_NULL(erase_tx_cmds)) {
+		LCD_ERR("No cmds for erase_tx_cmds..\n");
+		return FW_UP_ERR_UPDATE_FAIL;
+	}
+
+	LCD_INFO("fwid_back ++\n");
+
+	/* FW ERASE */
+	/* ddr [3~5] : 01 00 00 */
+	erase_tx_cmds->cmds[0].msg.tx_buf[3] = 0x01;
+	erase_tx_cmds->cmds[0].msg.tx_buf[4] = 0x00;
+	erase_tx_cmds->cmds[0].msg.tx_buf[5] = 0x00;
+	ret = ss_fw_up_send_cmd(vdd, TX_FW_UP_ERASE, vdd->fw_up.erase_delay_us);
+	if (ret) {
+		LCD_ERR("FirmWare Erase Fail!!\n");
+		ss_write_fw_up_debug_partition(FW_FAIL_LINE, __LINE__);
+		return ret;
+	}
+
+	/* FW WRITE */
+	for (loop = 0; loop < 32; loop++) {  /* 32 to write 1 sectors */
+		memcpy(&write_tx_cmds->cmds[0].msg.tx_buf[1], fw_back_id16[loop], 144);/* 128+16=144*/
+		ret = ss_fw_up_send_cmd(vdd, TX_FW_UP_WRITE, vdd->fw_up.write_delay_us);
+		if (ret) {
+			addr = (write_tx_cmds->cmds[0].msg.tx_buf[3] & 0x0000FF) << 16 |
+				(write_tx_cmds->cmds[0].msg.tx_buf[4]) << 8 |
+				write_tx_cmds->cmds[0].msg.tx_buf[5];
+			ss_write_fw_up_debug_partition(FW_UP_FAIL, addr);
+			LCD_ERR("FirmWare Write [%d] Fail!!\n", loop);
+			return ret;
+		}
+	}
+
+	/* FW ERASE */
+	/* ddr [3~5] : 01 40 00 */
+	erase_tx_cmds->cmds[0].msg.tx_buf[3] = 0x01;
+	erase_tx_cmds->cmds[0].msg.tx_buf[4] = 0x40;
+	erase_tx_cmds->cmds[0].msg.tx_buf[5] = 0x00;
+	ret = ss_fw_up_send_cmd(vdd, TX_FW_UP_ERASE, vdd->fw_up.erase_delay_us);
+	if (ret) {
+		LCD_ERR("FirmWare Erase Fail!!\n");
+		ss_write_fw_up_debug_partition(FW_FAIL_LINE, __LINE__);
+		return ret;
+	}
+
+	/* FW WRITE */
+	for (loop = 32; loop < 64; loop++) {  /* 32*128 = 4096 */
+		memcpy(&write_tx_cmds->cmds[0].msg.tx_buf[1], fw_back_id16[loop], 144);
+		ret = ss_fw_up_send_cmd(vdd, TX_FW_UP_WRITE, vdd->fw_up.write_delay_us);
+		if (ret) {
+			LCD_ERR("FirmWare Write [%d] Fail!!\n", loop);
+			ss_write_fw_up_debug_partition(FW_UP_FAIL, addr);
+			return ret;
+		}
+	}
+
+	LCD_INFO("fwid_back --\n");
 	return ret;
 }
 
@@ -1409,7 +1928,9 @@ static int ss_mtp_id_update(struct samsung_display_driver_data *vdd)
 	return ret;
 }
 
-static int ss_firmware_update(struct samsung_display_driver_data *vdd)
+/*1: MTP ID 17->18 Swire Ctrl (eeprom)*/
+/*2: FW ID 16->17 FW partial update */
+static int ss_firmware_update(struct samsung_display_driver_data *vdd, int mode)
 {
 	int ret = FW_UP_DONE;
 	int wait_cnt = 1000; /* 1000 * 0.5ms = 500ms */
@@ -1445,7 +1966,7 @@ static int ss_firmware_update(struct samsung_display_driver_data *vdd)
 	vdd->exclusive_tx.permit_frame_update = false;
 	vdd->exclusive_tx.enable = true;
 	while (!list_empty(&vdd->cmd_lock.wait_list) && --wait_cnt)
-		usleep_range(500, 500);
+		usleep_range(500, 500 * 2);
 	ss_set_exclusive_tx_packet(vdd, TX_FW_UP_ERASE, 1);
 	ss_set_exclusive_tx_packet(vdd, TX_FW_UP_MTP_ID_ERASE, 1);
 	ss_set_exclusive_tx_packet(vdd, TX_FW_UP_WRITE, 1);
@@ -1456,20 +1977,57 @@ static int ss_firmware_update(struct samsung_display_driver_data *vdd)
 	ss_set_exclusive_tx_packet(vdd, RX_FW_UP_STATUS, 1);
 	ss_set_exclusive_tx_packet(vdd, RX_FW_UP_CHECK, 1);
 	ss_set_exclusive_tx_packet(vdd, TX_REG_READ_POS, 1);
+	ss_set_exclusive_tx_packet(vdd, TX_NORMAL_BRIGHTNESS_ETC, 1);
+	ss_set_exclusive_tx_packet(vdd, TX_FLASH_CLEAR_BUFFER, 1);
 
-	ret = ss_swire_rework_check(vdd);
-	if (ret)
-		LCD_ERR("Skip SWIRE Rework\n");
-	else {
-		ret = ss_swire_rework(vdd);
+	if (mode == 1) {
+		vdd->exclusive_tx.permit_frame_update = false;
+
+		ret = ss_swire_rework_check(vdd);
 		if (ret) {
-			LCD_ERR("Swire Rework Fail\n");
-			goto skip;
+			LCD_ERR("Skip SWIRE Rework\n");
+			vdd->fw_up.cmd_done = true;
+		} else {
+			ret = ss_swire_rework(vdd);
+			if (ret) {
+				LCD_ERR("Swire Rework Fail\n");
+				goto skip;
+			}
+			ret = ss_mtp_id_update(vdd);
+			if (ret)
+				LCD_ERR("MTP_ID Update Fail\n");
+			else
+				vdd->fw_up.cmd_done = true;
 		}
-		ret = ss_mtp_id_update(vdd);
-		if (ret)
-			LCD_ERR("MTP_ID Update Fail\n");
-	}
+	} else if (mode == 2)  { /* 64K update */
+		if (vdd->check_fw_id == 0x16)
+		{
+			ret = ss_flash_erase(vdd);
+			if (ret) {
+				LCD_ERR("flash_erase failed, skip write.\n");
+				goto skip;
+			}
+
+			ss_write_fw_up_debug_partition(FW_UP_TRY, 0);
+			ret = ss_fw_write(vdd);
+			if (ret) {
+				LCD_ERR("write failed\n");
+			} else {
+				vdd->fw_up.cmd_done = true;
+				ss_write_fw_up_debug_partition(FW_UP_PASS, 0);
+			}
+
+		} else
+			LCD_ERR("Skip fw update..  fw_id:0x%x\n", vdd->check_fw_id);
+	} else if (mode == 3) { /* back to fw_id 16 */
+		if (vdd->check_fw_id == 0x17) {
+			ret = ss_fwid_back(vdd);
+			if (ret)
+				LCD_ERR("ss_fwid_back failed\n");
+		} else
+			LCD_INFO("No need fw_back, fw_id:0x%x\n", vdd->check_fw_id);
+	} else
+		LCD_ERR("Invalid mode %d\n", mode);
 
 skip:
 	/* exit exclusive mode*/
@@ -1483,6 +2041,9 @@ skip:
 	ss_set_exclusive_tx_packet(vdd, RX_FW_UP_STATUS, 0);
 	ss_set_exclusive_tx_packet(vdd, RX_FW_UP_CHECK, 0);
 	ss_set_exclusive_tx_packet(vdd, TX_REG_READ_POS, 0);
+	ss_set_exclusive_tx_packet(vdd, TX_NORMAL_BRIGHTNESS_ETC, 0);
+	ss_set_exclusive_tx_packet(vdd, TX_FLASH_CLEAR_BUFFER, 0);
+
 	vdd->exclusive_tx.enable = false;
 	mutex_unlock(&vdd->exclusive_tx.ex_tx_lock);
 	wake_up_all(&vdd->exclusive_tx.ex_tx_waitq);
@@ -1492,11 +2053,13 @@ skip:
 	ss_set_max_mem_bw(vdd, false);
 	ss_set_max_cpufreq(vdd, false, CPUFREQ_CLUSTER_ALL);
 
-	vdd->debug_data->print_cmds = false;
+	//vdd->debug_data->print_cmds = false;
 
 	LCD_INFO("FirmWare Update Finish\n");
+
 	return ret;
 }
+
 
 static int ss_self_display_data_init(struct samsung_display_driver_data *vdd)
 {
@@ -1594,7 +2157,7 @@ static int poc_erase(struct samsung_display_driver_data *vdd, u32 erase_pos, u32
 	vdd->exclusive_tx.permit_frame_update = 1;
 	vdd->exclusive_tx.enable = 1;
 	while (!list_empty(&vdd->cmd_lock.wait_list) && --wait_cnt)
-		usleep_range(500, 500);
+		usleep_range(500, 500 * 2);
 
 	for (type = TX_POC_CMD_START; type < TX_POC_CMD_END + 1 ; type++)
 		ss_set_exclusive_tx_packet(vdd, type, 1);
@@ -1610,7 +2173,7 @@ static int poc_erase(struct samsung_display_driver_data *vdd, u32 erase_pos, u32
 
 	ss_send_cmd(vdd, TX_POC_ERASE_SECTOR);
 
-	usleep_range(delay_us, delay_us);
+	usleep_range(delay_us, delay_us * 2);
 
 	if ((erase_pos + erase_size >= target_pos) || ret == -EIO) {
 		LCD_INFO("WRITE [TX_POC_POST_ERASE_SECTOR] - cur_erase_pos(%d) target_pos(%d) ret(%d)\n",
@@ -1690,7 +2253,7 @@ static int poc_write(struct samsung_display_driver_data *vdd, u8 *data, u32 writ
 	vdd->exclusive_tx.permit_frame_update = 1;
 	vdd->exclusive_tx.enable = 1;
 	while (!list_empty(&vdd->cmd_lock.wait_list) && --wait_cnt)
-		usleep_range(500, 500);
+		usleep_range(500, 500 * 2);
 
 	for (type = TX_POC_CMD_START; type < TX_POC_CMD_END + 1 ; type++)
 		ss_set_exclusive_tx_packet(vdd, type, 1);
@@ -1724,13 +2287,13 @@ static int poc_write(struct samsung_display_driver_data *vdd, u8 *data, u32 writ
 		write_data_add->cmds[0].msg.tx_buf[vdd->poc_driver.write_addr_idx[2]]
 										= (pos & 0x0000FF);
 		ss_send_cmd(vdd, TX_POC_WRITE_LOOP_DATA_ADD);
-		usleep_range(delay_us, delay_us);
+		usleep_range(delay_us, delay_us * 2);
 
 		/* Read status */
 		ss_panel_data_read(vdd, RX_POC_STATUS, &rx_buf, LEVEL_KEY_NONE);
 		if (!(rx_buf == 04)) {
 			LCD_ERR("ERASE status not 04 ret:%d\n", rx_buf);
-			usleep_range(delay_us, delay_us);
+			usleep_range(delay_us, delay_us * 2);
 
 			/* Read status */
 			ss_panel_data_read(vdd, RX_POC_STATUS, &rx_buf, LEVEL_KEY_NONE);
@@ -1835,7 +2398,7 @@ static int poc_read(struct samsung_display_driver_data *vdd, u8 *buf, u32 read_p
 	vdd->exclusive_tx.permit_frame_update = 1;
 	vdd->exclusive_tx.enable = 1;
 	while (!list_empty(&vdd->cmd_lock.wait_list) && --wait_cnt)
-		usleep_range(500, 500);
+		usleep_range(500, 500 * 2);
 
 	for (type = TX_POC_CMD_START; type < TX_POC_CMD_END + 1 ; type++)
 		ss_set_exclusive_tx_packet(vdd, type, 1);
@@ -1862,7 +2425,7 @@ static int poc_read(struct samsung_display_driver_data *vdd, u8 *buf, u32 read_p
 
 		ss_send_cmd(vdd, TX_POC_READ);
 
-		usleep_range(delay_us, delay_us+10);
+		usleep_range(delay_us, delay_us + 10);
 
 		ss_panel_data_read(vdd, RX_POC_STATUS, &status_c1, LEVEL_KEY_NONE);
 			if (!(status_c1 == 04))
@@ -2160,6 +2723,7 @@ static int __init samsung_panel_initialize(void)
 		ndx = SECONDARY_DISPLAY_NDX;
 	else {
 		LCD_ERR("panel_string %s can not find panel_name (%s, %s)\n", panel_string, panel_name, panel_secondary_name);
+
 		return 0;
 	}
 

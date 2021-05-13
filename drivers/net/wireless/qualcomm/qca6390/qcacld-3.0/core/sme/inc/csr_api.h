@@ -973,6 +973,9 @@ struct csr_config_params {
 	uint32_t roam_dense_min_aps;
 	int8_t roam_bg_scan_bad_rssi_thresh;
 	uint8_t roam_bad_rssi_thresh_offset_2g;
+	uint32_t roam_data_rssi_threshold_triggers;
+	int32_t roam_data_rssi_threshold;
+	uint32_t rx_data_inactivity_time;
 	struct csr_sta_roam_policy_params sta_roam_policy_params;
 	bool enable_bcast_probe_rsp;
 	bool is_fils_enabled;
@@ -1445,6 +1448,8 @@ typedef void (*sme_get_raom_scan_ch_callback)(
 				struct roam_scan_ch_resp *roam_ch,
 				void *context);
 
+#if defined(WLAN_LOGGING_SOCK_SVC_ENABLE) && \
+	defined(FEATURE_PKTLOG) && !defined(REMOVE_PKT_LOG)
 /**
  * csr_packetdump_timer_stop() - stops packet dump timer
  *
@@ -1454,6 +1459,20 @@ typedef void (*sme_get_raom_scan_ch_callback)(
  *
  */
 void csr_packetdump_timer_stop(void);
+
+/**
+ * csr_packetdump_timer_start() - start packet dump timer
+ *
+ * This function is used to start packet dump timer
+ *
+ * Return: None
+ *
+ */
+void csr_packetdump_timer_start(void);
+#else
+static inline void csr_packetdump_timer_stop(void) {}
+static inline void csr_packetdump_timer_start(void) {}
+#endif
 
 /**
  * csr_get_channel_status() - get chan info via channel number

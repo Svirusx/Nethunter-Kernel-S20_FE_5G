@@ -335,7 +335,7 @@ void process_version_function(char *writebuffer)
 	pprinter->pdata = kmalloc(length, GFP_ATOMIC);
 
 	if (pprinter->pdata == NULL) {
-		vfree(pprinter);
+		kfree(pprinter);
 		return;
 	}
 
@@ -759,6 +759,7 @@ void _perflog(int type, int logid, const char *fmt, ...)
 	va_start(args, fmt);
 
 	if (buffer.data == 0) {
+		va_end(args);
 		return;
 	}
 

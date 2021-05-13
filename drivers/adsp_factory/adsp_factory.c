@@ -500,6 +500,12 @@ static int process_received_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
 	memcpy(data->msg_buf[sensor_type],
 		(int32_t *)NLMSG_DATA(nlh),
 		nlh->nlmsg_len - (int32_t)sizeof(struct nlmsghdr));
+#ifdef CONFIG_SUPPORT_LIGHT_DUALIZATION
+	if (sensor_type == MSG_LIGHT && msg_type == MSG_TYPE_ST_SHOW_DATA)
+	{
+		light_set_name_vendor(data->msg_buf[MSG_LIGHT][0]);
+	}
+#endif
 	data->ready_flag[msg_type] |= 1 << sensor_type;
 
 	return 0;

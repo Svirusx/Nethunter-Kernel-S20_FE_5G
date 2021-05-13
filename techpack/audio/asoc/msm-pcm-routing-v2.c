@@ -5547,6 +5547,10 @@ static int get_ec_ref_port_id(int value, int *index)
 		*index = 41;
 		port_id = AFE_PORT_ID_PRIMARY_TDM_RX;
 		break;
+	case 42:
+		*index = 42;
+		port_id = SLIMBUS_7_TX;
+		break;
 	default:
 		*index = 0; /* NONE */
 		pr_err("%s: Invalid value %d\n", __func__, value);
@@ -5605,7 +5609,7 @@ static const char *const ec_ref_rx[] = { "None", "SLIM_RX", "I2S_RX",
 	"SLIM_7_RX", "RX_CDC_DMA_RX_0", "RX_CDC_DMA_RX_1", "RX_CDC_DMA_RX_2",
 	"RX_CDC_DMA_RX_3", "TX_CDC_DMA_TX_0", "TERT_TDM_RX_2", "SEC_TDM_TX_0",
 	"DISPLAY_PORT1", "SEN_MI2S_RX", "SENARY_MI2S_TX", "QUIN_TDM_TX_0",
-	"PRI_TDM_RX_0",
+	"PRI_TDM_RX_0", "SLIM_7_TX",
 };
 
 static const struct soc_enum msm_route_ec_ref_rx_enum[] = {
@@ -23379,6 +23383,10 @@ static bool q6audio_determine_curr_copp_idx(int stream, enum sb_type func_type)
 		if (stream == MSM_FRONTEND_DAI_MULTIMEDIA5)
 			ret = true;
 		break;
+	case SB_ROTATION_RINGTONE:
+		if (stream == MSM_FRONTEND_DAI_MULTIMEDIA11)
+			ret = true;
+		break;
 	case SB_FLATMOTION:
 		if (stream == MSM_FRONTEND_DAI_MULTIMEDIA11)
 			ret = true;
@@ -26814,6 +26822,7 @@ static const struct snd_soc_dapm_route intercon[] = {
 
 	{"AUDIO_REF_EC_UL1 MUX", "SLIM_1_TX", "SLIMBUS_1_TX"},
 	{"AUDIO_REF_EC_UL10 MUX", "SLIM_1_TX", "SLIMBUS_1_TX"},
+	{"AUDIO_REF_EC_UL1 MUX", "SLIM_7_TX", "SLIMBUS_7_TX"},
 
 	{"LSM1_UL_HL", NULL, "AUDIO_REF_EC_UL1 MUX"},
 	{"LSM2_UL_HL", NULL, "AUDIO_REF_EC_UL1 MUX"},

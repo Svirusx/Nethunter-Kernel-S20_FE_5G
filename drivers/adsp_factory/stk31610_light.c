@@ -17,12 +17,19 @@
 #include <linux/dirent.h>
 #include "adsp.h"
 
-#define VENDOR "Sensortek"
-#define CHIP_ID "STK31610"
+#define STK31610 's'
+#define TCS3407 'T'
+
+#define VENDOR_STK31610 "Sensortek"
+#define CHIP_ID_STK31610 "STK31610"
+#define VENDOR_TCS3407 "AMS"
+#define CHIP_ID_TCS3407 "TCS3407"
+
 
 #define ASCII_TO_DEC(x) (x - 48)
 
 int brightness;
+int chip_id = 0;// 0 : STK31610, 1 : TCS3407
 
 enum {
 	OPTION_TYPE_COPR_ENABLE,
@@ -43,13 +50,38 @@ enum {
 static ssize_t light_vendor_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
-	return snprintf(buf, PAGE_SIZE, "%s\n", VENDOR);
+	char temp[10] = {0,};
+
+	if (chip_id == 1)
+		strcpy(temp, VENDOR_TCS3407);
+	else
+		strcpy(temp, VENDOR_STK31610);
+
+	return snprintf(buf, PAGE_SIZE, "%s\n", temp);
 }
 
 static ssize_t light_name_show(struct device *dev,
 	struct device_attribute *attr, char *buf)
 {
-	return snprintf(buf, PAGE_SIZE, "%s\n", CHIP_ID);
+	char temp[10] = {0,};
+
+	if (chip_id == 1)
+		strcpy(temp, CHIP_ID_TCS3407);
+	else
+		strcpy(temp, CHIP_ID_STK31610);
+
+	return snprintf(buf, PAGE_SIZE, "%s\n", temp);
+}
+
+void light_set_name_vendor(int32_t buf)
+{
+	pr_info("[FACTORY] %s: name = %d\n", __func__, buf);
+	if (buf == STK31610)
+		chip_id = 0;
+	else if (buf == TCS3407)
+		chip_id = 1;
+	else
+		pr_info("[FACTORY] %s: wrong sensor name %d\n", __func__, buf);
 }
 
 int get_light_sidx(struct adsp_data *data)
@@ -349,8 +381,9 @@ static struct device_attribute *light_attrs[] = {
 	NULL,
 };
 
-static int __init stk33617_light_factory_init(void)
+static int __init stk31610_light_factory_init(void)
 {
+	chip_id = 0;
 	adsp_factory_register(MSG_LIGHT, light_attrs);
 #ifdef CONFIG_SUPPORT_BRIGHTNESS_NOTIFY_FOR_LIGHT_SENSOR
 	ss_panel_notifier_register(&light_panel_data_notifier);
@@ -362,7 +395,7 @@ static int __init stk33617_light_factory_init(void)
 	return 0;
 }
 
-static void __exit stk33617_light_factory_exit(void)
+static void __exit stk31610_light_factory_exit(void)
 {
 	adsp_factory_unregister(MSG_LIGHT);
 #ifdef CONFIG_SUPPORT_BRIGHTNESS_NOTIFY_FOR_LIGHT_SENSOR
@@ -371,5 +404,5 @@ static void __exit stk33617_light_factory_exit(void)
 
 	pr_info("[FACTORY] %s\n", __func__);
 }
-module_init(stk33617_light_factory_init);
-module_exit(stk33617_light_factory_exit);
+module_init(stk31610_light_factory_init);
+module_exit(stk31610_light_factory_exit);

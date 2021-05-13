@@ -44,6 +44,10 @@ int secdp_logger_init(void);
 #define DEV_INFO	secdp_proc_info
 #endif
 
+#ifdef pr_warn
+#undef pr_warn
+#define pr_warn		secdp_proc_info
+#endif
 #ifdef DEV_WARN
 #undef DEV_WARN
 #define DEV_WARN	secdp_proc_info
@@ -53,8 +57,8 @@ int secdp_logger_init(void);
 
 #define secdp_logger_set_max_count(x)			do {} while (0)
 #define secdp_logger_print(fmt, ...)			do {} while (0)
-#define secdp_logger_hex_dump(buf, pref, len)	do {} while (0)
-#define secdp_logger_init(void)					do {} while (0)
+#define secdp_logger_hex_dump(buf, pref, len)		do {} while (0)
+#define secdp_logger_init(void)				do {} while (0)
 
 #ifdef pr_debug
 #undef pr_debug

@@ -4,7 +4,7 @@
  * Provides type definitions and function prototypes used to link the
  * DHD OS, bus, and protocol modules.
  *
- * Copyright (C) 2020, Broadcom.
+ * Copyright (C) 2021, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -561,6 +561,8 @@ enum dhd_hang_reason {
 	HANG_REASON_BSS_DOWN_FAILURE			= 0x8011,
 	HANG_REASON_IOCTL_SUSPEND_ERROR			= 0x8012,
 	HANG_REASON_ESCAN_SYNCID_MISMATCH		= 0x8013,
+	HANG_REASON_SCAN_TIMEOUT			= 0x8014,
+	HANG_REASON_SCAN_TIMEOUT_SCHED_ERROR		= 0x8015,
 	HANG_REASON_PCIE_LINK_DOWN_RC_DETECT		= 0x8805,
 	HANG_REASON_INVALID_EVENT_OR_DATA		= 0x8806,
 	HANG_REASON_UNKNOWN				= 0x8807,
@@ -958,6 +960,10 @@ typedef enum dhd_induce_error_states
 	DHD_INDUCE_DROP_AXI_SIG		= 0x5,
 	DHD_INDUCE_TX_BIG_PKT		= 0x6,
 	DHD_INDUCE_IOCTL_SUSPEND_ERROR	= 0x7,
+	DHD_INDUCE_SCAN_TIMEOUT         = 0x8,
+	DHD_INDUCE_SCAN_TIMEOUT_SCHED_ERROR     = 0x9,
+	DHD_INDUCE_PKTID_INVALID_SAVE   = 0xA,
+	DHD_INDUCE_PKTID_INVALID_FREE   = 0xB,
 	/* Big hammer induction */
 	DHD_INDUCE_BH_ON_FAIL_ONCE	= 0x10,
 	DHD_INDUCE_BH_ON_FAIL_ALWAYS	= 0x11,
@@ -1037,6 +1043,7 @@ typedef struct dhd_pub {
 	ulong rx_flushed;  /* Packets flushed due to unscheduled sendup thread */
 	ulong wd_dpc_sched;   /* Number of times dhd dpc scheduled by watchdog timer */
 	ulong rx_pktgetfail; /* Number of PKTGET failures in DHD on RX */
+	ulong rx_pktgetpool_fail;	/* Number of PKTGET_POOL failures in DHD on RX */
 	ulong tx_pktgetfail; /* Number of PKTGET failures in DHD on TX */
 	ulong rx_readahead_cnt;	/* Number of packets where header read-ahead was used. */
 	ulong tx_realloc;	/* Number of tx packets we had to realloc for headroom */
@@ -1147,6 +1154,7 @@ typedef struct dhd_pub {
 	bool	d3ack_timeout_occured;	/* flag to indicate d3ack resumed on timeout */
 	bool	livelock_occured;	/* flag to indicate livelock occured */
 	bool	pktid_audit_failed;	/* flag to indicate pktid audit failure */
+	bool	pktid_invalid_occured;	/* flag to indicate invalid pktid */
 #endif /* PCIE_FULL_DONGLE */
 	bool	iface_op_failed;	/* flag to indicate interface operation failed */
 	bool	scan_timeout_occurred;	/* flag to indicate scan has timedout */
@@ -2169,6 +2177,7 @@ extern int dhd_keep_alive_onoff(dhd_pub_t *dhd);
 #endif /* KEEP_ALIVE */
 
 #if defined(DHD_FW_COREDUMP)
+extern bool dhd_memdump_is_scheduled(dhd_pub_t *dhdp);
 void dhd_schedule_memdump(dhd_pub_t *dhdp, uint8 *buf, uint32 size);
 #endif /* DHD_FW_COREDUMP */
 
@@ -2233,6 +2242,7 @@ extern int dhd_get_suspend_bcn_li_dtim(dhd_pub_t *dhd, int *dtim_period, int *bc
 #else
 extern int dhd_get_suspend_bcn_li_dtim(dhd_pub_t *dhd);
 #endif /* OEM_ANDROID && BCMPCIE */
+extern int dhd_set_suspend_bcn_li_dtim(dhd_pub_t *dhd, bool set_suspend);
 
 extern bool dhd_support_sta_mode(dhd_pub_t *dhd);
 extern int write_to_file(dhd_pub_t *dhd, uint8 *buf, int size);
@@ -3781,6 +3791,12 @@ int dhd_schedule_socram_dump(dhd_pub_t *dhdp);
 #ifdef CUSTOMER_HW4_DEBUG
 bool dhd_validate_chipid(dhd_pub_t *dhdp);
 #endif /* CUSTOMER_HW4_DEBUG */
+
+#ifdef RX_PKT_POOL
+#define MAX_RX_PKT_POOL	(512)
+void dhd_rx_pktpool_create(struct dhd_info *dhd, uint16 len);
+void * BCMFASTPATH(dhd_rxpool_pktget)(osl_t *osh, struct dhd_info *dhd, uint16 len);
+#endif /* RX_PKT_POOL */
 
 #if defined(__linux__)
 #ifdef DHD_SUPPORT_VFS_CALL

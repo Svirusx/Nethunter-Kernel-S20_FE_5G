@@ -2337,6 +2337,7 @@ bool policy_mgr_is_concurrency_allowed(struct wlan_objmgr_psoc *psoc,
 	uint32_t list[MAX_NUMBER_OF_CONC_CONNECTIONS];
 	struct policy_mgr_psoc_priv_obj *pm_ctx;
 	bool sta_sap_scc_on_dfs_chan;
+	bool go_force_scc;
 	uint32_t sta_freq;
 	enum channel_state chan_state;
 	bool is_dfs_ch = false;
@@ -2398,9 +2399,9 @@ bool policy_mgr_is_concurrency_allowed(struct wlan_objmgr_psoc *psoc,
 
 		sta_sap_scc_on_dfs_chan =
 			policy_mgr_is_sta_sap_scc_allowed_on_dfs_chan(psoc);
-
-		if (!sta_sap_scc_on_dfs_chan && ((mode == PM_P2P_GO_MODE) ||
-		    (mode == PM_SAP_MODE))) {
+		go_force_scc = policy_mgr_go_scc_enforced(psoc);
+		if ((!sta_sap_scc_on_dfs_chan && mode == PM_SAP_MODE) ||
+		    (!go_force_scc && mode == PM_P2P_GO_MODE)) {
 			if (is_dfs_ch)
 				match = policy_mgr_disallow_mcc(psoc,
 								ch_freq);
@@ -3514,42 +3515,6 @@ uint32_t policy_mgr_get_mcc_operating_channel(struct wlan_objmgr_psoc *psoc,
 	}
 
 	return ch_freq;
-}
-
-void policy_mgr_set_do_hw_mode_change_flag(struct wlan_objmgr_psoc *psoc,
-		bool flag)
-{
-	struct policy_mgr_psoc_priv_obj *pm_ctx;
-
-	pm_ctx = policy_mgr_get_context(psoc);
-	if (!pm_ctx) {
-		policy_mgr_err("Invalid Context");
-		return;
-	}
-
-	qdf_mutex_acquire(&pm_ctx->qdf_conc_list_lock);
-	pm_ctx->do_hw_mode_change = flag;
-	qdf_mutex_release(&pm_ctx->qdf_conc_list_lock);
-
-	policy_mgr_debug("hw_mode_change_channel:%d", flag);
-}
-
-bool policy_mgr_is_hw_mode_change_after_vdev_up(struct wlan_objmgr_psoc *psoc)
-{
-	bool flag;
-	struct policy_mgr_psoc_priv_obj *pm_ctx;
-
-	pm_ctx = policy_mgr_get_context(psoc);
-	if (!pm_ctx) {
-		policy_mgr_err("Invalid Context");
-		return INVALID_CHANNEL_ID;
-	}
-
-	qdf_mutex_acquire(&pm_ctx->qdf_conc_list_lock);
-	flag = pm_ctx->do_hw_mode_change;
-	qdf_mutex_release(&pm_ctx->qdf_conc_list_lock);
-
-	return flag;
 }
 
 bool policy_mgr_is_dnsc_set(struct wlan_objmgr_vdev *vdev)

@@ -789,6 +789,8 @@ int ams_load_ub_cell_id_from_file(char *path, char *data_str)
 	ret = vfs_read(file_filp, (char *)data_str,
 		sizeof(char) * AMS_UB_CELL_ID_INFO_STRING_LENGTH,
 		&file_filp->f_pos);
+	data_str[AMS_UB_CELL_ID_INFO_STRING_LENGTH - 1] = '\0';
+
 	if (ret < 0)
 		pr_err("[FACTORY] %s: fd read fail(%s): %d\n",
 			__func__, path, ret);
@@ -983,6 +985,7 @@ void light_cal_init_work(struct adsp_data *data)
 		ret = vfs_read(cal_filp, (char *)data->light_ub_id,
 			sizeof(char) * AMS_UB_CELL_ID_INFO_STRING_LENGTH,
 			&cal_filp->f_pos);
+		data->light_ub_id[AMS_UB_CELL_ID_INFO_STRING_LENGTH - 1] = '\0';
 		if (ret < 0)
 			pr_err("[FACTORY] %s: ub read fail:%d\n",
 				__func__, ret);

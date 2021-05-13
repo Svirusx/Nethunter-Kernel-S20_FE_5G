@@ -847,7 +847,13 @@ static ssize_t show_extra_info(struct device *dev,
 	}
 
 	extra_scnprintf(buf, offset, "\"BUG\":\"%s\",", p_kinfo->bug_buf);
-	extra_scnprintf(buf, offset, "\"PANIC\":\"%s\",", p_kinfo->panic_buf);
+	if (strlen(p_kinfo->panic_buf)) {
+		extra_scnprintf(buf, offset, "\"PANIC\":\"%s\",", p_kinfo->panic_buf);
+	} else {
+		if (p_rst_exinfo->uc_ex_info.magic == RESTART_REASON_SEC_DEBUG_MODE) {     
+			extra_scnprintf(buf, offset, "\"PANIC\":\"UCS-%s\",", p_rst_exinfo->uc_ex_info.str);
+		}
+	}
 	extra_scnprintf(buf, offset, "\"PC\":\"%s\",", p_kinfo->pc);
 	extra_scnprintf(buf, offset, "\"LR\":\"%s\",", p_kinfo->lr);
 	extra_scnprintf(buf, offset, "\"UFS\":\"%s\",", p_kinfo->ufs_err);
@@ -1085,6 +1091,7 @@ static ssize_t show_extrt_info(struct device *dev,
 	ssize_t offset = 0;
 	unsigned int reset_reason;
 	struct tzdbg_t *tz_diag_info = NULL;
+	struct tzdbg_log_v9_2_t *log_v9_2 = NULL; 
 	unsigned int i = 0;
 
 	if (!__is_ready_debug_reset_header()) {
@@ -1143,13 +1150,25 @@ static ssize_t show_extrt_info(struct device *dev,
 				special_scnprintf(buf, offset, "%02X",
 						tz_diag_info->tag[i]);
 
-			special_scnprintf(buf, offset, "%04X%04X",
-				tz_diag_info->ring_buffer.log_pos.wrap,
-				tz_diag_info->ring_buffer.log_pos.offset);
+			if (tz_diag_info->version >= TZBSP_DIAG_VERSION_V9_2) {  // sm8350
+				log_v9_2 = (struct tzdbg_log_v9_2_t *)&tz_diag_info->ring_buffer;
+				special_scnprintf(buf, offset, "%08X%08X",
+						log_v9_2->log_pos.wrap,
+						log_v9_2->log_pos.offset);
 
-			for (i = 0; i < tz_diag_info->ring_len; i++)
-				special_scnprintf(buf, offset, "%02X",
-					tz_diag_info->ring_buffer.log_buf[i]);
+				for (i = 0; i < tz_diag_info->ring_len; i++)
+					special_scnprintf(buf, offset, "%02X",
+							log_v9_2->log_buf[i]);
+
+			} else {
+				special_scnprintf(buf, offset, "%04X%04X",
+						tz_diag_info->ring_buffer.log_pos.wrap,
+						tz_diag_info->ring_buffer.log_pos.offset);
+
+				for (i = 0; i < tz_diag_info->ring_len; i++)
+					special_scnprintf(buf, offset, "%02X",
+							tz_diag_info->ring_buffer.log_buf[i]);
+			}
 
 			special_scnprintf(buf, offset, "\"");
 		}
@@ -1293,10 +1312,15 @@ static int sec_errp_extra_show(struct seq_file *m, void *v)
 		goto out;
 	}
 
-	sec_debug_upload_cause_str(p_kinfo->upload_cause,
-			upload_cause_str, sizeof(upload_cause_str));
-	offset += scnprintf((char*)(buf + offset), EXTEND_RR_SIZE - offset,
-			" UPLOAD:%s_0x%x", upload_cause_str, p_kinfo->upload_cause);
+	if (p_rst_exinfo->uc_ex_info.magic == RESTART_REASON_SEC_DEBUG_MODE) {
+		offset += scnprintf((char*)(buf + offset), EXTEND_RR_SIZE - offset,
+				" UPLOAD:%s", p_rst_exinfo->uc_ex_info.str);
+	} else {
+		sec_debug_upload_cause_str(p_kinfo->upload_cause,
+				upload_cause_str, sizeof(upload_cause_str));
+		offset += scnprintf((char*)(buf + offset), EXTEND_RR_SIZE - offset,
+				" UPLOAD:%s_0x%x", upload_cause_str, p_kinfo->upload_cause);
+	}
 
 	if (reset_reason == USER_UPLOAD_CAUSE_WATCHDOG) {
 		goto out;
@@ -1313,12 +1337,6 @@ static int sec_errp_extra_show(struct seq_file *m, void *v)
 			" PC:%s", p_kinfo->pc);
 	offset += scnprintf((char*)(buf + offset), EXTEND_RR_SIZE - offset,
 			" LR:%s", p_kinfo->lr);
-	if ((cpu > -1) && (cpu < num_present_cpus())) {
-		if (p_kinfo->fault[cpu].esr) {
-			offset += scnprintf((char*)(buf + offset), EXTEND_RR_SIZE - offset,
-					" FNM:%s", p_kinfo->fault[cpu].str);
-		}
-	}
 out:
 	kfree(p_rst_exinfo);
 

@@ -1,7 +1,7 @@
 /*
  * DHD Bus Module for PCIE
  *
- * Copyright (C) 2020, Broadcom.
+ * Copyright (C) 2021, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -1085,6 +1085,21 @@ dhdpcie_cto_recovery_handler(dhd_pub_t *dhd)
 	dhd_bus_t *bus = dhd->bus;
 	int ret;
 
+	if (dhd->up == FALSE) {
+		DHD_ERROR(("%s : dhd is not up\n", __FUNCTION__));
+		return;
+	}
+
+	if (bus->is_linkdown) {
+		DHD_ERROR(("%s: link is down\n", __FUNCTION__));
+		return;
+	}
+
+	if (bus->sih == NULL) {
+		DHD_ERROR(("%s: The address of sih is invalid\n", __FUNCTION__));
+		return;
+	}
+
 	/* Disable PCIe Runtime PM to avoid D3_ACK timeout.
 	 */
 	DHD_DISABLE_RUNTIME_PM(dhd);
@@ -1201,11 +1216,10 @@ dhdpcie_bus_isr(dhd_bus_t *bus)
 			intstatus = dhdpcie_bus_cfg_read_dword(bus, PCI_INT_STATUS, 4);
 
 			if (intstatus == (uint32)-1) {
-				DHD_ERROR(("%s : Invalid intstatus for cto recovery\n",
-					__FUNCTION__));
+				DHD_ERROR(("%s: Invalid cfg intstatus(0x%x):0x%x, pcie link down\n",
+					__FUNCTION__, PCI_INT_STATUS, intstatus));
 				bus->is_linkdown = 1;
 				dhdpcie_disable_irq_nosync(bus);
-				dhd_prot_debug_info_print(bus->dhd);
 				break;
 			}
 
@@ -3069,7 +3083,7 @@ static int
 dhdpcie_download_nvram(struct dhd_bus *bus)
 {
 	int bcmerror = BCME_ERROR;
-	uint len;
+	uint len, memblock_len = 0;
 	char * memblock = NULL;
 	char *bufp;
 	char *pnv_path;
@@ -3082,14 +3096,15 @@ dhdpcie_download_nvram(struct dhd_bus *bus)
 
 	/* First try UEFI */
 	len = MAX_NVRAMBUF_SIZE;
-	dhd_get_download_buffer(bus->dhd, NULL, NVRAM, &memblock, (int *)&len);
+	bcmerror = dhd_get_download_buffer(bus->dhd, NULL, NVRAM, &memblock, (int *)&len);
 
 	/* If UEFI empty, then read from file system */
 	if ((len <= 0) || (memblock == NULL)) {
 
 		if (nvram_file_exists) {
 			len = MAX_NVRAMBUF_SIZE;
-			dhd_get_download_buffer(bus->dhd, pnv_path, NVRAM, &memblock, (int *)&len);
+			bcmerror = dhd_get_download_buffer(bus->dhd, pnv_path, NVRAM, &memblock,
+					(int *)&len);
 			if ((len <= 0 || len > MAX_NVRAMBUF_SIZE)) {
 				goto err;
 			}
@@ -3101,6 +3116,11 @@ dhdpcie_download_nvram(struct dhd_bus *bus)
 	} else {
 		nvram_uefi_exists = TRUE;
 	}
+#ifdef DHD_LINUX_STD_FW_API
+	memblock_len = len;
+#else
+	memblock_len = MAX_NVRAMBUF_SIZE;
+#endif /* DHD_LINUX_STD_FW_API */
 
 	DHD_ERROR(("%s: dhd_get_download_buffer len %d\n", __FUNCTION__, len));
 
@@ -3142,7 +3162,7 @@ err:
 		if (local_alloc) {
 			MFREE(bus->dhd->osh, memblock, MAX_NVRAMBUF_SIZE);
 		} else {
-			dhd_free_download_buffer(bus->dhd, memblock, MAX_NVRAMBUF_SIZE);
+			dhd_free_download_buffer(bus->dhd, memblock, memblock_len);
 		}
 	}
 
@@ -3178,7 +3198,7 @@ _dhdpcie_download_firmware(struct dhd_bus *bus)
 
 	/* External image takes precedence if specified */
 	if ((bus->fw_path != NULL) && (bus->fw_path[0] != '\0')) {
-		if (dhdpcie_download_code_file(bus, bus->fw_path)) {
+		if ((bcmerror = dhdpcie_download_code_file(bus, bus->fw_path))) {
 			DHD_ERROR(("%s:%d dongle image file download failed\n", __FUNCTION__,
 				__LINE__));
 			goto err;
@@ -3199,7 +3219,7 @@ _dhdpcie_download_firmware(struct dhd_bus *bus)
 	/* dhd_bus_set_nvram_params(bus, (char *)&nvram_array); */
 
 	/* External nvram takes precedence if specified */
-	if (dhdpcie_download_nvram(bus)) {
+	if ((bcmerror = dhdpcie_download_nvram(bus))) {
 		DHD_ERROR(("%s:%d dongle nvram file download failed\n", __FUNCTION__, __LINE__));
 		goto err;
 	}
@@ -6869,6 +6889,11 @@ dhd_bus_hostready(struct  dhd_bus *bus)
 
 	dhd_bus_dump_dar_registers(bus);
 
+	if (bus->is_linkdown) {
+		DHD_ERROR(("%s: PCIe link was down before DB1\n", __FUNCTION__));
+		return;
+	}
+
 #ifdef DHD_MMIO_TRACE
 	dhd_bus_mmio_trace(bus, dhd_bus_db1_addr_get(bus), 0x1, TRUE);
 #endif /* defined(DHD_MMIO_TRACE) */
@@ -7055,7 +7080,7 @@ dhdpcie_bus_suspend(struct dhd_bus *bus, bool state)
 			uint32 intstatus = si_corereg(bus->sih, bus->sih->buscoreidx,
 				bus->pcie_mailbox_int, 0, 0);
 			int host_irq_disabled = dhdpcie_irq_disabled(bus);
-			if ((intstatus != (uint32)-1) &&
+			if ((intstatus) && (intstatus != (uint32)-1) &&
 				(timeleft == 0) && (!dhd_query_bus_erros(bus->dhd))) {
 				DHD_ERROR(("%s: resumed on timeout for D3 ack. intstatus=%x"
 					" host_irq_disabled=%d\n",
@@ -9516,7 +9541,8 @@ dhdpcie_bus_ringbell_fast(struct dhd_bus *bus, uint32 value)
 	dhd_bus_doorbell_timeout_reset(bus);
 #endif
 #ifdef DHD_MMIO_TRACE
-	dhd_bus_mmio_trace(bus, dhd_bus_db0_addr_get(bus), value, TRUE);
+	dhd_bus_mmio_trace(bus, dhd_bus_db0_addr_get(bus), value,
+		((value >> 24u) == 0xFF) ? TRUE : FALSE);
 #endif /* defined(DHD_MMIO_TRACE) */
 	if (DAR_PWRREQ(bus)) {
 		dhd_bus_pcie_pwr_req(bus);
@@ -9803,6 +9829,8 @@ dhd_bus_handle_d3_ack(dhd_bus_t *bus)
 	} else {
 		DHD_ERROR(("%s: Inducing D3 ACK timeout\n", __FUNCTION__));
 	}
+
+	bus->last_d3_ack_time = OSL_LOCALTIME_NS();
 }
 void
 dhd_bus_handle_mb_data(dhd_bus_t *bus, uint32 d2h_mb_data)
@@ -10234,6 +10262,9 @@ static bool
 dhdpci_bus_read_frames(dhd_bus_t *bus)
 {
 	bool more = FALSE;
+#if defined(EWP_EDL)
+	uint32 edl_itmes = 0;
+#endif /* EWP_EDL */
 
 	/* First check if there a FW trap */
 	if ((bus->api.fw_rev >= PCIE_SHARED_VERSION_6) &&
@@ -10294,7 +10325,7 @@ dhdpci_bus_read_frames(dhd_bus_t *bus)
 	}
 #ifdef EWP_EDL
 	else {
-		more |= dhd_prot_process_msgbuf_edl(bus->dhd);
+		more |= dhd_prot_process_msgbuf_edl(bus->dhd, &edl_itmes);
 		bus->last_process_edl_time = OSL_LOCALTIME_NS();
 	}
 #endif /* EWP_EDL */
@@ -10354,6 +10385,13 @@ dhdpci_bus_read_frames(dhd_bus_t *bus)
 #if defined(DHD_H2D_LOG_TIME_SYNC)
 	dhdpci_bus_rte_log_time_sync_poll(bus);
 #endif /* DHD_H2D_LOG_TIME_SYNC */
+
+#if defined(EWP_EDL) && defined(DHD_WAKE_STATUS)
+	if ((edl_itmes > 0) && (bcmpcie_get_edl_wake(bus) > 0)) {
+		DHD_ERROR(("##### dhdpcie_host_wake caused by Event Logs, edl_itmes %d\n",
+			edl_itmes));
+	}
+#endif /* EWP_EDL && DHD_WAKE_STATUS */
 	return more;
 }
 
@@ -12100,9 +12138,7 @@ int
 dhdpcie_get_max_eventbufpost(struct dhd_bus *bus)
 {
 	int evt_buf_pool = EVENT_BUF_POOL_LOW;
-	if (bus->pcie_sh->flags2 & (0x0 << PCIE_SHARED_EVENT_BUF_POOL_MAX_POS)) {
-		evt_buf_pool = EVENT_BUF_POOL_LOW;
-	} else if (bus->pcie_sh->flags2 & (0x1 << PCIE_SHARED_EVENT_BUF_POOL_MAX_POS)) {
+	if (bus->pcie_sh->flags2 & (0x1 << PCIE_SHARED_EVENT_BUF_POOL_MAX_POS)) {
 		evt_buf_pool = EVENT_BUF_POOL_MEDIUM;
 	} else if (bus->pcie_sh->flags2 & (0x2 << PCIE_SHARED_EVENT_BUF_POOL_MAX_POS)) {
 		evt_buf_pool = EVENT_BUF_POOL_HIGH;
@@ -12264,11 +12300,24 @@ static void
 dhd_bus_mmio_trace(dhd_bus_t *bus, uint32 addr, uint32 value, bool set)
 {
 	uint32 cnt = bus->mmio_trace_count % MAX_MMIO_TRACE_SIZE;
-	bus->mmio_trace[cnt].timestamp = OSL_LOCALTIME_NS();
+	uint64 ts_cur = OSL_LOCALTIME_NS();
+	uint32 tmp_cnt;
+
+	tmp_cnt = (bus->mmio_trace_count) ? ((bus->mmio_trace_count - 1)
+		% MAX_MMIO_TRACE_SIZE) : cnt;
+
+	if (((DIV_U64_BY_U64(ts_cur, NSEC_PER_USEC) -
+		DIV_U64_BY_U64(bus->mmio_trace[tmp_cnt].timestamp, NSEC_PER_USEC))
+		> MIN_MMIO_TRACE_TIME) || (bus->mmio_trace[tmp_cnt].value !=
+		(value & DHD_RING_IDX))) {
+		bus->mmio_trace_count++;
+	} else {
+		cnt = tmp_cnt;
+	}
+	bus->mmio_trace[cnt].timestamp = ts_cur;
 	bus->mmio_trace[cnt].addr = addr;
 	bus->mmio_trace[cnt].set = set;
 	bus->mmio_trace[cnt].value = value;
-	bus->mmio_trace_count ++;
 }
 
 void
@@ -12284,6 +12333,8 @@ dhd_dump_bus_mmio_trace(dhd_bus_t *bus, struct bcmstrbuf *strbuf)
 		return;
 	}
 	bcm_bprintf(strbuf, "---- MMIO TRACE ------\n");
+	bcm_bprintf(strbuf, "Decoding value field, Ex: 0xFF2C00E4, 0xFF->WR/0XDD->RD "
+		"0x2C->Ringid 0x00E4->RD/WR Value\n");
 	bcm_bprintf(strbuf, "Timestamp ns\t\tAddr\t\tW/R\tValue\n");
 	for (i = 0; i < dumpsz; i ++) {
 		bcm_bprintf(strbuf, SEC_USEC_FMT"\t0x%08x\t%s\t0x%08x\n",
@@ -14332,10 +14383,13 @@ dhd_pcie_debug_info_dump(dhd_pub_t *dhd)
 			(uint)OFFSETOF(sbpcieregs_t, u.pcie2.err_hdr_logreg4),
 			si_corereg(dhd->bus->sih, dhd->bus->sih->buscoreidx,
 				OFFSETOF(sbpcieregs_t, u.pcie2.err_hdr_logreg4), 0, 0)));
-		DHD_ERROR(("err_code(0x%x)=0x%x\n",
+		DHD_ERROR(("err_code(0x%x)=0x%x PCIH2D_MailBox(%08x)=%08x\n",
 			(uint)OFFSETOF(sbpcieregs_t, u.pcie2.err_code_logreg),
 			si_corereg(dhd->bus->sih, dhd->bus->sih->buscoreidx,
-				OFFSETOF(sbpcieregs_t, u.pcie2.err_code_logreg), 0, 0)));
+				OFFSETOF(sbpcieregs_t, u.pcie2.err_code_logreg), 0, 0),
+			dhd_bus_db0_addr_get(dhd->bus),
+			si_corereg(dhd->bus->sih, dhd->bus->sih->buscoreidx,
+				dhd_bus_db0_addr_get(dhd->bus), 0, 0)));
 
 		dhd_pcie_dump_wrapper_regs(dhd);
 		dhdpcie_hw_war_regdump(dhd->bus);

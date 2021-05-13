@@ -145,8 +145,19 @@ struct lcd_debug_ftout {
 	char name[MAX_FTOUT_NAME];
 };
 
+#define FW_UP_MAX_RETRY 20
+struct lcd_debug_fw_up {
+	uint32_t try_count;
+	uint32_t pass_count;
+	uint32_t fail_line_count;
+	uint32_t fail_line[FW_UP_MAX_RETRY];
+	uint32_t fail_count;
+	uint32_t fail_address[FW_UP_MAX_RETRY];
+};
+
 struct lcd_debug_t {
 	struct lcd_debug_ftout ftout;
+	struct lcd_debug_fw_up fw_up;
 };
 
 #define DEBUG_PARTITION_MAGIC	0x41114729

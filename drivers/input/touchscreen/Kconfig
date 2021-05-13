@@ -1349,6 +1349,7 @@ source "drivers/input/touchscreen/stm/fts1ba90a/Kconfig"
 source "drivers/input/touchscreen/novatek/nt36523/Kconfig"
 source "drivers/input/touchscreen/melfas/mss100/Kconfig"
 source "drivers/input/touchscreen/zinitix/zt7650/Kconfig"
+source "drivers/input/touchscreen/stm/fts5cu56a/Kconfig"
 
 config TOUCHSCREEN_SYNAPTICS_TCM
 	bool "Synaptics TCM Touchscreen Driver"

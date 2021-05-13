@@ -2450,6 +2450,8 @@ static int hif_ce_srng_msi_free_irq(struct hif_softc *scn)
 		msi_data = (ce_id % msi_data_count) + msi_irq_start;
 		irq = pld_get_msi_irq(scn->qdf_dev->dev, msi_data);
 
+		hif_pci_ce_irq_remove_affinity_hint(irq);
+
 		hif_debug("%s: (ce_id %d, msi_data %d, irq %d)", __func__,
 			  ce_id, msi_data, irq);
 
@@ -2478,6 +2480,33 @@ static void hif_pci_deconfigure_grp_irq(struct hif_softc *scn)
 		}
 	}
 }
+
+#ifdef HIF_BUS_LOG_INFO
+void hif_log_pcie_info(struct hif_softc *scn, uint8_t *data,
+		       unsigned int *offset)
+{
+	struct hif_pci_softc *sc = HIF_GET_PCI_SOFTC(scn);
+	struct hang_event_bus_info info = {0};
+	size_t size;
+
+	if (!sc) {
+		hif_err("HIF Bus Context is Invalid");
+		return;
+	}
+
+	pfrm_read_config_word(sc->pdev, PCI_DEVICE_ID, &info.dev_id);
+
+	size = sizeof(info);
+	QDF_HANG_EVT_SET_HDR(&info.tlv_header, HANG_EVT_TAG_BUS_INFO,
+			     size - QDF_HANG_EVENT_TLV_HDR_SIZE);
+
+	if (*offset + size > QDF_WLAN_HANG_FW_OFFSET)
+		return;
+
+	qdf_mem_copy(data + *offset, &info, size);
+	*offset = *offset + size;
+}
+#endif
 
 /**
  * hif_nointrs(): disable IRQ
@@ -2658,6 +2687,7 @@ int hif_pci_bus_suspend(struct hif_softc *scn)
 	return 0;
 }
 
+#ifdef PCI_LINK_STATUS_SANITY
 /**
  * __hif_check_link_status() - API to check if PCIe link is active/not
  * @scn: HIF Context
@@ -2696,33 +2726,13 @@ static int __hif_check_link_status(struct hif_softc *scn)
 	pld_is_pci_link_down(sc->dev);
 	return -EACCES;
 }
-
-#ifdef HIF_BUS_LOG_INFO
-void hif_log_bus_info(struct hif_softc *scn, uint8_t *data,
-		      unsigned int *offset)
+#else
+static inline int __hif_check_link_status(struct hif_softc *scn)
 {
-	struct hif_pci_softc *sc = HIF_GET_PCI_SOFTC(scn);
-	struct hang_event_bus_info info = {0};
-	size_t size;
-
-	if (!sc) {
-		hif_err("HIF Bus Context is Invalid");
-		return;
-	}
-
-	pfrm_read_config_word(sc->pdev, PCI_DEVICE_ID, &info.dev_id);
-
-	size = sizeof(info);
-	QDF_HANG_EVT_SET_HDR(&info.tlv_header, HANG_EVT_TAG_BUS_INFO,
-			     size - QDF_HANG_EVENT_TLV_HDR_SIZE);
-
-	if (*offset + size > QDF_WLAN_HANG_FW_OFFSET)
-		return;
-
-	qdf_mem_copy(data + *offset, &info, size);
-	*offset = *offset + size;
+	return 0;
 }
 #endif
+
 
 /**
  * hif_pci_bus_resume(): prepare hif for resume
@@ -3456,6 +3466,9 @@ static void hif_ce_srng_msi_irq_disable(struct hif_softc *hif_sc, int ce_id)
 
 static void hif_ce_srng_msi_irq_enable(struct hif_softc *hif_sc, int ce_id)
 {
+	if (__hif_check_link_status(hif_sc))
+		return;
+
 	pfrm_enable_irq(hif_sc->qdf_dev->dev,
 			hif_ce_msi_map_ce_to_irq(hif_sc, ce_id));
 }
@@ -3607,8 +3620,8 @@ const char *hif_pci_get_irq_name(int irq_no)
  * hif_pci_irq_set_affinity_hint() - API to set IRQ affinity
  * @hif_ext_group: hif_ext_group to extract the irq info
  *
- * This function will set the IRQ affinity to the gold cores
- * only for defconfig builds
+ * This function will set the WLAN DP IRQ affinity to the gold
+ * cores only for defconfig builds
  *
  * @hif_ext_group: hif_ext_group to extract the irq info
  *
@@ -3661,6 +3674,61 @@ void hif_pci_irq_set_affinity_hint(
 		}
 	}
 }
+
+void hif_pci_ce_irq_set_affinity_hint(
+	struct hif_softc *scn)
+{
+	int ret;
+	unsigned int cpus;
+	struct HIF_CE_state *ce_sc = HIF_GET_CE_STATE(scn);
+	struct hif_pci_softc *pci_sc = HIF_GET_PCI_SOFTC(scn);
+	struct CE_attr *host_ce_conf;
+	int ce_id;
+	qdf_cpu_mask ce_cpu_mask;
+
+	host_ce_conf = ce_sc->host_ce_config;
+	qdf_cpumask_clear(&ce_cpu_mask);
+
+	qdf_for_each_online_cpu(cpus) {
+		if (qdf_topology_physical_package_id(cpus) ==
+			CPU_CLUSTER_TYPE_PERF) {
+			qdf_cpumask_set_cpu(cpus,
+					    &ce_cpu_mask);
+		} else {
+			hif_err_rl("Unable to set cpu mask for offline CPU %d"
+				   , cpus);
+		}
+	}
+	if (qdf_cpumask_empty(&ce_cpu_mask)) {
+		hif_err_rl("Empty cpu_mask, unable to set CE IRQ affinity");
+		return;
+	}
+	for (ce_id = 0; ce_id < scn->ce_count; ce_id++) {
+		if (host_ce_conf[ce_id].flags & CE_ATTR_DISABLE_INTR)
+			continue;
+		qdf_cpumask_clear(&pci_sc->ce_irq_cpu_mask[ce_id]);
+		qdf_cpumask_copy(&pci_sc->ce_irq_cpu_mask[ce_id],
+				 &ce_cpu_mask);
+		qdf_dev_modify_irq_status(pci_sc->ce_msi_irq_num[ce_id],
+					  IRQ_NO_BALANCING, 0);
+		ret =
+		qdf_dev_set_irq_affinity(pci_sc->ce_msi_irq_num[ce_id],
+					 (struct qdf_cpu_mask *)
+					 &pci_sc->ce_irq_cpu_mask[ce_id]);
+		qdf_dev_modify_irq_status(pci_sc->ce_msi_irq_num[ce_id],
+					  0, IRQ_NO_BALANCING);
+		if (ret)
+			hif_err_rl("Set affinity %*pbl fails for CE IRQ %d",
+				   qdf_cpumask_pr_args(
+					&pci_sc->ce_irq_cpu_mask[ce_id]),
+				   pci_sc->ce_msi_irq_num[ce_id]);
+		else
+			hif_debug_rl("Set affinity %*pbl for CE IRQ: %d",
+				     qdf_cpumask_pr_args(
+					&pci_sc->ce_irq_cpu_mask[ce_id]),
+				     pci_sc->ce_msi_irq_num[ce_id]);
+	}
+}
 #endif /* #ifdef HIF_CPU_PERF_AFFINE_MASK */
 
 void hif_pci_config_irq_affinity(struct hif_softc *scn)
@@ -3670,10 +3738,13 @@ void hif_pci_config_irq_affinity(struct hif_softc *scn)
 	struct hif_exec_context *hif_ext_group;
 
 	hif_core_ctl_set_boost(true);
+	/* Set IRQ affinity for WLAN DP interrupts*/
 	for (i = 0; i < hif_state->hif_num_extgroup; i++) {
 		hif_ext_group = hif_state->hif_ext_group[i];
 		hif_pci_irq_set_affinity_hint(hif_ext_group);
 	}
+	/* Set IRQ affinity for CE interrupts*/
+	hif_pci_ce_irq_set_affinity_hint(scn);
 }
 
 int hif_pci_configure_grp_irq(struct hif_softc *scn,
@@ -3945,7 +4016,8 @@ QDF_STATUS hif_pci_enable_bus(struct hif_softc *ol_sc,
 			  enum hif_enable_type type)
 {
 	int ret = 0;
-	uint32_t hif_type, target_type;
+	uint32_t hif_type;
+	uint32_t target_type = TARGET_TYPE_UNKNOWN;
 	struct hif_pci_softc *sc = HIF_GET_PCI_SOFTC(ol_sc);
 	struct hif_opaque_softc *hif_hdl = GET_HIF_OPAQUE_HDL(ol_sc);
 	uint16_t revision_id = 0;

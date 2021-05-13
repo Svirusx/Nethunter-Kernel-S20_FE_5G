@@ -1,7 +1,7 @@
 /*
  * Broadcom Dongle Host Driver (DHD), RTT
  *
- * Copyright (C) 2020, Broadcom.
+ * Copyright (C) 2021, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -2633,21 +2633,26 @@ dhd_rtt_timeout(dhd_pub_t *dhd)
 #ifdef WL_NAN
 	if (rtt_status->rtt_config.target_list_mode == RNG_TARGET_LIST_MODE_NAN) {
 		for (idx = rtt_status->start_idx;
-				idx < rtt_status->rtt_config.rtt_target_cnt; idx++) {
+			idx < rtt_status->rtt_config.rtt_target_cnt; idx++) {
 			rtt_target = &rtt_status->rtt_config.target_info[idx];
 			if ((!rtt_target->disable) &&
-					(!dhd_rtt_get_report_header(rtt_status,
-					NULL, &rtt_target->addr))) {
+				(!dhd_rtt_get_report_header(rtt_status,
+				NULL, &rtt_target->addr))) {
 				if (wl_cfgnan_ranging_is_in_prog_for_peer(cfg, &rtt_target->addr)) {
 					ranging_inst = wl_cfgnan_check_for_ranging(cfg,
-							&rtt_target->addr);
-					ret =  wl_cfgnan_cancel_ranging(ndev, cfg,
+						&rtt_target->addr);
+					if (ranging_inst) {
+						ret =  wl_cfgnan_cancel_ranging(ndev, cfg,
 							&ranging_inst->range_id,
 							NAN_RNG_TERM_FLAG_IMMEDIATE, &status);
-					if (unlikely(ret) || unlikely(status)) {
-						WL_ERR(("%s:nan range cancel failed ret = %d "
-							"status = %d\n", __FUNCTION__,
-							ret, status));
+						if (unlikely(ret) || unlikely(status)) {
+							WL_ERR(("%s:nan range cancel failed "
+								"ret = %d status = %d\n",
+								__FUNCTION__, ret, status));
+						}
+					} else {
+						WL_ERR(("%s: Ranging Instance get failed\n",
+							__FUNCTION__));
 					}
 				}
 				dhd_rtt_create_failure_result(rtt_status, &rtt_target->addr);
@@ -4938,19 +4943,13 @@ dhd_rtt_deinit(dhd_pub_t *dhd)
 	DHD_RTT_MEM(("dhd_rtt_deinit: ENTER\n"));
 
 #ifdef WL_NAN
-	if (delayed_work_pending(&rtt_status->rtt_retry_timer)) {
-		cancel_delayed_work_sync(&rtt_status->rtt_retry_timer);
-	}
+	cancel_delayed_work_sync(&rtt_status->rtt_retry_timer);
 #endif /* WL_NAN */
 
-	if (work_pending(&rtt_status->work)) {
-		cancel_work_sync(&rtt_status->work);
-		rtt_status->rtt_sched = FALSE;
-	}
+	cancel_work_sync(&rtt_status->work);
+	rtt_status->rtt_sched = FALSE;
 
-	if (delayed_work_pending(&rtt_status->proxd_timeout)) {
-		cancel_delayed_work_sync(&rtt_status->proxd_timeout);
-	}
+	cancel_delayed_work_sync(&rtt_status->proxd_timeout);
 
 	/*
 	 * Cleanup attempt is required,

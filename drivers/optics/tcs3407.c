@@ -1599,8 +1599,13 @@ static int tcs3407_power_ctrl(struct tcs3407_device_data *data, int onoff)
 		}
 	}
 
+#if defined(CONFIG_SEC_R8Q_PROJECT)
 	regulator_vdd_1p8 =
 		regulator_get(&data->client->dev, "vdd_1p8");
+#else
+	regulator_vdd_1p8 =
+		regulator_get(&data->client->dev, data->vdd_1p8);
+#endif
 	if (IS_ERR(regulator_vdd_1p8) || regulator_vdd_1p8 == NULL) {
 		ALS_dbg("%s - get vdd_1p8 regulator failed\n", __func__);
 		rc = PTR_ERR(regulator_vdd_1p8);
@@ -3100,6 +3105,12 @@ static int tcs3407_parse_dt(struct tcs3407_device_data *data)
 	if (data->pin_flash_en < 0) {
 		ALS_err("%s - get pin_flash_en error\n", __func__);
 	}
+#endif
+
+#if !defined(CONFIG_SEC_R8Q_PROJECT)
+	if (of_property_read_string(dNode, "als_rear,vdd_1p8",
+		(char const **)&data->vdd_1p8) < 0)
+		ALS_dbg("%s - vdd_1p8 doesn`t exist\n", __func__);
 #endif
 
 	if (of_property_read_string(dNode, "als_rear,i2c_1p8",

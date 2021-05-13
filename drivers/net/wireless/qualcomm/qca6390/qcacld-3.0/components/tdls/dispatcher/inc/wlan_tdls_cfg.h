@@ -150,7 +150,7 @@
  * gEnableTDLSSupport - Enable support for TDLS.
  * @Min: 0
  * @Max: 1
- * @Default: 0
+ * @Default: 1
  *
  * This ini is used to enable/disable TDLS support.
  *
@@ -164,7 +164,7 @@
  */
 #define CFG_TDLS_SUPPORT_ENABLE CFG_INI_BOOL( \
 	"gEnableTDLSSupport", \
-	0, \
+	1, \
 	"enable/disable TDLS support")
 
 /*
@@ -172,7 +172,7 @@
  * gEnableTDLSImplicitTrigger - Enable Implicit TDLS.
  * @Min: 0
  * @Max: 1
- * @Default: 0
+ * @Default: 1
  *
  * This ini is used to enable/disable implicit TDLS.
  * CLD driver initiates TDLS Discovery towards a peer whenever TDLS Setup
@@ -189,7 +189,7 @@
  */
 #define CFG_TDLS_IMPLICIT_TRIGGER CFG_INI_BOOL( \
 	"gEnableTDLSImplicitTrigger", \
-	0, \
+	1, \
 	"enable/disable implicit TDLS")
 
 /*
@@ -553,15 +553,24 @@
 
 /*
  * <ini>
- * gTDLSPuapsdPTIWindow - This ini is used to configure peer traffic indication
- * window.
- * @Min: 1
- * @Max: 5
- * @Default: 2
+ * gTDLSExternalControl - Enable external TDLS control.
+ * @Min: 0
+ * @Max: 2
+ * @Default: 1
  *
- * This ini is used to configure buffering time in number of beacon intervals.
+ * This ini is used to enable/disable external TDLS control.
+ * TDLS external control works with TDLS implicit trigger. TDLS external
+ * control allows a user to add a MAC address of potential TDLS peers so
+ * that the CLD driver can initiate implicit TDLS setup to only those peers
+ * when criteria for TDLS setup (throughput and RSSI threshold) is met.
+ * There are two flavors of external control supported. If control default
+ * is set 1 it means strict external control where only for configured
+ * tdls peer mac address tdls link will be established. If control default
+ * is set 2 liberal tdls external control is needed which means
+ * tdls link will be established with configured peer mac address as well
+ * as any other peer which supports tdls.
  *
- * Related: gEnableTDLSSupport.
+ * Related: gEnableTDLSSupport, gEnableTDLSImplicitTrigger.
  *
  * Supported Feature: TDLS
  *
@@ -605,7 +614,7 @@
  * gEnableTDLSScan - Allow scan and maintain TDLS link.
  * @Min: 0
  * @Max: 1
- * @Default: 0
+ * @Default: 1
  *
  * This ini is used to enable/disable TDLS scan.
  *  0: If peer is not buffer STA capable and device is not sleep STA
@@ -628,7 +637,7 @@
  */
 #define CFG_TDLS_SCAN_ENABLE CFG_INI_BOOL( \
 	"gEnableTDLSScan", \
-	0, \
+	1, \
 	"Allow scan and maintain TDLS link")
 
 /*

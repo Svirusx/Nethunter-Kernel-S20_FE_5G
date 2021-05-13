@@ -325,6 +325,7 @@ static void fuse_dentry_release(struct dentry *dentry)
 	kfree_rcu(fd, rcu);
 }
 
+/* @fs.sec -- 63ff82f9216c9b6d003e7d45699d54b833344719 -- */
 static int fuse_dentry_delete(const struct dentry *dentry)
 {
 	struct fuse_inode *fi;

@@ -1193,7 +1193,7 @@ static ssize_t vl53l5_enable_store(struct device *dev,
 				status = -1;
 			}
 #endif
-			if (status != STATUS_OK) {
+			if ((status != STATUS_OK) || (p_module->last_driver_error != STATUS_OK)) {
 				status = vl53l5_ioctl_init(p_module);
 				vl53l5_k_log_error("fail reset %d", status);
 				status = vl53l5_ioctl_stop(p_module, NULL, 1);
