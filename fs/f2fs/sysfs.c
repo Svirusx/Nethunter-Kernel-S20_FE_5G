@@ -595,6 +595,14 @@ static ssize_t f2fs_sbi_show(struct f2fs_attr *a,
 			"FSCK_EXIT",	sbi->sec_fsck_stat.fsck_exit_code,
 			"FSCK_VNODES",	sbi->sec_fsck_stat.valid_node_count,
 			"FSCK_VINODES",	sbi->sec_fsck_stat.valid_inode_count);
+	} else if (!strcmp(a->attr.name, "sec_heimdallfs_stat")) {
+		return snprintf(buf, PAGE_SIZE,
+		"\"%s\":\"%u\",\"%s\":\"%llu\",\"%s\":\"%u\",\"%s\":\"%llu\",\"%s\":\"%llu\"\n",
+			"NR_PKGS", sbi->sec_heimdallfs_stat.nr_pkgs,
+			"NR_PKG_BLKS", sbi->sec_heimdallfs_stat.nr_pkg_blks,
+			"NR_COMP_PKGS", sbi->sec_heimdallfs_stat.nr_comp_pkgs,
+			"NR_COMP_PKG_BLKS", sbi->sec_heimdallfs_stat.nr_comp_pkg_blks,
+			"NR_COMP_PKG_SAVED_BLKS", sbi->sec_heimdallfs_stat.nr_comp_saved_blks);
 	} else if (!strcmp(a->attr.name, "sec_defrag_stat")) {
 		return snprintf(buf, PAGE_SIZE,
 		"\"%s\":\"%u\",\"%s\":\"%u\",\"%s\":\"%u\",\"%s\":\"%u\",\"%s\":\"%u\",\"%s\":\"%u\"\n",
@@ -984,6 +992,7 @@ F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info, sec_io_stat, sec_stat);
 F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info, sec_stats, stat_info);
 #endif
 F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info, sec_fsck_stat, sec_fsck_stat);
+F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info, sec_heimdallfs_stat, sec_heimdallfs_stat);
 F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info, sec_part_best_extents, s_sec_part_best_extents);
 F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info, sec_part_current_extents, s_sec_part_current_extents);
 F2FS_RW_ATTR(F2FS_SBI, f2fs_sb_info, sec_part_score, s_sec_part_score);
@@ -1071,6 +1080,7 @@ static struct attribute *f2fs_attrs[] = {
 	ATTR_LIST(sec_stats),
 #endif
 	ATTR_LIST(sec_fsck_stat),
+	ATTR_LIST(sec_heimdallfs_stat),
 	ATTR_LIST(sec_part_best_extents),
 	ATTR_LIST(sec_part_current_extents),
 	ATTR_LIST(sec_part_score),

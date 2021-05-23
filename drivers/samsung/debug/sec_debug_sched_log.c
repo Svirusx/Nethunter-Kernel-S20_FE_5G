@@ -183,7 +183,7 @@ int sec_debug_sched_msg(char *fmt, ...)
 {
 	int cpu = raw_smp_processor_id();
 	struct sched_buf *sched_buf;
-	int r;
+	int r = 0;
 	int i;
 	va_list args;
 
@@ -194,7 +194,11 @@ int sec_debug_sched_msg(char *fmt, ...)
 	sched_buf = &secdbg_log->sched[cpu].buf[i];
 
 	va_start(args, fmt);
-	r = vsnprintf(sched_buf->comm, sizeof(sched_buf->comm), fmt, args);
+	if (fmt) {
+		r = vsnprintf(sched_buf->comm, sizeof(sched_buf->comm), fmt, args);
+	} else {
+		sched_buf->addr = va_arg(args, u64);
+	}
 	va_end(args);
 
 	sched_buf->time = cpu_clock(cpu);

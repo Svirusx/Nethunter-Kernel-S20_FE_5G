@@ -1683,6 +1683,7 @@ static uint32_t util_gen_new_ie(uint8_t *ie, uint32_t ielen,
 	uint8_t *pos, *tmp;
 	const uint8_t *tmp_old, *tmp_new;
 	uint8_t *sub_copy;
+	size_t tmp_rem_len;
 
 	/* copy subelement as we need to change its content to
 	 * mark an ie after it is processed.
@@ -1695,11 +1696,14 @@ static uint32_t util_gen_new_ie(uint8_t *ie, uint32_t ielen,
 	pos = &new_ie[0];
 
 	/* new ssid */
-	tmp_new = util_scan_find_ie(WLAN_ELEMID_SSID, sub_copy, subie_len);
-	if (tmp_new) {
-		qdf_mem_copy(pos, tmp_new, tmp_new[1] + 2);
-		pos += (tmp_new[1] + 2);
-	}
+ 	tmp_new = util_scan_find_ie(WLAN_ELEMID_SSID, sub_copy, subie_len);
+ 	if (tmp_new) {
+ 		scm_debug(" SSID %.*s", tmp_new[1], &tmp_new[2]);
+		if ((pos + tmp_new[1] + 2) <= (new_ie + ielen)) {
+			qdf_mem_copy(pos, tmp_new, tmp_new[1] + 2);
+			pos += (tmp_new[1] + 2);
+ 		}
+ 	}
 
 	/* go through IEs in ie (skip SSID) and subelement,
 	 * merge them into new_ie
@@ -1717,10 +1721,14 @@ static uint32_t util_gen_new_ie(uint8_t *ie, uint32_t ielen,
 				subie_len);
 		if (!tmp) {
 			/* ie in old ie but not in subelement */
-			if (tmp_old[0] != WLAN_ELEMID_MULTIPLE_BSSID) {
-				qdf_mem_copy(pos, tmp_old, tmp_old[1] + 2);
-				pos += tmp_old[1] + 2;
-			}
+ 			if (tmp_old[0] != WLAN_ELEMID_MULTIPLE_BSSID) {
+				if ((pos + tmp_old[1] + 2) <=
+				    (new_ie + ielen)) {
+					qdf_mem_copy(pos, tmp_old,
+						     tmp_old[1] + 2);
+					pos += tmp_old[1] + 2;
+ 				}
+ 			}
 		} else {
 			/* ie in transmitting ie also in subelement,
 			 * copy from subelement and flag the ie in subelement
@@ -1728,25 +1736,54 @@ static uint32_t util_gen_new_ie(uint8_t *ie, uint32_t ielen,
 			 * vendor ie, compare OUI + type + subType to
 			 * determine if they are the same ie.
 			 */
-			if (tmp_old[0] == WLAN_ELEMID_VENDOR) {
-				if (!qdf_mem_cmp(tmp_old + 2, tmp + 2, 5)) {
-					/* same vendor ie, copy from
-					 * subelement
-					 */
+			tmp_rem_len = subie_len - (tmp - sub_copy);
+			if (tmp_old[0] == WLAN_ELEMID_VENDOR &&
+			    tmp_rem_len >= 7) {
+ 				if (!qdf_mem_cmp(tmp_old + 2, tmp + 2, 5)) {
+ 					/* same vendor ie, copy from
+ 					 * subelement
+ 					 */
+					if ((pos + tmp[1] + 2) <=
+					    (new_ie + ielen)) {
+						qdf_mem_copy(pos, tmp,
+							     tmp[1] + 2);
+						pos += tmp[1] + 2;
+						tmp[0] = 0;
+ 					}
+ 				} else {
+					if ((pos + tmp_old[1] + 2) <=
+					    (new_ie + ielen)) {
+						qdf_mem_copy(pos, tmp_old,
+							     tmp_old[1] + 2);
+						pos += tmp_old[1] + 2;
+ 					}
+ 				}
+ 			} else if (tmp_old[0] == WLAN_ELEMID_EXTN_ELEM) {
+ 				if (tmp_old[2] == tmp[2]) {
+ 					/* same ie, copy from subelement */
+					if ((pos + tmp[1] + 2) <=
+					    (new_ie + ielen)) {
+						qdf_mem_copy(pos, tmp,
+							     tmp[1] + 2);
+						pos += tmp[1] + 2;
+						tmp[0] = 0;
+ 					}
+ 				} else {
+					if ((pos + tmp_old[1] + 2) <=
+					    (new_ie + ielen)) {
+						qdf_mem_copy(pos, tmp_old,
+							     tmp_old[1] + 2);
+						pos += tmp_old[1] + 2;
+ 					}
+ 				}
+ 			} else {
+ 				/* copy ie from subelement into new ie */
+				if ((pos + tmp[1] + 2) <= (new_ie + ielen)) {
 					qdf_mem_copy(pos, tmp, tmp[1] + 2);
 					pos += tmp[1] + 2;
-					tmp[0] = 0xff;
-				} else {
-					qdf_mem_copy(pos, tmp_old,
-						     tmp_old[1] + 2);
-					pos += tmp_old[1] + 2;
-				}
-			} else {
-				/* copy ie from subelement into new ie */
-				qdf_mem_copy(pos, tmp, tmp[1] + 2);
-				pos += tmp[1] + 2;
-				tmp[0] = 0xff;
-			}
+					tmp[0] = 0;
+ 				}
+ 			}
 		}
 
 		if (tmp_old + tmp_old[1] + 2 - ie == ielen)
@@ -1760,13 +1797,14 @@ static uint32_t util_gen_new_ie(uint8_t *ie, uint32_t ielen,
 	 */
 	tmp_new = sub_copy;
 	while (tmp_new + tmp_new[1] + 2 - sub_copy <= subie_len) {
-		if (!(tmp_new[0] == WLAN_ELEMID_NONTX_BSSID_CAP ||
-		      tmp_new[0] == WLAN_ELEMID_SSID ||
-		      tmp_new[0] == WLAN_ELEMID_MULTI_BSSID_IDX ||
-		      tmp_new[0] == 0xff)) {
-			qdf_mem_copy(pos, tmp_new, tmp_new[1] + 2);
-			pos += tmp_new[1] + 2;
-		}
+ 		if (!(tmp_new[0] == WLAN_ELEMID_NONTX_BSSID_CAP ||
+ 		      tmp_new[0] == WLAN_ELEMID_SSID ||
+ 		      tmp_new[0] == WLAN_ELEMID_MULTI_BSSID_IDX)) {
+			if ((pos + tmp_new[1] + 2) <= (new_ie + ielen)) {
+				qdf_mem_copy(pos, tmp_new, tmp_new[1] + 2);
+				pos += tmp_new[1] + 2;
+ 			}
+ 		}
 		if (tmp_new + tmp_new[1] + 2 - sub_copy == subie_len)
 			break;
 		tmp_new += tmp_new[1] + 2;
@@ -1807,7 +1845,7 @@ static QDF_STATUS util_scan_parse_mbssid(struct wlan_objmgr_pdev *pdev,
 
 	pos = ie;
 
-	new_ie = qdf_mem_malloc(MAX_IE_LEN);
+	new_ie = qdf_mem_malloc(ielen);
 	if (!new_ie)
 		return QDF_STATUS_E_NOMEM;
 

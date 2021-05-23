@@ -67,6 +67,10 @@
 #include <uapi/linux/module.h>
 #include "module-internal.h"
 
+#ifdef CONFIG_SEC_DEBUG
+#include <linux/sec_debug.h>
+#endif
+
 #define CREATE_TRACE_POINTS
 #include <trace/events/module.h>
 
@@ -165,6 +169,29 @@ static struct mod_tree_root {
 
 #define module_addr_min mod_tree.addr_min
 #define module_addr_max mod_tree.addr_max
+
+#ifdef CONFIG_SEC_DEBUG_MODULE_INFO
+void sec_debug_coreinfo_module(void)
+{
+	SUMMARY_COREINFO_SYMBOL(mod_tree);
+	SUMMARY_COREINFO_OFFSET(mod_tree_root, root);
+	SUMMARY_COREINFO_OFFSET(mod_tree_root, addr_min);
+	SUMMARY_COREINFO_OFFSET(mod_tree_root, addr_max);
+	SUMMARY_COREINFO_OFFSET(module_layout, base);
+	SUMMARY_COREINFO_OFFSET(module_layout, size);
+	SUMMARY_COREINFO_OFFSET(module_layout, text_size);
+	SUMMARY_COREINFO_OFFSET(module_layout, mtn);
+	SUMMARY_COREINFO_OFFSET(mod_tree_node, node);
+	SUMMARY_COREINFO_OFFSET(module, init_layout);
+	SUMMARY_COREINFO_OFFSET(module, core_layout);
+	SUMMARY_COREINFO_OFFSET(module, state);
+	SUMMARY_COREINFO_OFFSET(module, name);
+	SUMMARY_COREINFO_OFFSET(module, kallsyms);
+	SUMMARY_COREINFO_OFFSET(mod_kallsyms, symtab);
+	SUMMARY_COREINFO_OFFSET(mod_kallsyms, num_symtab);
+	SUMMARY_COREINFO_OFFSET(mod_kallsyms, strtab);
+}
+#endif
 
 static noinline void __mod_tree_insert(struct mod_tree_node *node)
 {

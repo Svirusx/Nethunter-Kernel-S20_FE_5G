@@ -631,8 +631,7 @@ static void mhi_pm_disable_transition(struct mhi_controller *mhi_cntrl,
 
 	/* trigger MHI RESET so device will not access host ddr */
 	if (MHI_REG_ACCESS_VALID(prev_state)) {
-		/* MHI_RESET always timed-out, give 1000 msec for graceful reset */
-		unsigned long timeout = msecs_to_jiffies(1000);
+		unsigned long timeout = msecs_to_jiffies(mhi_cntrl->timeout_ms);
 
 		if (system_state == SYSTEM_POWER_OFF) {
 			MHI_ERR("Do not Trigger device MHI_RESET, late shutdown\n"); 
