@@ -996,6 +996,8 @@ struct mfc_charger_data {
 
 	bool req_tx_id;
 	bool is_abnormal_pad;
+	bool afc_tx_done;
+
 #if defined(CONFIG_CHECK_UNAUTH_PAD)
 	u8 ping_freq;
 	bool req_afc_tx;

@@ -251,6 +251,11 @@ config SEC_CP_SEPARATE_DEBUG
 	help
 	  CP SSR works according to CP debug level instead of AP debug level
 
+config SEC_DEBUG_MODULE_INFO
+	bool "store module information"
+	default n
+	help
+	  store module information for bootloader to use them
 endif
 
 config SEC_BOOTSTAT

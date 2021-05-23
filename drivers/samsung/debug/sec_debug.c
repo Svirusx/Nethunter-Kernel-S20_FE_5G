@@ -802,17 +802,17 @@ static int __init __sec_debug_dt_addr_init(void) { return 0; }
 static int __init force_upload_setup(char *en)
 {
 	get_option(&en, &force_upload);
-	return 1;
+	return 0;
 }
-__setup("androidboot.force_upload=", force_upload_setup);
+early_param("androidboot.force_upload", force_upload_setup);
 
 /* for sec debug level */
 static int __init sec_debug_level_setup(char *str)
 {
 	get_option(&str, &sec_dbg_level);
-	return 1;
+	return 0;
 }
-__setup("androidboot.debug_level=", sec_debug_level_setup);
+early_param("androidboot.debug_level", sec_debug_level_setup);
 
 static int __init sec_debug_init(void)
 {

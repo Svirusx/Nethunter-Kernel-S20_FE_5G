@@ -2195,7 +2195,7 @@ __acquires(&pool->lock)
 	lockdep_invariant_state(true);
 	trace_workqueue_execute_start(work);
 
-	sec_debug_sched_msg("@%pS", worker->current_func);
+	sec_debug_sched_msg(NULL, worker->current_func);
 
 	worker->current_func(work);
 	/*

@@ -474,6 +474,7 @@ static void qseecom_handle_listener_exit(struct work_struct *unused)
 		pr_warn("exit %d state\n", state);
 		return;
 	}
+	atomic_set(&qseecom.qseecom_state, QSEECOM_STATE_NOT_READY);
 
 	mutex_lock(&listener_access_lock);
 	list_for_each_entry(ptr_svc, &qseecom.registered_listener_list_head, list) {
@@ -492,6 +493,7 @@ static DECLARE_DELAYED_WORK(listener_exit_work, qseecom_handle_listener_exit);
 static int qseecom_reboot_notifier(struct notifier_block *nb,
 				unsigned long code, void *data)
 {
+	cancel_delayed_work_sync(&listener_exit_work);
 	schedule_delayed_work(&listener_exit_work, 3 * HZ);
 	pr_warn("mark listener exit after timeout\n");
 
@@ -506,7 +508,7 @@ static ssize_t qseecom_sysfs_shutdown(struct kobject *kobj,
 				 struct kobj_attribute *attr,
 				 const char *buf, size_t count)
 {
-	schedule_delayed_work(&listener_exit_work, 15 * HZ);
+	schedule_delayed_work(&listener_exit_work, 30 * HZ);
 	pr_warn("mark listener exit after timeout\n");
 
 	return count;

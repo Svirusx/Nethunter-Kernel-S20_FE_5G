@@ -3710,7 +3710,6 @@ out:
 static int  zt_ts_open(struct input_dev *dev)
 {
 	struct zt_ts_info *info = misc_info;
-	u8 prev_work_state;
 	int ret = 0;
 
 	if (info == NULL)
@@ -3740,14 +3739,13 @@ static int  zt_ts_open(struct input_dev *dev)
 
 	if (info->sleep_mode) {
 		mutex_lock(&info->work_lock);
-		prev_work_state = info->work_state;
 		info->work_state = SLEEP_MODE_OUT;
 		info->sleep_mode = 0;
 		input_info(true, &info->client->dev, "%s, wake up\n", __func__);
 
 		write_cmd(info->client, ZT_WAKEUP_CMD);
 		write_reg(info->client, ZT_OPTIONAL_SETTING, info->m_optional_mode.optional_mode);
-		info->work_state = prev_work_state;
+		info->work_state = NOTHING;
 		mutex_unlock(&info->work_lock);
 
 #if ESD_TIMER_INTERVAL
@@ -9795,7 +9793,7 @@ static int zt_ts_probe(struct i2c_client *client,
 
 #ifdef CONFIG_DISPLAY_SAMSUNG
 	lcdtype = get_lcd_attached("GET");
-	if (lcdtype == 0xFFFFFF || (lcdtype != 0x800042 && lcdtype != 0x800041 && lcdtype != 0x800040)) {
+	if (lcdtype == 0xFFFFFF || ((lcdtype >> 8) != 0x8000)) {
 		input_err(true, &client->dev, "%s: lcd is not attached %X\n", __func__, lcdtype);
 		return -ENODEV;
 	}
@@ -9816,7 +9814,7 @@ static int zt_ts_probe(struct i2c_client *client,
 	input_info(true, &client->dev, "%s: lcd is connected\n", __func__);
 
 	lcdtype = get_lcd_info("id");
-	if (lcdtype < 0 || (lcdtype != 0x800042 && lcdtype != 0x800041 && lcdtype != 0x800040)) {
+	if (lcdtype < 0 || ((lcdtype >> 8) != 0x8000)) {
 		input_err(true, &client->dev, "%s: Failed to get lcd info %X\n", __func__, lcdtype);
 		return -EINVAL;
 	}

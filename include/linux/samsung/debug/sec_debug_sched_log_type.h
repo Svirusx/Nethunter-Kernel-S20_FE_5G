@@ -33,7 +33,10 @@ struct irq_exit_buf {
 
 struct sched_buf {
 	u64 time;
-	char comm[TASK_COMM_LEN];
+	union {
+		char comm[TASK_COMM_LEN];
+		u64 addr;
+	};
 	pid_t pid;
 	struct task_struct *pTask;
 	char prev_comm[TASK_COMM_LEN];
