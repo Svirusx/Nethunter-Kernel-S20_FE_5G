@@ -33,6 +33,7 @@
 #include <asm/unaligned.h>
 #include <linux/regulator/consumer.h>
 #include <linux/pinctrl/consumer.h>
+#include <linux/kernel.h>
 #if defined(CONFIG_MUIC_NOTIFIER)
 #include <linux/muic/muic.h>
 #include <linux/muic/muic_notifier.h>
@@ -630,13 +631,16 @@ static void a96t3x6_firmware_work_func(struct work_struct *work)
 	ret = a96t3x6_fw_check(data);
 	if (ret) {
 		if (data->firmware_count++ < FIRMWARE_VENDOR_CALL_CNT) {
-			GRIP_ERR("failed to load firmware (%d)\n",
+			GRIP_ERR("failed to load firmware ret %d(%d)\n", ret,
 				data->firmware_count);
 			schedule_delayed_work(&data->firmware_work,
 					msecs_to_jiffies(1000));
 			return;
 		}
 		GRIP_ERR("final retry failed\n");
+#ifdef CONFIG_SEC_SENSORS_ENG_DEBUG
+		panic("grip fw doesn't exist\n");
+#endif
 	} else {
 		GRIP_INFO("fw check success\n");
 	}
@@ -2856,6 +2860,10 @@ static int a96t3x6_fw_check(struct a96t3x6_data *data)
 			data->md_ver, data->md_ver_bin);
 		return ret;
 	}
+#elif defined(CONFIG_SEC_SENSORS_ENG_DEBUG)
+	if (ret) {
+		panic("grip fw doesn't exist\n");
+	}
 #endif
 	ret = a96t3x6_get_fw_version(data, true);
 	if (!ret) {
@@ -3344,6 +3352,12 @@ static struct i2c_driver a96t3x6_driver = {
 
 static int __init a96t3x6_init(void)
 {
+#if IS_ENABLED(CONFIG_BATTERY_SAMSUNG)
+	if (lpcharge) {
+		GRIP_ERR("%s: lpm : Do not load driver\n", __func__);
+		return 0;
+	}
+#endif
 	return i2c_add_driver(&a96t3x6_driver);
 }
 

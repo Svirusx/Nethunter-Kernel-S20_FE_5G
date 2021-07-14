@@ -12539,6 +12539,7 @@
 
 		__overlay__ {
 			qcom,target-link-speed = <0x2>;
+			qcom,config-recovery;
 			esoc-name = "wlan";
 			oops-after-ready;
 		};

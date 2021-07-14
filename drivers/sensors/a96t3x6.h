@@ -157,4 +157,8 @@ enum {
 	SDCARD,
 };
 
+#if IS_ENABLED(CONFIG_BATTERY_SAMSUNG)
+extern unsigned int lpcharge;
+#endif
+
 #endif /* LINUX_A96T3X6_H */

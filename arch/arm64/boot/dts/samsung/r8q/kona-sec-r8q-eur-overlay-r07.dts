@@ -12578,6 +12578,7 @@
 
 		__overlay__ {
 			qcom,target-link-speed = <0x2>;
+			qcom,config-recovery;
 			esoc-name = "wlan";
 			oops-after-ready;
 		};
@@ -12904,9 +12905,11 @@
 				samsung,disp-model = "AMS646YD01";
 				samsung,panel-lpm-enable;
 				samsung,support_gamma_mode2;
+				samsung,skip_read_on_pre;
 				samsung,elvss_interpolation_temperature = <0xfffffff0>;
 				samsung,support_lpm;
 				samsung,rsc_4_frame_idle;
+				samsung,support_factory_panel_swap;
 				samsung,support-optical-fingerprint;
 				samsung,support_vrr_based_bl;
 				samsung,level0_key_enable_tx_cmds_revA = [29 01 00 00 00 00 03 9f a5 a5];
