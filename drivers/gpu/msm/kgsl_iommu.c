@@ -798,18 +798,6 @@ static int kgsl_iommu_fault_handler(struct iommu_domain *domain,
 		pid = pid_nr(private->pid);
 		tid = private->tid;
 		comm = private->comm;
-#if defined(CONFIG_DISPLAY_SAMSUNG)
-		if ((strncmp(comm, "provider@3.0-se", 15) == 0) ||
-			(strncmp(comm, "roid.app.camera", 15) == 0)) {
-			adreno_dev->ft_pf_policy = (
-				(1 << KGSL_FT_PAGEFAULT_INT_ENABLE) |
-				(1 << KGSL_FT_PAGEFAULT_GPUHALT_ENABLE));
-			device->force_panic = true;
-			dev_err(device->dev, "### comm: %s, flags: 0x%08x, ft_pf_policy : 0x%08lx\n",
-				private->comm, flags, adreno_dev->ft_pf_policy);
-			flags |= IOMMU_FAULT_TRANSACTION_STALLED;
-		}
-#endif
 	}
 
 	if (pt->name == KGSL_MMU_SECURE_PT)

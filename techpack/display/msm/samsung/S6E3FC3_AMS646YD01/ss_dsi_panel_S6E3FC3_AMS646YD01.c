@@ -41,6 +41,54 @@ static int samsung_panel_on_pre(struct samsung_display_driver_data *vdd)
 
 static int samsung_panel_on_post(struct samsung_display_driver_data *vdd)
 {
+	/* Module info */
+	if (!vdd->module_info_loaded_dsi) {
+		if (IS_ERR_OR_NULL(vdd->panel_func.samsung_module_info_read))
+			LCD_ERR("no samsung_module_info_read function\n");
+		else
+			vdd->module_info_loaded_dsi = vdd->panel_func.samsung_module_info_read(vdd);
+	}
+
+	/* Manufacture date */
+	if (!vdd->manufacture_date_loaded_dsi) {
+		if (IS_ERR_OR_NULL(vdd->panel_func.samsung_manufacture_date_read))
+			LCD_ERR("no samsung_manufacture_date_read function\n");
+		else
+			vdd->manufacture_date_loaded_dsi = vdd->panel_func.samsung_manufacture_date_read(vdd);
+	}
+
+	/* DDI ID */
+	if (!vdd->ddi_id_loaded_dsi) {
+		if (IS_ERR_OR_NULL(vdd->panel_func.samsung_ddi_id_read))
+			LCD_ERR("no samsung_ddi_id_read function\n");
+		else
+			vdd->ddi_id_loaded_dsi = vdd->panel_func.samsung_ddi_id_read(vdd);
+	}
+
+	/* MDNIE X,Y (1.Manufacture Date -> 2.MDNIE X,Y -> 3.Cell ID -> 4.OCTA ID) */
+	if (!vdd->mdnie_loaded_dsi) {
+		if (IS_ERR_OR_NULL(vdd->panel_func.samsung_mdnie_read))
+			LCD_ERR("no samsung_mdnie_read function\n");
+		else
+			vdd->mdnie_loaded_dsi = vdd->panel_func.samsung_mdnie_read(vdd);
+	}
+
+	/* Panel Unique Cell ID (1.Manufacture Date -> 2.MDNIE X,Y -> 3.Cell ID -> 4.OCTA ID) */
+	if (!vdd->cell_id_loaded_dsi) {
+		if (IS_ERR_OR_NULL(vdd->panel_func.samsung_cell_id_read))
+			LCD_ERR("no samsung_cell_id_read function\n");
+		else
+			vdd->cell_id_loaded_dsi = vdd->panel_func.samsung_cell_id_read(vdd);
+	}
+
+	/* Panel Unique OCTA ID (1.Manufacture Date -> 2.MDNIE X,Y -> 3.Cell ID -> 4.OCTA ID) */
+	if (!vdd->octa_id_loaded_dsi) {
+		if (IS_ERR_OR_NULL(vdd->panel_func.samsung_octa_id_read))
+			LCD_ERR("no samsung_octa_id_read function\n");
+		else
+			vdd->octa_id_loaded_dsi = vdd->panel_func.samsung_octa_id_read(vdd);
+	}
+
 	/* self mask cmd send again under splash mode(cause,sleep out cmd) */
 	if (vdd->self_disp.self_mask_img_write)
 		vdd->self_disp.self_mask_img_write(vdd);
@@ -169,7 +217,7 @@ static struct dsi_panel_cmd_set *ss_brightness_gamma_mode2_normal
 	struct dsi_panel_cmd_set *pcmds;
 	int cd_index = vdd->br_info.common_br.cd_idx ;
 	int finger_mask_update_delay;
-	
+
 	if (IS_ERR_OR_NULL(vdd)) {
 		LCD_ERR(": Invalid data vdd : 0x%zx\n", (size_t)vdd);
 		return NULL;
@@ -467,7 +515,7 @@ static int ss_elvss_read(struct samsung_display_driver_data *vdd)
 
 static int ss_module_info_read(struct samsung_display_driver_data *vdd)
 {
-	unsigned char buf[11];
+	unsigned char buf[11] = {0,};
 	int year, month, day;
 	int hour, min;
 	int mdnie_tune_index = 0;
@@ -634,46 +682,6 @@ static int ss_ddi_id_read(struct samsung_display_driver_data *vdd)
 			vdd->ddi_id_dsi[4]);
 	} else {
 		LCD_ERR("DSI%d no ddi_id_rx_cmds cmds", vdd->ndx);
-		return false;
-	}
-
-	return true;
-}
-
-static int ss_cell_id_read(struct samsung_display_driver_data *vdd)
-{
-	char cell_id_buffer[MAX_CELL_ID] = {0,};
-	int loop;
-
-	if (IS_ERR_OR_NULL(vdd)) {
-		LCD_ERR("Invalid data vdd : 0x%zx", (size_t)vdd);
-		return false;
-	}
-
-	/* Read Panel Unique Cell ID (92h 3rd ~ 18th) */
-	if (ss_get_cmds(vdd, RX_CELL_ID)->count) {
-		memset(cell_id_buffer, 0x00, MAX_CELL_ID);
-
-		ss_panel_data_read(vdd, RX_CELL_ID, cell_id_buffer, LEVEL1_KEY);
-
-		for (loop = 0; loop < MAX_CELL_ID; loop++)
-			/* Copy read buffer value if exist, if not, cell_id_dsi value is written from ss_module_info_read */
-			if (cell_id_buffer[loop])
-				vdd->cell_id_dsi[loop] = cell_id_buffer[loop];
-
-		LCD_INFO("DSI%d: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x\n",
-			vdd->ndx,
-			vdd->cell_id_dsi[0],	vdd->cell_id_dsi[1],
-			vdd->cell_id_dsi[2],	vdd->cell_id_dsi[3],
-			vdd->cell_id_dsi[4],	vdd->cell_id_dsi[5],
-			vdd->cell_id_dsi[6],	vdd->cell_id_dsi[7],
-			vdd->cell_id_dsi[8],	vdd->cell_id_dsi[9],
-			vdd->cell_id_dsi[10],	vdd->cell_id_dsi[11],
-			vdd->cell_id_dsi[12],	vdd->cell_id_dsi[13],
-			vdd->cell_id_dsi[14],	vdd->cell_id_dsi[15]);
-
-	} else {
-		LCD_ERR("DSI%d no cell_id_rx_cmds cmd\n", vdd->ndx);
 		return false;
 	}
 
@@ -903,7 +911,7 @@ static int samsung_panel_off_post(struct samsung_display_driver_data *vdd)
 	return rc;
 }
 
-#if 1 
+#if 1
 static int ss_dyn_mipi_pre(struct samsung_display_driver_data *vdd)
 {
 	int rc = 0;
@@ -933,7 +941,7 @@ static int ss_dyn_mipi_post(struct samsung_display_driver_data *vdd)
 		LCD_ERR("[S6E3FC3_AMS646YD01] Failed to find MIPI clock timing (%d)\n", idx);
 		return 0;
 	}
-	
+
 	LCD_INFO("[DISPLAY_%d] +++ clk idx: %d, tx FFC\n", vdd->ndx, idx);
 
 	ffc_set = ss_get_cmds(vdd, TX_FFC);
@@ -1007,7 +1015,7 @@ static int ss_ffc(struct samsung_display_driver_data *vdd, int idx)
 }
 #endif
 
-#if 0 
+#if 0
 static int ss_self_display_data_init(struct samsung_display_driver_data *vdd)
 {
 	LCD_INFO("++\n");
@@ -1055,7 +1063,7 @@ static int ss_vrr_init(struct vrr_info *vrr)
 	return 0;
 }
 
-#if 0 
+#if 0
 static void make_brightness_packet(struct samsung_display_driver_data *vdd,
 	struct dsi_cmd_desc *packet, int *cmd_cnt, enum BR_TYPE br_type)
 {
@@ -1220,7 +1228,6 @@ static void samsung_panel_init(struct samsung_display_driver_data *vdd)
 	vdd->panel_func.samsung_panel_revision = ss_panel_revision;
 	vdd->panel_func.samsung_module_info_read = ss_module_info_read;
 	vdd->panel_func.samsung_ddi_id_read = ss_ddi_id_read;
-	vdd->panel_func.samsung_cell_id_read = ss_cell_id_read;
 	vdd->panel_func.samsung_octa_id_read = ss_octa_id_read;
 	vdd->panel_func.samsung_elvss_read = ss_elvss_read;
 
