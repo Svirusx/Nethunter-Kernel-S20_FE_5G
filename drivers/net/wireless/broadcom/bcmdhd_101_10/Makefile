@@ -334,6 +334,8 @@ DHDCFLAGS += -DSET_SSID_FAIL_CUSTOM_RC=100
 # 6GHz support
 DHDCFLAGS += -DWL_6G_BAND
 
+PLATFORM_VERSION=12.0.0
+
 # Android Version Check from Platform source
 ifneq ($(ANDROID_VERSION),)
 MAJOR_VERSION := $(shell echo $(ANDROID_VERSION) | rev | cut -c 5- | rev)
