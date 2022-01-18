@@ -1,0 +1,238 @@
+# SPDX-License-Identifier: GPL-2.0-only
+config SENSORS_SSC
+	bool "Enable Sensors Driver Support for SSC"
+	help
+	  Add support for sensors SSC driver.
+	  This driver is used for exercising sensors use case,
+	  time syncing with ADSP clock.
+
+config SENSORS
+	bool "Sensors Class Support"
+	help
+	  This option enables the sensor sysfs class in /sys/class/sensors.
+	  You'll need this to do anything useful with sensorss. If unsure, say N.
+
+config SUPPORT_SSC_SPU
+	bool "Support SSC(SLPI) SPU(System Parameter update)"
+	help
+	  Add support for SSC SPU.
+
+config SENSORS_SX9360
+	depends on I2C
+	tristate "SX9360 driver"
+	default n
+	help
+	  Say Y here if you use sx9360.
+	  This option enables grip sensors using
+	  SemTech sx9360 device driver.
+	  Say N here if you do not use sx9360.
+
+config SENSORS_SX9330
+	depends on I2C
+	tristate "SX9330 driver"
+	default n
+	help
+	  Say Y here if you use sx9330.
+	  This option enables grip sensors using
+	  SemTech sx9330 device driver.
+	  Say N here if you do not use sx9330.
+
+config SENSORS_SX9330_SUB2
+	depends on I2C
+	tristate "SX9330_SUB2 driver"
+	default n
+	help
+	  Say Y here if you use sx9330_sub2.
+	  This option enables grip sensors using
+	  SemTech sx9330_sub2 device driver.
+	  Say N here if you do not use sx9330_sub2.
+
+config SENSORS_SX9360_SUB
+	depends on I2C
+	tristate "SX9360_SUB driver"
+	default n
+	help
+	  Say Y here if you use sx9360_sub.
+	  This option enables grip sensors using
+	  SemTech sx9360_sub device driver.
+	  Say N here if you do not use sx9360_sub.
+
+
+config SENSORS_FW_VENDOR
+	bool "Locate the Firmware on Vendor"
+	default n
+	help
+	  To use the module automatic system, 
+	  locate the firmware on vendor side.
+config SENSORS_SX9360_SUB3
+	depends on I2C
+	tristate "SX9360_SUB3 driver"
+	default n
+	help
+	  Say Y here if you use sx9360_sub3.
+	  This option enables grip sensors using
+	  SemTech sx9360_sub3 device driver.
+	  Say N here if you do not use sx9360_sub3.
+
+config SUPPORT_MCC_THRESHOLD_CHANGE
+	depends on I2C
+	tristate "Change grip sensor threshold according to the MCC value"
+	default n
+	help
+	  Say Y here if you need to check mcc(mobile country code).
+	  This option enables when it is necessary to adjust the threshold
+	  according to the mcc value.
+	  Say N here if you do not need to check mcc.
+
+config SENSORS_A96T3X6
+	tristate "a96t3x6 Grip sensor"
+	default n
+	help
+	  Say Y here if you use a96t3x6.
+	  This option enables grip sensors using
+	  SemTech a96t3x6 device driver.
+	  Say N here if you do not use a96t3x6.
+config SENSORS_A96T3X6_2CH
+	depends on I2C
+	tristate "SENSORS_A96T3X6_2CH driver for grip"
+	default n
+	help
+	  Say Y here if you use SENSORS_A96T3X6_2CH for grip.
+	  This option enables grip sensors using
+	  Above SENSORS_A96T3X6_2CH device driver for grip.
+
+config SENSORS_A96T3X6_SUB
+	depends on I2C
+	tristate "A96T3X6_SUB driver for grip"
+	default n
+	help
+	  Say Y here if you use A96T3X6_SUB for grip.
+	  This option enables grip sensors using
+	  Above A96T3X6_SUB device driver for grip.
+
+config SENSORS_A96T3X6_SUB_2CH
+	depends on I2C
+	tristate "A96T3X6_SUB driver for grip"
+	default n
+	help
+	  Say Y here if you use A96T3X6_SUB_2CH for grip.
+	  This option enables grip sensors using
+	  Above A96T3X6_SUB_2CH device driver for grip.
+
+config SENSORS_A96T3X6_WIFI
+	depends on I2C
+	tristate "A96T3X6_WIFI driver for grip"
+	default n
+	help
+	  Say Y here if you use A96T3X6_WIFI for grip.
+	  This option enables grip sensors using
+	  Above A96T3X6_WIFI device driver for grip.
+
+config SENSORS_A96T3X6_WIFI_2CH
+	depends on I2C
+	tristate "SENSORS_A96T3X6_WIFI_2CH driver for grip"
+	default n
+	help
+	  Say Y here if you use SENSORS_A96T3X6_WIFI_2CH for grip.
+	  This option enables grip sensors using
+	  Above SENSORS_A96T3X6_WIFI_2CH device driver for grip.
+
+config SENSORS_A96T3X6_RESET
+	depends on I2C
+	tristate "SENSORS_A96T3X6_RESET driver for grip"
+	default n
+	help
+	  Say Y here if you use SENSORS_A96T3X6_RESET for grip.
+	  This option enables grip sensors using
+	  Above SENSORS_A96T3X6_RESET device driver for grip.
+	  This feature will be enabled only for project which is using a common LDO with SW RESET, not using HW RESET.
+
+config SENSORS_FW_VENDOR
+	bool "Locate the Firmware on Vendor"
+	default n
+	help
+	  To use the module automatic system, 
+	  locate the firmware on vendor side.
+
+config SENSOR_A96T3X6_LDO_SHARE
+	depends on I2C
+	tristate "SENSOR_A96T3X6_LDO_SHARE driver for grip"
+	default n
+	help
+	  Say Y here if you use SENSOR_A96T3X6_LDO_SHARE for grip.
+	  This option enables grip sensors using
+	  Above SENSOR_A96T3X6_LDO_SHARE device driver for grip.
+
+config SENSORS_A96T3X6_HALL_NOTIFIER
+	bool "folder detect for grip reset"
+	default n
+	help
+	  Say Y here if you use grip reset by folder detect
+
+config SENSORS_A96T3X6_CRC_CHECK
+	bool "check crc check instead of checksum compare"
+	default n
+	help
+	  Say Y here if you use crc check instead of checksum compare
+
+config SENSORS_A96T3X6_BLOCK_SAR_ONLY
+	tristate "Prevent entering sar only mode"
+	default n
+	help
+	  Prevent entering sar only mode.
+
+config SENSORS_A96T365IF
+	bool "Choose A96T365IF"
+	default n
+	help
+
+config SENSORS_A96T3X6_UNSUPPORT_OTG
+	depends on I2C
+	tristate "SENSORS_A96T3X6_UNSUPPORT_OTG driver for grip"
+	default n
+	help
+	  Say Y here if you use SENSORS_A96T3X6_UNSUPPORT_OTG for grip.
+	  This option enables grip sensors using
+	  Above SENSORS_A96T3X6_UNSUPPORT_OTG device driver for grip.
+
+config SENSORS_A96T3X6_FORCE_FW_UPDATE
+	depends on I2C
+	tristate "SENSORS_A96T3X6_FORCE_FW_UPDATE temporally"
+	default n
+	help
+	  Say Y here if you use SENSORS_A96T3X6_UNSUPPORT_OTG for grip.
+	  This option enables grip sensors using
+	  Above SENSORS_A96T3X6_UNSUPPORT_OTG device driver for grip.
+
+config SENSORS_VL53L5
+	depends on SPI
+	tristate "VL53L5 driver"
+	default n
+	help
+	  Say Y here if you use VL53L5.
+	  This option enables range sensor using VL53L5.
+
+config SENSORS_VL53L5_SUPPORT_UAPI
+	tristate "STM vl53l5 ranging sensor UPAI interface"
+	default n
+	help
+	  STM vl53l5 ranging sensor UPAI interface.
+
+config SENSORS_VL53L5_SUPPORT_KERNEL_INTERFACE
+	tristate "STM vl53l5 ranging sensor Kernel Interface"
+	default n
+	help
+	  STM vl53l5 ranging sensor Kernel Interface.
+
+config SEC_SLPI_SLEEP_DEBUG
+	tristate "For debugging slpi sleep issue"
+	default n
+	help
+	  Say Y to make a force crash when slpi can not enter low power mode
+	  Say N to make silent restart when slpi can not enter low power mode
+
+config SEC_SENSORS_ENG_DEBUG
+	tristate "For debugging sensors"
+	default n
+	help
+	  Say Y to provide debugging, crash etc only ENG binary.

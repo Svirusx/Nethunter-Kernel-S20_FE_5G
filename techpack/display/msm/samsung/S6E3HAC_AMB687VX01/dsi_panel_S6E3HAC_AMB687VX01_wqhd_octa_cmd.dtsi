@@ -1,0 +1,5440 @@
+/* Copyright (c) 2012, Samsung Electronics Corporation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&mdss_mdp {
+	ss_dsi_panel_S6E3HAC_AMB687VX01_WQHD: ss_dsi_panel_S6E3HAC_AMB687VX01_WQHD {
+		qcom,mdss-dsi-panel-name = "ss_dsi_panel_S6E3HAC_AMB687VX01_WQHD";
+		label = "ss_dsi_panel_S6E3HAC_AMB687VX01_WQHD";
+
+		qcom,mdss-dsi-bpp = <24>;
+		/*qcom,cont-splash-enabled;*/
+		/*qcom,dcs-cmd-by-left;*/
+		/*qcom,cmd-sync-wait-broadcast;*/
+		/*qcom,cmd-sync-wait-trigger;*/
+		/*qcom,mdss-dsi-fbc-enable=*/
+		/*qcom,mdss-dsi-fbc-bpp=*/
+		/*qcom,mdss-dsi-fbc-packing=*/
+		/*qcom,mdss-dsi-fbc-quant-error=*/
+		/*qcom,mdss-dsi-fbc-bias=*/
+		/*qcom,mdss-dsi-fbc-pat-mode=*/
+		/*qcom,mdss-dsi-fbc-vlc-mode=*/
+		/*qcom,mdss-dsi-fbc-bflc-mode=*/
+		/*qcom,mdss-dsi-fbc-h-line-budget=*/
+		/*qcom,mdss-dsi-fbc-budget-ctrl=*/
+		/*qcom,mdss-dsi-fbc-block-budget=*/
+		/*qcom,mdss-dsi-fbc-lossless-threshold=*/
+		/*qcom,mdss-dsi-fbc-lossy-threshold=*/
+		/*qcom,mdss-dsi-fbc-rgb-threshold=*/
+		/*qcom,mdss-dsi-fbc-lossy-mode-idx=*/
+
+		qcom,mdss-dsi-h-pulse-width = <44>;
+		qcom,mdss-dsi-h-back-porch = <120>;
+		qcom,mdss-dsi-h-front-porch = <116>;
+		qcom,mdss-dsi-h-sync-skew = <0>;
+		qcom,mdss-dsi-v-pulse-width = <80>;
+		qcom,mdss-dsi-v-back-porch = <124>;
+		qcom,mdss-dsi-v-front-porch = <120>;
+
+		qcom,mdss-dsi-h-left-border = <0>;
+		qcom,mdss-dsi-h-right-border = <0>;
+		qcom,mdss-dsi-v-top-border = <0>;
+		qcom,mdss-dsi-v-bottom-border = <0>;
+
+		qcom,mdss-dsi-underflow-color = <0xFF>;
+		qcom,mdss-dsi-border-color = <0>;
+
+		qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
+		/*qcom,mdss-dsi-bl-pmic-bank-select=*/
+		/*qcom,mdss-dsi-bl-pmic-pwm-frequency=*/
+		/*qcom,mdss-dsi-pwm-gpio=*/
+
+		qcom,mdss-dsi-bl-min-level = <1>;
+		qcom,mdss-dsi-bl-max-level = <510>;
+		qcom,mdss-brightness-max-level = <510>;
+		qcom,mdss-brightness-default-level = <255>;
+		qcom,mdss-dsi-interleave-mode = <0>;
+		qcom,mdss-dsi-panel-type = "dsi_cmd_mode";
+
+		/*qcom,mdss-dsi-te-check-enable; */
+		qcom,mdss-dsi-te-using-te-pin;
+		qcom,mdss-dsi-te-pin-select = <1>;
+
+		qcom,dynamic-mode-switch-enabled;
+		qcom,dynamic-mode-switch-type = "dynamic-resolution-switch-immediate";
+
+		qcom,mdss-dsi-te-dcs-command = <1>;
+		qcom,mdss-dsi-wr-mem-start = <0x2C>;
+		qcom,mdss-dsi-wr-mem-continue = <0x3C>;
+
+		/* CMD mode panel doesn't need below stuff */
+		/*qcom,mdss-dsi-h-sync-pulse=*/
+		/*qcom,mdss-dsi-hfp-power-mode=*/
+		/*qcom,mdss-dsi-hbp-power-mode=*/
+		/*qcom,mdss-dsi-hsa-power-mode=*/
+		/*qcom,mdss-dsi-last-line-interleave=*/
+		/*qcom,mdss-dsi-bllp-eof-power-mode=*/
+		/*qcom,mdss-dsi-bllp-power-mode=*/
+		/*qcom,mdss-dsi-traffic-mode=*/
+
+		qcom,mdss-dsi-pixel-packing = "loose";
+
+		qcom,mdss-dsi-virtual-channel-id = <0>;
+		qcom,mdss-dsi-color-order = "rgb_swap_rgb";
+		qcom,mdss-dsi-lane-0-state;
+		qcom,mdss-dsi-lane-1-state;
+		qcom,mdss-dsi-lane-2-state;
+		qcom,mdss-dsi-lane-3-state;
+		qcom,mdss-dsi-lane-map = "lane_map_0123";
+
+		/* 60 FPS - DSC (width 480) */
+		qcom,mdss-dsi-t-clk-post = <0x18>;
+		qcom,mdss-dsi-t-clk-pre = <0x19>;
+
+		qcom,mdss-dsi-stream = <0>;
+		qcom,mdss-dsi-mdp-trigger = "none";
+		qcom,mdss-dsi-dma-trigger = "trigger_sw";
+
+		qcom,mdss-pan-physical-width-dimension = <74>; /* 73.728mm, round-off */
+		qcom,mdss-pan-physical-height-dimension = <158>; /* 158.1056mm, round-off */
+
+		qcom,mdss-dsi-panel-mode-gpio-state = "invalid";
+
+		/*qcom,mdss-tear-check-disable*/
+		/*qcom,mdss-tear-check-sync-cfg-height = <2576>; */
+		/*qcom,mdss-tear-check-sync-init-val=*/
+		/*qcom,mdss-tear-check-sync-threshold-start=*/
+		/*qcom,mdss-tear-check-sync-threshold-continue=*/
+		/*qcom,mdss-tear-check-start-pos=*/
+		/*qcom,mdss-tear-check-rd-ptr-trigger-intr=*/
+		/*qcom,mdss-tear-check-frame-rate=*/
+
+		qcom,mdss-dsi-reset-sequence = <1 10>; /* reset high -> wait 10ms */
+		/*qcom,partial-update-enabled = "single_roi";*/
+		/*qcom,partial-update-roi-merge;*/
+		/*qcom,mdss-dsi-horizontal-line-idle*/
+
+		/*qcom,mdss-dsi-lp11-init;*/
+		/*qcom,mdss-dsi-init-delay-us = <1000>;*/
+
+		qcom,mdss-dsi-rx-eot-ignore;
+		qcom,mdss-dsi-tx-eot-append;
+
+		/* HDR Setting */
+		qcom,mdss-dsi-panel-hdr-enabled;
+		qcom,mdss-dsi-panel-hdr-color-primaries = <15635 16450 34000 16000 13250 34500 7500 3000>;
+		qcom,mdss-dsi-panel-peak-brightness = <4000000>;
+		qcom,mdss-dsi-panel-average-brightness = <1200000>;
+		qcom,mdss-dsi-panel-blackness-level = <5>;
+
+		qcom,ulps-enabled;
+		/* qcom,suspend-ulps-enabled; */
+		samsung,support_lp_rx_err_recovery;
+		qcom,esd-check-enabled;
+		qcom,mdss-dsi-panel-status-check-mode ="irq_check";
+		/*qcom,mdss-dsi-panel-status-read-length;*/
+		/*qcom,mdss-dsi-panel-status-value;*/
+		/*qcom,mdss-dsi-panel-status-irq-trigger1 = "rising";*/
+		qcom,mdss-dsi-panel-status-irq-trigger1 = "falling"; /* DISP_DET */
+		qcom,mdss-dsi-panel-status-irq-trigger2 = "rising"; /* FG_ERR */
+
+		/* DFPS (Dynamic FPS, VRR) for only video mode display */
+		/*
+		qcom,dsi-supported-dfps-list = <60 120>;
+		qcom,mdss-dsi-pan-enable-dynamic-fps;
+		qcom,mdss-dsi-pan-fps-update = "dfps_immediate_porch_mode_vfp";
+		qcom,mdss-dsi-min-refresh-rate = <60>;
+		qcom,mdss-dsi-max-refresh-rate = <120>;
+		*/
+
+
+		/* *************************************************************
+		 * Below  parameters are samsung dependent thigs
+		 * *************************************************************
+		 */
+		samsung,panel-vendor = "SDC";
+		samsung,disp-model = "AMB638RD01";
+		samsung,panel-lpm-enable;
+		samsung,support_gamma_mode2;
+		samsung,elvss_interpolation_temperature = <(-15)>;
+		samsung,support_factory_panel_swap;
+
+		/* C2 LP mipi speed: AP->IC = 5.64~10Mbps, IC->AP = 7.65~8.04Mbps, typ. 8.04Mbps
+		 * IC->AP LP mipi speed is set by DDI setting, and esc clock has nothing to do with this.
+		 * So, select 12.8MHz (=6.4Mbps) for AP->IC mipi speed.
+		 */
+		samsung,esc-clk-128M;
+
+		samsung,support_gpara;
+		samsung,pll_ssc_disabled;
+		samsung,support_ddi_spi;
+
+		samsung,isc_data_threshold_tx_cmds_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 03 B0 0B F6
+			29 00 00 00 00 00 02 F6 00
+			29 00 00 00 00 00 03 F0 A5 5A
+		];
+
+		samsung,stm_enable_tx_cmds_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 10 86
+				01 08 10 21 11 42 01 00
+				00 00 00 00 00 00 00
+			29 00 00 00 00 00 03 F0 A5 5A
+		];
+
+		samsung,stm_disable_tx_cmds_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A
+ 			29 00 00 00 00 00 02 86 00
+			29 00 00 00 00 00 03 F0 A5 5A
+		];
+
+		samsung,esd_recovery_1_tx_cmds_revA = [
+			0A 00 00 00 00 00 58				/* PPS setting */
+				11 00 00 89 30 80 0A
+				00 05 A0 00 40 01 68
+				01 68 02 00 01 B4 00
+				20 04 F2 00 05 00 0C
+				01 87 02 63 18 00 10
+				F0 03 0C 20 00 06 0B
+				0B 33 0E 1C 2A 38 46
+				54 62 69 70 77 79 7B
+				7D 7E 01 02 01 00 09
+				40 09 BE 19 FC 19 FA
+				19 F8 1A 38 1A 78 1A
+				B6 2A F6 2B 34 2B 74
+				3B 74 6B F4
+		];
+
+		samsung,esd_recovery_2_tx_cmds_revA = [
+			0A 00 00 00 00 00 58				/* PPS setting */
+				11 00 00 89 30 80 0A
+				00 05 A0 00 40 01 68
+				01 68 02 00 01 B4 00
+				20 04 F2 00 05 00 0C
+				01 87 02 63 18 00 10
+				F0 03 0C 20 00 06 0B
+				0B 33 0E 1C 2A 38 46
+				54 62 69 70 77 79 7B
+				7D 7E 01 02 01 00 09
+				40 09 BE 19 FC 19 FA
+				19 F8 1A 38 1A 78 1A
+				B6 2A F6 2B 34 2B 74
+				3B 74 6B F4
+		];
+
+		/* *************************************************************
+		 * TEST MODE
+		 * **************************************************************
+		 */
+
+		/* GCT (DDI Gram Checksum Test) */
+		samsung,support_gct;
+
+		samsung,gct_checksum_rx_cmds_revA = [06 01 00 00 00 00 01 AF 01 00];
+
+		samsung,gct_enter_tx_cmds_revA = [
+			29 00 00 00 00 00 03 9F A5 A5
+			05 01 00 00 78 00 01 01		/* 1. S/W Reset, Delay 120ms */
+
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 03 FC 5A 5A
+
+			29 00 00 00 00 00 03 B0 0A FE
+			29 00 00 00 00 00 02 FE 14	/* Para */
+			05 01 00 00 0A 00 01 11		/* Sleep out, Delay 10ms */
+			29 00 00 00 00 00 03 B0 2F FE
+			29 00 00 00 00 00 02 FE 7A	/* HOP memory checksum on */
+			29 00 00 00 00 00 03 51 03 FF	/* DBV max */
+			29 00 00 00 00 00 02 53 21	/* BCTRL on */
+			29 00 00 00 00 00 02 9D 01	/* DSC Enable */
+			29 00 00 00 00 00 5A 9E		/* PPS */
+				11 00 00 89 30 80 0C 10
+				05 A0 00 C1 02 D0 02 D0
+				02 00 02 68 00 20 15 8B
+				00 0A 00 0C 00 80 00 66
+				18 00 10 F0 03 0C 20 00
+				06 0B 0B 33 0E 1C 2A 38
+				46 54 62 69 70 77 79 7B
+				7D 7E 01 02 01 00 09 40
+				09 BE 19 FC 19 FA 19 F8
+				1A 38 1A 78 1A B6 2A F6
+				2B 34 2B 74 3B 74 6B F4
+				00
+
+			29 00 00 00 00 00 03 B0 02 D7
+			29 01 00 00 32 00 02 D7 00	/* 14. VDDM LV Setting (0x0: normal, 0x04: LV, 0x08: HV) , dealy 50ms */
+			05 01 00 00 00 00 02 2C 00	/* Checksum start */
+			29 01 00 00 14 00 02 BE 05	/* GDBIST Pattern 2 , delay 20ms */
+			29 01 00 00 14 00 02 BE 00	/* GDBIST Disable, delay 20ms */
+			29 00 00 00 00 00 02 BE 07	/* GDBIST Pattern 1 , delay 150ms(panel file) */
+
+			/* checksum read */
+		];
+
+		samsung,gct_mid_tx_cmds_revA = [
+			29 01 00 00 14 00 02 BE 00	/* GDBIST Disable, delay 20ms */
+			29 00 00 00 00 00 02 BE 05	/* GDBIST Pattern 2 , delay 150ms(panel file) */
+
+			/* checksum read */
+		];
+
+		samsung,gct_exit_tx_cmds_revA = [
+			29 00 00 00 00 00 02 BE 00	/* GDBIST Disable */
+			29 00 00 00 00 00 03 B0 02 D7	/* Global Para */
+			29 00 00 00 00 00 02 D7 00	/* VDDM Normal Setting */
+			29 00 00 00 00 00 03 9F 5A 5A
+			29 00 00 00 00 00 03 F0 A5 A5
+			29 00 00 00 00 00 03 FC A5 A5
+		];
+
+		/* MCD Test : 60hz Normal mode */
+		samsung,mcd_on_tx_cmds_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+			29 00 00 00 00 00 03 B0 CA CB	/* LTPS */
+			29 00 00 00 00 00 08 CB D7 00 00 00 40 18 D7
+			29 00 00 00 00 00 03 B0 09 B7
+			29 00 00 00 00 00 1F B7		/* LTPS */
+						6F 5F 00 00 00 D8 6F 5F
+						00 00 00 F8 27 5F 00 00
+						00 D8 27 5F 00 00 00 00
+						00 00 00 00 00 83
+			29 00 00 00 00 00 03 B0 AA B7
+			29 00 00 00 00 00 03 B7 8A 87		/* LTPS */
+			29 00 00 00 00 00 03 B0 08 F2
+			29 00 00 00 00 00 03 F2 20 10
+
+			29 00 00 00 00 00 03 B0 03 CC
+			29 01 00 00 00 00 02 CC 73	/* MCD on */
+			29 01 00 00 64 00 02 F7 0F	/* gamma update */
+
+			29 00 00 00 00 00 03 B0 17 F6
+			29 00 00 00 64 00 02 F6 00	/* Source off, delay 100ms */
+			29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+		];
+
+		samsung,mcd_off_tx_cmds_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+			29 00 00 00 00 00 03 B0 CA CB
+			29 00 00 00 00 00 08 CB 5A 00 00 00 40 18 5A
+			29 00 00 00 00 00 03 B0 09 B7
+			29 00 00 00 00 00 1F B7 	/* LTPS */
+						61 20 00 00 00 D8 61 20
+						00 00 00 F8 27 11 00 00
+						00 D8 27 11 00 00 00 00
+						00 00 00 00 00 00
+			29 00 00 00 00 00 03 B0 AA B7
+			29 00 00 00 00 00 03 B7 82 85	/* LTPS */
+			29 00 00 00 00 00 03 B0 08 F2
+			29 00 00 00 00 00 03 F2 10 00
+
+			29 00 00 00 00 00 03 B0 03 CC
+			29 01 00 00 00 00 02 CC 70	/* MCD off */
+
+			29 00 00 00 00 00 03 B0 17 F6
+			29 00 00 00 00 00 02 F6 69	/* Source on */
+			29 01 00 00 64 00 02 F7 0F	/* gamma update, delay 100ms */
+			29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+		];
+
+
+		/* BRIGHTDOT Test : 120hz HS mode */
+		samsung,brightdot_on_tx_cmds_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+			29 00 00 00 00 00 03 51 03 FF	/* max brightness */
+			29 00 00 00 00 00 03 B0 59 B1
+			29 00 00 00 00 00 03 B1 0C 40	/* AOR 100% */
+			29 01 00 00 64 00 02 F7 0F	/* gamma update */
+			29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+		];
+
+		samsung,brightdot_off_tx_cmds_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+			29 00 00 00 00 00 03 B0 59 B1
+			29 00 00 00 00 00 03 B1 01 F8	/* AOR 16% (OTP value) */
+			29 01 00 00 64 00 02 F7 0F	/* gamma update */
+			29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+		];
+
+		samsung,brightdot_lf_on_tx_cmds_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+			29 00 00 00 00 00 03 51 03 FF	/* max brightness */
+			29 00 00 00 00 00 03 B0 06 BD
+			29 00 00 00 00 00 03 BD 00 EF	/* LFD min freq. = 0.5hz on 120HS mdoe */
+			29 00 00 00 00 00 03 60 00 EF	/* LFD max freq. = 0.5hz on 120HS mdoe */
+			29 01 00 00 64 00 02 F7 0F	/* gamma update */
+			29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+		];
+
+		/* samsung,brightdot_lf_off_tx_cmds_revA = []; by updating brightness, LFD will be recovered */
+
+		/* Gray Spot Test  */
+		samsung,gray_spot_test_on_tx_cmds_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 03 F0 A5 A5
+		];
+
+		samsung,gray_spot_test_off_tx_cmds_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 03 F0 A5 A5
+		];
+
+		samsung,gray_spot_test_on_tx_cmds_revB = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 03 B0 5A B5
+			29 00 00 00 00 00 02 B5 B5	/* ELVSS -1.4V */
+			29 00 00 00 00 00 03 B0 48 F2
+			29 00 00 00 00 00 02 F2 F0	/* Source off */
+			29 00 00 00 00 00 03 B0 1C F4
+			29 00 00 00 00 00 02 F4 23	/* VINT -3.5V */
+			29 00 00 00 00 00 03 B0 17 F6
+			29 00 00 00 00 00 02 F6 00
+			29 00 00 00 00 00 03 B0 01 F2
+			29 00 00 00 00 00 02 F2 00
+			29 00 00 00 00 00 03 B0 30 F4
+			29 00 00 00 00 00 08 F4 00 00 00 00 00 00 00	/* VAINT setting */
+			29 00 00 00 64 00 02 F7 0F	/* panel update, delay 100ms */
+			29 00 00 00 00 00 03 F0 A5 A5
+		];
+
+		samsung,gray_spot_test_off_tx_cmds_revB = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 03 B0 5A B5
+			29 00 00 00 00 00 02 B5 00	/* ELVSS */
+			29 00 00 00 00 00 03 B0 48 F2
+			29 00 00 00 00 00 02 F2 70	/* Source on */
+			29 00 00 00 00 00 03 B0 1C F4
+			29 00 00 00 00 00 02 F4 19	/* VINT -2.5V */
+			29 00 00 00 00 00 03 B0 17 F6
+			29 00 00 00 00 00 02 F6 69
+			29 00 00 00 00 00 03 B0 01 F2
+			29 00 00 00 00 00 02 F2 B4
+
+			/* F4h 30th VAINT value will be updated in __ss_vrr() */
+
+			29 01 00 00 64 00 02 F7 0F	/* panel update, delay 100ms */
+			29 00 00 00 00 00 03 F0 A5 A5
+		];
+
+		/* Micro Crack Test : 60hz Normal mode */
+		samsung,micro_short_test_on_tx_cmds_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 03 F0 A5 A5
+		];
+
+		samsung,micro_short_test_off_tx_cmds_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 03 F0 A5 A5
+		];
+
+		samsung,micro_short_test_on_tx_cmds_revB = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 07 BF 33 25 FF 00 00 10
+			29 00 00 00 00 00 03 B0 17 F6
+			29 00 00 00 00 00 02 F6 50
+			29 00 00 00 00 00 02 F7 0F	/* panel update */
+			29 00 00 00 00 00 03 F0 A5 A5
+		];
+
+		samsung,micro_short_test_off_tx_cmds_revB = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 07 BF 00 07 FF 00 00 10
+			29 00 00 00 00 00 03 B0 17 F6
+			29 00 00 00 00 00 02 F6 69
+			29 00 00 00 00 00 02 F7 0F	/* panel update */
+			29 00 00 00 00 00 03 F0 A5 A5
+		];
+
+
+		samsung,ccd_test_on_tx_cmds_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 03 F0 A5 A5
+		];
+
+		samsung,ccd_test_off_tx_cmds_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 03 F0 A5 A5
+		];
+
+		samsung,ccd_test_on_tx_cmds_revB = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 01 00 04 CC 01 40 51	/* CCD enable, delay 1ms */
+			29 00 00 00 00 00 03 F0 A5 A5
+		];
+
+		samsung,ccd_state_rx_cmds_revB= [06 01 00 00 00 00 01 CD 01 00];
+
+		samsung,ccd_pass_val = <0x00>;	/* pass */
+		samsung,ccd_fail_val = <0x01>;	/* chip crack */
+
+		samsung,ccd_test_off_tx_cmds_revB = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 04 CC 00 00 00	/* CCD disable */
+			29 00 00 00 00 00 03 F0 A5 A5
+		];
+
+		samsung,fg_err_cmds_revA = [
+			/* ERR_FG */
+			29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+			29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+			29 00 00 00 00 00 03 B0 23 F4
+			29 00 00 00 00 00 02 F4 18
+			29 00 00 00 00 00 03 B0 01 ED
+			29 00 00 00 00 00 03 ED 40 20	/* VLIN Monitor On */
+			29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY3 Disable */
+			29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+		];
+
+		/* *************************************************************
+		 *  SELF DISPLAY
+		 * *************************************************************
+		 */
+		samsung,support_self_display;
+		ss,self_display = <&self_display_HAC_dtsi>;
+
+
+		/* Self idle-Display Operation (Enable/Disable) */
+		samsung,self_idle_aod_enter = [
+			29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY Enable */
+			29 00 00 00 00 00 05 76 13 1F 00 11
+			29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY Disable */
+		];
+
+		samsung,self_idle_aod_exit = [
+			29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY Enable */
+			29 00 00 00 00 00 05 76 13 1F 00 00
+			29 00 00 00 00 00 02 75 01
+			29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY Disable */
+		];
+
+		/* Self idle-Display Operation (SELF TIME UPDATE) */
+		samsung,self_idle_timer_on = [
+			29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY Enable */
+			29 00 00 00 00 00 0B 81
+								00 03 00 00 00
+								00 03 00 00 00
+			29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY Disable */
+		];
+
+		samsung,self_idle_timer_off = [
+			29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY Enable */
+			29 00 00 00 00 00 03 81 00 00
+			29 01 00 00 11 00 03 F0 A5 A5	/* TEST KEY Disable + Delay 16.7 ms*/
+		];
+
+		/* Self idle-Display Operation (SELF MOVE) */
+
+		samsung,self_idle_move_on_pattern1 = [
+			29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY Enable */
+			29 00 00 00 00 00 23 7D
+						10 01 02 00 00
+						10 01 50 05 10 01 50 05
+						10 01 50 05 10 01 50 05
+						10 01 00 00 00 00 00 00
+						00 00 00 00 00
+			29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY Disable */
+		];
+
+		samsung,self_idle_move_on_pattern2 = [
+			29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY Enable */
+			29 00 00 00 00 00 23 7D
+						10 01 02 00 00
+						10 01 50 05 10 01 50 05
+						10 01 50 05 10 01 50 05
+						10 01 00 00 00 00 00 00
+						00 00 00 00 00
+			29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY Disable */
+		];
+
+		samsung,self_idle_move_on_pattern3 = [
+			29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY Enable */
+			29 00 00 00 00 00 23 7D
+								10 01 02 00 00
+								10 01 50 05 10 01 50 05
+								10 01 50 05 10 01 50 05
+								10 01 00 00 00 00 00 00
+								00 00 00 00 00
+			29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY Disable */
+		];
+		samsung,self_idle_move_on_pattern4 = [
+			29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY Enable */
+			29 00 00 00 00 00 23 7D
+								10 01 02 00 00
+								10 01 50 05 10 01 50 05
+								10 01 50 05 10 01 50 05
+								10 01 00 00 00 00 00 00
+								00 00 00 00 00
+			29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY Disable */
+		];
+		samsung,self_idle_move_off = [
+			29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY Enable */
+			29 00 00 00 00 00 03 7D 00 00
+			29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY Disable */
+		];
+
+		/*
+		*************************************************************************************************************************
+		* Self mask check debug (SELF MASK CHECK)
+		*************************************************************************************************************************
+		*/
+
+		samsung,mask_crc_pass_data = [A6 02];
+
+		/* *************************************************************
+		 *  mAFPC
+		 * *************************************************************
+		 */
+		samsung,support_mafpc;
+		ss,mafpc = <&ss_mafpc_HAC_dtsi>;
+		samsung,mafpc_crc_pass_data = [A2 39];
+
+		/* *************************************************************
+		 *  POC CONTROL
+		 * *************************************************************
+		 */
+
+		samsung,support_poc_driver;
+
+		samsung,poc_image_size = <551186>;		/* 551,186 bytes */
+
+		samsung,poc_enable_tx_cmds_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 03 F1 F1 A2		/* FLASH Mode Enable */
+		];
+
+		samsung,poc_disable_tx_cmds_revA = [
+			29 00 00 00 00 00 03 F0 A5 A5
+			29 00 00 00 00 00 03 F1 A5 A5
+		];
+
+		/*
+		 * ERASE (SECTOR)
+		 * Because whole operation of earse is excueted in driver level,
+		 * do not use Exclusive Lock for frame update.
+		 * Add flash lock for each cmd set.
+		 */
+
+		samsung,poc_erase_delay_us = <400000>;	/* 400ms */
+		samsung,poc_erase_sector_addr_idx = <5 6 7>;
+
+		samsung,poc_pre_erase_sector_tx_cmds_revA = [
+			29 00 00 00 00 00 02 C0 02				/* PGM EN (START) */
+			29 00 00 00 00 00 0D C1 00 00 00 06 00 00 00 00 00 00 00 04
+			29 01 00 00 01 00 02 C0 03				/* EXE_INST + 1ms */
+			29 00 00 00 00 00 0D C1 00 00 00 01 00 02 00 00 00 00 10 04
+			29 01 00 00 0A 00 02 C0 03				/* EXE_INST + 10ms */
+		];
+
+		samsung,poc_erase_sector_tx_cmds_revA = [
+			29 00 00 00 00 00 0D C1 00 00 00 06 00 00 00 00 00 00 00 04	/* WRITE ENABLE */
+			29 00 00 00 00 00 02 C0 03
+			29 00 00 00 00 00 0D C1 00 00 00 20 00 00 00 00 00 00 18 04	/* Flash Sector Address : 0xXX*/
+			29 00 00 00 00 00 02 C0 03				/* EXE_INST + 400ms */
+		];
+
+		samsung,poc_post_erase_sector_tx_cmds_revA = [
+			29 00 00 00 00 00 02 C0 00				/* PGM  Disable (END) */
+		];
+
+		// WRITE
+
+		samsung,poc_write_delay_us = <400>;		/* 400us */
+		samsung,poc_write_loop_cnt = <256>;
+		samsung,poc_write_data_size = <256>;
+		samsung,poc_write_addr_idx = <8 9 10>;
+
+		samsung,poc_pre_write_tx_cmds_revA = [
+			29 00 00 00 00 00 02 C0 02										/* PGM Enable (START) */
+			29 00 00 00 00 00 0D C1 00 00 00 06 00 00 00 00 00 00 00 04
+			29 01 00 00 01 00 02 C0 03										/* Exe + 1 ms */
+			29 00 00 00 00 00 0D C1 00 00 00 01 00 02 00 00 00 00 10 04		/* STATUS_register WEL, QE */
+			29 01 00 00 0A 00 02 C0 03										/* Exe + 10 ms */
+		];
+
+		samsung,poc_write_loop_start_tx_cmds_revA = [
+			29 00 00 00 00 00 0D C1 00 00 00 06 00 00 00 00 00 00 00 04
+			29 00 00 00 00 00 02 C0 03
+		];
+
+		samsung,poc_write_loop_data_add_tx_cmds_revA = [
+			29 00 00 00 00 00 0E C1 00 00 FF 32 00 00 00 00 00 00 40 04 01	/* Quad_PGM/FLASH_CONT_WRITE/BIT_RATE */
+		];
+
+		samsung,poc_write_loop_256byte_tx_cmds_revA = [
+			29 00 00 00 00 00 03 B0 0D C1
+
+			29 00 00 00 00 00 81 C1									/* 128byte write */
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+			29 00 00 00 00 00 03 B0 8D C1
+
+			29 00 00 00 00 00 81 C1									/* 128byte write */
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+				00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+			29 00 00 00 00 00 02 C0 03
+		];
+
+		samsung,poc_write_loop_end_tx_cmds_revA = [
+			29 00 00 00 01 00 0E C1 00 00 FF 32 00 00 00 00 00 00 80 04 01	/* write loop end + 1ms */
+		];
+
+		samsung,poc_post_write_tx_cmds_revA = [
+			29 00 00 00 00 00 02 C0 00		/* PGM Disable */
+			29 00 00 00 00 00 02 C0 02		/* PGM Enable */
+			29 00 00 00 00 00 0D C1 00 00 00 06 00 00 00 00 00 00 00 04
+			29 00 00 00 00 00 02 C0 03
+			29 00 00 00 00 00 0D C1 00 00 00 01 5E 02 00 00 00 00 10 04
+			29 00 00 00 00 00 02 C0 03
+			29 00 00 00 00 00 02 C0 00
+		];
+
+		// READ
+
+		samsung,poc_read_delay_us = <70>;		/* 70us */
+		samsung,poc_read_addr_idx = <8 9 10>;
+
+		samsung,poc_pre_read_tx_cmds_revA = [
+			29 00 00 00 00 00 02 C0 02				/* PGM Enable (START) */
+			29 00 00 00 00 00 0D C1 00 00 00 06 00 00 00 00 00 00 00 04	/* Flash Control  */
+			29 01 00 00 01 00 02 C0 03				/* EXE_INST + 1 ms Delay */
+			29 00 00 00 00 00 0D C1 00 00 00 01 5E 02 00 00 00 00 10 04	/* STATUS_register QE */
+			29 01 00 00 1E 00 02 C0 03				/* EXE_INST + 30ms */
+		];
+
+		samsung,poc_read_tx_cmds_revA = [
+			29 00 00 00 00 00 0E C1 00 00 00 6B 00 00 00 00 00 00 00 04 01	/* Read Address Setting */
+			29 00 00 00 00 00 02 C0 03										/* Flash Pgm Execution  + 250 us */
+			29 00 00 00 00 00 03 B0 0C FB 									/* read 13th 1-byte data */
+		];
+
+		samsung,poc_read_rx_cmds_revA = [06 01 00 00 00 00 01 FB 01 00];	/* read 1 byte */
+
+		samsung,poc_post_read_tx_cmds_revA = [
+			29 00 00 00 00 00 02 C0 00				/* PGM Disable */
+		];
+
+#if 0 // TODO: comment out after fix below poc cmds...
+		samsung,poc_status_rx_cmds_revA		= [06 01 00 00 00 00 01 EB 04 00];	/* EB Check  */
+		samsung,poc_checksum_rx_cmds_revA	= [06 01 00 00 00 00 01 EC 05 00];	/* CheckSum */
+		samsung,poc_mca_check_rx_cmds_revA	= [06 01 00 00 00 00 01 96 3F 00];	/* MCA Check */
+
+		samsung,poc_compensation_cmds_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A
+
+			29 00 00 00 00 00 03 B0 06 B1
+			29 00 00 00 00 00 0C B1 01 AF 00 54 68 CC 78 30 CC 64 FF /* Dimming Set */
+
+			29 00 00 00 00 00 03 B0 02 96
+			29 00 00 00 00 00 03 96 53 FF	/* Dimming Step */
+
+			29 00 00 00 00 00 02 F7 01
+
+			29 00 00 00 00 00 03 F0 A5 A5
+		];
+#endif
+
+		/*
+		 * Flash SPI cmds
+		 *
+		 * TX ) [tx_bpw tx_size(1) tx_size(2) tx_buf(1) ... tx_buf(tx_size)]
+		 *      Max tx data of page proglem is 256bytes. (0x0100).
+		 *		1byte is for instruction, 3bytes are for address.
+		 *		Total 260bytes are needed for page program cmds.
+		 *
+		 * RX ) [tx_bpw tx_size(1) tx_size(2) tx_buf(1) ... tx_buf(tx_size) rx_bpw rx_size(1) rx_size(2)]
+		 *		Entire memory can be accessed with a single instruction as long as the clock continues.
+		 *      We restrict rx size as 4096bytes (0x1000).
+		 */
+
+		/* WINBOND flash chip */
+
+		/* WRITE */
+		samsung,flash_spi_wr_enable = [08 00 01 06];
+		samsung,flash_spi_wr_page_program = [08 01 04 02 00 00 00
+			 01 02 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+			 04 05 06 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+			 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+			 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+			 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+			 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+			 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+			 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 1e 5f
+		];
+
+		samsung,flash_spi_wr_status_reg1 = [08 00 02 01 00];
+		samsung,flash_spi_wr_status_reg2 = [08 00 02 31 00];
+
+		samsung,flash_spi_wr_status_reg1_end = [08 00 02 01 5E];
+		samsung,flash_spi_wr_status_reg2_end = [08 00 02 31 02];
+
+		/* ERASE */
+		samsung,flash_spi_er = [08 00 04 00 00 00 00];
+
+		/* READ */
+		samsung,flash_spi_rd_data = [08 00 04 03 00 00 00 08 10 00];
+		samsung,flash_spi_rd_status_reg1 = [08 00 01 05 08 00 01];
+		samsung,flash_spi_rd_manufacture_id = [08 00 01 9F 08 00 01];
+
+
+		/* *************************************************************
+		 *  Tx
+		 * *************************************************************
+		 */
+		samsung,level0_key_enable_tx_cmds_revA	= [29 00 00 00 00 00 03 9F A5 A5]; /* PASSWD0 */
+		samsung,level0_key_disable_tx_cmds_revA	= [29 00 00 00 00 00 03 9F 5A 5A]; /* PASSWD0 */
+		samsung,level1_key_enable_tx_cmds_revA	= [29 00 00 00 00 00 03 F0 5A 5A]; /* PASSWD1 */
+		samsung,level1_key_disable_tx_cmds_revA	= [29 00 00 00 00 00 03 F0 A5 A5]; /* PASSWD1 */
+		samsung,level2_key_enable_tx_cmds_revA	= [29 00 00 00 00 00 03 FC 5A 5A];
+		samsung,level2_key_disable_tx_cmds_revA	= [29 00 00 00 00 00 03 FC A5 A5];
+
+		/* BRIGHTNESS_MAX_PACKET = 100 */
+		samsung,brightness_tx_cmds_revA = [
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+			39 00 00 00 00 00 01 00
+		];
+
+		samsung,mdnie_tx_cmds_revA = [
+			39 01 00 00 00 00 00 00 00
+		];
+
+		samsung,packet_size_tx_cmds_revA = [
+			37 01 00 00 00 00 02 07 00
+		];
+
+		/* use poinging gpara (long write) */
+		samsung,reg_read_pos_tx_cmds_revA = [
+			29 00 00 00 00 00 03 B0 00 00
+		];
+
+#if 0	/* Dont need to write sleep out before reading ddi id. RST HIGH is enough to read */
+		samsung,manufacture_read_pre_tx_cmds_revA = [
+			05 01 00 00 78 00 01 11			/* Sleep out, wait 10ms */
+		];
+#endif
+
+		samsung,display_on_tx_cmds_revA = [
+			29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+			05 00 00 00 00 00 01 29
+			29 00 00 00 00 00 03 9F 5A 5A		/* TEST KEY1 Disable */
+		];
+
+		samsung,display_off_tx_cmds_revA = [
+			29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+			05 00 00 00 00 00 01 28
+			29 00 00 00 00 00 03 9F 5A 5A		/* TEST KEY1 Disable */
+		];
+
+		/* *************************************************************
+		 *  Rx (Module Information READ)
+		 * *************************************************************
+		 */
+		samsung,manufacture_id0_rx_cmds_revA	= [06 01 00 00 00 00 01 da 01 00];
+		samsung,manufacture_id1_rx_cmds_revA	= [06 01 00 00 00 00 01 db 01 00];
+		samsung,manufacture_id2_rx_cmds_revA	= [06 01 00 00 00 00 01 dc 01 00];
+
+		/* from HA9 ddi, can not use gpara for A1h register
+		 * module info includes white coordinate, manufature date..
+		 */
+		samsung,module_info_rx_cmds_revA = [06 01 00 00 00 00 01 A1 0B 00];
+
+//		samsung,manufacture_date_rx_cmds_revA	= [06 01 00 00 00 00 01 A1 04 04];
+//		samsung,cell_id_rx_cmds_revA		= [06 01 00 00 00 00 01 A1 07 04];
+		samsung,octa_id_rx_cmds_revA		= [06 01 00 00 00 00 01 A1 14 0B];	/* A1 12th ~ 31th param */
+		samsung,ddi_id_rx_cmds_revA		= [06 01 00 00 00 00 01 D6 05 00];
+
+		samsung,ldi_debug0_rx_cmds_revA		= [06 01 00 00 00 00 01 0A 01 00];
+		samsung,ldi_debug1_rx_cmds_revA		= [06 01 00 00 00 00 01 ED 01 00];
+		samsung,ldi_debug2_rx_cmds_revA		= [06 01 00 00 00 00 01 EE 01 00];
+		samsung,ldi_debug3_rx_cmds_revA		= [06 01 00 00 00 00 01 0E 01 00];
+		samsung,ldi_debug4_rx_cmds_revA		= [06 01 00 00 00 00 01 05 01 00];
+		samsung,ldi_debug5_rx_cmds_revA		= [06 01 00 00 00 00 01 0F 01 00];
+		samsung,ldi_debug6_rx_cmds_revA		= [06 01 00 00 00 00 01 E9 02 00];
+
+		/* 255 bytes, its ddi max size is 512, and sw limit is 0xff = 255... */
+		samsung,ldi_debug_logbuf_rx_cmds_revA	= [06 01 00 00 00 00 01 9C FF 00];
+
+		samsung,ldi_debug_pps1_rx_cmds_revA		= [06 01 00 00 00 00 01 A2 2d 00];
+		samsung,ldi_debug_pps2_rx_cmds_revA		= [06 01 00 00 00 00 01 A2 2c 2d];
+
+		samsung,mtp_read_sysfs_rx_cmds_revA	= [06 01 00 00 00 00 01 00 00 00];
+
+		samsung,mtp_write_sysfs_tx_cmds_revA	= [
+			29 00 00 00 00 00 3D 00
+						00 00 00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00 00 00
+						00 00 00 00 00 00 00 00 00 00
+		];
+
+		samsung,smart_dimming_mtp_rx_cmds_revA	= [06 01 00 00 00 00 01 c9 DE 00]; /* C8h 0x00~0xDD: 222 bytes for 48/96hz gamma compensation */
+
+		samsung,copr_enable_tx_cmds_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 35 E1 09 15 15 00 00 00 00 00 00 00 03 1F 03 5F 00 75 03 87 00 AA 00 00 00 00 05 9F 0C 0F 00 00 00 00 05 9F 0C 0F 00 00 00 00 05 9F 0C 0F 00 00 00 00 05 9F 0C 0F
+			29 00 00 00 00 00 03 F0 A5 A5
+		];
+
+		samsung,copr_disable_tx_cmds_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 02 E1 00
+			29 00 00 00 00 00 03 F0 A5 A5
+		];
+
+		/* *************************************************************
+		 *  SAMSUNG PANEL COVER CONTROL
+		 * **************************************************************
+		 */
+		samsung,panel_cover_control_enable_cmds_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 02 B0 04
+			29 00 00 00 00 00 03 F2 29 F0		/* LDI FPS Change(40.47hz) */
+			29 00 00 00 00 00 03 F0 A5 A5
+		];
+
+		samsung,panel_cover_control_disable_cmds_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 02 B0 04
+			29 00 00 00 00 00 03 F2 1C 70		/* LDI FPS Recovery(59.835hz) */
+			29 00 00 00 00 00 03 F0 A5 A5
+		];
+
+		samsung,support_early_id_read;
+
+		/* *************************************************************
+		 * Dynamic MIPI Clock
+		 * **************************************************************
+		 */
+		samsung,support_dynamic_mipi_clk;
+		/* qcom,dsi-dyn-clk-enable; */
+		/* qcom,dsi-dyn-clk-list = <534712320 532484352 530256384>; */
+
+		samsung,ffc_tx_cmds_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A			/* TEST KEY2 Enable */
+			29 00 00 00 00 00 03 FC 5A 5A			/* TEST KEY3 Enable*/
+			29 00 00 00 00 00 08 C5 11 10 50 35 3E 35 3E	/* Default 1160 Mbps */
+			29 00 00 00 00 00 03 FC A5 A5			/* TEST KEY3 Disable*/
+			29 00 00 00 00 00 03 F0 A5 A5			/* TEST KEY2 Disable */
+		];
+
+		samsung,dyn_mipi_clk_ffc_cmds_revA = [
+			29 00 00 00 00 00 08 C5 11 10 50 35 3E 35 3E	/* 0. Default 1160 Mbps */
+			29 00 00 00 00 00 08 C5 11 10 50 33 BA 33 BA	/* 1. 1194 Mbps */
+			29 00 00 00 00 00 08 C5 11 10 50 35 AE 35 AE	/* 2. 1150.5 Mbps */
+			29 00 00 00 00 00 08 C5 11 10 50 35 61 35 61	/* 3. 1157 Mbps */
+			29 00 00 00 00 00 08 C5 11 10 50 35 3E 35 3E	/* 4. 1160 Mbps */
+		];
+
+		samsung,dynamic_mipi_clk_timing_table = <
+			/*<bitclk><>*/
+			1160000000 /* clk id 0 default */
+			1194000000 /* clk id 1 */
+			1150500000 /* clk id 2 */
+			1157000000 /* clk id 3 */
+			1160000000 /* clk id 4 */
+		>;
+
+		samsung,dynamic_mipi_clk_sel_table = <
+			/*<RAT><BAND><from><end><clk index>*/
+			1	1	0	0	2
+			1	2	0	0	3
+			1	3	0	0	2
+			1	4	0	0	2
+			2	11	10562	10658	1
+			2	11	10659	10733	2
+			2	11	10734	10838	1
+			2	12	9662	9738	2
+			2	12	9739	9912	1
+			2	12	9913	9938	2
+			2	13	1162	1291	1
+			2	13	1292	1366	2
+			2	13	1367	1513	1
+			2	14	1537	1633	1
+			2	14	1634	1708	2
+			2	14	1709	1738	1
+			2	15	4357	4439	1
+			2	15	4440	4458	2
+			2	17	2237	2271	1
+			2	17	2272	2345	3
+			2	17	2346	2519	1
+			2	17	2520	2563	3
+			2	18	2937	2988	1
+			2	18	2989	3056	2
+			2	18	3057	3063	3
+			2	18	3064	3088	1
+			3	91	0	217	1
+			3	91	218	367	2
+			3	91	368	599	1
+			3	92	600	627	1
+			3	92	628	777	2
+			3	92	778	1124	1
+			3	92	1125	1199	2
+			3	93	1200	1482	1
+			3	93	1483	1632	2
+			3	93	1633	1949	1
+			3	94	1950	2167	1
+			3	94	2168	2317	2
+			3	94	2318	2399	1
+			3	95	2400	2589	1
+			3	95	2590	2649	2
+			3	97	2750	2842	1
+			3	97	2843	2990	3
+			3	97	2991	3339	1
+			3	97	3340	3449	3
+			3	98	3450	3577	1
+			3	98	3578	3712	2
+			3	98	3713	3727	3
+			3	98	3728	3799	1
+			3	102	5010	5107	1
+			3	102	5108	5179	2
+			3	103	5180	5257	2
+			3	103	5258	5279	1
+			3	104	5280	5379	1
+			3	107	5730	5777	1
+			3	107	5778	5849	2
+			3	108	5850	5999	1
+			3	109	6000	6129	1
+			3	109	6130	6149	2
+			3	110	6150	6274	2
+			3	110	6275	6449	1
+			3	111	6450	6490	2
+			3	111	6491	6599	1
+			3	115	8040	8067	1
+			3	115	8068	8217	2
+			3	115	8218	8564	1
+			3	115	8565	8689	2
+			3	116	8690	8979	1
+			3	116	8980	9039	2
+			3	118	9210	9514	1
+			3	118	9515	9659	2
+			3	119	9660	9769	1
+			3	120	9770	9869	1
+			3	122	9920	10249	1
+			3	122	10250	10269	3
+			3	122	10270	10322	4
+			3	122	10323	10359	2
+			3	124	36200	36349	1
+			3	128	37750	37844	1
+			3	128	37845	37861	2
+			3	128	37862	37994	3
+			3	128	37995	38249	1
+			3	129	38250	38279	1
+			3	129	38280	38429	2
+			3	129	38430	38649	1
+			3	130	38650	38957	1
+			3	130	38958	39064	2
+			3	130	39065	39107	3
+			3	130	39108	39454	1
+			3	130	39455	39543	2
+			3	130	39544	39604	3
+			3	130	39605	39649	1
+			3	131	39650	39987	1
+			3	131	39988	40021	2
+			3	131	40022	40137	3
+			3	131	40138	40484	1
+			3	131	40485	40501	2
+			3	131	40502	40634	3
+			3	131	40635	40982	1
+			3	131	40983	41130	3
+			3	131	41131	41479	1
+			3	131	41480	41589	3
+			3	132	41590	41842	1
+			3	132	41843	41992	2
+			3	132	41993	42340	1
+			3	132	42341	42490	2
+			3	132	42491	42837	1
+			3	132	42838	42987	2
+			3	132	42988	43335	1
+			3	132	43336	43468	2
+			3	132	43469	43485	3
+			3	132	43486	43589	1
+			3	138	55240	55485	1
+			3	138	55486	55618	2
+			3	138	55619	55635	3
+			3	138	55636	55982	1
+			3	138	55983	56097	2
+			3	138	56098	56132	3
+			3	138	56133	56480	1
+			3	138	56481	56576	2
+			3	138	56577	56630	3
+			3	138	56631	56739	1
+			3	156	66436	66653	1
+			3	156	66654	66803	2
+			3	156	66804	67150	1
+			3	156	67151	67300	2
+			3	156	67301	67335	1
+			3	161	68586	68808	1
+			3	161	68809	68935	2
+			4	51	0	0	1
+			4	52	0	0	1
+			4	53	0	0	1
+			4	54	0	0	1
+			4	55	0	0	3
+			4	56	0	0	1
+			5	61	0	0	1
+			5	62	0	0	3
+			5	71	0	0	1
+		>;
+
+
+		/* *************************************************************
+		 *   APLPM / HLPM
+		 * *************************************************************
+		 */
+
+		samsung,self_grid_on_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY Enable */
+  			29 00 00 00 00 00 0D 7C 00 01 00 1F 00 00 00 00 05 A0 0C 10
+			29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY Disable */
+		];
+
+		samsung,self_grid_off_revA = [
+			29 00 00 00 22 00 03 F0 5A 5A	/* TEST KEY Enable - delay 34ms after dipslay_on */
+			29 00 00 00 00 00 03 7C 00 00
+			29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY Disable */
+		];
+
+		samsung,lpm_on_pre_tx_cmds_revD = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 03 B0 29 F4
+			29 00 00 00 00 00 09 F4 18 18 18 18 18 18 18 A8	/* Vbais & Vaint */
+			29 00 00 00 00 00 03 F0 A5 A5
+		];
+
+		/* rev.E (82 04 53), 5th panel */
+		samsung,lpm_on_tx_cmds_revE = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 02 B9 08	/* disable HW TE modulation */
+			29 00 00 00 00 00 02 BB 09	/* 2. HLPM/ALPM Control: 0x09: HLPM, 0x0B: ALPM */
+			29 00 00 00 00 00 03 B0 05 BB
+			29 00 00 00 00 00 03 BB 00 A0	/* 4. HLPM brightness: default 60nit */
+
+			29 00 00 00 00 00 03 B0 04 BD
+			29 00 00 00 00 00 08 BD 00 1D 00 0B 00 00 08	/* 6. LFD min freq.=1hz and frame insertion=30hz-16frame */
+			29 00 00 00 00 00 03 B0 6A B1
+			29 00 00 00 00 00 02 B1 00	/* LFD HLPM mode */
+
+			29 00 00 00 00 00 02 53 23	/* ALPM/HLPM On */
+			29 00 00 00 64 00 02 F7 0F	/* panel update, delay 100ms */
+
+			29 00 00 00 00 00 03 B0 29 F4
+			29 00 00 00 01 00 17 F4		/* Vbais & Vaint, delay 1ms (more than 10ns) */
+						18 18 18 18 18 18 18
+						28 28 28 28 28 28 28
+						00 00 00 00 00 00 00
+						10
+
+			29 00 00 00 00 00 03 F0 A5 A5
+		];
+
+		/* rev.D (82 04 52), 4th panel */
+		samsung,lpm_on_tx_cmds_revD = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 02 B9 08	/* disable HW TE modulation */
+			29 00 00 00 00 00 02 BB 09	/* 2. HLPM/ALPM Control: 0x09: HLPM, 0x0B: ALPM */
+			29 00 00 00 00 00 03 B0 05 BB
+			29 00 00 00 00 00 03 BB 00 A0	/* 4. HLPM brightness: default 60nit */
+
+			29 00 00 00 00 00 03 B0 04 BD
+			29 00 00 00 00 00 08 BD 00 1D 00 0B 00 00 08	/* 6. LFD min freq.=1hz and frame insertion=30hz-16frame */
+			29 00 00 00 00 00 03 B0 6A B1
+			29 00 00 00 00 00 02 B1 00	/* LFD HLPM mode */
+
+			29 00 00 00 00 00 03 B0 14 CB
+			29 00 00 00 00 00 02 CB C4	/* LTPS setting */
+			29 00 00 00 00 00 03 B0 26 CB
+			29 00 00 00 00 00 02 CB C4	/* LTPS setting */
+
+			29 00 00 00 00 00 02 53 23	/* ALPM/HLPM On */
+			29 00 00 00 64 00 02 F7 0F	/* panel update, delay 100ms */
+
+			29 00 00 00 00 00 03 B0 29 F4
+			29 00 00 00 01 00 17 F4		/* Vbais & Vaint, delay 1ms (more than 10ns) */
+						18 18 18 18 18 18 18
+						28 28 28 28 28 28 28
+						00 00 00 00 00 00 00
+						10
+
+			29 00 00 00 00 00 03 F0 A5 A5
+		];
+
+
+		/* rev.B (82 04 50/51 ), EVT1/3rd panel*/
+		samsung,lpm_on_tx_cmds_revB = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 02 B9 08	/* disable HW TE modulation */
+			29 00 00 00 00 00 02 BB 09	/* 2. HLPM/ALPM Control: 0x09: HLPM, 0x0B: ALPM */
+			29 00 00 00 00 00 03 B0 05 BB
+			29 00 00 00 00 00 03 BB 00 A0	/* 4. HLPM brightness: default 60nit */
+
+			29 00 00 00 00 00 03 B0 04 BD
+			29 00 00 00 00 00 08 BD 00 1D 00 0B 00 00 08	/* 6. LFD min freq.=1hz and frame insertion=30hz-16frame */
+
+			29 00 00 00 00 00 03 B0 29 F4
+			29 00 00 00 00 00 17 F4		/* Vbais & Vaint */
+						18 18 18 18 18 18 18
+						28 28 28 28 28 28 28
+						00 00 00 00 00 00 00
+						10
+
+			29 00 00 00 00 00 03 B0 6A B1
+			29 00 00 00 00 00 02 B1 00	/* LFD HLPM mode */
+			29 00 00 00 00 00 03 B0 14 CB
+			29 00 00 00 00 00 02 CB C4	/* LTPS setting */
+			29 00 00 00 00 00 03 B0 26 CB
+			29 00 00 00 00 00 02 CB C4	/* LTPS setting */
+			29 00 00 00 00 00 02 53 23	/* ALPM/HLPM On */
+
+
+#if 1			/* requested by dlab email and excel file.. to be updated in op code.. */
+			29 00 00 00 00 00 03 B0 05 F2
+			29 00 00 00 00 00 06 F2 1C 00 04 10 10	/* HS Porch */
+			29 00 00 00 00 00 03 B0 0C F2
+			29 00 00 00 00 00 06 F2 1C 00 04 10 10	/* HS/NS Porch */
+
+
+			/* LTPS: for panel otp */
+			29 00 00 00 00 00 03 B0 60 CB
+			29 00 00 00 00 00 08 CB 6E 00 00 00 40 0C 6E
+			29 00 00 00 00 00 03 B0 8B CB
+			29 00 00 00 00 00 14 CB 31 00 00 00 D8 38 31 00 00 00 F8 14 31 00 00 00 D8 14 31
+
+			/* LTPS: to prevent flicker for EVT1 */
+			29 00 00 00 00 00 03 B0 3E CB
+			29 00 00 00 00 00 07 CB 00 1F 00 02 00 0A
+			29 00 00 00 00 00 03 B0 52 CB
+			29 00 00 00 00 00 04 CB 00 00 02
+			29 00 00 00 00 00 03 B0 35 B7
+			29 00 00 00 00 00 07 B7 1B 00 02 00 06 02
+#endif
+
+			29 00 00 00 01 00 02 F7 0F	/* panel update, delay 1ms (more than 10ns) */
+			29 00 00 00 00 00 03 F0 A5 A5
+		];
+
+		/* EVT0 */
+		samsung,lpm_on_tx_cmds_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 02 B9 08	/* disable HW TE modulation */
+			29 00 00 00 00 00 02 BB 09	/* 2. HLPM/ALPM Control: 0x09: HLPM, 0x0B: ALPM */
+			29 00 00 00 00 00 03 B0 05 BB
+			29 00 00 00 00 00 03 BB 04 F0	/* 4. HLPM brightness: default 60nit */
+			29 00 00 00 00 00 03 B0 29 F4
+
+			29 01 00 00 00 00 03 00 00 00	/* 6. NULL packet */
+
+			29 00 00 00 00 00 0F F4 18 18 18 18 18 18 18 28 28 28 28 28 28 28 /* Vbais & Vaint */
+			29 00 00 00 00 00 03 B0 6A B1
+
+			29 00 00 00 00 00 02 B1 00	/* Vbais & Vaint */
+			29 00 00 00 00 00 02 53 23	/* ALPM/HLPM On */
+			29 00 00 00 01 00 02 F7 0F	/* panel update, delay 1ms (more than 10ns) */
+			29 00 00 00 00 00 03 F0 A5 A5
+		];
+
+		/* rev.E (82 04 53), 5th panel */
+		samsung,lpm_off_tx_cmds_revE = [
+			29 00 00 00 00 00 03 F0 5A 5A
+
+			29 00 00 00 00 00 03 B0 53 B5
+			29 00 00 00 00 00 02 B5 00		/* ASWIRE setting, prevent ELON1 toggle */
+
+			29 00 00 00 00 00 02 BB 01		/* 3. Seamless Control For HLPM: 0x01: HLPM, 0x03: ALPM */
+
+			29 00 00 00 00 00 03 B0 30 F4
+			29 00 00 00 32 00 08 F4 A8 A8 A8 A8 A8 A8 A8  /* Vbais & Vaint, delay 50ms */
+
+			29 00 00 00 00 00 02 53 29		/* Dimming speed: 0x21=normal, 0x29=smooth */
+			29 00 00 00 00 00 03 51 03 FF		/* 7. WRDISBV: 03 FF = 450nit */
+			29 00 00 00 28 00 02 F7 0F		/* panel update, delay 40ms */
+
+			29 00 00 00 00 00 03 B0 6A B1
+			29 00 00 00 00 00 02 B1 0A		/* LFD Normal mode */
+
+			29 00 00 00 01 00 02 F7 0F		/* Panel update, delay 1ms (more than 10ns) */
+			29 00 00 00 00 00 03 F0 A5 A5
+		];
+
+		/* rev.D (82 04 52), 4th panel */
+		samsung,lpm_off_tx_cmds_revD = [
+			29 00 00 00 00 00 03 F0 5A 5A
+
+			29 00 00 00 00 00 03 B0 53 B5
+			29 00 00 00 00 00 02 B5 00		/* ASWIRE setting, prevent ELON1 toggle */
+
+			29 00 00 00 00 00 02 BB 01		/* 3. Seamless Control For HLPM: 0x01: HLPM, 0x03: ALPM */
+
+			29 00 00 00 00 00 03 B0 30 F4
+			29 00 00 00 32 00 08 F4 A8 A8 A8 A8 A8 A8 A8  /* Vbais & Vaint, delay 50ms */
+
+			29 00 00 00 00 00 02 53 29		/* Dimming speed: 0x21=normal, 0x29=smooth */
+			29 00 00 00 00 00 03 51 03 FF		/* 7. WRDISBV: 03 FF = 450nit */
+			29 00 00 00 28 00 02 F7 0F		/* panel update, delay 40ms */
+
+			29 00 00 00 00 00 03 B0 6A B1
+			29 00 00 00 00 00 02 B1 0A		/* LFD Normal mode */
+
+			29 00 00 00 00 00 03 B0 14 CB
+			29 00 00 00 00 00 02 CB C3		/* LTPS setting */
+			29 00 00 00 00 00 03 B0 26 CB
+			29 00 00 00 00 00 02 CB C3		/* LTPS setting */
+
+			29 00 00 00 01 00 02 F7 0F		/* Panel update, delay 1ms (more than 10ns) */
+			29 00 00 00 00 00 03 F0 A5 A5
+		];
+
+		/* rev.B (82 04 50/51 ), EVT1/3rd panel*/
+		samsung,lpm_off_tx_cmds_revB = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 03 B0 53 B5
+			29 00 00 00 00 00 02 B5 00		/* ASWIRE setting, prevent ELON1 toggle */
+			29 00 00 00 00 00 02 BB 01		/* 3. Seamless Control For HLPM: 0x01: HLPM, 0x03: ALPM */
+			29 00 00 00 00 00 03 B0 6A B1
+			29 00 00 00 00 00 02 B1 0A		/* LFD Normal mode */
+			29 00 00 00 00 00 03 B0 14 CB
+			29 00 00 00 00 00 02 CB C3		/* LTPS setting */
+			29 00 00 00 00 00 03 B0 26 CB
+			29 00 00 00 00 00 02 CB C3		/* LTPS setting */
+			29 00 00 00 00 00 02 F7 0F		/* panel update */
+
+
+			29 00 00 00 00 00 02 53 29		/* WRCTRLD: Dimming speed: 0x21=normal transition, 0x29=smooth transition */
+								/* HBM: 0xE1=normal , 0xE9=smooth transition */
+			29 01 00 00 00 00 02 F7 0F		/* Panel update */
+
+
+
+#if 1			/* requested by dlab email and excel file.. to be updated in op code.. */
+			29 00 00 00 00 00 03 B0 05 F2
+			29 00 00 00 00 00 06 F2 1C 00 14 10 00	/* HS Porch */
+
+			29 00 00 00 00 00 03 B0 0C F2
+			29 00 00 00 00 00 06 F2 1C 00 14 10 00	/* 20. Porch & HW setting: HS: 1C 00 14 10 00, NS(NM): 1C 00 34 0F E0 */
+
+			/* LTPS and porch: restore setting to prevent wacom noise */
+			29 00 00 00 00 00 03 B0 60 CB
+			29 00 00 00 00 00 08 CB 6C 00 00 00 40 0C 6C
+			29 00 00 00 00 00 03 B0 8B CB
+			29 00 00 00 00 00 14 CB 30 00 00 00 D8 38 30 00 00 00 F8 14 30 00 00 00 D8 14 30
+
+			/* LTPS: restore setting */
+			29 00 00 00 00 00 03 B0 3E CB
+			29 00 00 00 00 00 07 CB 00 00 00 00 00 00
+			29 00 00 00 00 00 03 B0 52 CB
+			29 00 00 00 00 00 04 CB 00 00 00
+			29 00 00 00 00 00 03 B0 35 B7
+			29 00 00 00 00 00 07 B7 1B 00 02 00 16 02
+#endif
+			29 00 00 00 00 00 03 F0 A5 A5
+		];
+
+		/* EVT0 */
+		samsung,lpm_off_tx_cmds_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 03 B0 53 B5
+			29 00 00 00 00 00 02 B5 00	/* ASWIRE setting, prevent ELON1 toggle */
+			29 00 00 00 00 00 02 BB 01	/* 3. Seamless Control For HLPM: 0x01: HLPM, 0x03: ALPM */
+			29 00 00 00 00 00 03 B0 6A B1
+			29 00 00 00 00 00 02 B1 0A	/* Vbais & Vaint */
+			/* Vbais & Vaint setting and panel update: will be updated in __ss_vrr() */
+			29 00 00 00 00 00 03 F0 A5 A5
+		];
+
+		/* ALPM/HLPM 60/30/10/2nit control */
+		samsung,lpm_60nit_tx_cmds_revA = [29 00 00 00 00 00 03 BB 04 F0];
+		samsung,lpm_30nit_tx_cmds_revA = [29 00 00 00 00 00 03 BB 08 90];
+		samsung,lpm_10nit_tx_cmds_revA = [29 00 00 00 00 00 03 BB 0B 02];
+		samsung,lpm_2nit_tx_cmds_revA = [29 00 00 00 00 00 03 BB 0B F0];
+
+		samsung,lpm_60nit_tx_cmds_revB = [29 00 00 00 00 00 03 BB 00 A0];
+		samsung,lpm_30nit_tx_cmds_revB = [29 00 00 00 00 00 03 BB 06 20];
+		samsung,lpm_10nit_tx_cmds_revB = [29 00 00 00 00 00 03 BB 0A 40];
+		samsung,lpm_2nit_tx_cmds_revB = [29 00 00 00 00 00 03 BB 0B CA];
+
+		/* HLPM / ALPM brightness Commands: default alpm 2nit */
+		samsung,lpm_brightnes_tx_cmds_revA		= [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 03 B0 05 BB
+			29 00 00 00 00 00 03 BB 04 F0	/* 2. 60nit */
+
+			29 00 00 00 00 00 03 B0 04 BD
+			29 00 00 00 00 00 08 BD 00 1D 00 0B 00 00 08	/* 4. LFD min freq.=1hz and frame insertion=30hz-16frame */
+			29 00 00 00 00 00 02 F7 0F	/* panel update */
+			29 00 00 00 00 00 03 F0 A5 A5
+		];
+
+		/* ALPM/HLPM Off Commands */
+		samsung,lpm_ctrl_hlpm_off_tx_cmds_revA		= [29 00 00 00 00 00 02 BB 01];
+		samsung,lpm_ctrl_alpm_off_tx_cmds_revA		= [29 00 00 00 00 00 02 BB 03];
+
+		samsung,lpm-init-delay-ms = <124>;
+
+		/* *************************************************************
+		 * VINT
+		 * *************************************************************
+		 */
+		samsung,vint_tx_cmds_revA = [
+			29 00 00 00 00 00 03 B0 19 F4
+			29 00 00 00 00 00 02 F4 11	/* VGH setting: 0x08: x-talk on, 0x11: x-talk off */
+		];
+
+		/* DIA */
+		samsung,dia_on_tx_cmds_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 03 B0 3C 91
+			29 00 00 00 00 00 02 91 02
+			29 00 00 00 00 00 03 F0 A5 5A
+		];
+
+		samsung,dia_off_tx_cmds_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 03 B0 3C 91
+			29 00 00 00 00 00 02 91 01
+			29 00 00 00 00 00 03 F0 A5 5A
+		];
+
+		/* *************************************************************
+		 *  HBM
+		 * **************************************************************
+		 */
+		samsung,enter_hbm_ce_lux = <40000>;
+
+		/* *************************************************************
+		 * PANEL SPECIFIC NORMAL BRIGHTNESS SETTING
+		 * **************************************************************
+		 */
+
+
+		/* *************************************************************
+		 *  Dynamic HLPM Test for Factory
+		 * **************************************************************
+		 */
+
+		samsung,dynamic_hlpm_enable_tx_cmds_revA = [
+			/* For Fatory Test */
+			29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY Enable */
+			29 00 00 00 00 00 11 85 		/* Dynamic HLPM Enable */
+							03 0B 01 01 00
+							00 00 00 02 26
+							02 B2 07 BC 09
+							EB
+			29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY Disable */
+		];
+
+		samsung,dynamic_hlpm_disable_tx_cmds_revA = [
+			/* For Fatory Test */
+			29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY Enable */
+			29 00 00 00 00 00 02 85 00 		/* Dynamic HLPM Disable */
+			29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY Disable */
+		];
+
+		/* *************************************************************
+		 * ACL command list and mappings
+		 * **************************************************************
+		 */
+		samsung,acl_on_tx_cmds_revA = [
+			29 00 00 00 00 00 02 55 02	/* ACL ON: 0x01=8%, 0x02=15% */
+		];
+
+		samsung,acl_off_tx_cmds_revA = [
+			29 00 00 00 00 00 02 55 00	/* ACL OFF */
+		];
+
+		/* *************************************************************
+		 * SPI interface select
+		 * **************************************************************
+		 */
+		samsung,spi_if_sel_on_tx_cmds_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A		/* TEST KEY1 Enable*/
+			29 00 00 00 00 00 03 B0 28 D8		/* Gpara */
+			29 00 00 00 00 00 02 D8 C0			/* IF_SEL = 3 */
+			29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY1 Disable*/
+		];
+
+		samsung,spi_if_sel_off_tx_cmds_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A		/* TEST KEY1 Enable*/
+			29 00 00 00 00 00 03 B0 28 D8		/* Gpara */
+			29 00 00 00 00 00 02 D8 00			/* IF_SEL = 0, Default value */
+			29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY1 Disable*/
+		];
+
+		/* *************************************************************
+		 * candela to index mappings
+		 * **************************************************************
+		 */
+		samsung,candela_map_table_revD = < /* THIS TABLE USED FOR DIMMING */
+		/*   <idx>   <from>  <till>  <gm2_wrdisbv> <cd> */
+			0	0	0	5	2
+			1	1	1	5	2
+			2	2	2	9	3
+			3	3	3	9	3
+			4	4	4	10	5
+			5	5	5	10	5
+			6	6	6	14	6
+			7	7	7	14	6
+			8	8	8	19	8
+			9	9	9	19	8
+			10	10	10	20	9
+			11	11	11	20	9
+			12	12	12	23	11
+			13	13	13	23	11
+			14	14	14	26	12
+			15	15	15	27	13
+			16	16	16	29	14
+			17	17	17	31	15
+			18	18	18	33	16
+			19	19	19	36	17
+			20	20	20	38	18
+			21	21	21	40	19
+			22	22	22	42	20
+			23	23	23	44	21
+			24	24	24	46	22
+			25	25	25	49	23
+			26	26	26	51	24
+			27	27	27	53	25
+			28	28	28	56	26
+			29	29	29	58	27
+			30	30	30	60	28
+			31	31	31	63	29
+			32	32	32	65	31
+			33	33	33	68	32
+			34	34	34	70	33
+			35	35	35	73	34
+			36	36	36	75	35
+			37	37	37	78	37
+			38	38	38	80	38
+			39	39	39	83	39
+			40	40	40	85	40
+			41	41	41	88	42
+			42	42	42	91	43
+			43	43	43	93	44
+			44	44	44	96	45
+			45	45	45	99	47
+			46	46	46	101	48
+			47	47	47	104	49
+			48	48	48	107	51
+			49	49	49	110	52
+			50	50	50	112	53
+			51	51	51	115	55
+			52	52	52	118	56
+			53	53	53	121	57
+			54	54	54	124	59
+			55	55	55	127	60
+			56	56	56	130	61
+			57	57	57	132	63
+			58	58	58	135	64
+			59	59	59	138	65
+			60	60	60	141	67
+			61	61	61	144	68
+			62	62	62	147	70
+			63	63	63	150	71
+			64	64	64	153	73
+			65	65	65	156	74
+			66	66	66	159	75
+			67	67	67	162	77
+			68	68	68	165	78
+			69	69	69	168	80
+			70	70	70	171	81
+			71	71	71	174	83
+			72	72	72	178	84
+			73	73	73	181	86
+			74	74	74	184	87
+			75	75	75	187	89
+			76	76	76	190	90
+			77	77	77	193	92
+			78	78	78	197	93
+			79	79	79	200	95
+			80	80	80	203	96
+			81	81	81	206	98
+			82	82	82	209	99
+			83	83	83	213	101
+			84	84	84	216	102
+			85	85	85	219	104
+			86	86	86	222	106
+			87	87	87	226	107
+			88	88	88	229	109
+			89	89	89	232	110
+			90	90	90	236	112
+			91	91	91	239	113
+			92	92	92	242	115
+			93	93	93	246	117
+			94	94	94	249	118
+			95	95	95	252	120
+			96	96	96	256	122
+			97	97	97	259	123
+			98	98	98	263	125
+			99	99	99	266	126
+			100	100	100	270	128
+			101	101	101	273	130
+			102	102	102	276	131
+			103	103	103	280	133
+			104	104	104	283	135
+			105	105	105	287	136
+			106	106	106	290	138
+			107	107	107	294	140
+			108	108	108	297	141
+			109	109	109	301	143
+			110	110	110	304	145
+			111	111	111	308	146
+			112	112	112	312	148
+			113	113	113	315	150
+			114	114	114	319	151
+			115	115	115	322	153
+			116	116	116	326	155
+			117	117	117	329	157
+			118	118	118	333	158
+			119	119	119	337	160
+			120	120	120	340	162
+			121	121	121	344	163
+			122	122	122	348	165
+			123	123	123	351	167
+			124	124	124	355	169
+			125	125	125	359	170
+			126	126	126	362	172
+			127	127	127	366	174
+			128	128	128	370	176
+			129	129	129	373	177
+			130	130	130	377	179
+			131	131	131	381	181
+			132	132	132	385	183
+			133	133	133	388	185
+			134	134	134	392	186
+			135	135	135	396	188
+			136	136	136	400	190
+			137	137	137	403	192
+			138	138	138	407	194
+			139	139	139	411	195
+			140	140	140	415	197
+			141	141	141	419	199
+			142	142	142	422	201
+			143	143	143	426	203
+			144	144	144	430	204
+			145	145	145	434	206
+			146	146	146	438	208
+			147	147	147	442	210
+			148	148	148	445	212
+			149	149	149	449	214
+			150	150	150	453	215
+			151	151	151	457	217
+			152	152	152	461	219
+			153	153	153	465	221
+			154	154	154	469	223
+			155	155	155	473	225
+			156	156	156	477	227
+			157	157	157	481	229
+			158	158	158	484	230
+			159	159	159	488	232
+			160	160	160	492	234
+			161	161	161	492	236
+			162	162	162	496	238
+			163	163	163	499	240
+			164	164	164	503	242
+			165	165	165	507	244
+			166	166	166	511	246
+			167	167	167	515	247
+			168	168	168	519	249
+			169	169	169	522	251
+			170	170	170	526	253
+			171	171	171	530	255
+			172	172	172	534	257
+			173	173	173	538	259
+			174	174	174	542	261
+			175	175	175	546	263
+			176	176	176	550	265
+			177	177	177	553	267
+			178	178	178	557	269
+			179	179	179	561	271
+			180	180	180	565	273
+			181	181	181	569	275
+			182	182	182	573	276
+			183	183	183	577	278
+			184	184	184	581	280
+			185	185	185	585	282
+			186	186	186	589	284
+			187	187	187	593	286
+			188	188	188	597	288
+			189	189	189	601	290
+			190	190	190	605	292
+			191	191	191	609	294
+			192	192	192	613	296
+			193	193	193	617	298
+			194	194	194	621	300
+			195	195	195	625	302
+			196	196	196	629	304
+			197	197	197	633	306
+			198	198	198	637	308
+			199	199	199	641	310
+			200	200	200	645	312
+			201	201	201	649	314
+			202	202	202	653	316
+			203	203	203	657	318
+			204	204	204	661	320
+			205	205	205	666	322
+			206	206	206	670	324
+			207	207	207	674	326
+			208	208	208	678	329
+			209	209	209	682	331
+			210	210	210	686	333
+			211	211	211	690	335
+			212	212	212	694	337
+			213	213	213	698	339
+			214	214	214	703	341
+			215	215	215	707	343
+			216	216	216	711	345
+			217	217	217	713	346
+			218	218	218	721	350
+			219	219	219	729	354
+			220	220	220	737	358
+			221	221	221	746	362
+			222	222	222	754	366
+			223	223	223	762	370
+			224	224	224	770	374
+			225	225	225	778	378
+			226	226	226	786	382
+			227	227	227	795	387
+			228	228	228	803	391
+			229	229	229	811	395
+			230	230	230	819	399
+			231	231	231	827	403
+			232	232	232	835	407
+			233	233	233	843	411
+			234	234	234	852	415
+			235	235	235	860	419
+			236	236	236	868	423
+			237	237	237	876	427
+			238	238	238	884	431
+			239	239	239	892	435
+			240	240	240	901	439
+			241	241	241	909	443
+			242	242	242	917	447
+			243	243	243	925	451
+			244	244	244	933	455
+			245	245	245	941	459
+			246	246	246	950	464
+			247	247	247	958	468
+			248	248	248	966	472
+			249	249	249	974	476
+			250	250	250	982	480
+			251	251	251	990	484
+			252	252	252	998	488
+			253	253	253	1007	492
+			254	254	254	1015	496
+			255	255	255	1023	500
+		>;
+
+		samsung,hbm_candela_map_table_revD = < /* THIS TABLE USED FOR DIMMING */
+		/*   <idx>   <from>  <till>  <gm2_wrdisbv> <cd>  <auto>	*/
+			0	256	256	0	505	0
+			1	257	257	4	507	0
+			2	258	258	8	509	0
+			3	259	259	12	511	0
+			4	260	260	16	513	0
+			5	261	261	20	515	0
+			6	262	262	24	517	0
+			7	263	263	28	519	0
+			8	264	264	32	521	0
+			9	265	265	36	523	0
+			10	266	266	40	525	0
+			11	267	267	44	527	0
+			12	268	268	48	529	0
+			13	269	269	52	531	0
+			14	270	270	56	533	0
+			15	271	271	60	535	0
+			16	272	272	64	536	0
+			17	273	273	68	538	0
+			18	274	274	72	540	0
+			19	275	275	77	543	0
+			20	276	276	81	545	0
+			21	277	277	85	547	0
+			22	278	278	89	549	0
+			23	279	279	93	551	0
+			24	280	280	97	552	0
+			25	281	281	101	554	0
+			26	282	282	105	556	0
+			27	283	283	109	558	0
+			28	284	284	113	560	0
+			29	285	285	117	562	0
+			30	286	286	121	564	0
+			31	287	287	125	566	0
+			32	288	288	129	568	0
+			33	289	289	133	570	0
+			34	290	290	137	572	0
+			35	291	291	141	574	0
+			36	292	292	145	576	0
+			37	293	293	149	578	0
+			38	294	294	153	580	0
+			39	295	295	157	582	0
+			40	296	296	161	584	0
+			41	297	297	165	585	0
+			42	298	298	169	587	0
+			43	299	299	173	589	0
+			44	300	300	177	591	0
+			45	301	301	181	593	0
+			46	302	302	185	595	0
+			47	303	303	189	597	0
+			48	304	304	193	599	0
+			49	305	305	197	601	0
+			50	306	306	201	603	0
+			51	307	307	205	605	0
+			52	308	308	209	607	0
+			53	309	309	213	609	0
+			54	310	310	217	611	0
+			55	311	311	222	613	0
+			56	312	312	226	615	0
+			57	313	313	230	617	0
+			58	314	314	234	619	0
+			59	315	315	238	621	0
+			60	316	316	242	623	0
+			61	317	317	246	625	0
+			62	318	318	250	627	0
+			63	319	319	254	629	0
+			64	320	320	258	631	0
+			65	321	321	262	632	0
+			66	322	322	266	634	0
+			67	323	323	270	636	0
+			68	324	324	274	638	0
+			69	325	325	278	640	0
+			70	326	326	282	642	0
+			71	327	327	286	644	0
+			72	328	328	290	646	0
+			73	329	329	294	648	0
+			74	330	330	298	650	0
+			75	331	331	302	652	0
+			76	332	332	306	654	0
+			77	333	333	310	656	0
+			78	334	334	314	658	0
+			79	335	335	318	660	0
+			80	336	336	322	662	0
+			81	337	337	326	664	0
+			82	338	338	330	665	0
+			83	339	339	334	667	0
+			84	340	340	338	669	0
+			85	341	341	342	671	0
+			86	342	342	346	673	0
+			87	343	343	350	675	0
+			88	344	344	354	677	0
+			89	345	345	358	679	0
+			90	346	346	362	681	0
+			91	347	347	367	683	0
+			92	348	348	371	685	0
+			93	349	349	375	687	0
+			94	350	350	379	689	0
+			95	351	351	383	691	0
+			96	352	352	387	693	0
+			97	353	353	391	695	0
+			98	354	354	395	697	0
+			99	355	355	399	699	0
+			100	356	356	403	701	0
+			101	357	357	407	703	0
+			102	358	358	411	705	0
+			103	359	359	415	707	0
+			104	360	360	419	709	0
+			105	361	361	423	711	0
+			106	362	362	427	712	0
+			107	363	363	431	714	0
+			108	364	364	435	716	0
+			109	365	365	439	718	0
+			110	366	366	443	720	0
+			111	367	367	447	722	0
+			112	368	368	451	724	0
+			113	369	369	455	726	0
+			114	370	370	459	728	0
+			115	371	371	463	730	0
+			116	372	372	467	732	0
+			117	373	373	471	734	0
+			118	374	374	475	736	0
+			119	375	375	479	738	0
+			120	376	376	483	740	0
+			121	377	377	487	742	0
+			122	378	378	491	743	0
+			123	379	379	495	745	0
+			124	380	380	499	747	0
+			125	381	381	503	749	0
+			126	382	382	507	751	0
+			127	383	383	511	753	0
+			128	384	384	516	756	0
+			129	385	385	520	758	0
+			130	386	386	524	759	0
+			131	387	387	528	761	0
+			132	388	388	532	763	0
+			133	389	389	536	765	0
+			134	390	390	540	767	0
+			135	391	391	544	769	0
+			136	392	392	548	771	0
+			137	393	393	552	773	0
+			138	394	394	556	775	0
+			139	395	395	560	777	0
+			140	396	396	564	779	0
+			141	397	397	568	781	0
+			142	398	398	572	783	0
+			143	399	399	576	785	0
+			144	400	400	580	787	0
+			145	401	401	584	789	0
+			146	402	402	588	791	0
+			147	403	403	592	792	0
+			148	404	404	596	794	0
+			149	405	405	600	796	0
+			150	406	406	604	798	0
+			151	407	407	608	800	0
+			152	408	408	612	802	0
+			153	409	409	616	804	0
+			154	410	410	620	806	0
+			155	411	411	624	808	0
+			156	412	412	628	810	0
+			157	413	413	632	812	0
+			158	414	414	636	814	0
+			159	415	415	640	816	0
+			160	416	416	644	818	0
+			161	417	417	648	820	0
+			162	418	418	652	822	0
+			163	419	419	656	823	0
+			164	420	420	661	826	0
+			165	421	421	665	828	0
+			166	422	422	669	830	0
+			167	423	423	673	832	0
+			168	424	424	677	834	0
+			169	425	425	681	836	0
+			170	426	426	685	838	0
+			171	427	427	689	839	0
+			172	428	428	693	841	0
+			173	429	429	697	843	0
+			174	430	430	701	845	0
+			175	431	431	705	847	0
+			176	432	432	709	849	0
+			177	433	433	713	851	0
+			178	434	434	717	853	0
+			179	435	435	721	855	0
+			180	436	436	725	857	0
+			181	437	437	729	859	0
+			182	438	438	733	861	0
+			183	439	439	737	863	0
+			184	440	440	741	865	0
+			185	441	441	745	867	0
+			186	442	442	749	869	0
+			187	443	443	753	871	0
+			188	444	444	757	872	0
+			189	445	445	761	874	0
+			190	446	446	765	876	0
+			191	447	447	769	878	0
+			192	448	448	773	880	0
+			193	449	449	777	882	0
+			194	450	450	781	884	0
+			195	451	451	785	886	0
+			196	452	452	789	888	0
+			197	453	453	793	890	0
+			198	454	454	797	892	0
+			199	455	455	801	894	0
+			200	456	456	806	896	0
+			201	457	457	810	898	0
+			202	458	458	814	900	0
+			203	459	459	818	902	0
+			204	460	460	822	904	0
+			205	461	461	826	906	0
+			206	462	462	830	908	0
+			207	463	463	834	910	0
+			208	464	464	838	912	0
+			209	465	465	842	914	0
+			210	466	466	846	916	0
+			211	467	467	850	918	0
+			212	468	468	854	919	0
+			213	469	469	858	921	0
+			214	470	470	862	923	0
+			215	471	471	866	925	0
+			216	472	472	870	927	0
+			217	473	473	874	929	0
+			218	474	474	878	931	0
+			219	475	475	882	933	0
+			220	476	476	886	935	0
+			221	477	477	890	937	0
+			222	478	478	894	939	0
+			223	479	479	898	941	0
+			224	480	480	902	943	0
+			225	481	481	906	945	0
+			226	482	482	910	947	0
+			227	483	483	914	949	0
+			228	484	484	918	951	0
+			229	485	485	922	952	0
+			230	486	486	926	954	0
+			231	487	487	930	956	0
+			232	488	488	934	958	0
+			233	489	489	938	960	0
+			234	490	490	942	962	0
+			235	491	491	946	964	0
+			236	492	492	951	967	0
+			237	493	493	955	968	0
+			238	494	494	959	970	0
+			239	495	495	963	972	0
+			240	496	496	967	974	0
+			241	497	497	971	976	0
+			242	498	498	975	978	0
+			243	499	499	979	980	0
+			244	500	500	983	982	0
+			245	501	501	987	984	0
+			246	502	502	991	986	0
+			247	503	503	995	988	0
+			248	504	504	999	990	0
+			249	505	505	1003	992	0
+			250	506	506	1007	994	0
+			251	507	507	1011	996	0
+			252	508	508	1015	998	0
+			253	509	509	1019	999	0
+			254	510	510	1023	1001	0
+		>;
+
+		samsung,candela_map_table_revA = < /* THIS TABLE USED FOR DIMMING */
+		/*   <idx>   <from>  <till>  <gm2_wrdisbv> <cd> */
+			0	0	0	5	2
+			1	1	1	8	3
+			2	2	2	11	5
+			3	3	3	14	6
+			4	4	4	17	7
+			5	5	5	20	9
+			6	6	6	23	10
+			7	7	7	26	11
+			8	8	8	29	12
+			9	9	9	32	14
+			10	10	10	35	15
+			11	11	11	38	16
+			12	12	12	41	18
+			13	13	13	44	19
+			14	14	14	47	20
+			15	15	15	50	22
+			16	16	16	53	23
+			17	17	17	56	24
+			18	18	18	59	25
+			19	19	19	62	27
+			20	20	20	65	28
+			21	21	21	68	29
+			22	22	22	71	31
+			23	23	23	74	32
+			24	24	24	77	33
+			25	25	25	80	35
+			26	26	26	83	36
+			27	27	27	86	37
+			28	28	28	89	39
+			29	29	29	92	40
+			30	30	30	95	41
+			31	31	31	98	42
+			32	32	32	101	44
+			33	33	33	104	45
+			34	34	34	107	46
+			35	35	35	110	48
+			36	36	36	113	49
+			37	37	37	116	50
+			38	38	38	119	52
+			39	39	39	122	53
+			40	40	40	125	54
+			41	41	41	128	56
+			42	42	42	131	57
+			43	43	43	134	58
+			44	44	44	137	59
+			45	45	45	140	61
+			46	46	46	143	62
+			47	47	47	146	63
+			48	48	48	149	65
+			49	49	49	152	66
+			50	50	50	155	67
+			51	51	51	158	69
+			52	52	52	161	70
+			53	53	53	164	71
+			54	54	54	167	72
+			55	55	55	170	74
+			56	56	56	173	75
+			57	57	57	176	76
+			58	58	58	179	78
+			59	59	59	182	79
+			60	60	60	185	80
+			61	61	61	188	82
+			62	62	62	191	83
+			63	63	63	194	84
+			64	64	64	197	86
+			65	65	65	201	87
+			66	66	66	204	89
+			67	67	67	208	90
+			68	68	68	211	92
+			69	69	69	215	93
+			70	70	70	218	95
+			71	71	71	222	96
+			72	72	72	225	98
+			73	73	73	229	99
+			74	74	74	232	101
+			75	75	75	236	103
+			76	76	76	239	104
+			77	77	77	243	106
+			78	78	78	246	107
+			79	79	79	250	109
+			80	80	80	253	110
+			81	81	81	257	112
+			82	82	82	260	113
+			83	83	83	264	115
+			84	84	84	267	116
+			85	85	85	271	118
+			86	86	86	274	119
+			87	87	87	278	121
+			88	88	88	281	122
+			89	89	89	285	124
+			90	90	90	288	125
+			91	91	91	292	127
+			92	92	92	295	128
+			93	93	93	299	130
+			94	94	94	302	131
+			95	95	95	306	133
+			96	96	96	309	134
+			97	97	97	313	136
+			98	98	98	316	137
+			99	99	99	320	139
+			100	100	100	323	140
+			101	101	101	327	142
+			102	102	102	330	143
+			103	103	103	334	145
+			104	104	104	337	146
+			105	105	105	341	148
+			106	106	106	344	149
+			107	107	107	348	151
+			108	108	108	351	153
+			109	109	109	355	154
+			110	110	110	358	156
+			111	111	111	362	157
+			112	112	112	365	159
+			113	113	113	369	160
+			114	114	114	372	162
+			115	115	115	376	163
+			116	116	116	379	165
+			117	117	117	383	166
+			118	118	118	386	168
+			119	119	119	390	170
+			120	120	120	393	171
+			121	121	121	397	173
+			122	122	122	400	174
+			123	123	123	404	176
+			124	124	124	407	177
+			125	125	125	411	179
+			126	126	126	414	180
+			127	127	127	418	182
+			128	128	128	421	183
+			129	129	129	426	185
+			130	130	130	431	187
+			131	131	131	436	190
+			132	132	132	441	192
+			133	133	133	446	194
+			134	134	134	451	196
+			135	135	135	456	199
+			136	136	136	461	201
+			137	137	137	466	203
+			138	138	138	471	205
+			139	139	139	476	207
+			140	140	140	481	210
+			141	141	141	486	212
+			142	142	142	491	214
+			143	143	143	496	216
+			144	144	144	501	218
+			145	145	145	506	221
+			146	146	146	511	223
+			147	147	147	516	225
+			148	148	148	521	227
+			149	149	149	526	230
+			150	150	150	531	232
+			151	151	151	536	234
+			152	152	152	541	236
+			153	153	153	546	238
+			154	154	154	551	241
+			155	155	155	556	243
+			156	156	156	561	245
+			157	157	157	566	247
+			158	158	158	571	250
+			159	159	159	576	252
+			160	160	160	581	254
+			161	161	161	586	256
+			162	162	162	591	258
+			163	163	163	596	261
+			164	164	164	601	263
+			165	165	165	606	265
+			166	166	166	611	267
+			167	167	167	616	269
+			168	168	168	621	272
+			169	169	169	626	274
+			170	170	170	631	276
+			171	171	171	636	278
+			172	172	172	641	281
+			173	173	173	646	283
+			174	174	174	651	285
+			175	175	175	656	287
+			176	176	176	661	289
+			177	177	177	666	292
+			178	178	178	671	294
+			179	179	179	676	296
+			180	180	180	681	298
+			181	181	181	686	301
+			182	182	182	691	303
+			183	183	183	696	305
+			184	184	184	701	307
+			185	185	185	706	309
+			186	186	186	711	312
+			187	187	187	716	314
+			188	188	188	721	316
+			189	189	189	726	318
+			190	190	190	730	320
+			191	191	191	735	322
+			192	192	192	739	324
+			193	193	193	744	326
+			194	194	194	748	328
+			195	195	195	753	330
+			196	196	196	757	332
+			197	197	197	762	334
+			198	198	198	766	336
+			199	199	199	771	338
+			200	200	200	775	340
+			201	201	201	780	342
+			202	202	202	784	344
+			203	203	203	789	346
+			204	204	204	793	348
+			205	205	205	798	350
+			206	206	206	802	352
+			207	207	207	807	354
+			208	208	208	811	356
+			209	209	209	816	358
+			210	210	210	820	360
+			211	211	211	825	362
+			212	212	212	829	364
+			213	213	213	834	366
+			214	214	214	838	368
+			215	215	215	843	370
+			216	216	216	847	372
+			217	217	217	852	374
+			218	218	218	856	376
+			219	219	219	861	378
+			220	220	220	865	380
+			221	221	221	870	382
+			222	222	222	874	384
+			223	223	223	879	386
+			224	224	224	883	388
+			225	225	225	888	390
+			226	226	226	892	392
+			227	227	227	897	394
+			228	228	228	901	396
+			229	229	229	906	398
+			230	230	230	910	400
+			231	231	231	915	402
+			232	232	232	919	404
+			233	233	233	924	406
+			234	234	234	928	408
+			235	235	235	933	410
+			236	236	236	937	412
+			237	237	237	942	414
+			238	238	238	946	416
+			239	239	239	951	418
+			240	240	240	955	420
+			241	241	241	960	422
+			242	242	242	964	424
+			243	243	243	969	426
+			244	244	244	973	428
+			245	245	245	978	430
+			246	246	246	982	432
+			247	247	247	987	434
+			248	248	248	991	436
+			249	249	249	996	438
+			250	250	250	1000	440
+			251	251	251	1005	442
+			252	252	252	1009	444
+			253	253	253	1014	446
+			254	254	254	1018	448
+			255	255	255	1023	450
+		>;
+		samsung,hbm_candela_map_table_revA = < /* THIS TABLE USED FOR DIMMING */
+		/*   <idx>   <from>  <till>  <gm2_wrdisbv> <cd>  <auto>	*/
+			0	256	258	12	800	0
+			1	258	261	24	800	0
+			2	261	263	36	800	0
+			3	263	266	48	800	0
+			4	266	269	60	800	0
+			5	269	272	72	800	0
+			6	272	275	84	800	0
+			7	275	277	96	800	0
+			8	277	280	108	800	0
+			9	280	283	120	800	0
+			10	283	286	132	800	0
+			11	286	289	144	800	0
+			12	289	291	156	800	0
+			13	291	294	168	800	0
+			14	294	297	180	800	0
+			15	297	300	192	800	0
+			16	300	303	204	800	0
+			17	303	305	216	800	0
+			18	305	308	228	800	0
+			19	308	311	240	800	0
+			20	311	314	252	800	0
+			21	314	317	264	800	0
+			22	317	319	276	800	0
+			23	319	322	288	800	0
+			24	322	325	300	800	0
+			25	325	328	312	800	0
+			26	328	331	324	800	0
+			27	331	333	336	800	0
+			28	333	336	348	800	0
+			29	336	339	360	800	0
+			30	339	342	372	800	0
+			31	342	345	384	800	0
+			32	345	347	396	800	0
+			33	347	350	408	800	0
+			34	350	353	420	800	0
+			35	353	356	432	800	0
+			36	356	359	444	800	0
+			37	359	361	456	800	0
+			38	361	364	468	800	0
+			39	364	367	480	800	0
+			40	367	370	492	800	0
+			41	370	373	504	800	0
+			42	373	375	516	800	0
+			43	375	378	528	800	0
+			44	378	381	540	800	0
+			45	381	384	552	800	0
+			46	384	387	564	800	0
+			47	387	389	576	800	0
+			48	389	392	588	800	0
+			49	392	395	600	800	0
+			50	395	398	612	800	0
+			51	398	400	624	800	0
+			52	400	403	636	800	0
+			53	403	405	648	800	0
+			54	405	408	660	800	0
+			55	408	411	672	800	0
+			56	411	413	684	800	0
+			57	413	416	696	800	0
+			58	416	418	708	800	0
+			59	418	421	720	800	0
+			60	421	424	732	800	0
+			61	424	426	744	800	0
+			62	426	429	756	800	0
+			63	429	431	768	800	0
+			64	431	434	780	800	0
+			65	434	437	792	800	0
+			66	437	439	804	800	0
+			67	439	442	816	800	0
+			68	442	444	828	800	0
+			69	444	447	840	800	0
+			70	447	450	852	800	0
+			71	450	452	864	800	0
+			72	452	455	876	800	0
+			73	455	457	888	800	0
+			74	457	460	901	800	0
+			75	460	463	913	800	0
+			76	463	465	925	800	0
+			77	465	468	937	800	0
+			78	468	470	949	800	0
+			79	470	473	962	800	0
+			80	473	476	974	800	0
+			81	476	478	986	800	0
+			82	478	481	998	800	0
+			83	481	483	1010	800	0
+			84	483	486	1023	800	0
+		>;
+		samsung,aod_candela_map_table_revA = <
+		/*   <idx>   <from>  <till>  <gm2_wrdisbv> <cd> */
+			0	0	12	0	2
+			1	13	31	0	10
+			2	32	54	0	30
+			3	55	255	0	60
+		>;
+
+		samsung,gamma_mode2_normal_tx_cmds_revA=[
+			29 00 00 00 00 00 02 53 29		/* WRCTRLD: Dimming speed: 0x21=normal transition, 0x29=smooth transition */
+			29 00 00 00 00 00 04 B5 19 CD 16	/* 1. ELVSS control: TSET=0x19 for 25 degree */
+			29 00 00 00 00 00 03 51 03 FF		/* 2. WRDISBV: 03 FF = 450nit */
+
+			29 00 00 00 00 00 03 B0 0B 92
+			29 00 00 00 00 00 02 92 65		/* 4. 0x65: Moderato, 0x25: flat gamma */
+
+			29 00 00 00 00 00 03 B0 10 92
+			29 00 00 00 00 00 02 92 05		/* temp setting to be removed */
+
+			29 00 00 00 00 00 02 F7 0F		/* Panel update */
+		];
+
+		/* rev.E (82 04 53), 5th panel */
+		samsung,gamma_mode2_hbm_tx_cmds_revE=[
+			29 00 00 00 00 00 02 53 E1		/* WRCTRLD: Dimming speed: 0xE1=normal transition, 0xE9=smooth transition */
+			29 00 00 00 00 00 04 B5 19 CD 16	/* 1. ELVSS control: TSET=0x19 for 25 degree */
+			29 00 00 00 00 00 03 51 03 FF		/* 2. WRDISBV: 03 FF = 450nit */
+
+			29 00 00 00 00 00 03 B0 0B 92
+			29 00 00 00 00 00 02 92	65		/* 4. 0x65: Moderato, 0x25: flat gamma */
+
+			29 00 00 00 00 00 03 B0 10 92
+			29 00 00 00 00 00 02 92 05		/* temp setting to be removed */
+
+			29 00 00 00 00 00 02 F7 0F		/* Panel update */
+		];
+
+		/* rev.D (82 04 52), 4th panel */
+		samsung,gamma_mode2_hbm_tx_cmds_revD=[
+			29 00 00 00 00 00 02 53 E1		/* WRCTRLD: Dimming speed: 0xE1=normal transition, 0xE9=smooth transition */
+			29 00 00 00 00 00 04 B5 19 CD 16	/* 1. ELVSS control: TSET=0x19 for 25 degree */
+			29 00 00 00 00 00 03 51 03 FF		/* 2. WRDISBV: 03 FF = 450nit */
+
+			29 00 00 00 00 00 03 B0 0B 92
+			29 00 00 00 00 00 02 92	65		/* 4. 0x65: Moderato, 0x25: flat gamma */
+
+			29 00 00 00 00 00 03 B0 10 92
+			29 00 00 00 00 00 02 92 05		/* temp setting to be removed */
+
+#if 1
+			// temp code, added for only temporary 4th panel which SDC didn't write OTP...
+			// this code will be removed soon... requested by dlab...
+			// this is for HBM & interpolation dimming setting
+			29 00 00 00 00 00 03 B0 CA B4
+			29 00 00 00 00 00 02 B4 03
+#endif
+
+			29 00 00 00 00 00 02 F7 0F		/* Panel update */
+		];
+
+
+		samsung,gamma_mode2_hbm_tx_cmds_revA=[
+			29 00 00 00 00 00 02 53 E1		/* WRCTRLD: Dimming speed: 0xE1=normal transition, 0xE9=smooth transition */
+			29 00 00 00 00 00 04 B5 19 CD 16	/* 1. ELVSS control: TSET=0x19 for 25 degree */
+			29 00 00 00 00 00 03 51 03 FF		/* 2. WRDISBV: 03 FF = 450nit */
+
+			29 00 00 00 00 00 03 B0 0B 92
+			29 00 00 00 00 00 02 92	65		/* 4. 0x65: Moderato, 0x25: flat gamma */
+
+			29 00 00 00 00 00 03 B0 10 92
+			29 00 00 00 00 00 02 92 05		/* temp setting to be removed */
+
+			29 00 00 00 00 00 02 F7 0F		/* Panel update */
+		]; /* B5 1th para: TSET */
+
+		/* *************************************************************
+		 *  HMT
+		 * **************************************************************
+		 */
+		samsung,hmt_enabled;
+		samsung,hmt_aid_tx_cmds_revA = [
+			29 00 00 00 00 00 03 B1 08 D6
+		];
+
+		samsung,hmt_candela_map_table_revA = <
+		/*   <idx>   <from>  <till>  <gm2_wrdisbv> <cd> */
+			0	0	0	268	20
+			1	1	1	271	20
+			2	2	2	274	21
+			3	3	3	277	21
+			4	4	4	280	21
+			5	5	5	283	22
+			6	6	6	286	22
+			7	7	7	289	22
+			8	8	8	292	23
+			9	9	9	295	23
+			10	10	10	298	23
+			11	11	11	301	24
+			12	12	12	304	24
+			13	13	13	306	24
+			14	14	14	309	25
+			15	15	15	312	25
+			16	16	16	315	25
+			17	17	17	318	26
+			18	18	18	321	26
+			19	19	19	324	26
+			20	20	20	327	27
+			21	21	21	330	27
+			22	22	22	333	27
+			23	23	23	336	28
+			24	24	24	339	28
+			25	25	25	342	28
+			26	26	26	345	29
+			27	27	27	348	29
+			28	28	28	351	29
+			29	29	29	354	30
+			30	30	30	357	30
+			31	31	31	360	30
+			32	32	32	363	31
+			33	33	33	366	31
+			34	34	34	369	31
+			35	35	35	372	32
+			36	36	36	375	32
+			37	37	37	378	32
+			38	38	38	380	33
+			39	39	39	383	33
+			40	40	40	386	33
+			41	41	41	389	34
+			42	42	42	392	34
+			43	43	43	395	34
+			44	44	44	398	35
+			45	45	45	401	35
+			46	46	46	404	35
+			47	47	47	407	36
+			48	48	48	410	36
+			49	49	49	413	36
+			50	50	50	416	37
+			51	51	51	419	37
+			52	52	52	422	37
+			53	53	53	425	38
+			54	54	54	428	38
+			55	55	55	431	38
+			56	56	56	434	39
+			57	57	57	437	39
+			58	58	58	440	39
+			59	59	59	443	40
+			60	60	60	446	40
+			61	61	61	449	40
+			62	62	62	452	41
+			63	63	63	455	41
+			64	64	64	457	41
+			65	65	65	460	42
+			66	66	66	463	42
+			67	67	67	466	42
+			68	68	68	469	43
+			69	69	69	472	43
+			70	70	70	475	43
+			71	71	71	478	44
+			72	72	72	481	44
+			73	73	73	484	44
+			74	74	74	487	45
+			75	75	75	490	45
+			76	76	76	493	45
+			77	77	77	496	46
+			78	78	78	499	46
+			79	79	79	502	46
+			80	80	80	505	47
+			81	81	81	508	47
+			82	82	82	511	47
+			83	83	83	514	48
+			84	84	84	517	48
+			85	85	85	520	48
+			86	86	86	523	49
+			87	87	87	526	49
+			88	88	88	529	49
+			89	89	89	531	50
+			90	90	90	534	50
+			91	91	91	537	50
+			92	92	92	540	51
+			93	93	93	543	51
+			94	94	94	546	51
+			95	95	95	549	52
+			96	96	96	552	52
+			97	97	97	555	52
+			98	98	98	558	53
+			99	99	99	561	53
+			100	100	100	564	53
+			101	101	101	567	54
+			102	102	102	570	54
+			103	103	103	573	54
+			104	104	104	576	55
+			105	105	105	579	55
+			106	106	106	582	55
+			107	107	107	585	56
+			108	108	108	588	56
+			109	109	109	591	56
+			110	110	110	594	57
+			111	111	111	597	57
+			112	112	112	600	57
+			113	113	113	603	58
+			114	114	114	606	58
+			115	115	115	608	58
+			116	116	116	611	59
+			117	117	117	614	59
+			118	118	118	617	59
+			119	119	119	620	60
+			120	120	120	623	60
+			121	121	121	626	60
+			122	122	122	629	61
+			123	123	123	632	61
+			124	124	124	635	61
+			125	125	125	638	62
+			126	126	126	641	62
+			127	127	127	644	62
+			128	128	128	647	63
+			129	129	129	650	63
+			130	130	130	653	63
+			131	131	131	656	64
+			132	132	132	659	64
+			133	133	133	662	64
+			134	134	134	665	65
+			135	135	135	668	65
+			136	136	136	671	65
+			137	137	137	674	66
+			138	138	138	677	66
+			139	139	139	680	66
+			140	140	140	682	67
+			141	141	141	685	67
+			142	142	142	688	67
+			143	143	143	691	68
+			144	144	144	694	68
+			145	145	145	697	68
+			146	146	146	700	69
+			147	147	147	703	69
+			148	148	148	706	69
+			149	149	149	709	70
+			150	150	150	712	70
+			151	151	151	715	70
+			152	152	152	718	71
+			153	153	153	721	71
+			154	154	154	724	71
+			155	155	155	727	72
+			156	156	156	730	72
+			157	157	157	733	72
+			158	158	158	736	73
+			159	159	159	739	73
+			160	160	160	742	73
+			161	161	161	745	74
+			162	162	162	748	74
+			163	163	163	751	74
+			164	164	164	754	75
+			165	165	165	757	75
+			166	166	166	759	75
+			167	167	167	762	76
+			168	168	168	765	76
+			169	169	169	768	76
+			170	170	170	771	77
+			171	171	171	774	77
+			172	172	172	777	77
+			173	173	173	780	78
+			174	174	174	783	78
+			175	175	175	786	78
+			176	176	176	789	79
+			177	177	177	792	79
+			178	178	178	795	79
+			179	179	179	798	80
+			180	180	180	801	80
+			181	181	181	804	80
+			182	182	182	807	81
+			183	183	183	810	81
+			184	184	184	813	81
+			185	185	185	816	82
+			186	186	186	819	82
+			187	187	187	822	82
+			188	188	188	825	83
+			189	189	189	828	83
+			190	190	190	831	83
+			191	191	191	833	84
+			192	192	192	836	84
+			193	193	193	839	84
+			194	194	194	842	85
+			195	195	195	845	85
+			196	196	196	848	85
+			197	197	197	851	86
+			198	198	198	854	86
+			199	199	199	857	86
+			200	200	200	860	87
+			201	201	201	863	87
+			202	202	202	866	87
+			203	203	203	869	88
+			204	204	204	872	88
+			205	205	205	875	88
+			206	206	206	878	89
+			207	207	207	881	89
+			208	208	208	884	89
+			209	209	209	887	90
+			210	210	210	890	90
+			211	211	211	893	90
+			212	212	212	896	91
+			213	213	213	899	91
+			214	214	214	902	91
+			215	215	215	905	92
+			216	216	216	908	92
+			217	217	217	910	92
+			218	218	218	913	93
+			219	219	219	916	93
+			220	220	220	919	93
+			221	221	221	922	94
+			222	222	222	925	94
+			223	223	223	928	94
+			224	224	224	931	95
+			225	225	225	934	95
+			226	226	226	937	95
+			227	227	227	940	96
+			228	228	228	943	96
+			229	229	229	946	96
+			230	230	230	949	97
+			231	231	231	952	97
+			232	232	232	955	97
+			233	233	233	958	98
+			234	234	234	961	98
+			235	235	235	964	98
+			236	236	236	967	99
+			237	237	237	970	99
+			238	238	238	973	99
+			239	239	239	976	100
+			240	240	240	979	100
+			241	241	241	982	100
+			242	242	242	984	101
+			243	243	243	987	101
+			244	244	244	990	101
+			245	245	245	993	102
+			246	246	246	996	102
+			247	247	247	999	102
+			248	248	248	1002	103
+			249	249	249	1005	103
+			250	250	250	1008	103
+			251	251	251	1011	104
+			252	252	252	1014	104
+			253	253	253	1017	104
+			254	254	254	1020	105
+			255	255	255	1023	105
+		>;
+
+		samsung,gamma_mode2_hmt_tx_cmds_revA = [
+			29 00 00 00 00 00 03 51 03 FF	/* 0. WRDISBV: 03 FF = 450nit */
+			29 00 00 00 00 00 02 F7 0F	/* Panel update */
+		];
+
+		samsung,hmt_elvss_tx_cmds_revA = [
+			29 00 00 00 00 00 04 B5 00 00 16
+		];
+
+		samsung,hmt_enable_tx_cmds_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 03 B0 41 B1
+			29 00 00 00 00 00 03 B1 0A 64	/* AOR 85% */
+			29 00 00 00 00 00 03 B0 06 B1
+			29 00 00 00 00 00 02 B1 10	/* AID 1-cycle */
+			29 00 00 00 00 00 02 F7 0F	/* panel update */
+
+			/* WRDISBV 51h: 03 FF = max , 01 0C = min, will be update in hmt brighntess */
+
+			29 00 00 00 00 00 03 F0 A5 A5
+		];
+
+		samsung,hmt_disable_tx_cmds_revA = [
+			29 00 00 00 00 00 03 F0 5A 5A
+			29 00 00 00 00 00 03 B0 41 B1
+			29 00 00 00 00 00 03 B1 02 00	/* AOR 16% */
+			29 00 00 00 00 00 03 B0 06 B1
+			29 00 00 00 00 00 02 B1 90	/* AID 4-cycle */
+			29 00 00 00 00 00 02 F7 0F	/* panel update */
+			29 00 00 00 00 00 03 F0 A5 A5
+		];
+
+		/* gamma compensation for 48/96hz mode */
+		samsung,vrr_gm2_gamma_comp_tx_cmds_revA = [
+			29 00 00 00 00 00 70 C8		/* 0. C8h 0x00 ~ 0x6E, 37 * 3 = 111 bytes */
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00
+
+			29 00 00 00 00 00 03 B0 6F C8
+			29 00 00 00 00 00 70 C8		/* 2. C8h 0x6F ~ 0xDD, 37 * 3 = 111 bytes */
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00
+
+			29 00 00 00 00 00 95 C9		/* 3. C9h 0x00 ~ 0x93, 37 * 4 = 148 bytes */
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00
+
+			29 00 00 00 00 00 03 B0 13 C7
+			29 00 00 00 00 00 95 C7		/* 5. C7h 0x13 ~ 0xA6, 37 * 4 = 148 bytes */
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00 00 00
+					00 00 00 00 00 00 00 00
+		];
+
+		/* VRR: be modified in ss_vrr() */
+		samsung,vrr_tx_cmds_revA = [
+			/* Freq. HS mode setting: 48Hz */
+			29 00 00 00 00 00 03 B0 06 BD
+			29 00 00 00 00 00 0A BD 00 0B 44 00 12 00 00 00 01	/* 1. LFD min freq. and frame insertion:
+										 * HS: 00 0B 24 00 00 00 00 00 01
+										 * NS: 00 01 00 00 01 00 00 00 00
+										 * 48HS/96HS: 00 0B 44 00 12
+										 */
+
+			29 01 00 00 00 00 01 00		/* 2. NULL packet to send vrr cmds at once,
+							 * to prevent flicker during HS/NS transition
+							 */
+
+
+			29 00 00 00 00 00 03 B0 13 BD
+			29 00 00 00 00 00 02 BD 41		/* 4. LFD on: 0x41, LFD off: 0xE1,
+								 * default on, turn off in 48NS mode
+								 */
+			/* 5. OSC1 and porch:
+			 * HS  : C1 B4 04 00 01 20 00 10 10 00 14 BC 20 00 10 10 00
+			 * NS  : C3 B4 04 14 01 20 00 10 10 00 14 BC 20 00 30 0F E0
+			 * 48/96HS: set VFP_HS (F2h 7~8th param (gara off=6, 7)) to 0x314 = 788
+			 *
+			 * Porch & HW setting (off = 12 = 0xC):
+			 * 48NS: set VFP_NS (F2h 14~15th param (gpara=13, 14)) to 0x314 = 788
+			 */
+			29 00 00 00 00 00 12 F2 C1 B4 04 00 01 1C 00 14 10 00 14 BC 1C 00 14 10 00
+			29 00 00 00 00 00 03 B0 12 6A
+			29 00 00 00 00 00 03 6A 21 0F		/* 7. OSC2: HS: 21 0F, NS: 00 0F */
+
+			29 00 00 00 00 00 03 60 08 00		/* 8. Freq. various values depends on VRR modes */
+			29 00 00 00 00 00 03 B0 29 F4
+			29 00 00 00 00 00 17 F4			/* 10. Vbais & Vaint setting: 14bytes and last 1byte from flash */
+						00 00 00 00 00 00 00
+						00 00 00 00 00 00 00
+						00 00 00 00 00 00 00
+						00
+
+			/* For AOR compensation in 48/96hz mode... */
+			29 00 00 00 00 00 03 B0 43 B1	/* 11. for 48/96hz, 1 frame (VBP+RES+VFP) offset */
+			29 00 00 00 00 00 03 B1 0C 40	/* 12. for 48/96hz, 1 frame (VBP+RES+VFP) */
+
+			29 00 00 00 00 00 03 B0 55 B1		/* 13. for 48/96hz, 1 frame (VBP+RES+VFP) and VFP OPT #1 offset */
+			29 00 00 00 00 00 05 B1 0C 40 0C 02	/* 14. for 48/96hz, 1 frame (VBP+RES+VFP) and VFP OPT #1 */
+
+
+			29 00 00 00 00 00 02 B9 08	/* 15. TE modulation
+							 * 08: default,
+							 * 19: 60HS
+							 * TE operates at every 2 frame
+							 * TE_SEL & TE_FRAME_SEL = 1
+							 */
+
+			29 00 00 00 00 00 03 B0 59 B1	/* 16. AOR gparam */
+			29 00 00 00 00 00 03 B1 01 F8	/* 17. AOR value */
+
+			29 00 00 00 00 00 02 F7 0F		/* LTPS update */
+
+		];
+
+		samsung,rsc_4_frame_idle;
+
+		/* GFX HAL set max mdp performance mode before VRR change,
+		 * then set back to normal mode, even VRR work is done.
+		 * Delay to set back to normal MDP performance mode.
+		 */
+		/*samsung,support_delayed_perf; */
+		samsung,support_vrr_based_bl; /* VRR Variable Refresh Rate */
+		samsung,support_lfd; /* Low Frequency Driving mode for HOP display */
+
+		/* Use HW TE modulation using B9h TECTRL.
+		 * If choose SW TE modulation, DDI generates TE at 120Hz even 60HS mode.
+		 * In result, RSC of MDP should wake-up in every 120Hz TE, so it consumes more power source.
+		 * To reduce power consumption, enable HW TE modulation, and disable SW TE modulation.
+		 */
+		/* samsung,support_te_mod; */ /* VRR: TE modulation for TOP display */
+
+		/*samsung,support_brr;*/ /* VRR Bridge Refresh Rate */
+		/*samsung,support_black_frame;*/ /* VRR: black frame insertion during HS<->NM transition */
+
+		/* panel rev.A (ID3 0x0, 0x40): EVT0 DDI, tx temporal code and wacom setting in TX_TEMP_DSC.
+		 * panel rev.B and C (ID3 0x50, 0x51): tx wacom setting in TX_TEMP_DSC.
+		 * from panel rev.D (ID3 0x52): do not transmit TX_TEMP_DSC
+		 */
+		samsung,temp_dsc_tx_cmds_revA = [
+			/* Temporal Code(EVT0) */
+			29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+			29 00 00 00 00 00 03 F1 5A 5A	/* TEST KEY Enable */
+			29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+			29 00 00 00 00 00 02 E7 28
+			29 00 00 00 00 00 03 B0 5D F2
+			29 00 00 00 00 00 14 F2 55 55 00 00 00 00 00 00 00 52 42 2A 00 00 00 00 00 00 39
+			29 00 00 00 00 00 03 B0 0D F4
+			29 00 00 00 00 00 03 F4 00 00
+			29 00 00 00 00 00 03 B0 23 F2
+			29 00 00 00 00 00 25 F2 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 10 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+			29 00 00 00 00 00 02 B5 19
+			29 00 00 00 00 00 06 CE 07 00 00 00 00
+			29 00 00 00 00 00 05 D0 00 40 00 00
+			29 00 00 00 00 00 02 E5 13
+			29 00 00 00 00 00 03 B0 05 E5
+			29 00 00 00 00 00 07 E5 F8 FC 03 00 01 18
+			29 00 00 00 00 00 08 E8 00 00 0F FF FF 00 00
+			29 00 00 00 00 00 03 B0 01 FD
+			29 00 00 00 00 00 07 FD 0A 00 90 96 FA 00
+			29 00 00 00 00 00 03 B0 0A FD
+			29 00 00 00 00 00 02 FD 00
+			29 00 00 00 00 00 03 B0 10 FD
+			29 00 00 00 00 00 02 FD 00
+			29 00 00 00 00 00 03 B0 31 FD
+			29 00 00 00 00 00 09 FD 00 00 11 45 11 05 03 02
+			29 00 00 00 00 00 0F FE 30 08 00 31 00 00 00 00 00 10 00 50 00 20
+			29 00 00 00 00 00 03 B0 31 FE
+			29 00 00 00 00 00 14 FE 00 03 00 10 10 10 10 C8 00 00 00 00 00 00 00 FF FF FF 02
+			29 00 00 00 00 00 03 B0 46 FE
+			29 00 00 00 00 00 30 FE 02 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 08 41 68 00 78 01 68 01 40 02 8A 02 3A 00 78 01 40 52 3A 00 00 00 00 00 00 00 00
+			29 00 00 00 00 00 03 B0 01 FF
+			29 00 00 00 00 00 07 FF 80 00 00 00 00 00
+			29 00 00 00 00 00 03 B0 08 FF
+			29 00 00 00 00 00 02 FF 00
+			29 00 00 00 00 00 03 B0 11 90
+			29 00 00 00 00 00 22 90 00 80 2B 05 08 0E 07 0B 05 0D 0A 15 13 20 1E 1A 19 2C 27 24 21 3B 33 30 2C 28 26 23 22 1F 1F 1D 1F
+			29 00 00 00 00 00 03 B0 50 91
+			29 00 00 00 00 00 24 91 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 07 00 00 00 00 00 00 00 00 00
+			29 00 00 00 00 00 03 B0 0D 93
+			29 00 00 00 00 00 19 93 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+			29 00 00 00 00 00 26 CA 2A 00 00 00 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 80 00 00 00 80 80 80
+			29 00 00 00 00 00 06 E7 28 1A 22 08 33
+			29 00 00 00 00 00 03 85 00 80
+			29 00 00 00 00 00 02 87 00
+			29 00 00 00 00 00 02 DD 00
+			29 00 00 00 00 00 02 E1 20
+			29 00 00 00 00 00 02 E3 01
+			29 00 00 00 00 00 03 FC A5 A5		/* TEST KEY3 Disable */
+			29 00 00 00 00 00 03 F1 A5 A5		/* TEST KEY Disable */
+			29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY2 Disable */
+
+			/* prevent wacom noise (requested by dlab),
+			 * to be flashed ddi otp flash from 4th panel (UB ID: 81 04 52)
+			 */
+			29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+			29 00 00 00 00 00 03 B0 05 F2
+			29 00 00 00 00 00 06 F2 1C 00 14 10 00	/* HS 120.2Hz */
+			29 00 00 00 00 00 03 B0 0C F2
+			29 00 00 00 00 00 06 F2 1C 00 34 0F E0	/* NS 59.96Hz */
+			29 00 00 00 00 00 03 B0 60 CB
+			29 00 00 00 00 00 08 CB 6C 00 00 00 40 0C 6C
+			29 00 00 00 00 00 03 B0 8B CB
+			29 00 00 00 00 00 14 CB 30 00 00 00 D8 38 30 00 00 00 F8 14 30 00 00 00 D8 14 30
+			29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+		];
+
+		/* panel rev.A (ID3 0x0, 0x40): EVT0 DDI, tx temporal code and wacom setting in TX_TEMP_DSC.
+		 * panel rev.B and C (ID3 0x50, 0x51): tx wacom setting in TX_TEMP_DSC.
+		 * from panel rev.D (ID3 0x52): do not transmit TX_TEMP_DSC
+		 */
+		samsung,temp_dsc_tx_cmds_revB = [
+			/* prevent wacom noise (requested by dlab),
+			 * to be flashed ddi otp flash from 4th panel (UB ID: 81 04 52)
+			 */
+			29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+			29 00 00 00 00 00 03 B0 05 F2
+			29 00 00 00 00 00 06 F2 1C 00 14 10 00	/* HS 120.2Hz */
+			29 00 00 00 00 00 03 B0 0C F2
+			29 00 00 00 00 00 06 F2 1C 00 34 0F E0	/* NS 59.96Hz */
+			29 00 00 00 00 00 03 B0 60 CB
+			29 00 00 00 00 00 08 CB 6C 00 00 00 40 0C 6C
+			29 00 00 00 00 00 03 B0 8B CB
+			29 00 00 00 00 00 14 CB 30 00 00 00 D8 38 30 00 00 00 F8 14 30 00 00 00 D8 14 30
+			29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+		];
+
+
+		/* *************************************************************
+		 * flash to get vbias data for HOP display (gamma mode2)
+		 * VBIAS: 14(cmd) x 3(temperature) x 2(HS/NS) = 84 bytes: F0000 ~ F0053
+		 * checksum: 2 bytes: F0054 ~ F0055
+		 * Flash write pass: 1 byte: F0056
+		 * VBIAS HS/NS mode: 2 bytes: F0057 ~ F0058
+		 *
+		 * *************************************************************
+		 */
+		samsung,flash_vbias_start_addr = <0xF0000>;
+
+		samsung,flash_vbias_tot_len = <89>;
+		samsung,flash_vbias_one_mode_len = <22>;
+
+		samsung,flash_vbias_ns_temp_warm_offset = <0x00>;
+		samsung,flash_vbias_ns_temp_cool_offset = <0x0E>;
+		samsung,flash_vbias_ns_temp_cold_offset = <0x1C>;
+		samsung,flash_vbias_hs_temp_warm_offset = <0x2A>;
+		samsung,flash_vbias_hs_temp_cool_offset = <0x38>;
+		samsung,flash_vbias_hs_temp_cold_offset = <0x46>;
+
+		samsung,flash_vbias_checksum_offset = <0x54>;
+
+		samsung,vbias_mtp_rx_cmds_revA  = [06 01 00 00 00 00 01 F4 16 29]; /* NS & T > 0 : F4h 42nd ~ 55th, and 63rd: offset = 42 -> 41 = 0x29, size = 22 = 0x16 */
+
+
+		/* *************************************************************
+		 *  DMS (Dynamic Mode Switch)
+		 * *************************************************************
+		*/
+		qcom,mdss-dsi-display-timings {
+			wqhd60ns {
+				qcom,display-topology = <1 1 1>, <2 2 1>;
+				qcom,default-topology-index = <1>;
+				qcom,mdss-dsi-timing-default;
+				qcom,mdss-dsi-panel-width = <1440>;
+				qcom,mdss-dsi-panel-height = <3088>;
+
+				qcom,mdss-dsi-h-pulse-width = <100>;
+				qcom,mdss-dsi-h-back-porch = <100>;
+				qcom,mdss-dsi-h-front-porch = <100>;
+				qcom,mdss-dsi-h-sync-skew = <0>;
+				qcom,mdss-dsi-v-pulse-width = <200>;
+				qcom,mdss-dsi-v-back-porch = <200>;
+				qcom,mdss-dsi-v-front-porch = <643>;
+
+				qcom,mdss-dsi-panel-framerate = <60>;
+				/* transfer time: 48Hz: 20032, 60Hz: 15866, 96Hz: 9616, 120Hz: 7533 */
+				qcom,mdss-mdp-transfer-time-us = <15866>;
+				qcom,mdss-dsi-panel-clockrate = <1160000000>;
+				qcom,mdss-dsi-panel-phy-timings = [00 26 0A 0A 27 25 0A 0A 07 02 04 00 1F 1A];
+				qcom,mdss-dsi-t-clk-post = <0x1A>;
+				qcom,mdss-dsi-t-clk-pre = <0x1F>;
+				/*qcom,mdss-dsi-timing-switch-command-state;*/
+
+				qcom,mdss-dsi-timing-switch-command = [
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+
+					29 00 00 00 00 00 05 2A 00 00 05 9F	/* CASET 1440 */
+					29 00 00 00 00 00 05 2B 00 00 0C 7F	/* PASET 3088 */
+					29 00 00 00 00 00 02 BA 01		/* scaler setup : scaler off */
+
+					29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY2 Disable */
+				];
+
+				qcom,mdss-dsi-on-command = [
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+
+					/* W/A: transmit dummy 2C command before sleep out. (requested by dlab)
+					 * In display off -> AOD on sequence, self display features allows
+					 * 4C cmd transmission without 2C cmd, and it causes sand strom image due to HAC DDI HW chip...
+					 * To prevent the issue, transmit dummy 2C command before sleep out command.
+					 */
+					29 00 00 00 00 00 04 2C 00 00 00
+
+					/* Sleep out */
+					05 01 00 00 78 00 01 11			/* Sleep out (Wait 120ms) */
+
+					/* Pre-Common Setting */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 B0 0A CB
+					29 00 00 00 00 00 02 CB 25	/* ETC: 0x25: after sleep out, 0x65: before sleep in */
+					29 00 00 00 00 00 02 F7 0F	/* panel update */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* Common Setting */
+					29 00 00 00 00 00 02 35 00	/* TE Vsync ON */
+
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 05 2A 00 00 05 9F	/* CASET 1440 */
+					29 00 00 00 00 00 05 2B 00 00 0C 0F	/* PASET 3088 */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* FFC */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+					29 00 00 00 00 00 08 C5 11 10 50 35 3E 35 3E	/* 1160 Mbps */
+					29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY3 Disable */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* ERR_FG */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+					29 00 00 00 00 00 03 ED 04 4C	/* VLIN Monitor On */
+					29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY3 Disable */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* DSC setting */
+					07 01 00 00 00 00 01 01		/* DSC enable :  Compression Mode*/
+
+					/* Freq. setting: will be updated in __ss_vrr() */
+
+					/* TSP & WACOM Sync */
+					29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+					29 00 00 00 00 00 1C B9 08 0C 30 0C 3F 00 00 00 00 11 11 03 00 00 00 00 00 00 00 02 15 02 40 02 15 00 40
+					29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+
+					/* DIA setting */
+					29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+					29 00 00 00 00 00 03 B0 68 91
+					29 00 00 00 00 00 02 91 09		/* DIA setting */
+					29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+
+					/* Dither setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 06 6A
+					29 00 00 00 00 00 0D 6A 18 86 B1 18 86 B1 18 86 B1 00 00 00
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* Smooth dimming setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 0B B1
+					29 00 00 00 00 00 02 B1 08	/* smooth dimming setting */
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* HLPM/ALPM setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 09 F4
+					29 00 00 00 00 00 02 F4 D8
+					29 00 00 00 00 00 03 B0 4C B5
+					29 00 00 00 00 00 02 B5 12
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* Brightness Setting: gamma mode2 */
+					29 00 00 00 00 00 03 F0 5A 5A		/* TEST KEY2 Enable */
+					29 00 00 00 00 00 02 53 29		/* WRCTRLD: Dimming speed: 0x21=normal transition, 0x29=smooth transition */
+					29 00 00 00 00 00 04 B5 19 CD 16	/* ELVSS control: TSET=0x19 for 25 degree */
+					29 00 00 00 00 00 03 51 03 FF		/* WRDISBV: 03 FF = 450nit */
+					29 00 00 00 00 00 03 B0 0B 92
+					29 00 00 00 00 00 02 92	65		/* IRC: 0x65: Moderato */
+					29 00 00 00 00 00 03 B0 10 92
+					29 00 00 00 00 00 02 92 05		/* temp setting to be removed */
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY2 Disable */
+
+					29 00 00 00 00 00 03 9F 5A 5A		/* TEST KEY1 Disable  */
+				];
+				qcom,mdss-dsi-on-command-state = "dsi_lp_mode";
+				qcom,mdss-dsi-off-command=[
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 6A B1
+					29 00 00 00 00 00 02 B1 00
+					29 00 00 00 00 00 03 B0 30 F4
+					29 00 00 00 00 00 02 F4 A8
+					29 00 00 00 00 00 03 F0 A5 A5
+					05 01 00 00 14 00 01 28			/* display off, wait 20ms */
+
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+					05 01 00 00 00 00 01 10 		/* sleep in */
+					/* TODO: check VCI operating mode change in op code */
+					29 01 00 00 0A 00 03 9F 5A 5A		/* TEST KEY1 Disable wait 10ms */
+
+					/* Pre-Common Setting */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 B0 0A CB
+					29 00 00 00 00 00 02 CB 65	/* ETC: 0x25: after sleep out, 0x65: before sleep in */
+					29 00 00 00 00 00 02 F7 0F	/* panel update */
+					29 01 00 00 78 00 03 F0 A5 A5	/* TEST KEY2 Disable  120ms delay*/
+
+				];
+				qcom,mdss-dsi-off-command-state = "dsi_hs_mode";
+				qcom,partial-update-enabled = "single_roi";
+				qcom,panel-roi-alignment=<720 193 720 193 720 193>;
+				qcom,compression-mode = "dsc";
+				qcom,lm-split = <720 720>;
+				qcom,mdss-dsc-encoders = <2>;
+				qcom,mdss-dsc-slice-height = <193>;
+				qcom,mdss-dsc-slice-width = <720>;
+				qcom,mdss-dsc-slice-per-pkt = <1>;
+				qcom,mdss-dsc-bit-per-component = <8>;
+				qcom,mdss-dsc-bit-per-pixel = <8>;
+				qcom,mdss-dsc-block-prediction-enable;
+			};
+
+			wqhd48ns {
+				qcom,display-topology = <1 1 1>, <2 2 1>;
+				qcom,default-topology-index = <1>;
+				qcom,mdss-dsi-panel-width = <1440>;
+				qcom,mdss-dsi-panel-height = <3088>;
+
+				qcom,mdss-dsi-h-pulse-width = <100>;
+				qcom,mdss-dsi-h-back-porch = <100>;
+				qcom,mdss-dsi-h-front-porch = <100>;
+				qcom,mdss-dsi-h-sync-skew = <0>;
+				qcom,mdss-dsi-v-pulse-width = <200>;
+				qcom,mdss-dsi-v-back-porch = <200>;
+				qcom,mdss-dsi-v-front-porch = <1676>;
+
+				qcom,mdss-dsi-panel-framerate = <48>;
+				/* transfer time: 48Hz: 20032, 60Hz: 15866, 96Hz: 9616, 120Hz: 7533 */
+				qcom,mdss-mdp-transfer-time-us = <15866>;	/* 60NS based, long VFP */
+				qcom,mdss-dsi-panel-clockrate = <1160000000>;
+				qcom,mdss-dsi-panel-phy-timings = [00 26 0A 0A 27 25 0A 0A 07 02 04 00 1F 1A];
+				qcom,mdss-dsi-t-clk-post = <0x1A>;
+				qcom,mdss-dsi-t-clk-pre = <0x1F>;
+				/*qcom,mdss-dsi-timing-switch-command-state;*/
+
+				qcom,mdss-dsi-timing-switch-command = [
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+
+					29 00 00 00 00 00 05 2A 00 00 05 9F	/* CASET 1440 */
+					29 00 00 00 00 00 05 2B 00 00 0C 7F	/* PASET 3088 */
+					29 00 00 00 00 00 02 BA 01		/* scaler setup : scaler off */
+
+					29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY2 Disable */
+				];
+
+				qcom,mdss-dsi-on-command = [
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+
+					/* W/A: transmit dummy 2C command before sleep out. (requested by dlab)
+					 * In display off -> AOD on sequence, self display features allows
+					 * 4C cmd transmission without 2C cmd, and it causes sand strom image due to HAC DDI HW chip...
+					 * To prevent the issue, transmit dummy 2C command before sleep out command.
+					 */
+					29 00 00 00 00 00 04 2C 00 00 00
+
+					/* Sleep out */
+					05 01 00 00 78 00 01 11			/* Sleep out (Wait 120ms) */
+
+					/* Pre-Common Setting */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 B0 0A CB
+					29 00 00 00 00 00 02 CB 25	/* ETC: 0x25: after sleep out, 0x65: before sleep in */
+					29 00 00 00 00 00 02 F7 0F	/* panel update */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* Common Setting */
+					29 00 00 00 00 00 02 35 00	/* TE Vsync ON */
+
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 05 2A 00 00 05 9F	/* CASET 1440 */
+					29 00 00 00 00 00 05 2B 00 00 0C 0F	/* PASET 3088 */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* FFC */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+					29 00 00 00 00 00 08 C5 11 10 50 35 3E 35 3E	/* 1160 Mbps */
+					29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY3 Disable */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* ERR_FG */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+					29 00 00 00 00 00 03 ED 04 4C	/* VLIN Monitor On */
+					29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY3 Disable */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* DSC setting */
+					07 01 00 00 00 00 01 01		/* DSC enable :  Compression Mode*/
+
+					/* Freq. setting: will be updated in __ss_vrr() */
+
+					/* TSP Hsync & WACOM Sync */
+					29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+					29 00 00 00 00 00 1C B9 08 0C 30 0C 3F 00 00 00 00 11 11 03 00 00 00 00 00 00 00 02 15 02 40 02 15 00 40
+					29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+
+					/* DIA setting */
+					29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+					29 00 00 00 00 00 03 B0 68 91
+					29 00 00 00 00 00 02 91 09		/* DIA setting */
+					29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+
+					/* Dither setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 06 6A
+					29 00 00 00 00 00 0D 6A 18 86 B1 18 86 B1 18 86 B1 00 00 00
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* Smooth dimming setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 0B B1
+					29 00 00 00 00 00 02 B1 08	/* smooth dimming setting */
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* HLPM/ALPM setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 09 F4
+					29 00 00 00 00 00 02 F4 D8
+					29 00 00 00 00 00 03 B0 4C B5
+					29 00 00 00 00 00 02 B5 12
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* Brightness Setting: gamma mode2 */
+					29 00 00 00 00 00 03 F0 5A 5A		/* TEST KEY2 Enable */
+					29 00 00 00 00 00 02 53 29		/* WRCTRLD: Dimming speed: 0x21=normal transition, 0x29=smooth transition */
+					29 00 00 00 00 00 04 B5 19 CD 16	/* ELVSS control: TSET=0x19 for 25 degree */
+					29 00 00 00 00 00 03 51 03 FF		/* WRDISBV: 03 FF = 450nit */
+					29 00 00 00 00 00 03 B0 0B 92
+					29 00 00 00 00 00 02 92	65		/* IRC: 0x65: Moderato */
+					29 00 00 00 00 00 03 B0 10 92
+					29 00 00 00 00 00 02 92 05		/* temp setting to be removed */
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY2 Disable */
+
+					29 00 00 00 00 00 03 9F 5A 5A		/* TEST KEY1 Disable  */
+				];
+				qcom,mdss-dsi-on-command-state = "dsi_lp_mode";
+				qcom,mdss-dsi-off-command=[
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 6A B1
+					29 00 00 00 00 00 02 B1 00
+					29 00 00 00 00 00 03 B0 30 F4
+					29 00 00 00 00 00 02 F4 A8
+					29 00 00 00 00 00 03 F0 A5 A5
+					05 01 00 00 14 00 01 28			/* display off, wait 20ms */
+
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+					05 01 00 00 00 00 01 10 		/* sleep in */
+					/* TODO: check VCI operating mode change in op code */
+					29 01 00 00 0A 00 03 9F 5A 5A		/* TEST KEY1 Disable wait 10ms */
+
+					/* Pre-Common Setting */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 B0 0A CB
+					29 00 00 00 00 00 02 CB 65	/* ETC: 0x25: after sleep out, 0x65: before sleep in */
+					29 00 00 00 00 00 02 F7 0F	/* panel update */
+					29 01 00 00 78 00 03 F0 A5 A5	/* TEST KEY2 Disable  120ms delay*/
+
+				];
+				qcom,mdss-dsi-off-command-state = "dsi_hs_mode";
+				qcom,partial-update-enabled = "single_roi";
+				qcom,panel-roi-alignment=<720 193 720 193 720 193>;
+				qcom,compression-mode = "dsc";
+				qcom,lm-split = <720 720>;
+				qcom,mdss-dsc-encoders = <2>;
+				qcom,mdss-dsc-slice-height = <193>;
+				qcom,mdss-dsc-slice-width = <720>;
+				qcom,mdss-dsc-slice-per-pkt = <1>;
+				qcom,mdss-dsc-bit-per-component = <8>;
+				qcom,mdss-dsc-bit-per-pixel = <8>;
+				qcom,mdss-dsc-block-prediction-enable;
+			};
+
+			fhd48hs {
+				qcom,display-topology = <1 1 1>, <2 2 1>;
+				qcom,default-topology-index = <1>;
+				qcom,mdss-dsi-panel-width = <1080>;
+				qcom,mdss-dsi-panel-height = <2316>;
+
+				qcom,mdss-dsi-h-pulse-width = <50>;
+				qcom,mdss-dsi-h-back-porch = <50>;
+				qcom,mdss-dsi-h-front-porch = <50>;
+				qcom,mdss-dsi-h-sync-skew = <0>;
+
+				qcom,mdss-dsi-v-pulse-width = <100>;
+				qcom,mdss-dsi-v-back-porch = <99>;
+				qcom,mdss-dsi-v-front-porch = <5383>;
+
+				samsung,mdss-dsi-sot-hs-mode;
+				qcom,mdss-dsi-panel-framerate = <48>;
+				/* transfer time: 48Hz: 20032, 60Hz: 15866, 96Hz: 9616, 120Hz: 7533 */
+				qcom,mdss-mdp-transfer-time-us = <7533>; /* 96HS based, self driving */
+				qcom,mdss-dsi-panel-clockrate = <1160000000>;
+				qcom,mdss-dsi-panel-phy-timings = [00 26 0A 0A 27 25 0A 0A 07 02 04 00 1F 1A];
+				qcom,mdss-dsi-t-clk-post = <0x1A>;
+				qcom,mdss-dsi-t-clk-pre = <0x1F>;
+				/*qcom,mdss-dsi-timing-switch-command-state;*/
+
+				qcom,mdss-dsi-timing-switch-command = [
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+
+					29 00 00 00 00 00 05 2A 00 00 04 37	/* CASET 1080 */
+					29 00 00 00 00 00 05 2B 00 00 09 0B	/* PASET 2316 */
+					29 00 00 00 00 00 02 BA 02		/* scaler setup : 1.78x */
+
+					29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY2 Disable */
+				];
+
+				qcom,mdss-dsi-on-command = [
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+
+					/* W/A: transmit dummy 2C command before sleep out. (requested by dlab)
+					 * In display off -> AOD on sequence, self display features allows
+					 * 4C cmd transmission without 2C cmd, and it causes sand strom image due to HAC DDI HW chip...
+					 * To prevent the issue, transmit dummy 2C command before sleep out command.
+					 */
+					29 00 00 00 00 00 04 2C 00 00 00
+
+					/* Sleep out */
+					05 01 00 00 78 00 01 11			/* Sleep out (Wait 120ms) */
+
+					/* Pre-Common Setting */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 B0 0A CB
+					29 00 00 00 00 00 02 CB 25	/* ETC: 0x25: after sleep out, 0x65: before sleep in */
+					29 00 00 00 00 00 02 F7 0F	/* panel update */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* Common Setting */
+					29 00 00 00 00 00 02 35 00	/* TE Vsync ON */
+
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 05 2A 00 00 04 37	/* CASET 1080 */
+					29 00 00 00 00 00 05 2B 00 00 09 0B	/* PASET 2316 */
+					29 00 00 00 00 00 02 BA 02		/* scaler setup : 1.78x */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* FFC */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+					29 00 00 00 00 00 08 C5 11 10 50 35 3E 35 3E	/* 1160 Mbps */
+					29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY3 Disable */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* ERR_FG */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+					29 00 00 00 00 00 03 ED 04 4C	/* VLIN Monitor On */
+					29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY3 Disable */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* DSC setting */
+					07 01 00 00 00 00 01 01		/* DSC enable :  Compression Mode*/
+
+					/* Freq. setting: will be updated in __ss_vrr() */
+
+					/* TSP Hsync & WACOM Sync */
+					29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+					29 00 00 00 00 00 1C B9 08 0C 30 0C 3F 00 00 00 00 11 11 03 00 00 00 00 00 00 00 02 15 02 40 02 15 00 40
+					29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+
+					/* DIA setting */
+					29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+					29 00 00 00 00 00 03 B0 68 91
+					29 00 00 00 00 00 02 91 09		/* DIA setting */
+					29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+
+					/* Dither setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 06 6A
+					29 00 00 00 00 00 0D 6A 18 86 B1 18 86 B1 18 86 B1 00 00 00
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* Smooth dimming setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 0B B1
+					29 00 00 00 00 00 02 B1 08	/* smooth dimming setting */
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* HLPM/ALPM setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 09 F4
+					29 00 00 00 00 00 02 F4 D8
+					29 00 00 00 00 00 03 B0 4C B5
+					29 00 00 00 00 00 02 B5 12
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* Brightness Setting: gamma mode2 */
+					29 00 00 00 00 00 03 F0 5A 5A		/* TEST KEY2 Enable */
+					29 00 00 00 00 00 02 53 29		/* WRCTRLD: Dimming speed: 0x21=normal transition, 0x29=smooth transition */
+					29 00 00 00 00 00 04 B5 19 CD 16	/* ELVSS control: TSET=0x19 for 25 degree */
+					29 00 00 00 00 00 03 51 03 FF		/* WRDISBV: 03 FF = 450nit */
+					29 00 00 00 00 00 03 B0 0B 92
+					29 00 00 00 00 00 02 92	65		/* IRC: 0x65: Moderato */
+					29 00 00 00 00 00 03 B0 10 92
+					29 00 00 00 00 00 02 92 05		/* temp setting to be removed */
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY2 Disable */
+
+					29 00 00 00 00 00 03 9F 5A 5A		/* TEST KEY1 Disable  */
+				];
+				qcom,mdss-dsi-on-command-state = "dsi_lp_mode";
+				qcom,mdss-dsi-off-command=[
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 6A B1
+					29 00 00 00 00 00 02 B1 00
+					29 00 00 00 00 00 03 B0 30 F4
+					29 00 00 00 00 00 02 F4 A8
+					29 00 00 00 00 00 03 F0 A5 A5
+					05 01 00 00 14 00 01 28			/* display off, wait 20ms */
+
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+					05 01 00 00 00 00 01 10 		/* sleep in */
+					/* TODO: check VCI operating mode change in op code */
+					29 01 00 00 0A 00 03 9F 5A 5A		/* TEST KEY1 Disable wait 10ms */
+
+					/* Pre-Common Setting */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 B0 0A CB
+					29 00 00 00 00 00 02 CB 65	/* ETC: 0x25: after sleep out, 0x65: before sleep in */
+					29 00 00 00 00 00 02 F7 0F	/* panel update */
+					29 01 00 00 78 00 03 F0 A5 A5	/* TEST KEY2 Disable  120ms delay*/
+
+				];
+				qcom,mdss-dsi-off-command-state = "dsi_hs_mode";
+				qcom,partial-update-enabled = "single_roi";
+				qcom,panel-roi-alignment=<540 193 540 193 540 193>;
+				qcom,compression-mode = "dsc";
+				qcom,lm-split = <540 540>;
+				qcom,mdss-dsc-encoders = <2>;
+				qcom,mdss-dsc-slice-height = <193>;
+				qcom,mdss-dsc-slice-width = <540>;
+				qcom,mdss-dsc-slice-per-pkt = <1>;
+				qcom,mdss-dsc-bit-per-component = <8>;
+				qcom,mdss-dsc-bit-per-pixel = <8>;
+				qcom,mdss-dsc-block-prediction-enable;
+			};
+
+			fhd48ns {
+				qcom,display-topology = <1 1 1>, <2 2 1>;
+				qcom,default-topology-index = <1>;
+				qcom,mdss-dsi-panel-width = <1080>;
+				qcom,mdss-dsi-panel-height = <2316>;
+
+				qcom,mdss-dsi-h-pulse-width = <50>;
+				qcom,mdss-dsi-h-back-porch = <50>;
+				qcom,mdss-dsi-h-front-porch = <50>;
+				qcom,mdss-dsi-h-sync-skew = <0>;
+				qcom,mdss-dsi-v-pulse-width = <100>;
+				qcom,mdss-dsi-v-back-porch = <100>;
+				qcom,mdss-dsi-v-front-porch = <5382>;
+
+				qcom,mdss-dsi-panel-framerate = <48>;
+				/* transfer time: 48Hz: 20032, 60Hz: 15866, 96Hz: 9616, 120Hz: 7533 */
+				qcom,mdss-mdp-transfer-time-us = <15866>;	/* 60NS based, long VFP */
+				qcom,mdss-dsi-panel-clockrate = <1160000000>;
+				qcom,mdss-dsi-panel-phy-timings = [00 26 0A 0A 27 25 0A 0A 07 02 04 00 1F 1A];
+				qcom,mdss-dsi-t-clk-post = <0x1A>;
+				qcom,mdss-dsi-t-clk-pre = <0x1F>;
+				/*qcom,mdss-dsi-timing-switch-command-state;*/
+
+				qcom,mdss-dsi-timing-switch-command = [
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+
+					29 00 00 00 00 00 05 2A 00 00 04 37	/* CASET 1080 */
+					29 00 00 00 00 00 05 2B 00 00 09 0B	/* PASET 2316 */
+					29 00 00 00 00 00 02 BA 02		/* scaler setup : 1.78x */
+
+					29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY2 Disable */
+				];
+
+				qcom,mdss-dsi-on-command = [
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+
+					/* W/A: transmit dummy 2C command before sleep out. (requested by dlab)
+					 * In display off -> AOD on sequence, self display features allows
+					 * 4C cmd transmission without 2C cmd, and it causes sand strom image due to HAC DDI HW chip...
+					 * To prevent the issue, transmit dummy 2C command before sleep out command.
+					 */
+					29 00 00 00 00 00 04 2C 00 00 00
+
+					/* Sleep out */
+					05 01 00 00 78 00 01 11			/* Sleep out (Wait 120ms) */
+
+					/* Pre-Common Setting */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 B0 0A CB
+					29 00 00 00 00 00 02 CB 25	/* ETC: 0x25: after sleep out, 0x65: before sleep in */
+					29 00 00 00 00 00 02 F7 0F	/* panel update */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* Common Setting */
+					29 00 00 00 00 00 02 35 00	/* TE Vsync ON */
+
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 05 2A 00 00 04 37	/* CASET 1080 */
+					29 00 00 00 00 00 05 2B 00 00 09 0B	/* PASET 2316 */
+					29 00 00 00 00 00 02 BA 02		/* scaler setup : 1.78x */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* FFC */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+					29 00 00 00 00 00 08 C5 11 10 50 35 3E 35 3E	/* 1160 Mbps */
+					29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY3 Disable */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* ERR_FG */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+					29 00 00 00 00 00 03 ED 04 4C	/* VLIN Monitor On */
+					29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY3 Disable */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* DSC setting */
+					07 01 00 00 00 00 01 01		/* DSC enable :  Compression Mode*/
+
+					/* Freq. setting: will be updated in __ss_vrr() */
+
+					/* TSP Hsync & WACOM Sync */
+					29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+					29 00 00 00 00 00 1C B9 08 0C 30 0C 3F 00 00 00 00 11 11 03 00 00 00 00 00 00 00 02 15 02 40 02 15 00 40
+					29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+
+					/* DIA setting */
+					29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+					29 00 00 00 00 00 03 B0 68 91
+					29 00 00 00 00 00 02 91 09		/* DIA setting */
+					29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+
+					/* Dither setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 06 6A
+					29 00 00 00 00 00 0D 6A 18 86 B1 18 86 B1 18 86 B1 00 00 00
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* Smooth dimming setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 0B B1
+					29 00 00 00 00 00 02 B1 08	/* smooth dimming setting */
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* HLPM/ALPM setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 09 F4
+					29 00 00 00 00 00 02 F4 D8
+					29 00 00 00 00 00 03 B0 4C B5
+					29 00 00 00 00 00 02 B5 12
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* Brightness Setting: gamma mode2 */
+					29 00 00 00 00 00 03 F0 5A 5A		/* TEST KEY2 Enable */
+					29 00 00 00 00 00 02 53 29		/* WRCTRLD: Dimming speed: 0x21=normal transition, 0x29=smooth transition */
+					29 00 00 00 00 00 04 B5 19 CD 16	/* ELVSS control: TSET=0x19 for 25 degree */
+					29 00 00 00 00 00 03 51 03 FF		/* WRDISBV: 03 FF = 450nit */
+					29 00 00 00 00 00 03 B0 0B 92
+					29 00 00 00 00 00 02 92	65		/* IRC: 0x65: Moderato */
+					29 00 00 00 00 00 03 B0 10 92
+					29 00 00 00 00 00 02 92 05		/* temp setting to be removed */
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY2 Disable */
+
+					29 00 00 00 00 00 03 9F 5A 5A		/* TEST KEY1 Disable  */
+				];
+				qcom,mdss-dsi-on-command-state = "dsi_lp_mode";
+				qcom,mdss-dsi-off-command=[
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 6A B1
+					29 00 00 00 00 00 02 B1 00
+					29 00 00 00 00 00 03 B0 30 F4
+					29 00 00 00 00 00 02 F4 A8
+					29 00 00 00 00 00 03 F0 A5 A5
+					05 01 00 00 14 00 01 28			/* display off, wait 20ms */
+
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+					05 01 00 00 00 00 01 10 		/* sleep in */
+					/* TODO: check VCI operating mode change in op code */
+					29 01 00 00 0A 00 03 9F 5A 5A		/* TEST KEY1 Disable wait 10ms */
+
+					/* Pre-Common Setting */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 B0 0A CB
+					29 00 00 00 00 00 02 CB 65	/* ETC: 0x25: after sleep out, 0x65: before sleep in */
+					29 00 00 00 00 00 02 F7 0F	/* panel update */
+					29 01 00 00 78 00 03 F0 A5 A5	/* TEST KEY2 Disable  120ms delay*/
+
+				];
+				qcom,mdss-dsi-off-command-state = "dsi_hs_mode";
+				qcom,partial-update-enabled = "single_roi";
+				qcom,panel-roi-alignment=<540 193 540 193 540 193>;
+				qcom,compression-mode = "dsc";
+				qcom,lm-split = <540 540>;
+				qcom,mdss-dsc-encoders = <2>;
+				qcom,mdss-dsc-slice-height = <193>;
+				qcom,mdss-dsc-slice-width = <540>;
+				qcom,mdss-dsc-slice-per-pkt = <1>;
+				qcom,mdss-dsc-bit-per-component = <8>;
+				qcom,mdss-dsc-bit-per-pixel = <8>;
+				qcom,mdss-dsc-block-prediction-enable;
+			};
+
+			fhd60hs {
+				qcom,display-topology = <1 1 1>, <2 2 1>;
+				qcom,default-topology-index = <1>;
+				qcom,mdss-dsi-panel-width = <1080>;
+				qcom,mdss-dsi-panel-height = <2316>;
+
+				qcom,mdss-dsi-h-pulse-width = <50>;
+				qcom,mdss-dsi-h-back-porch = <50>;
+				qcom,mdss-dsi-h-front-porch = <50>;
+				qcom,mdss-dsi-h-sync-skew = <0>;
+				qcom,mdss-dsi-v-pulse-width = <100>;
+				qcom,mdss-dsi-v-back-porch = <99>;
+				qcom,mdss-dsi-v-front-porch = <3803>;
+
+				samsung,mdss-dsi-sot-hs-mode;
+				qcom,mdss-dsi-panel-framerate = <60>;
+
+				/* transfer time: 48Hz: 20032, 60Hz: 15866, 96Hz: 9616, 120Hz: 7533 */
+				qcom,mdss-mdp-transfer-time-us = <7533>; /* 120HS based, self driving */
+
+				qcom,mdss-dsi-panel-clockrate = <1160000000>;
+				qcom,mdss-dsi-panel-phy-timings = [00 26 0A 0A 27 25 0A 0A 07 02 04 00 1F 1A];
+				qcom,mdss-dsi-t-clk-post = <0x1A>;
+				qcom,mdss-dsi-t-clk-pre = <0x1F>;
+				/*qcom,mdss-dsi-timing-switch-command-state;*/
+
+				qcom,mdss-dsi-timing-switch-command = [
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+
+					29 00 00 00 00 00 05 2A 00 00 04 37	/* CASET 1080 */
+					29 00 00 00 00 00 05 2B 00 00 09 0B	/* PASET 2316 */
+					29 00 00 00 00 00 02 BA 02		/* scaler setup : 1.78x */
+
+					29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY2 Disable */
+				];
+
+				qcom,mdss-dsi-on-command = [
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+
+					/* W/A: transmit dummy 2C command before sleep out. (requested by dlab)
+					 * In display off -> AOD on sequence, self display features allows
+					 * 4C cmd transmission without 2C cmd, and it causes sand strom image due to HAC DDI HW chip...
+					 * To prevent the issue, transmit dummy 2C command before sleep out command.
+					 */
+					29 00 00 00 00 00 04 2C 00 00 00
+
+					/* Sleep out */
+					05 01 00 00 78 00 01 11			/* Sleep out (Wait 120ms) */
+
+					/* Pre-Common Setting */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 B0 0A CB
+					29 00 00 00 00 00 02 CB 25	/* ETC: 0x25: after sleep out, 0x65: before sleep in */
+					29 00 00 00 00 00 02 F7 0F	/* panel update */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* Common Setting */
+					29 00 00 00 00 00 02 35 00	/* TE Vsync ON */
+
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 05 2A 00 00 04 37	/* CASET 1080 */
+					29 00 00 00 00 00 05 2B 00 00 09 0B	/* PASET 2316 */
+					29 00 00 00 00 00 02 BA 02		/* scaler setup : 1.78x */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* FFC */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+					29 00 00 00 00 00 08 C5 11 10 50 35 3E 35 3E	/* 1160 Mbps */
+					29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY3 Disable */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* ERR_FG */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+					29 00 00 00 00 00 03 ED 04 4C	/* VLIN Monitor On */
+					29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY3 Disable */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* DSC setting */
+					07 01 00 00 00 00 01 01		/* DSC enable :  Compression Mode*/
+
+					/* Freq. setting: will be updated in __ss_vrr() */
+
+					/* TSP Hsync & WACOM Sync */
+					29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+					29 00 00 00 00 00 1C B9 08 0C 30 0C 3F 00 00 00 00 11 11 03 00 00 00 00 00 00 00 02 15 02 40 02 15 00 40
+					29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+
+					/* DIA setting */
+					29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+					29 00 00 00 00 00 03 B0 68 91
+					29 00 00 00 00 00 02 91 09		/* DIA setting */
+					29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+
+					/* Dither setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 06 6A
+					29 00 00 00 00 00 0D 6A 18 86 B1 18 86 B1 18 86 B1 00 00 00
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* Smooth dimming setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 0B B1
+					29 00 00 00 00 00 02 B1 08	/* smooth dimming setting */
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* HLPM/ALPM setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 09 F4
+					29 00 00 00 00 00 02 F4 D8
+					29 00 00 00 00 00 03 B0 4C B5
+					29 00 00 00 00 00 02 B5 12
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* Brightness Setting: gamma mode2 */
+					29 00 00 00 00 00 03 F0 5A 5A		/* TEST KEY2 Enable */
+					29 00 00 00 00 00 02 53 29		/* WRCTRLD: Dimming speed: 0x21=normal transition, 0x29=smooth transition */
+					29 00 00 00 00 00 04 B5 19 CD 16	/* ELVSS control: TSET=0x19 for 25 degree */
+					29 00 00 00 00 00 03 51 03 FF		/* WRDISBV: 03 FF = 450nit */
+					29 00 00 00 00 00 03 B0 0B 92
+					29 00 00 00 00 00 02 92	65		/* IRC: 0x65: Moderato */
+					29 00 00 00 00 00 03 B0 10 92
+					29 00 00 00 00 00 02 92 05		/* temp setting to be removed */
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY2 Disable */
+
+					29 00 00 00 00 00 03 9F 5A 5A		/* TEST KEY1 Disable  */
+				];
+				qcom,mdss-dsi-on-command-state = "dsi_lp_mode";
+				qcom,mdss-dsi-off-command=[
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 6A B1
+					29 00 00 00 00 00 02 B1 00
+					29 00 00 00 00 00 03 B0 30 F4
+					29 00 00 00 00 00 02 F4 A8
+					29 00 00 00 00 00 03 F0 A5 A5
+					05 01 00 00 14 00 01 28			/* display off, wait 20ms */
+
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+					05 01 00 00 00 00 01 10 		/* sleep in */
+					/* TODO: check VCI operating mode change in op code */
+					29 01 00 00 0A 00 03 9F 5A 5A		/* TEST KEY1 Disable wait 10ms */
+
+					/* Pre-Common Setting */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 B0 0A CB
+					29 00 00 00 00 00 02 CB 65	/* ETC: 0x25: after sleep out, 0x65: before sleep in */
+					29 00 00 00 00 00 02 F7 0F	/* panel update */
+					29 01 00 00 78 00 03 F0 A5 A5	/* TEST KEY2 Disable  120ms delay*/
+
+				];
+				qcom,mdss-dsi-off-command-state = "dsi_hs_mode";
+				qcom,partial-update-enabled = "single_roi";
+				qcom,panel-roi-alignment=<540 193 540 193 540 193>;
+				qcom,compression-mode = "dsc";
+				qcom,lm-split = <540 540>;
+				qcom,mdss-dsc-encoders = <2>;
+				qcom,mdss-dsc-slice-height = <193>;
+				qcom,mdss-dsc-slice-width = <540>;
+				qcom,mdss-dsc-slice-per-pkt = <1>;
+				qcom,mdss-dsc-bit-per-component = <8>;
+				qcom,mdss-dsc-bit-per-pixel = <8>;
+				qcom,mdss-dsc-block-prediction-enable;
+			};
+
+			fhd60ns {
+				qcom,display-topology = <1 1 1>, <2 2 1>;
+				qcom,default-topology-index = <1>;
+				qcom,mdss-dsi-panel-width = <1080>;
+				qcom,mdss-dsi-panel-height = <2316>;
+
+				qcom,mdss-dsi-h-pulse-width = <50>;
+				qcom,mdss-dsi-h-back-porch = <50>;
+				qcom,mdss-dsi-h-front-porch = <50>;
+				qcom,mdss-dsi-h-sync-skew = <0>;
+				qcom,mdss-dsi-v-pulse-width = <100>;
+				qcom,mdss-dsi-v-back-porch = <100>;
+				qcom,mdss-dsi-v-front-porch = <3802>;
+
+				qcom,mdss-dsi-panel-framerate = <60>;
+				/* transfer time: 48Hz: 20032, 60Hz: 15866, 96Hz: 9616, 120Hz: 7533 */
+				qcom,mdss-mdp-transfer-time-us = <15866>;
+				qcom,mdss-dsi-panel-clockrate = <1160000000>;
+				qcom,mdss-dsi-panel-phy-timings = [00 26 0A 0A 27 25 0A 0A 07 02 04 00 1F 1A];
+				qcom,mdss-dsi-t-clk-post = <0x1A>;
+				qcom,mdss-dsi-t-clk-pre = <0x1F>;
+				/*qcom,mdss-dsi-timing-switch-command-state;*/
+
+				qcom,mdss-dsi-timing-switch-command = [
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+
+					29 00 00 00 00 00 05 2A 00 00 04 37	/* CASET 1080 */
+					29 00 00 00 00 00 05 2B 00 00 09 0B	/* PASET 2316 */
+					29 00 00 00 00 00 02 BA 02		/* scaler setup : 1.78x */
+
+					29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY2 Disable */
+				];
+
+				qcom,mdss-dsi-on-command = [
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+
+					/* W/A: transmit dummy 2C command before sleep out. (requested by dlab)
+					 * In display off -> AOD on sequence, self display features allows
+					 * 4C cmd transmission without 2C cmd, and it causes sand strom image due to HAC DDI HW chip...
+					 * To prevent the issue, transmit dummy 2C command before sleep out command.
+					 */
+					29 00 00 00 00 00 04 2C 00 00 00
+
+					/* Sleep out */
+					05 01 00 00 78 00 01 11			/* Sleep out (Wait 120ms) */
+
+					/* Pre-Common Setting */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 B0 0A CB
+					29 00 00 00 00 00 02 CB 25	/* ETC: 0x25: after sleep out, 0x65: before sleep in */
+					29 00 00 00 00 00 02 F7 0F	/* panel update */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* Common Setting */
+					29 00 00 00 00 00 02 35 00	/* TE Vsync ON */
+
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 05 2A 00 00 04 37	/* CASET 1080 */
+					29 00 00 00 00 00 05 2B 00 00 09 0B	/* PASET 2316 */
+					29 00 00 00 00 00 02 BA 02		/* scaler setup : 1.78x */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* FFC */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+					29 00 00 00 00 00 08 C5 11 10 50 35 3E 35 3E	/* 1160 Mbps */
+					29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY3 Disable */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* ERR_FG */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+					29 00 00 00 00 00 03 ED 04 4C	/* VLIN Monitor On */
+					29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY3 Disable */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* DSC setting */
+					07 01 00 00 00 00 01 01		/* DSC enable :  Compression Mode*/
+
+					/* Freq. setting: will be updated in __ss_vrr() */
+
+					/* TSP Hsync & WACOM Sync */
+					29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+					29 00 00 00 00 00 1C B9 08 0C 30 0C 3F 00 00 00 00 11 11 03 00 00 00 00 00 00 00 02 15 02 40 02 15 00 40
+					29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+
+					/* DIA setting */
+					29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+					29 00 00 00 00 00 03 B0 68 91
+					29 00 00 00 00 00 02 91 09		/* DIA setting */
+					29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+
+					/* Dither setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 06 6A
+					29 00 00 00 00 00 0D 6A 18 86 B1 18 86 B1 18 86 B1 00 00 00
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* Smooth dimming setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 0B B1
+					29 00 00 00 00 00 02 B1 08	/* smooth dimming setting */
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* HLPM/ALPM setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 09 F4
+					29 00 00 00 00 00 02 F4 D8
+					29 00 00 00 00 00 03 B0 4C B5
+					29 00 00 00 00 00 02 B5 12
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* Brightness Setting: gamma mode2 */
+					29 00 00 00 00 00 03 F0 5A 5A		/* TEST KEY2 Enable */
+					29 00 00 00 00 00 02 53 29		/* WRCTRLD: Dimming speed: 0x21=normal transition, 0x29=smooth transition */
+					29 00 00 00 00 00 04 B5 19 CD 16	/* ELVSS control: TSET=0x19 for 25 degree */
+					29 00 00 00 00 00 03 51 03 FF		/* WRDISBV: 03 FF = 450nit */
+					29 00 00 00 00 00 03 B0 0B 92
+					29 00 00 00 00 00 02 92	65		/* IRC: 0x65: Moderato */
+					29 00 00 00 00 00 03 B0 10 92
+					29 00 00 00 00 00 02 92 05		/* temp setting to be removed */
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY2 Disable */
+
+					29 00 00 00 00 00 03 9F 5A 5A		/* TEST KEY1 Disable  */
+				];
+				qcom,mdss-dsi-on-command-state = "dsi_lp_mode";
+				qcom,mdss-dsi-off-command=[
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 6A B1
+					29 00 00 00 00 00 02 B1 00
+					29 00 00 00 00 00 03 B0 30 F4
+					29 00 00 00 00 00 02 F4 A8
+					29 00 00 00 00 00 03 F0 A5 A5
+					05 01 00 00 14 00 01 28			/* display off, wait 20ms */
+
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+					05 01 00 00 00 00 01 10 		/* sleep in */
+					/* TODO: check VCI operating mode change in op code */
+					29 01 00 00 0A 00 03 9F 5A 5A		/* TEST KEY1 Disable wait 10ms */
+
+					/* Pre-Common Setting */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 B0 0A CB
+					29 00 00 00 00 00 02 CB 65	/* ETC: 0x25: after sleep out, 0x65: before sleep in */
+					29 00 00 00 00 00 02 F7 0F	/* panel update */
+					29 01 00 00 78 00 03 F0 A5 A5	/* TEST KEY2 Disable  120ms delay*/
+
+				];
+				qcom,mdss-dsi-off-command-state = "dsi_hs_mode";
+				qcom,partial-update-enabled = "single_roi";
+				qcom,panel-roi-alignment=<540 193 540 193 540 193>;
+				qcom,compression-mode = "dsc";
+				qcom,lm-split = <540 540>;
+				qcom,mdss-dsc-encoders = <2>;
+				qcom,mdss-dsc-slice-height = <193>;
+				qcom,mdss-dsc-slice-width = <540>;
+				qcom,mdss-dsc-slice-per-pkt = <1>;
+				qcom,mdss-dsc-bit-per-component = <8>;
+				qcom,mdss-dsc-bit-per-pixel = <8>;
+				qcom,mdss-dsc-block-prediction-enable;
+			};
+
+			fhd96hs {
+				qcom,display-topology = <1 1 1>, <2 2 1>;
+				qcom,default-topology-index = <1>;
+				qcom,mdss-dsi-panel-width = <1080>;
+				qcom,mdss-dsi-panel-height = <2316>;
+
+				qcom,mdss-dsi-h-pulse-width = <50>;
+				qcom,mdss-dsi-h-back-porch = <50>;
+				qcom,mdss-dsi-h-front-porch = <50>;
+				qcom,mdss-dsi-h-sync-skew = <0>;
+				qcom,mdss-dsi-v-pulse-width = <100>;
+				qcom,mdss-dsi-v-back-porch = <100>;
+				qcom,mdss-dsi-v-front-porch = <1433>;
+
+				samsung,mdss-dsi-sot-hs-mode;
+				qcom,mdss-dsi-panel-framerate = <96>;
+				/* transfer time: 48Hz: 20032, 60Hz: 15866, 96Hz: 9616, 120Hz: 7533 */
+				qcom,mdss-mdp-transfer-time-us = <7533>; /* 120HS based, long VFP */
+				qcom,mdss-dsi-panel-clockrate = <1160000000>;
+				qcom,mdss-dsi-panel-phy-timings = [00 26 0A 0A 27 25 0A 0A 07 02 04 00 1F 1A];
+				qcom,mdss-dsi-t-clk-post = <0x1A>;
+				qcom,mdss-dsi-t-clk-pre = <0x1F>;
+				/*qcom,mdss-dsi-timing-switch-command-state;*/
+
+				qcom,mdss-dsi-timing-switch-command = [
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+
+					29 00 00 00 00 00 05 2A 00 00 04 37	/* CASET 1080 */
+					29 00 00 00 00 00 05 2B 00 00 09 0B	/* PASET 2316 */
+					29 00 00 00 00 00 02 BA 02		/* scaler setup : 1.78x */
+
+					29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY2 Disable */
+				];
+
+				qcom,mdss-dsi-on-command = [
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+
+					/* W/A: transmit dummy 2C command before sleep out. (requested by dlab)
+					 * In display off -> AOD on sequence, self display features allows
+					 * 4C cmd transmission without 2C cmd, and it causes sand strom image due to HAC DDI HW chip...
+					 * To prevent the issue, transmit dummy 2C command before sleep out command.
+					 */
+					29 00 00 00 00 00 04 2C 00 00 00
+
+					/* Sleep out */
+					05 01 00 00 78 00 01 11			/* Sleep out (Wait 120ms) */
+
+					/* Pre-Common Setting */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 B0 0A CB
+					29 00 00 00 00 00 02 CB 25	/* ETC: 0x25: after sleep out, 0x65: before sleep in */
+					29 00 00 00 00 00 02 F7 0F	/* panel update */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* Common Setting */
+					29 00 00 00 00 00 02 35 00	/* TE Vsync ON */
+
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 05 2A 00 00 04 37	/* CASET 1080 */
+					29 00 00 00 00 00 05 2B 00 00 09 0B	/* PASET 2316 */
+					29 00 00 00 00 00 02 BA 02		/* scaler setup : 1.78x */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* FFC */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+					29 00 00 00 00 00 08 C5 11 10 50 35 3E 35 3E	/* 1160 Mbps */
+					29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY3 Disable */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* ERR_FG */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+					29 00 00 00 00 00 03 ED 04 4C	/* VLIN Monitor On */
+					29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY3 Disable */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* DSC setting */
+					07 01 00 00 00 00 01 01		/* DSC enable :  Compression Mode*/
+
+					/* Freq. setting: will be updated in __ss_vrr() */
+
+					/* TSP Hsync & WACOM Sync */
+					29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+					29 00 00 00 00 00 1C B9 08 0C 30 0C 3F 00 00 00 00 11 11 03 00 00 00 00 00 00 00 02 15 02 40 02 15 00 40
+					29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+
+					/* DIA setting */
+					29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+					29 00 00 00 00 00 03 B0 68 91
+					29 00 00 00 00 00 02 91 09		/* DIA setting */
+					29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+
+					/* Dither setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 06 6A
+					29 00 00 00 00 00 0D 6A 18 86 B1 18 86 B1 18 86 B1 00 00 00
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* Smooth dimming setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 0B B1
+					29 00 00 00 00 00 02 B1 08	/* smooth dimming setting */
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* HLPM/ALPM setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 09 F4
+					29 00 00 00 00 00 02 F4 D8
+					29 00 00 00 00 00 03 B0 4C B5
+					29 00 00 00 00 00 02 B5 12
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* Brightness Setting: gamma mode2 */
+					29 00 00 00 00 00 03 F0 5A 5A		/* TEST KEY2 Enable */
+					29 00 00 00 00 00 02 53 29		/* WRCTRLD: Dimming speed: 0x21=normal transition, 0x29=smooth transition */
+					29 00 00 00 00 00 04 B5 19 CD 16	/* ELVSS control: TSET=0x19 for 25 degree */
+					29 00 00 00 00 00 03 51 03 FF		/* WRDISBV: 03 FF = 450nit */
+					29 00 00 00 00 00 03 B0 0B 92
+					29 00 00 00 00 00 02 92	65		/* IRC: 0x65: Moderato */
+					29 00 00 00 00 00 03 B0 10 92
+					29 00 00 00 00 00 02 92 05		/* temp setting to be removed */
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY2 Disable */
+
+					29 00 00 00 00 00 03 9F 5A 5A		/* TEST KEY1 Disable  */
+				];
+				qcom,mdss-dsi-on-command-state = "dsi_lp_mode";
+				qcom,mdss-dsi-off-command=[
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 6A B1
+					29 00 00 00 00 00 02 B1 00
+					29 00 00 00 00 00 03 B0 30 F4
+					29 00 00 00 00 00 02 F4 A8
+					29 00 00 00 00 00 03 F0 A5 A5
+					05 01 00 00 14 00 01 28			/* display off, wait 20ms */
+
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+					05 01 00 00 00 00 01 10 		/* sleep in */
+					/* TODO: check VCI operating mode change in op code */
+					29 01 00 00 0A 00 03 9F 5A 5A		/* TEST KEY1 Disable wait 10ms */
+
+					/* Pre-Common Setting */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 B0 0A CB
+					29 00 00 00 00 00 02 CB 65	/* ETC: 0x25: after sleep out, 0x65: before sleep in */
+					29 00 00 00 00 00 02 F7 0F	/* panel update */
+					29 01 00 00 78 00 03 F0 A5 A5	/* TEST KEY2 Disable  120ms delay*/
+
+				];
+				qcom,mdss-dsi-off-command-state = "dsi_hs_mode";
+				qcom,partial-update-enabled = "single_roi";
+				qcom,panel-roi-alignment=<540 193 540 193 540 193>;
+				qcom,compression-mode = "dsc";
+				qcom,lm-split = <540 540>;
+				qcom,mdss-dsc-encoders = <2>;
+				qcom,mdss-dsc-slice-height = <193>;
+				qcom,mdss-dsc-slice-width = <540>;
+				qcom,mdss-dsc-slice-per-pkt = <1>;
+				qcom,mdss-dsc-bit-per-component = <8>;
+				qcom,mdss-dsc-bit-per-pixel = <8>;
+				qcom,mdss-dsc-block-prediction-enable;
+			};
+
+			fhd120hs {
+				qcom,display-topology = <1 1 1>, <2 2 1>;
+				qcom,default-topology-index = <1>;
+				qcom,mdss-dsi-panel-width = <1080>;
+				qcom,mdss-dsi-panel-height = <2316>;
+
+				qcom,mdss-dsi-h-pulse-width = <50>;
+				qcom,mdss-dsi-h-back-porch = <50>;
+				qcom,mdss-dsi-h-front-porch = <50>;
+				qcom,mdss-dsi-h-sync-skew = <0>;
+				qcom,mdss-dsi-v-pulse-width = <100>;
+				qcom,mdss-dsi-v-back-porch = <100>;
+				qcom,mdss-dsi-v-front-porch = <643>;
+
+				samsung,mdss-dsi-sot-hs-mode;
+				qcom,mdss-dsi-panel-framerate = <120>;
+				/* transfer time: 48Hz: 20032, 60Hz: 15866, 96Hz: 9616, 120Hz: 7533 */
+				qcom,mdss-mdp-transfer-time-us = <7533>;
+				qcom,mdss-dsi-panel-clockrate = <1160000000>;
+				qcom,mdss-dsi-panel-phy-timings = [00 26 0A 0A 27 25 0A 0A 07 02 04 00 1F 1A];
+				qcom,mdss-dsi-t-clk-post = <0x1A>;
+				qcom,mdss-dsi-t-clk-pre = <0x1F>;
+				/*qcom,mdss-dsi-timing-switch-command-state;*/
+
+				qcom,mdss-dsi-timing-switch-command = [
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+
+					29 00 00 00 00 00 05 2A 00 00 04 37	/* CASET 1080 */
+					29 00 00 00 00 00 05 2B 00 00 09 0B	/* PASET 2316 */
+					29 00 00 00 00 00 02 BA 02		/* scaler setup : 1.78x */
+
+					29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY2 Disable */
+				];
+
+				qcom,mdss-dsi-on-command = [
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+
+					/* W/A: transmit dummy 2C command before sleep out. (requested by dlab)
+					 * In display off -> AOD on sequence, self display features allows
+					 * 4C cmd transmission without 2C cmd, and it causes sand strom image due to HAC DDI HW chip...
+					 * To prevent the issue, transmit dummy 2C command before sleep out command.
+					 */
+					29 00 00 00 00 00 04 2C 00 00 00
+
+					/* Sleep out */
+					05 01 00 00 78 00 01 11			/* Sleep out (Wait 120ms) */
+
+					/* Pre-Common Setting */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 B0 0A CB
+					29 00 00 00 00 00 02 CB 25	/* ETC: 0x25: after sleep out, 0x65: before sleep in */
+					29 00 00 00 00 00 02 F7 0F	/* panel update */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* Common Setting */
+					29 00 00 00 00 00 02 35 00	/* TE Vsync ON */
+
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 05 2A 00 00 04 37	/* CASET 1080 */
+					29 00 00 00 00 00 05 2B 00 00 09 0B	/* PASET 2316 */
+					29 00 00 00 00 00 02 BA 02		/* scaler setup : 1.78x */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* FFC */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+					29 00 00 00 00 00 08 C5 11 10 50 35 3E 35 3E	/* 1160 Mbps */
+					29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY3 Disable */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* ERR_FG */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+					29 00 00 00 00 00 03 ED 04 4C	/* VLIN Monitor On */
+					29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY3 Disable */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* DSC setting */
+					07 01 00 00 00 00 01 01		/* DSC enable :  Compression Mode*/
+
+					/* Freq. setting: will be updated in __ss_vrr() */
+
+					/* TSP Hsync & WACOM Sync */
+					29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+					29 00 00 00 00 00 1C B9 08 0C 30 0C 3F 00 00 00 00 11 11 03 00 00 00 00 00 00 00 02 15 02 40 02 15 00 40
+					29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+
+					/* DIA setting */
+					29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+					29 00 00 00 00 00 03 B0 68 91
+					29 00 00 00 00 00 02 91 09		/* DIA setting */
+					29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+
+					/* Dither setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 06 6A
+					29 00 00 00 00 00 0D 6A 18 86 B1 18 86 B1 18 86 B1 00 00 00
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* Smooth dimming setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 0B B1
+					29 00 00 00 00 00 02 B1 08	/* smooth dimming setting */
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* HLPM/ALPM setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 09 F4
+					29 00 00 00 00 00 02 F4 D8
+					29 00 00 00 00 00 03 B0 4C B5
+					29 00 00 00 00 00 02 B5 12
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* Brightness Setting: gamma mode2 */
+					29 00 00 00 00 00 03 F0 5A 5A		/* TEST KEY2 Enable */
+					29 00 00 00 00 00 02 53 29		/* WRCTRLD: Dimming speed: 0x21=normal transition, 0x29=smooth transition */
+					29 00 00 00 00 00 04 B5 19 CD 16	/* ELVSS control: TSET=0x19 for 25 degree */
+					29 00 00 00 00 00 03 51 03 FF		/* WRDISBV: 03 FF = 450nit */
+					29 00 00 00 00 00 03 B0 0B 92
+					29 00 00 00 00 00 02 92	65		/* IRC: 0x65: Moderato */
+					29 00 00 00 00 00 03 B0 10 92
+					29 00 00 00 00 00 02 92 05		/* temp setting to be removed */
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY2 Disable */
+
+					29 00 00 00 00 00 03 9F 5A 5A		/* TEST KEY1 Disable  */
+				];
+				qcom,mdss-dsi-on-command-state = "dsi_lp_mode";
+				qcom,mdss-dsi-off-command=[
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 6A B1
+					29 00 00 00 00 00 02 B1 00
+					29 00 00 00 00 00 03 B0 30 F4
+					29 00 00 00 00 00 02 F4 A8
+					29 00 00 00 00 00 03 F0 A5 A5
+					05 01 00 00 14 00 01 28			/* display off, wait 20ms */
+
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+					05 01 00 00 00 00 01 10 		/* sleep in */
+					/* TODO: check VCI operating mode change in op code */
+					29 01 00 00 0A 00 03 9F 5A 5A		/* TEST KEY1 Disable wait 10ms */
+
+					/* Pre-Common Setting */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 B0 0A CB
+					29 00 00 00 00 00 02 CB 65	/* ETC: 0x25: after sleep out, 0x65: before sleep in */
+					29 00 00 00 00 00 02 F7 0F	/* panel update */
+					29 01 00 00 78 00 03 F0 A5 A5	/* TEST KEY2 Disable  120ms delay*/
+
+				];
+				qcom,mdss-dsi-off-command-state = "dsi_hs_mode";
+				qcom,partial-update-enabled = "single_roi";
+				qcom,panel-roi-alignment=<540 193 540 193 540 193>;
+				qcom,compression-mode = "dsc";
+				qcom,lm-split = <540 540>;
+				qcom,mdss-dsc-encoders = <2>;
+				qcom,mdss-dsc-slice-height = <193>;
+				qcom,mdss-dsc-slice-width = <540>;
+				qcom,mdss-dsc-slice-per-pkt = <1>;
+				qcom,mdss-dsc-bit-per-component = <8>;
+				qcom,mdss-dsc-bit-per-pixel = <8>;
+				qcom,mdss-dsc-block-prediction-enable;
+			};
+
+			hd48hs {
+				qcom,display-topology = <1 1 1>, <2 2 1>;
+				qcom,default-topology-index = <1>;
+				qcom,mdss-dsi-panel-width = <720>;
+				qcom,mdss-dsi-panel-height = <1544>;
+
+				qcom,mdss-dsi-h-pulse-width = <100>;
+				qcom,mdss-dsi-h-back-porch = <100>;
+				qcom,mdss-dsi-h-front-porch = <100>;
+				qcom,mdss-dsi-h-sync-skew = <0>;
+				qcom,mdss-dsi-v-pulse-width = <200>;
+				qcom,mdss-dsi-v-back-porch = <199>;
+				qcom,mdss-dsi-v-front-porch = <5516>;
+
+				samsung,mdss-dsi-sot-hs-mode;
+				qcom,mdss-dsi-panel-framerate = <48>;
+				/* transfer time: 48Hz: 20032, 60Hz: 15866, 96Hz: 9616, 120Hz: 7533 */
+				qcom,mdss-mdp-transfer-time-us = <7533>; /* 96HS based, self driving */
+				qcom,mdss-dsi-panel-clockrate = <1160000000>;
+				qcom,mdss-dsi-panel-phy-timings = [00 26 0A 0A 27 25 0A 0A 07 02 04 00 1F 1A];
+				qcom,mdss-dsi-t-clk-post = <0x1A>;
+				qcom,mdss-dsi-t-clk-pre = <0x1F>;
+				/*qcom,mdss-dsi-timing-switch-command-state;*/
+
+				qcom,mdss-dsi-timing-switch-command = [
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+
+					29 00 00 00 00 00 05 2A 00 00 02 CF	/* CASET 720 */
+					29 00 00 00 00 00 05 2B 00 00 06 07	/* PASET 1544 */
+					29 00 00 00 00 00 02 BA 00	/* scaler setup : 4x */
+
+					29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY2 Disable */
+				];
+
+				qcom,mdss-dsi-on-command = [
+					/* W/A: transmit dummy 2C command before sleep out. (requested by dlab)
+					 * In display off -> AOD on sequence, self display features allows
+					 * 4C cmd transmission without 2C cmd, and it causes sand strom image due to HAC DDI HW chip...
+					 * To prevent the issue, transmit dummy 2C command before sleep out command.
+					 */
+					29 00 00 00 00 00 04 2C 00 00 00
+
+					/* Sleep out */
+					05 01 00 00 78 00 01 11			/* Sleep out (Wait 120ms) */
+
+					/* Pre-Common Setting */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 B0 0A CB
+					29 00 00 00 00 00 02 CB 25	/* ETC: 0x25: after sleep out, 0x65: before sleep in */
+					29 00 00 00 00 00 02 F7 0F	/* panel update */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* Common Setting */
+					29 00 00 00 00 00 02 35 00	/* TE Vsync ON */
+
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 05 2A 00 00 02 CF	/* CASET 720 */
+					29 00 00 00 00 00 05 2B 00 00 06 07	/* PASET 1544 */
+					29 00 00 00 00 00 02 BA 00	/* scaler setup : 4x */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* FFC */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+					29 00 00 00 00 00 08 C5 11 10 50 35 3E 35 3E	/* 1160 Mbps */
+					29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY3 Disable */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* ERR_FG */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+					29 00 00 00 00 00 03 ED 04 4C	/* VLIN Monitor On */
+					29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY3 Disable */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* DSC setting */
+					07 01 00 00 00 00 01 01		/* DSC enable :  Compression Mode*/
+
+					/* Freq. setting: will be updated in __ss_vrr() */
+
+					/* TSP Hsync & WACOM Sync */
+					29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+					29 00 00 00 00 00 1C B9 08 0C 30 0C 3F 00 00 00 00 11 11 03 00 00 00 00 00 00 00 02 15 02 40 02 15 00 40
+					29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+
+					/* DIA setting */
+					29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+					29 00 00 00 00 00 03 B0 68 91
+					29 00 00 00 00 00 02 91 09		/* DIA setting */
+					29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+
+					/* Dither setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 06 6A
+					29 00 00 00 00 00 0D 6A 18 86 B1 18 86 B1 18 86 B1 00 00 00
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* Smooth dimming setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 0B B1
+					29 00 00 00 00 00 02 B1 08	/* smooth dimming setting */
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* HLPM/ALPM setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 09 F4
+					29 00 00 00 00 00 02 F4 D8
+					29 00 00 00 00 00 03 B0 4C B5
+					29 00 00 00 00 00 02 B5 12
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* Brightness Setting: gamma mode2 */
+					29 00 00 00 00 00 03 F0 5A 5A		/* TEST KEY2 Enable */
+					29 00 00 00 00 00 02 53 29		/* WRCTRLD: Dimming speed: 0x21=normal transition, 0x29=smooth transition */
+					29 00 00 00 00 00 04 B5 19 CD 16	/* ELVSS control: TSET=0x19 for 25 degree */
+					29 00 00 00 00 00 03 51 03 FF		/* WRDISBV: 03 FF = 450nit */
+					29 00 00 00 00 00 03 B0 0B 92
+					29 00 00 00 00 00 02 92	65		/* IRC: 0x65: Moderato */
+					29 00 00 00 00 00 03 B0 10 92
+					29 00 00 00 00 00 02 92 05		/* temp setting to be removed */
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY2 Disable */
+
+					29 00 00 00 00 00 03 9F 5A 5A		/* TEST KEY1 Disable  */
+				];
+				qcom,mdss-dsi-on-command-state = "dsi_lp_mode";
+				qcom,mdss-dsi-off-command=[
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 6A B1
+					29 00 00 00 00 00 02 B1 00
+					29 00 00 00 00 00 03 B0 30 F4
+					29 00 00 00 00 00 02 F4 A8
+					29 00 00 00 00 00 03 F0 A5 A5
+					05 01 00 00 14 00 01 28			/* display off, wait 20ms */
+
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+					05 01 00 00 00 00 01 10 		/* sleep in */
+					/* TODO: check VCI operating mode change in op code */
+					29 01 00 00 0A 00 03 9F 5A 5A		/* TEST KEY1 Disable wait 10ms */
+
+					/* Pre-Common Setting */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 B0 0A CB
+					29 00 00 00 00 00 02 CB 65	/* ETC: 0x25: after sleep out, 0x65: before sleep in */
+					29 00 00 00 00 00 02 F7 0F	/* panel update */
+					29 01 00 00 78 00 03 F0 A5 A5	/* TEST KEY2 Disable  120ms delay*/
+
+				];
+				qcom,mdss-dsi-off-command-state = "dsi_hs_mode";
+				qcom,partial-update-enabled = "single_roi";
+				qcom,panel-roi-alignment=<360 193 360 193 360 193>;
+				qcom,compression-mode = "dsc";
+				qcom,lm-split = <360 360>;
+				qcom,mdss-dsc-encoders = <2>;
+				qcom,mdss-dsc-slice-height = <193>;
+				qcom,mdss-dsc-slice-width = <360>;
+				qcom,mdss-dsc-slice-per-pkt = <1>;
+				qcom,mdss-dsc-bit-per-component = <8>;
+				qcom,mdss-dsc-bit-per-pixel = <8>;
+				qcom,mdss-dsc-block-prediction-enable;
+			};
+
+			hd48ns {
+				qcom,display-topology = <1 1 1>, <2 2 1>;
+				qcom,default-topology-index = <1>;
+				qcom,mdss-dsi-panel-width = <720>;
+				qcom,mdss-dsi-panel-height = <1544>;
+
+				qcom,mdss-dsi-h-pulse-width = <100>;
+				qcom,mdss-dsi-h-back-porch = <100>;
+				qcom,mdss-dsi-h-front-porch = <100>;
+				qcom,mdss-dsi-h-sync-skew = <0>;
+				qcom,mdss-dsi-v-pulse-width = <200>;
+				qcom,mdss-dsi-v-back-porch = <200>;
+				qcom,mdss-dsi-v-front-porch = <5515>;
+
+				qcom,mdss-dsi-panel-framerate = <48>;
+				/* transfer time: 48Hz: 20032, 60Hz: 15866, 96Hz: 9616, 120Hz: 7533 */
+				qcom,mdss-mdp-transfer-time-us = <15866>;	/* 60NS based, long VFP */
+				qcom,mdss-dsi-panel-clockrate = <1160000000>;
+				qcom,mdss-dsi-panel-phy-timings = [00 26 0A 0A 27 25 0A 0A 07 02 04 00 1F 1A];
+				qcom,mdss-dsi-t-clk-post = <0x1A>;
+				qcom,mdss-dsi-t-clk-pre = <0x1F>;
+				/*qcom,mdss-dsi-timing-switch-command-state;*/
+
+				qcom,mdss-dsi-timing-switch-command = [
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+
+					29 00 00 00 00 00 05 2A 00 00 02 CF	/* CASET 720 */
+					29 00 00 00 00 00 05 2B 00 00 06 07	/* PASET 1544 */
+					29 00 00 00 00 00 02 BA 00	/* scaler setup : 4x */
+
+					29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY2 Disable */
+				];
+
+				qcom,mdss-dsi-on-command = [
+					/* W/A: transmit dummy 2C command before sleep out. (requested by dlab)
+					 * In display off -> AOD on sequence, self display features allows
+					 * 4C cmd transmission without 2C cmd, and it causes sand strom image due to HAC DDI HW chip...
+					 * To prevent the issue, transmit dummy 2C command before sleep out command.
+					 */
+					29 00 00 00 00 00 04 2C 00 00 00
+
+					/* Sleep out */
+					05 01 00 00 78 00 01 11			/* Sleep out (Wait 120ms) */
+
+					/* Pre-Common Setting */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 B0 0A CB
+					29 00 00 00 00 00 02 CB 25	/* ETC: 0x25: after sleep out, 0x65: before sleep in */
+					29 00 00 00 00 00 02 F7 0F	/* panel update */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* Common Setting */
+					29 00 00 00 00 00 02 35 00	/* TE Vsync ON */
+
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 05 2A 00 00 02 CF	/* CASET 720 */
+					29 00 00 00 00 00 05 2B 00 00 06 07	/* PASET 1544 */
+					29 00 00 00 00 00 02 BA 00	/* scaler setup : 4x */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* FFC */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+					29 00 00 00 00 00 08 C5 11 10 50 35 3E 35 3E	/* 1160 Mbps */
+					29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY3 Disable */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* ERR_FG */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+					29 00 00 00 00 00 03 ED 04 4C	/* VLIN Monitor On */
+					29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY3 Disable */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* DSC setting */
+					07 01 00 00 00 00 01 01		/* DSC enable :  Compression Mode*/
+
+					/* Freq. setting: will be updated in __ss_vrr() */
+
+					/* TSP Hsync & WACOM Sync */
+					29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+					29 00 00 00 00 00 1C B9 08 0C 30 0C 3F 00 00 00 00 11 11 03 00 00 00 00 00 00 00 02 15 02 40 02 15 00 40
+					29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+
+					/* DIA setting */
+					29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+					29 00 00 00 00 00 03 B0 68 91
+					29 00 00 00 00 00 02 91 09		/* DIA setting */
+					29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+
+					/* Dither setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 06 6A
+					29 00 00 00 00 00 0D 6A 18 86 B1 18 86 B1 18 86 B1 00 00 00
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* Smooth dimming setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 0B B1
+					29 00 00 00 00 00 02 B1 08	/* smooth dimming setting */
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* HLPM/ALPM setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 09 F4
+					29 00 00 00 00 00 02 F4 D8
+					29 00 00 00 00 00 03 B0 4C B5
+					29 00 00 00 00 00 02 B5 12
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* Brightness Setting: gamma mode2 */
+					29 00 00 00 00 00 03 F0 5A 5A		/* TEST KEY2 Enable */
+					29 00 00 00 00 00 02 53 29		/* WRCTRLD: Dimming speed: 0x21=normal transition, 0x29=smooth transition */
+					29 00 00 00 00 00 04 B5 19 CD 16	/* ELVSS control: TSET=0x19 for 25 degree */
+					29 00 00 00 00 00 03 51 03 FF		/* WRDISBV: 03 FF = 450nit */
+					29 00 00 00 00 00 03 B0 0B 92
+					29 00 00 00 00 00 02 92	65		/* IRC: 0x65: Moderato */
+					29 00 00 00 00 00 03 B0 10 92
+					29 00 00 00 00 00 02 92 05		/* temp setting to be removed */
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY2 Disable */
+
+					29 00 00 00 00 00 03 9F 5A 5A		/* TEST KEY1 Disable  */
+				];
+				qcom,mdss-dsi-on-command-state = "dsi_lp_mode";
+				qcom,mdss-dsi-off-command=[
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 6A B1
+					29 00 00 00 00 00 02 B1 00
+					29 00 00 00 00 00 03 B0 30 F4
+					29 00 00 00 00 00 02 F4 A8
+					29 00 00 00 00 00 03 F0 A5 A5
+					05 01 00 00 14 00 01 28			/* display off, wait 20ms */
+
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+					05 01 00 00 00 00 01 10 		/* sleep in */
+					/* TODO: check VCI operating mode change in op code */
+					29 01 00 00 0A 00 03 9F 5A 5A		/* TEST KEY1 Disable wait 10ms */
+
+					/* Pre-Common Setting */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 B0 0A CB
+					29 00 00 00 00 00 02 CB 65	/* ETC: 0x25: after sleep out, 0x65: before sleep in */
+					29 00 00 00 00 00 02 F7 0F	/* panel update */
+					29 01 00 00 78 00 03 F0 A5 A5	/* TEST KEY2 Disable  120ms delay*/
+
+				];
+				qcom,mdss-dsi-off-command-state = "dsi_hs_mode";
+				qcom,partial-update-enabled = "single_roi";
+				qcom,panel-roi-alignment=<360 193 360 193 360 193>;
+				qcom,compression-mode = "dsc";
+				qcom,lm-split = <360 360>;
+				qcom,mdss-dsc-encoders = <2>;
+				qcom,mdss-dsc-slice-height = <193>;
+				qcom,mdss-dsc-slice-width = <360>;
+				qcom,mdss-dsc-slice-per-pkt = <1>;
+				qcom,mdss-dsc-bit-per-component = <8>;
+				qcom,mdss-dsc-bit-per-pixel = <8>;
+				qcom,mdss-dsc-block-prediction-enable;
+			};
+
+			hd60hs {
+				qcom,display-topology = <1 1 1>, <2 2 1>;
+				qcom,default-topology-index = <1>;
+				qcom,mdss-dsi-panel-width = <720>;
+				qcom,mdss-dsi-panel-height = <1544>;
+
+				qcom,mdss-dsi-h-pulse-width = <100>;
+				qcom,mdss-dsi-h-back-porch = <100>;
+				qcom,mdss-dsi-h-front-porch = <100>;
+				qcom,mdss-dsi-h-sync-skew = <0>;
+				qcom,mdss-dsi-v-pulse-width = <200>;
+				qcom,mdss-dsi-v-back-porch = <199>;
+				qcom,mdss-dsi-v-front-porch = <4024>;
+
+				samsung,mdss-dsi-sot-hs-mode;
+				qcom,mdss-dsi-panel-framerate = <60>;
+
+				/* transfer time: 48Hz: 20032, 60Hz: 15866, 96Hz: 9616, 120Hz: 7533 */
+				qcom,mdss-mdp-transfer-time-us = <7533>; /* 120HS based, self driving */
+
+				qcom,mdss-dsi-panel-clockrate = <1160000000>;
+				qcom,mdss-dsi-panel-phy-timings = [00 26 0A 0A 27 25 0A 0A 07 02 04 00 1F 1A];
+				qcom,mdss-dsi-t-clk-post = <0x1A>;
+				qcom,mdss-dsi-t-clk-pre = <0x1F>;
+				/*qcom,mdss-dsi-timing-switch-command-state;*/
+
+				qcom,mdss-dsi-timing-switch-command = [
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+
+					29 00 00 00 00 00 05 2A 00 00 02 CF	/* CASET 720 */
+					29 00 00 00 00 00 05 2B 00 00 06 07	/* PASET 1544 */
+					29 00 00 00 00 00 02 BA 00	/* scaler setup : 4x */
+
+					29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY2 Disable */
+				];
+
+				qcom,mdss-dsi-on-command = [
+					/* W/A: transmit dummy 2C command before sleep out. (requested by dlab)
+					 * In display off -> AOD on sequence, self display features allows
+					 * 4C cmd transmission without 2C cmd, and it causes sand strom image due to HAC DDI HW chip...
+					 * To prevent the issue, transmit dummy 2C command before sleep out command.
+					 */
+					29 00 00 00 00 00 04 2C 00 00 00
+
+					/* Sleep out */
+					05 01 00 00 78 00 01 11			/* Sleep out (Wait 120ms) */
+
+					/* Pre-Common Setting */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 B0 0A CB
+					29 00 00 00 00 00 02 CB 25	/* ETC: 0x25: after sleep out, 0x65: before sleep in */
+					29 00 00 00 00 00 02 F7 0F	/* panel update */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* Common Setting */
+					29 00 00 00 00 00 02 35 00	/* TE Vsync ON */
+
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 05 2A 00 00 02 CF	/* CASET 720 */
+					29 00 00 00 00 00 05 2B 00 00 06 07	/* PASET 1544 */
+					29 00 00 00 00 00 02 BA 00	/* scaler setup : 4x */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* FFC */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+					29 00 00 00 00 00 08 C5 11 10 50 35 3E 35 3E	/* 1160 Mbps */
+					29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY3 Disable */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* ERR_FG */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+					29 00 00 00 00 00 03 ED 04 4C	/* VLIN Monitor On */
+					29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY3 Disable */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* DSC setting */
+					07 01 00 00 00 00 01 01		/* DSC enable :  Compression Mode*/
+
+					/* Freq. setting: will be updated in __ss_vrr() */
+
+					/* TSP Hsync & WACOM Sync */
+					29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+					29 00 00 00 00 00 1C B9 08 0C 30 0C 3F 00 00 00 00 11 11 03 00 00 00 00 00 00 00 02 15 02 40 02 15 00 40
+					29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+
+					/* DIA setting */
+					29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+					29 00 00 00 00 00 03 B0 68 91
+					29 00 00 00 00 00 02 91 09		/* DIA setting */
+					29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+
+					/* Dither setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 06 6A
+					29 00 00 00 00 00 0D 6A 18 86 B1 18 86 B1 18 86 B1 00 00 00
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* Smooth dimming setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 0B B1
+					29 00 00 00 00 00 02 B1 08	/* smooth dimming setting */
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* HLPM/ALPM setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 09 F4
+					29 00 00 00 00 00 02 F4 D8
+					29 00 00 00 00 00 03 B0 4C B5
+					29 00 00 00 00 00 02 B5 12
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* Brightness Setting: gamma mode2 */
+					29 00 00 00 00 00 03 F0 5A 5A		/* TEST KEY2 Enable */
+					29 00 00 00 00 00 02 53 29		/* WRCTRLD: Dimming speed: 0x21=normal transition, 0x29=smooth transition */
+					29 00 00 00 00 00 04 B5 19 CD 16	/* ELVSS control: TSET=0x19 for 25 degree */
+					29 00 00 00 00 00 03 51 03 FF		/* WRDISBV: 03 FF = 450nit */
+					29 00 00 00 00 00 03 B0 0B 92
+					29 00 00 00 00 00 02 92	65		/* IRC: 0x65: Moderato */
+					29 00 00 00 00 00 03 B0 10 92
+					29 00 00 00 00 00 02 92 05		/* temp setting to be removed */
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY2 Disable */
+
+					29 00 00 00 00 00 03 9F 5A 5A		/* TEST KEY1 Disable  */
+				];
+				qcom,mdss-dsi-on-command-state = "dsi_lp_mode";
+				qcom,mdss-dsi-off-command=[
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 6A B1
+					29 00 00 00 00 00 02 B1 00
+					29 00 00 00 00 00 03 B0 30 F4
+					29 00 00 00 00 00 02 F4 A8
+					29 00 00 00 00 00 03 F0 A5 A5
+					05 01 00 00 14 00 01 28			/* display off, wait 20ms */
+
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+					05 01 00 00 00 00 01 10 		/* sleep in */
+					/* TODO: check VCI operating mode change in op code */
+					29 01 00 00 0A 00 03 9F 5A 5A		/* TEST KEY1 Disable wait 10ms */
+
+					/* Pre-Common Setting */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 B0 0A CB
+					29 00 00 00 00 00 02 CB 65	/* ETC: 0x25: after sleep out, 0x65: before sleep in */
+					29 00 00 00 00 00 02 F7 0F	/* panel update */
+					29 01 00 00 78 00 03 F0 A5 A5	/* TEST KEY2 Disable  120ms delay*/
+
+				];
+				qcom,mdss-dsi-off-command-state = "dsi_hs_mode";
+				qcom,partial-update-enabled = "single_roi";
+				qcom,panel-roi-alignment=<360 193 360 193 360 193>;
+				qcom,compression-mode = "dsc";
+				qcom,lm-split = <360 360>;
+				qcom,mdss-dsc-encoders = <2>;
+				qcom,mdss-dsc-slice-height = <193>;
+				qcom,mdss-dsc-slice-width = <360>;
+				qcom,mdss-dsc-slice-per-pkt = <1>;
+				qcom,mdss-dsc-bit-per-component = <8>;
+				qcom,mdss-dsc-bit-per-pixel = <8>;
+				qcom,mdss-dsc-block-prediction-enable;
+			};
+
+			hd60ns {
+				qcom,display-topology = <1 1 1>, <2 2 1>;
+				qcom,default-topology-index = <1>;
+				qcom,mdss-dsi-panel-width = <720>;
+				qcom,mdss-dsi-panel-height = <1544>;
+
+				qcom,mdss-dsi-h-pulse-width = <100>;
+				qcom,mdss-dsi-h-back-porch = <100>;
+				qcom,mdss-dsi-h-front-porch = <100>;
+				qcom,mdss-dsi-h-sync-skew = <0>;
+				qcom,mdss-dsi-v-pulse-width = <200>;
+				qcom,mdss-dsi-v-back-porch = <200>;
+				qcom,mdss-dsi-v-front-porch = <4023>;
+
+				qcom,mdss-dsi-panel-framerate = <60>;
+				/* transfer time: 48Hz: 20032, 60Hz: 15866, 96Hz: 9616, 120Hz: 7533 */
+				qcom,mdss-mdp-transfer-time-us = <15866>;
+				qcom,mdss-dsi-panel-clockrate = <1160000000>;
+				qcom,mdss-dsi-panel-phy-timings = [00 26 0A 0A 27 25 0A 0A 07 02 04 00 1F 1A];
+				qcom,mdss-dsi-t-clk-post = <0x1A>;
+				qcom,mdss-dsi-t-clk-pre = <0x1F>;
+				/*qcom,mdss-dsi-timing-switch-command-state;*/
+
+				qcom,mdss-dsi-timing-switch-command = [
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+
+					29 00 00 00 00 00 05 2A 00 00 02 CF	/* CASET 720 */
+					29 00 00 00 00 00 05 2B 00 00 06 07	/* PASET 1544 */
+					29 00 00 00 00 00 02 BA 00	/* scaler setup : 4x */
+
+					29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY2 Disable */
+				];
+
+				qcom,mdss-dsi-on-command = [
+					/* W/A: transmit dummy 2C command before sleep out. (requested by dlab)
+					 * In display off -> AOD on sequence, self display features allows
+					 * 4C cmd transmission without 2C cmd, and it causes sand strom image due to HAC DDI HW chip...
+					 * To prevent the issue, transmit dummy 2C command before sleep out command.
+					 */
+					29 00 00 00 00 00 04 2C 00 00 00
+
+					/* Sleep out */
+					05 01 00 00 78 00 01 11			/* Sleep out (Wait 120ms) */
+
+					/* Pre-Common Setting */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 B0 0A CB
+					29 00 00 00 00 00 02 CB 25	/* ETC: 0x25: after sleep out, 0x65: before sleep in */
+					29 00 00 00 00 00 02 F7 0F	/* panel update */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* Common Setting */
+					29 00 00 00 00 00 02 35 00	/* TE Vsync ON */
+
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 05 2A 00 00 02 CF	/* CASET 720 */
+					29 00 00 00 00 00 05 2B 00 00 06 07	/* PASET 1544 */
+					29 00 00 00 00 00 02 BA 00	/* scaler setup : 4x */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* FFC */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+					29 00 00 00 00 00 08 C5 11 10 50 35 3E 35 3E	/* 1160 Mbps */
+					29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY3 Disable */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* ERR_FG */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+					29 00 00 00 00 00 03 ED 04 4C	/* VLIN Monitor On */
+					29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY3 Disable */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* DSC setting */
+					07 01 00 00 00 00 01 01		/* DSC enable :  Compression Mode*/
+
+					/* Freq. setting: will be updated in __ss_vrr() */
+
+					/* TSP Hsync & WACOM Sync */
+					29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+					29 00 00 00 00 00 1C B9 08 0C 30 0C 3F 00 00 00 00 11 11 03 00 00 00 00 00 00 00 02 15 02 40 02 15 00 40
+					29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+
+					/* DIA setting */
+					29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+					29 00 00 00 00 00 03 B0 68 91
+					29 00 00 00 00 00 02 91 09		/* DIA setting */
+					29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+
+					/* Dither setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 06 6A
+					29 00 00 00 00 00 0D 6A 18 86 B1 18 86 B1 18 86 B1 00 00 00
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* Smooth dimming setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 0B B1
+					29 00 00 00 00 00 02 B1 08	/* smooth dimming setting */
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* HLPM/ALPM setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 09 F4
+					29 00 00 00 00 00 02 F4 D8
+					29 00 00 00 00 00 03 B0 4C B5
+					29 00 00 00 00 00 02 B5 12
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* Brightness Setting: gamma mode2 */
+					29 00 00 00 00 00 03 F0 5A 5A		/* TEST KEY2 Enable */
+					29 00 00 00 00 00 02 53 29		/* WRCTRLD: Dimming speed: 0x21=normal transition, 0x29=smooth transition */
+					29 00 00 00 00 00 04 B5 19 CD 16	/* ELVSS control: TSET=0x19 for 25 degree */
+					29 00 00 00 00 00 03 51 03 FF		/* WRDISBV: 03 FF = 450nit */
+					29 00 00 00 00 00 03 B0 0B 92
+					29 00 00 00 00 00 02 92	65		/* IRC: 0x65: Moderato */
+					29 00 00 00 00 00 03 B0 10 92
+					29 00 00 00 00 00 02 92 05		/* temp setting to be removed */
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY2 Disable */
+
+					29 00 00 00 00 00 03 9F 5A 5A		/* TEST KEY1 Disable  */
+				];
+				qcom,mdss-dsi-on-command-state = "dsi_lp_mode";
+				qcom,mdss-dsi-off-command=[
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 6A B1
+					29 00 00 00 00 00 02 B1 00
+					29 00 00 00 00 00 03 B0 30 F4
+					29 00 00 00 00 00 02 F4 A8
+					29 00 00 00 00 00 03 F0 A5 A5
+					05 01 00 00 14 00 01 28			/* display off, wait 20ms */
+
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+					05 01 00 00 00 00 01 10 		/* sleep in */
+					/* TODO: check VCI operating mode change in op code */
+					29 01 00 00 0A 00 03 9F 5A 5A		/* TEST KEY1 Disable wait 10ms */
+
+					/* Pre-Common Setting */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 B0 0A CB
+					29 00 00 00 00 00 02 CB 65	/* ETC: 0x25: after sleep out, 0x65: before sleep in */
+					29 00 00 00 00 00 02 F7 0F	/* panel update */
+					29 01 00 00 78 00 03 F0 A5 A5	/* TEST KEY2 Disable  120ms delay*/
+
+				];
+				qcom,mdss-dsi-off-command-state = "dsi_hs_mode";
+				qcom,partial-update-enabled = "single_roi";
+				qcom,panel-roi-alignment=<360 193 360 193 360 193>;
+				qcom,compression-mode = "dsc";
+				qcom,lm-split = <360 360>;
+				qcom,mdss-dsc-encoders = <2>;
+				qcom,mdss-dsc-slice-height = <193>;
+				qcom,mdss-dsc-slice-width = <360>;
+				qcom,mdss-dsc-slice-per-pkt = <1>;
+				qcom,mdss-dsc-bit-per-component = <8>;
+				qcom,mdss-dsc-bit-per-pixel = <8>;
+				qcom,mdss-dsc-block-prediction-enable;
+			};
+
+			hd96hs {
+				qcom,display-topology = <1 1 1>, <2 2 1>;
+				qcom,default-topology-index = <1>;
+				qcom,mdss-dsi-panel-width = <720>;
+				qcom,mdss-dsi-panel-height = <1544>;
+
+				qcom,mdss-dsi-h-pulse-width = <100>;
+				qcom,mdss-dsi-h-back-porch = <100>;
+				qcom,mdss-dsi-h-front-porch = <100>;
+				qcom,mdss-dsi-h-sync-skew = <0>;
+				qcom,mdss-dsi-v-pulse-width = <200>;
+				qcom,mdss-dsi-v-back-porch = <200>;
+				qcom,mdss-dsi-v-front-porch = <1786>;
+
+				samsung,mdss-dsi-sot-hs-mode;
+				qcom,mdss-dsi-panel-framerate = <96>;
+				/* transfer time: 48Hz: 20032, 60Hz: 15866, 96Hz: 9616, 120Hz: 7533 */
+				qcom,mdss-mdp-transfer-time-us = <7533>; /* 120HS based, long VFP */
+				qcom,mdss-dsi-panel-clockrate = <1160000000>;
+				qcom,mdss-dsi-panel-phy-timings = [00 26 0A 0A 27 25 0A 0A 07 02 04 00 1F 1A];
+				qcom,mdss-dsi-t-clk-post = <0x1A>;
+				qcom,mdss-dsi-t-clk-pre = <0x1F>;
+				/*qcom,mdss-dsi-timing-switch-command-state;*/
+
+				qcom,mdss-dsi-timing-switch-command = [
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+
+					29 00 00 00 00 00 05 2A 00 00 02 CF	/* CASET 720 */
+					29 00 00 00 00 00 05 2B 00 00 06 07	/* PASET 1544 */
+					29 00 00 00 00 00 02 BA 00	/* scaler setup : 4x */
+
+					29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY2 Disable */
+				];
+
+				qcom,mdss-dsi-on-command = [
+					/* W/A: transmit dummy 2C command before sleep out. (requested by dlab)
+					 * In display off -> AOD on sequence, self display features allows
+					 * 4C cmd transmission without 2C cmd, and it causes sand strom image due to HAC DDI HW chip...
+					 * To prevent the issue, transmit dummy 2C command before sleep out command.
+					 */
+					29 00 00 00 00 00 04 2C 00 00 00
+
+					/* Sleep out */
+					05 01 00 00 78 00 01 11			/* Sleep out (Wait 120ms) */
+
+					/* Pre-Common Setting */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 B0 0A CB
+					29 00 00 00 00 00 02 CB 25	/* ETC: 0x25: after sleep out, 0x65: before sleep in */
+					29 00 00 00 00 00 02 F7 0F	/* panel update */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* Common Setting */
+					29 00 00 00 00 00 02 35 00	/* TE Vsync ON */
+
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 05 2A 00 00 02 CF	/* CASET 720 */
+					29 00 00 00 00 00 05 2B 00 00 06 07	/* PASET 1544 */
+					29 00 00 00 00 00 02 BA 00	/* scaler setup : 4x */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* FFC */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+					29 00 00 00 00 00 08 C5 11 10 50 35 3E 35 3E	/* 1160 Mbps */
+					29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY3 Disable */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* ERR_FG */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+					29 00 00 00 00 00 03 ED 04 4C	/* VLIN Monitor On */
+					29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY3 Disable */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* DSC setting */
+					07 01 00 00 00 00 01 01		/* DSC enable :  Compression Mode*/
+
+					/* Freq. setting: will be updated in __ss_vrr() */
+
+					/* TSP Hsync & WACOM Sync */
+					29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+					29 00 00 00 00 00 1C B9 08 0C 30 0C 3F 00 00 00 00 11 11 03 00 00 00 00 00 00 00 02 15 02 40 02 15 00 40
+					29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+
+					/* DIA setting */
+					29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+					29 00 00 00 00 00 03 B0 68 91
+					29 00 00 00 00 00 02 91 09		/* DIA setting */
+					29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+
+					/* Dither setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 06 6A
+					29 00 00 00 00 00 0D 6A 18 86 B1 18 86 B1 18 86 B1 00 00 00
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* Smooth dimming setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 0B B1
+					29 00 00 00 00 00 02 B1 08	/* smooth dimming setting */
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* HLPM/ALPM setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 09 F4
+					29 00 00 00 00 00 02 F4 D8
+					29 00 00 00 00 00 03 B0 4C B5
+					29 00 00 00 00 00 02 B5 12
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* Brightness Setting: gamma mode2 */
+					29 00 00 00 00 00 03 F0 5A 5A		/* TEST KEY2 Enable */
+					29 00 00 00 00 00 02 53 29		/* WRCTRLD: Dimming speed: 0x21=normal transition, 0x29=smooth transition */
+					29 00 00 00 00 00 04 B5 19 CD 16	/* ELVSS control: TSET=0x19 for 25 degree */
+					29 00 00 00 00 00 03 51 03 FF		/* WRDISBV: 03 FF = 450nit */
+					29 00 00 00 00 00 03 B0 0B 92
+					29 00 00 00 00 00 02 92	65		/* IRC: 0x65: Moderato */
+					29 00 00 00 00 00 03 B0 10 92
+					29 00 00 00 00 00 02 92 05		/* temp setting to be removed */
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY2 Disable */
+
+					29 00 00 00 00 00 03 9F 5A 5A		/* TEST KEY1 Disable  */
+				];
+				qcom,mdss-dsi-on-command-state = "dsi_lp_mode";
+				qcom,mdss-dsi-off-command=[
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 6A B1
+					29 00 00 00 00 00 02 B1 00
+					29 00 00 00 00 00 03 B0 30 F4
+					29 00 00 00 00 00 02 F4 A8
+					29 00 00 00 00 00 03 F0 A5 A5
+					05 01 00 00 14 00 01 28			/* display off, wait 20ms */
+
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+					05 01 00 00 00 00 01 10 		/* sleep in */
+					/* TODO: check VCI operating mode change in op code */
+					29 01 00 00 0A 00 03 9F 5A 5A		/* TEST KEY1 Disable wait 10ms */
+
+					/* Pre-Common Setting */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 B0 0A CB
+					29 00 00 00 00 00 02 CB 65	/* ETC: 0x25: after sleep out, 0x65: before sleep in */
+					29 00 00 00 00 00 02 F7 0F	/* panel update */
+					29 01 00 00 78 00 03 F0 A5 A5	/* TEST KEY2 Disable  120ms delay*/
+
+				];
+				qcom,mdss-dsi-off-command-state = "dsi_hs_mode";
+				qcom,partial-update-enabled = "single_roi";
+				qcom,panel-roi-alignment=<360 193 360 193 360 193>;
+				qcom,compression-mode = "dsc";
+				qcom,lm-split = <360 360>;
+				qcom,mdss-dsc-encoders = <2>;
+				qcom,mdss-dsc-slice-height = <193>;
+				qcom,mdss-dsc-slice-width = <360>;
+				qcom,mdss-dsc-slice-per-pkt = <1>;
+				qcom,mdss-dsc-bit-per-component = <8>;
+				qcom,mdss-dsc-bit-per-pixel = <8>;
+				qcom,mdss-dsc-block-prediction-enable;
+			};
+
+			hd120hs {
+				qcom,display-topology = <1 1 1>, <2 2 1>;
+				qcom,default-topology-index = <1>;
+				qcom,mdss-dsi-panel-width = <720>;
+				qcom,mdss-dsi-panel-height = <1544>;
+
+				qcom,mdss-dsi-h-pulse-width = <100>;
+				qcom,mdss-dsi-h-back-porch = <100>;
+				qcom,mdss-dsi-h-front-porch = <100>;
+				qcom,mdss-dsi-h-sync-skew = <0>;
+				qcom,mdss-dsi-v-pulse-width = <200>;
+				qcom,mdss-dsi-v-back-porch = <200>;
+				qcom,mdss-dsi-v-front-porch = <1040>;
+
+				samsung,mdss-dsi-sot-hs-mode;
+				qcom,mdss-dsi-panel-framerate = <120>;
+				/* transfer time: 48Hz: 20032, 60Hz: 15866, 96Hz: 9616, 120Hz: 7533 */
+				qcom,mdss-mdp-transfer-time-us = <7533>;
+				qcom,mdss-dsi-panel-clockrate = <1160000000>;
+				qcom,mdss-dsi-panel-phy-timings = [00 26 0A 0A 27 25 0A 0A 07 02 04 00 1F 1A];
+				qcom,mdss-dsi-t-clk-post = <0x1A>;
+				qcom,mdss-dsi-t-clk-pre = <0x1F>;
+				/*qcom,mdss-dsi-timing-switch-command-state;*/
+
+				qcom,mdss-dsi-timing-switch-command = [
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+
+					29 00 00 00 00 00 05 2A 00 00 02 CF	/* CASET 720 */
+					29 00 00 00 00 00 05 2B 00 00 06 07	/* PASET 1544 */
+					29 00 00 00 00 00 02 BA 00	/* scaler setup : 4x */
+
+					29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY2 Disable */
+				];
+
+				qcom,mdss-dsi-on-command = [
+					/* W/A: transmit dummy 2C command before sleep out. (requested by dlab)
+					 * In display off -> AOD on sequence, self display features allows
+					 * 4C cmd transmission without 2C cmd, and it causes sand strom image due to HAC DDI HW chip...
+					 * To prevent the issue, transmit dummy 2C command before sleep out command.
+					 */
+					29 00 00 00 00 00 04 2C 00 00 00
+
+					/* Sleep out */
+					05 01 00 00 78 00 01 11			/* Sleep out (Wait 120ms) */
+
+					/* Pre-Common Setting */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 B0 0A CB
+					29 00 00 00 00 00 02 CB 25	/* ETC: 0x25: after sleep out, 0x65: before sleep in */
+					29 00 00 00 00 00 02 F7 0F	/* panel update */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* Common Setting */
+					29 00 00 00 00 00 02 35 00	/* TE Vsync ON */
+
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 05 2A 00 00 02 CF	/* CASET 720 */
+					29 00 00 00 00 00 05 2B 00 00 06 07	/* PASET 1544 */
+					29 00 00 00 00 00 02 BA 00	/* scaler setup : 4x */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* FFC */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+					29 00 00 00 00 00 08 C5 11 10 50 35 3E 35 3E	/* 1160 Mbps */
+					29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY3 Disable */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* ERR_FG */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 FC 5A 5A	/* TEST KEY3 Enable */
+					29 00 00 00 00 00 03 ED 04 4C	/* VLIN Monitor On */
+					29 00 00 00 00 00 03 FC A5 A5	/* TEST KEY3 Disable */
+					29 00 00 00 00 00 03 F0 A5 A5	/* TEST KEY2 Disable */
+
+					/* DSC setting */
+					07 01 00 00 00 00 01 01		/* DSC enable :  Compression Mode*/
+
+					/* Freq. setting: will be updated in __ss_vrr() */
+
+					/* TSP Hsync & WACOM Sync */
+					29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+					29 00 00 00 00 00 1C B9 08 0C 30 0C 3F 00 00 00 00 11 11 03 00 00 00 00 00 00 00 02 15 02 40 02 15 00 40
+					29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+
+					/* DIA setting */
+					29 00 00 00 00 00 03 F0 5A 5A		/* Test KEY2 Enable */
+					29 00 00 00 00 00 03 B0 68 91
+					29 00 00 00 00 00 02 91 09		/* DIA setting */
+					29 00 00 00 00 00 03 F0 A5 A5		/* Test KEY2 Disable */
+
+					/* Dither setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 06 6A
+					29 00 00 00 00 00 0D 6A 18 86 B1 18 86 B1 18 86 B1 00 00 00
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* Smooth dimming setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 0B B1
+					29 00 00 00 00 00 02 B1 08	/* smooth dimming setting */
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* HLPM/ALPM setting */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 09 F4
+					29 00 00 00 00 00 02 F4 D8
+					29 00 00 00 00 00 03 B0 4C B5
+					29 00 00 00 00 00 02 B5 12
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5
+
+					/* Brightness Setting: gamma mode2 */
+					29 00 00 00 00 00 03 F0 5A 5A		/* TEST KEY2 Enable */
+					29 00 00 00 00 00 02 53 29		/* WRCTRLD: Dimming speed: 0x21=normal transition, 0x29=smooth transition */
+					29 00 00 00 00 00 04 B5 19 CD 16	/* ELVSS control: TSET=0x19 for 25 degree */
+					29 00 00 00 00 00 03 51 03 FF		/* WRDISBV: 03 FF = 450nit */
+					29 00 00 00 00 00 03 B0 0B 92
+					29 00 00 00 00 00 02 92	65		/* IRC: 0x65: Moderato */
+					29 00 00 00 00 00 03 B0 10 92
+					29 00 00 00 00 00 02 92 05		/* temp setting to be removed */
+					29 00 00 00 00 00 02 F7 0F		/* Panel update */
+					29 00 00 00 00 00 03 F0 A5 A5		/* TEST KEY2 Disable */
+
+					29 00 00 00 00 00 03 9F 5A 5A		/* TEST KEY1 Disable  */
+				];
+				qcom,mdss-dsi-on-command-state = "dsi_lp_mode";
+				qcom,mdss-dsi-off-command=[
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+					29 00 00 00 00 00 03 F0 5A 5A
+					29 00 00 00 00 00 03 B0 6A B1
+					29 00 00 00 00 00 02 B1 00
+					29 00 00 00 00 00 03 B0 30 F4
+					29 00 00 00 00 00 02 F4 A8
+					29 00 00 00 00 00 03 F0 A5 A5
+					05 01 00 00 14 00 01 28			/* display off, wait 20ms */
+
+					29 00 00 00 00 00 03 9F A5 A5		/* TEST KEY1 Enable */
+					05 01 00 00 00 00 01 10 		/* sleep in */
+					/* TODO: check VCI operating mode change in op code */
+					29 01 00 00 0A 00 03 9F 5A 5A		/* TEST KEY1 Disable wait 10ms */
+
+					/* Pre-Common Setting */
+					29 00 00 00 00 00 03 F0 5A 5A	/* TEST KEY2 Enable */
+					29 00 00 00 00 00 03 B0 0A CB
+					29 00 00 00 00 00 02 CB 65	/* ETC: 0x25: after sleep out, 0x65: before sleep in */
+					29 00 00 00 00 00 02 F7 0F	/* panel update */
+					29 01 00 00 78 00 03 F0 A5 A5	/* TEST KEY2 Disable  120ms delay*/
+
+				];
+				qcom,mdss-dsi-off-command-state = "dsi_hs_mode";
+				qcom,partial-update-enabled = "single_roi";
+				qcom,panel-roi-alignment=<360 193 360 193 360 193>;
+				qcom,compression-mode = "dsc";
+				qcom,lm-split = <360 360>;
+				qcom,mdss-dsc-encoders = <2>;
+				qcom,mdss-dsc-slice-height = <193>;
+				qcom,mdss-dsc-slice-width = <360>;
+				qcom,mdss-dsc-slice-per-pkt = <1>;
+				qcom,mdss-dsc-bit-per-component = <8>;
+				qcom,mdss-dsc-bit-per-pixel = <8>;
+				qcom,mdss-dsc-block-prediction-enable;
+			};
+		};
+	};
+};

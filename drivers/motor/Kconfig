@@ -1,0 +1,87 @@
+#
+# Motor devices configuration
+#
+
+comment "Motor configs"
+
+config SS_VIBRATOR
+	tristate "SS_VIBRATOR"
+	default n
+	help
+	  Say Y to enable SAMSUNG VIBRATOR support
+	  SS Vibrator
+	  You will get supprot for that.
+
+	  If unsure, say N.
+
+config BOOST_POWER_SHARE
+	bool "Boost Power Share"
+	default n
+	help
+	  Say Y to enable Boost Power(5V) share.
+
+config MOTOR_DRV_MAX77705
+	tristate "Maxim MAX77705 motor"
+	default n
+	depends on MFD_MAX77705
+	help
+	  If you say yes here you will get support for the
+	  motor of Maxim MAX77705 PMIC.
+	  To enable this driver, MFD_MAX77705 should be enabled and
+	  MFD_MAX77705 calls this driver.
+
+config ANDROID_TIMED_OUTPUT
+	bool "Timed output class driver"
+
+config MOTOR_DRV_CS40L2X
+	tristate "Cirrus CS40L2X motor"
+	depends on I2C
+	depends on ANDROID_TIMED_OUTPUT
+	default n
+	help
+	  Say Y to enable MOTOR_CS40L2X
+
+config MOTOR_DRV_CS40L2X_PMIC_RESET
+	tristate "Cirrus CS40L2X motor using reset pin with PMIC LDO"
+	depends on I2C
+	depends on MOTOR_DRV_CS40L2X
+	default n
+	help
+	  Say Y to enable MOTOR_DRV_CS40L2X_PMIC_RESET
+
+config CS40L2X_SAMSUNG_FEATURE
+	tristate "Cirrus CS40L2X motor and Samsung feature"
+	depends on MOTOR_DRV_CS40L2X
+	default n
+	help
+	  Say Y to enable CS40L2X_SAMSUNG_FEATURE
+
+config MSM_VIBRATOR
+	tristate "MSM_VIBRATOR"
+	default n
+	help
+	  Say Y to enable MSM_VIBRATOR support
+
+config VIB_NOTIFIER
+	bool "VIB notifier support"
+	default n
+	help
+	  If you say yes here you will get support for
+	  the VBUS status change notification.
+
+config MOTOR_DRV_ISA1000A
+	tristate "ISA1000A motor"
+	default n
+	help
+	  Say Y to enable MOTOR_CS40L2X
+
+config 1030LRA_MOTOR
+	tristate "feature to distinguish haptic engine support"
+	default n
+	depends on MOTOR_DRV_CS40L2X
+	help
+	 Say Y to include support for haptic engine node
+	 in cs40l2x driver.
+	 If you use 1030LRA motor, this can't support multi frequency
+	 so you should enable this.
+

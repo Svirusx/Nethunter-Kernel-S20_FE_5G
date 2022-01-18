@@ -1,0 +1,23 @@
+# drivers/staging/samsung/Kconfig
+#
+# Copyright (c) 2010-2011 Samsung Electronics Co., Ltd.
+#		http://www.samsung.com/
+#
+# Licensed under GPLv2
+
+comment "Samsung TN Features"
+menuconfig SEC_EXT
+	bool "Samsung TN extension Feature"
+
+config SEC_HQM_DEVICE
+	bool "Samsung sec hqm device"
+	default n
+	help
+	  Samsung hqm device feature
+
+comment "Logging Heavy Task Cpu Options"
+config SEC_HEAVY_TASK_CPU
+	bool "Enable heacy cpu core counting"
+	default n
+	help
+	  This option enables heavy cpu core counting.

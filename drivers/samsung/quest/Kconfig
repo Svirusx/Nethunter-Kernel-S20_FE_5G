@@ -1,0 +1,108 @@
+config SEC_QUEST
+	bool "Samsung QUEST Feature"
+	default n
+	help
+	  Samsung QUEST Feature, to test chipset quality
+
+config SEC_QUEST_UEFI
+	bool "Samsung QUEST UEFI Feature"
+	default n
+	help
+	  Samsung QUEST UEFI Feature, to test chipset quality
+
+config SEC_QUEST_UEFI_ENHANCEMENT
+	bool "Samsung QUEST UEFI ENHENCEMENT Feature"
+	default n
+	help
+	  Samsung QUEST UEFI ENHENCEMENT Feature, to test chipset quality
+
+config SEC_DDR_SKP
+	bool "Samsung DDR SKP Feature"
+	default n
+	depends on SEC_FACTORY
+	help
+	  Samsung DDR SKP Feature, to test chipset quality
+
+config SEC_QUEST_HLOS_DUMMY_SMD
+	bool "Samsung QUEST SMD CONCEPT Feature (do not quest.sh)"
+	default n
+	depends on SEC_FACTORY
+	help
+	  Samsung QUEST SMD CONCEPT Feature (do not quest.sh)
+
+config SEC_QUEST_HLOS_NATURESCENE_SMD
+	bool "Samsung QUEST SMD CONCEPT Feature (execute NATURESCENE)"
+	default n
+	depends on SEC_FACTORY
+	help
+	  Samsung QUEST SMD CONCEPT Feature (execute NATURESCENE)
+
+config SEC_QUEST_HLOS_DUMMY_MAIN_CAL
+	bool "Samsung QUEST MAIN/CAL CONCEPT Feature (do not quest.sh)"
+	default n
+	depends on SEC_FACTORY
+	help
+	  Samsung QUEST MAIN/CAL CONCEPT Feature (do not quest.sh)
+
+config SEC_QUEST_MAIN_HLOS_SUPPORT_FUSION
+	bool "Samsung MAIN QUEST support FUSION"
+	default n
+	depends on SEC_FACTORY
+	help
+	  Samsung MAIN QUEST support FUSION
+
+config SEC_QUEST_CAL_HLOS_SUPPORT_FUSION
+	bool "Samsung CAL QUEST support FUSION"
+	default n
+	depends on SEC_FACTORY
+	help
+	  Samsung CAL QUEST support FUSION
+
+config SEC_QUEST_AUTO_TRIGGER_KWORKER
+	bool "Samsung QUEST AUTO TRIGGER CONCEPT Feature (using kworker)"
+	default n
+	depends on SEC_FACTORY	
+	help
+	 Samsung QUEST AUTO TRIGGER CONCEPT Feature (using kworker)
+
+config SEC_QUEST_AUTO_TRIGGER_INIT_WRITE
+	bool "Samsung QUEST AUTO TRIGGER CONCEPT Feature (using init.rc write)"
+	default n
+	depends on SEC_FACTORY	
+	help
+	 Samsung QUEST AUTO TRIGGER CONCEPT Feature (using init.rc write)
+
+config SEC_QUEST_UEFI_USER
+	bool "feature to trigger uefi quest from user binary"
+	default n
+	depends on !SEC_FACTORY
+	help
+	 feature to trigger uefi quest from user binary
+
+config SEC_QUEST_BPS_CLASSIFIER
+	bool "Samsung TN QUEST BPS Classifier Feature"
+	default n
+	depends on SEC_FACTORY
+	help
+	  This option enables gathering bps classifier information during factory process.
+
+config SEC_QUEST_USE_SS_HLOS_SH_MAIN_CAL
+	bool "Samsung QUEST Use SAMSUNG HLOS Shell Script For MAIN and CAL QUEST"
+	default n
+	depends on SEC_FACTORY
+	help
+	  This option use samsung HLOS Shell Script for MAIN and CAL QUEST
+
+config SEC_QUEST_DDR_SCAN_USER
+	bool "Samsung QUEST supports user_dram_test"
+	default n
+	depends on !SEC_FACTORY
+	help
+	 Samsung Quest supports user_dram_test
+
+config SEC_QUEST_EDL
+	bool "Samsung QUEST EDL Feature"
+	default n
+	depends on SEC_FACTORY
+	help
+	  This option enables QUEST EDL.

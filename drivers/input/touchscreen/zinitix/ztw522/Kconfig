@@ -1,0 +1,11 @@
+#
+# Zinitix Touchscreen driver configuration
+#
+
+config TOUCHSCREEN_ZINITIX_ZTW522
+	bool "ZINITIX ZTW522 touchscreen driver"
+	depends on I2C
+	default n
+	help
+	  Say Y here if you have a ZINITIX ZTW522 touchscreen.
+	  If unsure, say N.

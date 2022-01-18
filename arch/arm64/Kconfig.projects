@@ -1,0 +1,12 @@
+config SEC_R8Q_PROJECT
+	default n
+	bool "Samsung R8Q Project"
+	help
+	  Support for Samsung R8Q Project
+
+config MACH_R8Q_EUR_OPEN
+	default n
+	bool "Samsung R8Q EUR OPEN"
+	help
+	  Support for Samsung R8Q EUR OPEN device.
+

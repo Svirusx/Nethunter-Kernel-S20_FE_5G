@@ -1,0 +1,48 @@
+config ARGOS
+	bool "Throughput monitoring Feature"
+	default n
+	help
+	  This option enables monitoring the data throughput and doing several actions for
+	  enhancing the performance such as adjusting the CPU freqency, allocating the tasks
+	  to the appropriate CPU and so on
+
+menuconfig SEC_MISC
+	bool "Enable SEC miscellaneous feature"
+	default n
+
+config SEC_SMEM
+	bool "Enable SEC smem interface"
+	depends on SEC_DEBUG
+	default n
+	help
+	  Use Qualcomm SMEM insterface to share DDR information
+
+config SEC_SMEM_VENDOR1_VERSION
+	int "SEC_SMEM_VENDOR1_VERSION"
+	range 0 100
+	default 5
+	depends on SEC_SMEM
+
+config SEC_DEBUG_APPS_CLK_LOGGING
+	bool "Enable APPS Clock Logging"
+        depends on SEC_SMEM
+	default n
+	help
+	  Use APPS Clock Logging feature
+menu "Samsung Vbus Notifier drivers"
+config VBUS_NOTIFIER
+	bool "VBUS notifier support"
+	default n
+	help
+	  If you say yes here you will get support for
+	  the VBUS status change notification.
+	  
+config VBUS_NOTIFIER_MODULE
+	tristate "VBUS notifier support module"
+	default n
+	help
+	 this feature is for module build
+	 If this feature is "m", KO object will be make
+	 need modprobe for loading
+	 It is made by samsung
+endmenu
