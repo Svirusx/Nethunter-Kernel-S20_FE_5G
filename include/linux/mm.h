@@ -3047,7 +3047,7 @@ extern struct reclaim_param reclaim_task_anon(struct task_struct *task,
 extern struct reclaim_param reclaim_task_nomap(struct task_struct *task,
 		int nr_to_reclaim);
 extern int reclaim_address_space(struct address_space *mapping,
-		struct reclaim_param *rp, struct vm_area_struct *vma);
+		struct reclaim_param *rp);
 extern int proc_reclaim_notifier_register(struct notifier_block *nb);
 extern int proc_reclaim_notifier_unregister(struct notifier_block *nb);
 #endif
@@ -3081,6 +3081,7 @@ static inline void record_memsize_reserved(const char *name, phys_addr_t base,
 				    phys_addr_t size, bool nomap,
 				    bool reusable) { }
 #endif
+extern bool ion_account_print_usage(void);
 
 #endif /* __KERNEL__ */
 #endif /* _LINUX_MM_H */

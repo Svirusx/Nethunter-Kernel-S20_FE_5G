@@ -742,6 +742,11 @@ static ssize_t get_lp_dump(struct device *dev, struct device_attribute *attr, ch
 			sec_spg_dat[1] = 0;
 		}
 
+		if (dump_cnt * ts->sponge_dump_format > SEC_TS_MAX_SPONGE_DUMP_BUFFER) {
+			input_err(true, &ts->client->dev, "%s: wrong sponge dump read size (%d)\n",
+					__func__, dump_cnt * ts->sponge_dump_format);
+			goto out;
+		}
 		ret = ts->sec_ts_read_sponge(ts, sec_spg_dat, dump_cnt * ts->sponge_dump_format);
 		if (ret < 0) {
 			input_err(true, &ts->client->dev, "%s: Failed to read sponge\n", __func__);

@@ -37,13 +37,12 @@ struct sr100_spi_platform_data {
   unsigned int rtc_sync_gpio;
   unsigned int spi_handshake_gpio;
   unsigned int ant_connection_status_gpio;
+  unsigned int clk_req_gpio;
+  unsigned int clk_req_irq;
   const char *uwb_vdd_io;
   const char *uwb_vdd;
   const char *uwb_vdd_rf;
   const char *uwb_vdd_se_i2c_pullup;
-#ifdef CONFIG_UWB_PMIC_CLOCK
-  struct   clk *clk;
-#endif
 };
 enum {
   PWR_DISABLE = 0,

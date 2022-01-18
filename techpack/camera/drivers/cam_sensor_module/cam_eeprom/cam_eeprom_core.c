@@ -2043,6 +2043,7 @@ static int cam_eeprom_read_memory(struct cam_eeprom_ctrl_t *e_ctrl,
 #if 1
 	uint32_t                          addr = 0, size = 0, read_size = 0;
 #endif
+	int                               retry = 3;
 
 	if (!e_ctrl) {
 		CAM_ERR(CAM_EEPROM, "e_ctrl is NULL");
@@ -2145,7 +2146,24 @@ static int cam_eeprom_read_memory(struct cam_eeprom_ctrl_t *e_ctrl,
 				if (rc < 0) {
 					CAM_ERR(CAM_EEPROM, "read failed rc %d",
 						rc);
-					return rc;
+					for(retry = 0; retry < 3 ; retry++){
+						rc = camera_io_dev_read_seq(&e_ctrl->io_master_info,
+								addr, memptr,
+								emap[j].mem.addr_type,
+								emap[j].mem.data_type,
+								read_size);
+						if(rc < 0){
+							CAM_ERR(CAM_EEPROM, "retry %d times read failed rc %d",retry, rc);
+							mdelay(10);
+						}else{
+							CAM_ERR(CAM_EEPROM, "retry %d times success read ",retry);
+							break;
+						}
+					}
+					if(rc < 0){
+						return rc;
+					}
+
 				}
 				size -= read_size;
 				addr += read_size;

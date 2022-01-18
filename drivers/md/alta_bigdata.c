@@ -4,12 +4,15 @@
 #include <linux/proc_fs.h>
 #include <linux/highmem.h>
 #include <linux/kdev_t.h>
-#include<linux/sysfs.h> 
-#include<linux/kobject.h>
+#include <linux/sysfs.h>
+#include <linux/kobject.h>
 
 #include "dm-verity-debug.h"
 
 #define ALTA_BUF_SIZE    4096
+
+static DEFINE_SPINLOCK(alta_lock);
+
 char* alta_buf;
 size_t * alta_offset,alta_size;
 
@@ -98,9 +101,10 @@ ssize_t alta_bigdata_read(struct file *filep, char __user *buf, size_t size, lof
     size_t proc_offset = 0;
     char* proc_buf = kzalloc(ALTA_BUF_SIZE, GFP_KERNEL);
 
-    if(!proc_buf)
-        return -ENOMEM;
+	if (!proc_buf)
+		return -ENOMEM;
 
+	spin_lock(&alta_lock);
     set_print_buf(proc_buf,&proc_offset,ALTA_BUF_SIZE);
 
     /* Print DMV info */
@@ -112,6 +116,7 @@ ssize_t alta_bigdata_read(struct file *filep, char __user *buf, size_t size, lof
         show_dmv_ctr_list();
         show_fc_blks_list();
     }
+	spin_unlock(&alta_lock);
 
     ret = simple_read_from_buffer(buf, size, offset, proc_buf, proc_offset);
     kfree(proc_buf);

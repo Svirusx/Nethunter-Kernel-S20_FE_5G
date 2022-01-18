@@ -167,6 +167,8 @@ enum dhd_bus_devreset_type {
 #define DHD_BUS_BUSY_IN_HALDUMP			0x8000
 #define DHD_BUS_BUSY_IN_NAPI			0x10000
 #define DHD_BUS_BUSY_IN_DS_DEASSERT		0x20000
+#define DHD_BUS_BUSY_IN_SYSFS_DUMP		0x40000
+#define DHD_BUS_BUSY_IN_PM_CALLBACK		0x80000
 
 #define DHD_BUS_BUSY_SET_IN_TX(dhdp) \
 	(dhdp)->dhd_bus_busy_state |= DHD_BUS_BUSY_IN_TX
@@ -204,6 +206,10 @@ enum dhd_bus_devreset_type {
 	(dhdp)->dhd_bus_busy_state |= DHD_BUS_BUSY_IN_NAPI
 #define DHD_BUS_BUSY_SET_IN_DS_DEASSERT(dhdp) \
 	(dhdp)->dhd_bus_busy_state |= DHD_BUS_BUSY_IN_DS_DEASSERT
+#define DHD_BUS_BUSY_SET_IN_SYSFS_DUMP(dhdp) \
+	(dhdp)->dhd_bus_busy_state |= DHD_BUS_BUSY_IN_SYSFS_DUMP
+#define DHD_BUS_BUSY_SET_IN_PM_CALLBACK(dhdp) \
+	(dhdp)->dhd_bus_busy_state |= DHD_BUS_BUSY_IN_PM_CALLBACK
 
 #define DHD_BUS_BUSY_CLEAR_IN_TX(dhdp) \
 	(dhdp)->dhd_bus_busy_state &= ~DHD_BUS_BUSY_IN_TX
@@ -241,6 +247,10 @@ enum dhd_bus_devreset_type {
 	(dhdp)->dhd_bus_busy_state &= ~DHD_BUS_BUSY_IN_NAPI
 #define DHD_BUS_BUSY_CLEAR_IN_DS_DEASSERT(dhdp) \
 	(dhdp)->dhd_bus_busy_state &= ~DHD_BUS_BUSY_IN_DS_DEASSERT
+#define DHD_BUS_BUSY_CLEAR_IN_SYSFS_DUMP(dhdp) \
+	(dhdp)->dhd_bus_busy_state &= ~DHD_BUS_BUSY_IN_SYSFS_DUMP
+#define DHD_BUS_BUSY_CLEAR_IN_PM_CALLBACK(dhdp) \
+	(dhdp)->dhd_bus_busy_state &= ~DHD_BUS_BUSY_IN_PM_CALLBACK
 
 #define DHD_BUS_BUSY_CHECK_IN_TX(dhdp) \
 	((dhdp)->dhd_bus_busy_state & DHD_BUS_BUSY_IN_TX)
@@ -278,6 +288,8 @@ enum dhd_bus_devreset_type {
 	((dhdp)->dhd_bus_busy_state & DHD_BUS_BUSY_IN_HALDUMP)
 #define DHD_BUS_BUSY_CHECK_IN_DS_DEASSERT(dhdp) \
 		((dhdp)->dhd_bus_busy_state & DHD_BUS_BUSY_IN_DS_DEASSERT)
+#define DHD_BUS_BUSY_CHECK_IN_SYSFS_DUMP(dhdp) \
+	((dhdp)->dhd_bus_busy_state & DHD_BUS_BUSY_IN_SYSFS_DUMP)
 #define DHD_BUS_BUSY_CHECK_IDLE(dhdp) \
 	((dhdp)->dhd_bus_busy_state == 0)
 
@@ -505,6 +517,15 @@ enum dhd_dongledump_mode {
 	DUMP_MEMFILE_MAX	= 4
 };
 
+#ifdef DHD_FILE_DUMP_EVENT
+typedef enum dhd_dongledump_status {
+	DUMP_READY		= 0,
+	DUMP_IN_PROGRESS	= 1,
+	DUMP_FAILURE		= 2,
+	DUMP_NOT_READY		= 3
+} dhd_dongledump_status_t;
+#endif /* DHD_FILE_DUMP_EVENT */
+
 enum dhd_dongledump_type {
 	DUMP_TYPE_RESUMED_ON_TIMEOUT		= 1,
 	DUMP_TYPE_D3_ACK_TIMEOUT		= 2,
@@ -538,7 +559,9 @@ enum dhd_dongledump_type {
 	DUMP_TYPE_INBAND_DEVICE_WAKE_FAILURE	= 30,
 	DUMP_TYPE_PKTID_POOL_DEPLETED		= 31,
 	DUMP_TYPE_ESCAN_SYNCID_MISMATCH		= 32,
-	DUMP_TYPE_INVALID_SHINFO_NRFRAGS	= 33
+	DUMP_TYPE_INVALID_SHINFO_NRFRAGS	= 33,
+	DUMP_TYPE_P2P_DISC_BUSY			= 34,
+	DUMP_TYPE_CONT_EXCESS_PM_AWAKE		= 35
 };
 
 enum dhd_hang_reason {
@@ -563,12 +586,15 @@ enum dhd_hang_reason {
 	HANG_REASON_ESCAN_SYNCID_MISMATCH		= 0x8013,
 	HANG_REASON_SCAN_TIMEOUT			= 0x8014,
 	HANG_REASON_SCAN_TIMEOUT_SCHED_ERROR		= 0x8015,
+	HANG_REASON_P2P_DISC_BUSY			= 0x8016,
 	HANG_REASON_PCIE_LINK_DOWN_RC_DETECT		= 0x8805,
 	HANG_REASON_INVALID_EVENT_OR_DATA		= 0x8806,
 	HANG_REASON_UNKNOWN				= 0x8807,
 	HANG_REASON_PCIE_LINK_DOWN_EP_DETECT		= 0x8808,
 	HANG_REASON_PCIE_CTO_DETECT			= 0x8809,
-	HANG_REASON_MAX					= 0x880A
+	HANG_REASON_DONGLE_TRAP_HC_DD_RX_DMA_STALL	= 0x880A,
+	HANG_REASON_SLEEP_FAILURE			= 0x880B,
+	HANG_REASON_MAX					= 0x880C
 };
 
 #define WLC_E_DEAUTH_MAX_REASON 0x0FFF
@@ -811,7 +837,9 @@ typedef enum {
 	LOG_DUMP_SECTION_RING,
 	LOG_DUMP_SECTION_STATUS,
 	LOG_DUMP_SECTION_RTT,
-	LOG_DUMP_SECTION_BCM_TRACE
+	LOG_DUMP_SECTION_BCM_TRACE,
+	LOG_DUMP_SECTION_PKTID_MAP_LOG,
+	LOG_DUMP_SECTION_PKTID_UNMAP_LOG
 } log_dump_section_type_t;
 
 /* Each section in the debug_dump log file shall begin with a header */
@@ -968,6 +996,7 @@ typedef enum dhd_induce_error_states
 	DHD_INDUCE_BH_ON_FAIL_ONCE	= 0x10,
 	DHD_INDUCE_BH_ON_FAIL_ALWAYS	= 0x11,
 	DHD_INDUCE_BH_CBP_HANG		= 0x12,
+	DHD_INDUCE_P2P_DISC_BUSY	= 0x13,
 	DHD_INDUCE_ERROR_MAX
 } dhd_induce_error_states_t;
 
@@ -1163,6 +1192,7 @@ typedef struct dhd_pub {
 	bool	is_bt_recovery_required;
 #endif
 	bool	smmu_fault_occurred;	/* flag to indicate SMMU Fault */
+	bool	p2p_disc_busy_occurred;
 /*
  * Add any new variables to track Bus errors above
  * this line. Also ensure that the variable is
@@ -1461,6 +1491,9 @@ typedef struct dhd_pub {
 #ifdef DHD_STATUS_LOGGING
 	void *statlog;
 #endif /* DHD_STATUS_LOGGING */
+#ifdef DHD_MAP_PKTID_LOGGING
+	bool enable_pktid_log_dump;
+#endif /* DHD_MAP_PKTID_LOGGING */
 #ifdef DHD_DB0TS
 	bool db0ts_capable;
 #endif /* DHD_DB0TS */
@@ -1521,6 +1554,14 @@ typedef struct dhd_pub {
 #ifdef DHD_GRO_ENABLE_HOST_CTRL
 	bool permitted_gro;
 #endif /* DHD_GRO_ENABLE_HOST_CTRL */
+	bool stop_in_progress;
+#ifdef DHD_PERIODIC_CNTRS
+	uint32 dhd_periodic_cntrs_last_time;
+#endif /* DHD_PERIODIC_CNTRS */
+#ifdef FLOW_RING_PREALLOC
+	uint16 non_htput_total_flow_rings;
+#endif /* FLOW_RING_PREALLOC */
+	uint32 p2p_disc_busy_cnt;
 } dhd_pub_t;
 
 #if defined(__linux__)
@@ -2095,12 +2136,7 @@ extern unsigned int dhd_os_get_ioctl_resp_timeout(void);
 extern void dhd_os_set_ioctl_resp_timeout(unsigned int timeout_msec);
 extern void dhd_os_ioctl_resp_lock(dhd_pub_t * pub);
 extern void dhd_os_ioctl_resp_unlock(dhd_pub_t * pub);
-#ifdef PCIE_FULL_DONGLE
 extern void dhd_wakeup_ioctl_event(dhd_pub_t *pub, dhd_ioctl_recieved_status_t reason);
-#else
-static INLINE void dhd_wakeup_ioctl_event(dhd_pub_t *pub, dhd_ioctl_recieved_status_t reason)
-{ printf("%s is NOT implemented for SDIO", __FUNCTION__); return; }
-#endif
 #ifdef SHOW_LOGTRACE
 /* Bound and delay are fine tuned after several experiments and these
  * are the best case values to handle bombarding of console logs.
@@ -2442,6 +2478,10 @@ extern int dhd_get_ap_isolate(dhd_pub_t *dhdp, uint32 idx);
 extern int dhd_set_ap_isolate(dhd_pub_t *dhdp, uint32 idx, int val);
 extern int dhd_bssidx2idx(dhd_pub_t *dhdp, uint32 bssidx);
 extern struct net_device *dhd_linux_get_primary_netdev(dhd_pub_t *dhdp);
+#ifdef DHD_FILE_DUMP_EVENT
+dhd_dongledump_status_t dhd_get_dump_status(dhd_pub_t *pub);
+void dhd_set_dump_status(dhd_pub_t *pub, dhd_dongledump_status_t status);
+#endif /* DHD_FILE_DUMP_EVENT */
 
 extern bool dhd_is_concurrent_mode(dhd_pub_t *dhd);
 int dhd_iovar(dhd_pub_t *pub, int ifidx, char *name, char *param_buf, uint param_len,
@@ -3067,8 +3107,9 @@ extern void dhd_os_general_spin_unlock(dhd_pub_t *pub, unsigned long flags);
 #define DHD_PKT_WAKE_LOCK(lock, flags)	(flags) = osl_spin_lock(lock)
 #define DHD_PKT_WAKE_UNLOCK(lock, flags)	osl_spin_unlock((lock), (flags))
 
-#define DHD_OOB_IRQ_LOCK(lock, flags)	(flags) = osl_spin_lock(lock)
-#define DHD_OOB_IRQ_UNLOCK(lock, flags)	osl_spin_unlock((lock), (flags))
+/* wlan_oob_irq is called in hard irq context */
+#define DHD_OOB_IRQ_LOCK(lock, flags)	(flags) = osl_spin_lock_irq(lock)
+#define DHD_OOB_IRQ_UNLOCK(lock, flags)	osl_spin_unlock_irq((lock), (flags))
 
 #define DHD_IF_STA_LIST_LOCK(lock, flags)	(flags) = osl_spin_lock(lock)
 #define DHD_IF_STA_LIST_UNLOCK(lock, flags)	osl_spin_unlock((lock), (flags))
@@ -3485,6 +3526,14 @@ extern int dhd_print_status_log_data(void *dev, dhd_pub_t *dhdp,
 	const void *user_buf, void *fp, uint32 len, void *pos);
 extern uint32 dhd_get_status_log_len(void *ndev, dhd_pub_t *dhdp);
 #endif /* DHD_STATUS_LOGGING */
+#ifdef DHD_MAP_PKTID_LOGGING
+extern uint32 dhd_pktid_buf_len(dhd_pub_t *dhd, bool is_map);
+extern int dhd_print_pktid_map_log_data(void *dev, dhd_pub_t *dhdp,
+	const void *user_buf, void *fp, uint32 len, void *pos, bool is_map);
+extern int dhd_write_pktid_log_dump(dhd_pub_t *dhdp, const void *user_buf,
+	void *fp, uint32 len, unsigned long *pos, bool is_map);
+extern uint32 dhd_get_pktid_map_logging_len(void *ndev, dhd_pub_t *dhdp, bool is_map);
+#endif /* DHD_MAP_PKTID_LOGGING */
 int dhd_print_ecntrs_data(void *dev, dhd_pub_t *dhdp, const void *user_buf,
 	void *fp, uint32 len, void *pos);
 int dhd_print_rtt_data(void *dev, dhd_pub_t *dhdp, const void *user_buf,
@@ -3663,6 +3712,7 @@ extern void dhd_dump_file_manage_enqueue(dhd_pub_t *dhd, char *dump_path, char *
 
 #if !defined(PCIE_FULL_DONGLE) && defined(P2P_IF_STATE_EVENT_CTRL)
 int dhd_throttle_p2p_interface_event(void *handle, bool onoff);
+void dhd_reset_p2p_interface_event(void *handle);
 #endif /* !PCIE_FULL_DONGLE & P2P_IF_STATE_EVENT_CTRL */
 
 #ifdef DNGL_AXI_ERROR_LOGGING

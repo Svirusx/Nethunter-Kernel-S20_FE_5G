@@ -188,6 +188,14 @@ dhd_get_wlan_oob_gpio(void)
 		gpio_get_value(wlan_host_wake_up) : -1;
 }
 EXPORT_SYMBOL(dhd_get_wlan_oob_gpio);
+int
+dhd_get_wlan_oob_gpio_number(void)
+{
+	return gpio_is_valid(wlan_host_wake_up) ?
+		wlan_host_wake_up : -1;
+}
+EXPORT_SYMBOL(dhd_get_wlan_oob_gpio_number);
+
 #endif /* CONFIG_BCMDHD_OOB_HOST_WAKE && CONFIG_BCMDHD_GET_OOB_STATE */
 
 struct resource dhd_wlan_resources = {
@@ -195,11 +203,11 @@ struct resource dhd_wlan_resources = {
 	.start	= 0, /* Dummy */
 	.end	= 0, /* Dummy */
 	.flags	= IORESOURCE_IRQ | IORESOURCE_IRQ_SHAREABLE |
-#ifdef CONFIG_BCMDHD_PCIE
+#if defined(CONFIG_BCMDHD_PCIE) && !defined(IRQ_HIGHLEVEL_TRIGGER)
 	IORESOURCE_IRQ_HIGHEDGE,
 #else
 	IORESOURCE_IRQ_HIGHLEVEL,
-#endif /* CONFIG_BCMDHD_PCIE */
+#endif /* CONFIG_BCMDHD_PCIE && !IRQ_HIGHLEVEL_TRIGGER */
 };
 EXPORT_SYMBOL(dhd_wlan_resources);
 

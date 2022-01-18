@@ -20,12 +20,16 @@ int ap_health_data_write(ap_health_t *data);
 
 /* called @ drivers/edac/kryo_arm64_edac.c */
 int dbg_partition_notifier_register(struct notifier_block *nb);
+
+/* called @ sec_debug_user_reset.c */
+uint32_t dbg_parttion_get_part_size(uint32_t idx);
 #else
 static inline bool read_debug_partition(enum debug_partition_index index, void *value) { return true; }
 static inline bool write_debug_partition(enum debug_partition_index index, void *value) { return true; }
 static inline ap_health_t* ap_health_data_read(void) { return NULL; }
 static inline int ap_health_data_write(ap_health_t *data) { return 0; }
 static inline int dbg_partition_notifier_register(struct notifier_block *nb) { return 0; }
+static inline uint32_t dbg_parttion_get_part_size(uint32_t idx) { return 0; }
 #endif
 
 #endif /* __INDIRECT__SEC_DEBUG_PARTITION_H__ */

@@ -5026,12 +5026,6 @@ int sde_encoder_prepare_for_kickoff(struct drm_encoder *drm_enc,
 	bool needs_hw_reset = false, is_cmd_mode;
 	int i, rc, ret = 0;
 	struct msm_display_info *disp_info;
-#if defined(CONFIG_DISPLAY_SAMSUNG)
-	/* DSC Mismatch Debug, Case #04007749*/
-	struct sde_connector *sde_con;
-	struct dsi_display *display;
-	struct dsi_display_mode_priv_info *priv_info;
-#endif
 
 	if (!drm_enc || !params || !drm_enc->dev ||
 		!drm_enc->dev->dev_private) {
@@ -5132,21 +5126,6 @@ int sde_encoder_prepare_for_kickoff(struct drm_encoder *drm_enc,
 	if (sde_enc->cur_master && !sde_enc->cur_master->cont_splash_enabled)
 		sde_configure_qdss(sde_enc, sde_enc->cur_master->hw_qdss,
 				sde_enc->cur_master, sde_kms->qdss_enabled);
-
-#if defined(CONFIG_DISPLAY_SAMSUNG)
-	/* DSC Mismatch Debug, Case #04007749*/
-	sde_con = to_sde_connector(sde_enc->cur_master->connector);
-	display = sde_con->display;
-	priv_info = display->modes->priv_info;
-
-	if (disp_info->intf_type == DRM_MODE_CONNECTOR_DSI && !_sde_encoder_is_dsc_enabled(drm_enc) && priv_info->dsc_enabled) {
-		pr_err("DSC is disabled\n");
-		if (sde_enc && sde_enc->phys_encs[0] && sde_enc->phys_encs[0]->connector) {
-			SDE_EVT32(sde_connector_get_topology_name(sde_enc->phys_encs[0]->connector), 0x9999);
-		}
-		SDE_DBG_DUMP("all", "dbg_bus", "panic");
-	}
-#endif
 
 end:
 	SDE_ATRACE_END("sde_encoder_prepare_for_kickoff");

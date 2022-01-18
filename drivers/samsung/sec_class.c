@@ -36,6 +36,7 @@ struct device *sec_dev_get_by_name(const char *name)
 	return class_find_device(sec_class, NULL, name,
 			sec_class_match_device_by_name);
 }
+EXPORT_SYMBOL(sec_dev_get_by_name);
 
 struct device *___sec_device_create(void *drvdata, const char *fmt)
 {

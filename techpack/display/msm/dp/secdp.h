@@ -131,7 +131,6 @@ enum dex_support_res_t {
 	DEX_RES_2560X1440, /* QHD */
 	DEX_RES_2560X1600, /* WQXGA */
 	DEX_RES_3440X1440, /* UW-QHD */
-	DEX_RES_MAX,
 };
 #define DEX_RES_DFT	DEX_RES_1920X1080   /* DeX default resolution */
 #define DEX_RES_MAX	DEX_RES_3440X1440   /* DeX max resolution */
@@ -143,6 +142,8 @@ static inline char *secdp_dex_res_to_string(int res)
 	switch (res) {
 	case DEX_RES_NOT_SUPPORT:
 		return DP_ENUM_STR(DEX_RES_NOT_SUPPORT);
+	case DEX_RES_1600X900:
+		return DP_ENUM_STR(DEX_RES_1600X900);
 	case DEX_RES_1920X1080:
 		return DP_ENUM_STR(DEX_RES_1920X1080);
 	case DEX_RES_1920X1200:
@@ -188,6 +189,9 @@ struct secdp_dex {
 	enum DEX_STATUS prev;	/*previously known as "dex_now"*/
 	enum DEX_STATUS curr;	/*previously known as "dex_en"*/
 	int  setting_ui;	/*"dex_set", true if setting has Dex mode*/
+
+	bool adapter_check_skip;
+
 	/*
 	 * 2 if resolution is changed during dex mode change.
 	 * And once dex framework reads the dex_node_stauts using dex node,
@@ -357,6 +361,8 @@ enum dex_support_res_t secdp_get_dex_res(void);
 void secdp_clear_link_status_update_cnt(struct dp_link *dp_link);
 void secdp_reset_link_status(struct dp_link *dp_link);
 bool secdp_check_link_stable(struct dp_link *dp_link);
+bool secdp_dex_adapter_skip_show(void);
+void secdp_dex_adapter_skip_store(bool skip);
 
 bool secdp_panel_hdr_supported(void);
 
@@ -419,7 +425,6 @@ static inline char *secdp_phy_type_to_string(int param)
 }
 
 int  secdp_show_hmd_dev(char *buf);
-int  secdp_show_phy_param(char *buf);
 
 /* preshoot adjustment */
 int  secdp_catalog_preshoot_show(char *buf);
@@ -430,6 +435,7 @@ int  secdp_parse_vxpx_show(enum secdp_hw_ver_t hw,
 				enum secdp_phy_param_t vxpx, char *buf);
 int  secdp_parse_vxpx_store(enum secdp_hw_ver_t hw,
 				enum secdp_phy_param_t vxpx, char *buf);
+int  secdp_show_phy_param(char *buf);
 
 /* AUX configuration */
 int  secdp_aux_cfg_show(char *buf);
@@ -440,6 +446,7 @@ int  secdp_debug_prefer_skip_show(void);
 void secdp_debug_prefer_skip_store(bool skip);
 int  secdp_debug_prefer_ratio_show(void);
 void secdp_debug_prefer_ratio_store(int ratio);
-#endif
+int  secdp_show_link_param(char *buf);
+#endif/*CONFIG_SEC_DISPLAYPORT_ENG*/
 
 #endif/*__SECDP_H*/

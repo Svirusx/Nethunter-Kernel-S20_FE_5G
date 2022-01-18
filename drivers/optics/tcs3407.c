@@ -49,17 +49,21 @@
 #define TCS3407_IOCTL_READ_FLICKER	_IOR(TCS3407_IOCTL_MAGIC, 0x01, int *)
 #endif
 
-#if (defined(CONFIG_LEDS_S2MPB02)|| defined(CONFIG_LEDS_RT8547)) && !defined(CONFIG_AMS_OPTICAL_SENSOR_FIFO)
+#if (defined(CONFIG_LEDS_S2MPB02)|| defined(CONFIG_LEDS_RT8547) || defined(CONFIG_LEDS_KTD2692)) && !defined(CONFIG_AMS_OPTICAL_SENSOR_FIFO)
 #define CONFIG_AMS_OPTICAL_SENSOR_EOL_MODE
 #endif
 
 #include "tcs3407.h"
 
 #ifdef CONFIG_AMS_OPTICAL_SENSOR_EOL_MODE
+#if defined(CONFIG_LEDS_S2MPB02)
+#include <linux/leds-s2mpb02.h>
+#endif
 #if defined(CONFIG_LEDS_RT8547)
 #include <linux/leds-rt8547.h>
-#else
-#include <linux/leds-s2mpb02.h>
+#endif
+#if defined(CONFIG_LEDS_KTD2692) 
+#include <linux/leds-ktd2692.h>
 #endif
 #include <linux/pwm.h>
 
@@ -179,6 +183,30 @@ static uint8_t smux_tcs3407_data[] = {
 #define AMS_WRITE_S_MUX()		{ret = ams_setField(ctx->portHndl, DEVREG_CFG6, ((2)<<3), MASK_SMUX_CMD); }
 #define AMS_CLOSE_S_MUX()		{ret = ams_setField(ctx->portHndl, DEVREG_CFG6, 0x00, MASK_SMUX_CMD); }
 
+#if defined(CONFIG_LEDS_KTD2692)|| defined(CONFIG_LEDS_RT8547)
+static unsigned int system_rev __read_mostly;
+
+static int __init sec_hw_rev_setup(char *p)
+{
+	int ret;
+
+	ret = kstrtouint(p, 0, &system_rev);
+	if (unlikely(ret < 0)) {
+		ALS_dbg("%s - androidboot.revision is malformed %s\n", __func__, p);
+		return -EINVAL;
+	}
+
+	ALS_dbg("%s - androidboot.revision %x\n", __func__, system_rev);
+
+	return 0;
+}
+early_param("androidboot.revision", sec_hw_rev_setup);
+
+static unsigned int sec_hw_rev(void)
+{
+	return system_rev;
+}
+#endif
 
 typedef struct{
 	uint8_t deviceId;
@@ -2353,9 +2381,14 @@ struct device_attribute *attr, char *buf)
 #ifdef CONFIG_AMS_OPTICAL_SENSOR_EOL_MODE
 static int tcs3407_eol_mode(struct tcs3407_device_data *data)
 {
-#if !defined(CONFIG_LEDS_RT8547)
+
+#if !defined(CONFIG_LEDS_KTD2692)|| !defined(CONFIG_LEDS_RT8547)
 	ams_deviceCtx_t *ctx = data->deviceCtx;
+#endif
 	s32 eol_led_mode;
+
+#if defined(CONFIG_LEDS_KTD2692)|| defined(CONFIG_LEDS_RT8547)
+	unsigned int board_rev = sec_hw_rev();
 #endif
 	int led_curr = 0;
 	int pulse_duty = 0;
@@ -2392,8 +2425,20 @@ static int tcs3407_eol_mode(struct tcs3407_device_data *data)
 		if (ret < 0)
 			return ret;
 
-#if defined(CONFIG_LEDS_RT8547)
-		led_curr = RT8547_TORCH_CURRENT_25mA;
+#if defined(CONFIG_LEDS_RT8547) || defined(CONFIG_LEDS_KTD2692)
+			if(board_rev >7){
+				if (data->eol_flash_type == EOL_FLASH) {
+					pin_eol_en = data->pin_flash_en;
+					led_curr = 80;
+					eol_led_mode = KTD2692_FLICKER_FLASH_MODE;				
+				} else {
+					pin_eol_en = data->pin_torch_en;
+					led_curr = 80;
+					eol_led_mode = KTD2692_FLICKER_FLASH_MODE;
+				}
+			}
+			else
+				led_curr = RT8547_TORCH_CURRENT_25mA;
 #else
 		s2mpb02_led_en(eol_led_mode, led_curr, S2MPB02_LED_TURN_WAY_GPIO);
 
@@ -2433,8 +2478,11 @@ static int tcs3407_eol_mode(struct tcs3407_device_data *data)
 
 			if (data->eol_state >= EOL_STATE_100) {
 				if (curr_state != data->eol_state) {
-#if defined(CONFIG_LEDS_RT8547)
-					rt8547_led_set_torch(led_curr);
+#if defined(CONFIG_LEDS_RT8547) || defined(CONFIG_LEDS_KTD2692)
+			if(board_rev >7)
+				ktd2692_led_mode_ctrl(3, led_curr);
+			else
+				rt8547_led_set_torch(led_curr);
 #else
 					s2mpb02_led_en(eol_led_mode, led_curr, S2MPB02_LED_TURN_WAY_GPIO);
 #endif
@@ -2451,8 +2499,11 @@ static int tcs3407_eol_mode(struct tcs3407_device_data *data)
 			udelay(pulse_duty);
 		}
 		ALS_dbg("%s - eol loop end",__func__);
-#if defined(CONFIG_LEDS_RT8547)
-		rt8547_led_set_torch(-1);
+#if defined(CONFIG_LEDS_RT8547) || defined(CONFIG_LEDS_KTD2692)
+			if(board_rev >7)
+				ktd2692_led_mode_ctrl(3, -1);
+			else
+				rt8547_led_set_torch(-1);
 #else
 		s2mpb02_led_en(eol_led_mode, 0, S2MPB02_LED_TURN_WAY_GPIO);
 #endif

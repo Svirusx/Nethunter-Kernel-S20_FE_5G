@@ -289,12 +289,11 @@ static u32 s1_delay[PON_S1_COUNT_MAX + 1] = {
 };
 
 #ifdef CONFIG_SEC_PM
-#define PONOFF_UNKNOWN 99
 static const char * const sec_pon_reason[] = {
 	/* PON_PON_REASON1 */
 	"HARDRST", "SMPL", "RTC", "DC", "USB", "PON1", "CBL", "KPD",
 
-	[PONOFF_UNKNOWN] = "UNKNOWN"
+	"UNKNOWN"
 };
 
 static const char * const sec_poff_reason[] = {
@@ -316,7 +315,7 @@ static const char * const sec_poff_reason[] = {
 	/* PON_S3_RESET_REASON */
 	"S3_FAUNT_N", "S3_PBS_WD", "S3_PBS_NACK", "S3_KPDRES",
 
-	[PONOFF_UNKNOWN] = "UNKNOWN"
+	"UNKNOWN"
 };
 #endif
 
@@ -2601,7 +2600,7 @@ static int qpnp_pon_read_hardware_info(struct qpnp_pon *pon, bool sys_reset)
 	if (index > -1)
 		pon_index[num_pmic] = index;
 	else
-		pon_index[num_pmic] = PONOFF_UNKNOWN;
+		pon_index[num_pmic] = ARRAY_SIZE(sec_pon_reason) - 1;
 #endif
 	cold_boot = sys_reset_dev ? !_qpnp_pon_is_warm_reset(sys_reset_dev)
 				  : !_qpnp_pon_is_warm_reset(pon);
@@ -2644,7 +2643,7 @@ static int qpnp_pon_read_hardware_info(struct qpnp_pon *pon, bool sys_reset)
 	if (index > -1)
 		poff_index[num_pmic] = index;
 	else
-		poff_index[num_pmic] = PONOFF_UNKNOWN;
+		poff_index[num_pmic] = ARRAY_SIZE(sec_poff_reason) - 1;
 	num_pmic++;
 #endif
 	if (index >= ARRAY_SIZE(qpnp_poff_reason) || index < 0 ||

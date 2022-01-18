@@ -2137,6 +2137,7 @@ void fuse_abort_conn(struct fuse_conn *fc, bool is_abort)
 {
 	struct fuse_iqueue *fiq = &fc->iq;
 
+	/* @fs.sec -- d7bd5cc97a05d48e04defc719fbaffefdd4e6f22 -- */
 	ST_LOG("<%s> dev = %u:%u  fuse abort all requests",
 			__func__, MAJOR(fc->dev), MINOR(fc->dev));
 

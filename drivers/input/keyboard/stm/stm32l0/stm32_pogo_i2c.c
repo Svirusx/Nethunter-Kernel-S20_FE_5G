@@ -19,6 +19,7 @@
 static struct stm32_pogo_notifier pogo_notifier;
 
 struct stm32_tc_resolution g_tc_resolution;
+static int boot_module_id;
 
 void pogo_get_tc_resolution(int *x, int *y)
 {
@@ -50,7 +51,7 @@ static void stm32_print_info(struct stm32_dev *stm32)
 
 	input_info(true, &stm32->client->dev, "mcu_fw(bin):%x, mcu_fw(ic):%x, %s_v%d.%d.%d.%d, "
 			"TC_v%02X%02X.%X, con:%d/%d, int:%d, depth:%d, rst:%d, hall:%d\n",
-			stm32->mdata.phone_ver[3], stm32->mdata.ic_ver[3], stm32->dtdata->model_name,
+			stm32->mdata.phone_ver[3], stm32->mdata.ic_ver[3], stm32->dtdata->model_name[stm32->ic_fw_ver.model_id],
 			stm32->ic_fw_ver.fw_major_ver, stm32->ic_fw_ver.fw_minor_ver,
 			stm32->ic_fw_ver.model_id, stm32->ic_fw_ver.hw_rev,
 			stm32->tc_fw_ver_of_ic.major_ver, stm32->tc_fw_ver_of_ic.minor_ver,
@@ -84,6 +85,7 @@ int pogo_notifier_register(struct notifier_block *nb, notifier_fn_t notifier,
 
 	send_data.size = 0;
 	send_data.data = 0;
+	send_data.module_id = boot_module_id;
 	nb->notifier_call(nb, pogo_notifier.conn, &send_data);
 
 	return ret;
@@ -133,6 +135,7 @@ static int pogo_notifier_notify(struct stm32_dev *stm32, pogo_notifier_id_t noti
 
 	send_data.size = len;
 	send_data.data = data;
+	send_data.module_id = stm32->ic_fw_ver.model_id;
 
 	ret = blocking_notifier_call_chain(&pogo_notifier.pogo_notifier_call_chain,
 						notify_id, &send_data);
@@ -476,9 +479,13 @@ static int stm32_read_version(struct stm32_dev *stm32)
 		return ret;
 
 	stm32->ic_fw_ver.hw_rev = rbuf[0];
-	stm32->ic_fw_ver.model_id = rbuf[1];
+	if (rbuf[1] == 0 || rbuf[1] == 1)
+		stm32->ic_fw_ver.model_id = rbuf[1];
+	else
+		stm32->ic_fw_ver.model_id = 0;
 	stm32->ic_fw_ver.fw_minor_ver = rbuf[2];
 	stm32->ic_fw_ver.fw_major_ver = rbuf[3];
+	boot_module_id = stm32->ic_fw_ver.model_id;
 
 	input_info(true, &stm32->client->dev,
 			"%s: [IC] version:%d.%d, model_id:%02d, hw_rev:%02d\n",
@@ -609,7 +616,7 @@ static int stm32_load_fw_from_fota(struct stm32_dev *stm32, u8 ed_id)
 	set_fs(KERNEL_DS);
 
 	snprintf(fw_path, sizeof(fw_path), "%s/%s%s.bin",
-			STM32_FOTA_BIN_PATH, stm32->dtdata->model_name,
+			STM32_FOTA_BIN_PATH, stm32->dtdata->model_name[stm32->ic_fw_ver.model_id],
 			ed_id == ID_TOUCHPAD ? "TOUCH" : "");
 
 	input_info(true, &stm32->client->dev, "%s: path:%s\n", __func__, fw_path);
@@ -787,18 +794,22 @@ static void stm32_check_ic_work(struct work_struct *work)
 			return;
 		}
 
-		ret = stm32_read_tc_crc(stm32);
-		if (ret < 0) {
-			input_err(true, &stm32->client->dev,
-					"%s: failed to read TC CRC\n", __func__);
-			return;
-		}
+		if ((stm32->tc_fw_ver_of_ic.major_ver != 0xff) || (stm32->tc_fw_ver_of_ic.minor_ver != 0)) {
+			ret = stm32_read_tc_crc(stm32);
+			if (ret < 0) {
+				input_err(true, &stm32->client->dev,
+						"%s: failed to read TC CRC\n", __func__);
+				return;
+			}
 
-		ret = stm32_read_tc_resolution(stm32);
-		if (ret < 0) {
-			input_err(true, &stm32->client->dev,
-					"%s: failed to read TC resolution\n", __func__);
-			return;
+			ret = stm32_read_tc_resolution(stm32);
+			if (ret < 0) {
+				input_err(true, &stm32->client->dev,
+						"%s: failed to read TC resolution\n", __func__);
+				return;
+			}
+		} else {
+			stm32->tc_crc = STM32_TC_CRC_OK;
 		}
 	}
 
@@ -944,6 +955,7 @@ static int stm32_parse_dt(struct device *dev,
 {
 	struct device_node *np = dev->of_node;
 	int ret;
+	int count;
 
 	device_data->dtdata->gpio_int = of_get_named_gpio(np, "stm32,irq_gpio", 0);
 	if (!gpio_is_valid(device_data->dtdata->gpio_int)) {
@@ -1012,9 +1024,14 @@ static int stm32_parse_dt(struct device *dev,
 		input_err(true, &device_data->client->dev, "%s: not use regulator\n", __func__);
 	}
 
-	ret = of_property_read_string(np, "stm32,model_name", &device_data->dtdata->model_name);
-	if (ret) {
-		input_err(true, dev, "unable to get model_name\n");
+	count = of_property_count_strings(np, "stm32,model_name");
+	if (count < 0) {
+		count = 1;
+	}
+
+	ret = of_property_read_string_array(np, "stm32,model_name", device_data->dtdata->model_name, count);
+	if (ret < 0) {
+		input_err(true, dev, "unable to get model_name %d\n", ret);
 		return ret;
 	}
 
@@ -1029,12 +1046,12 @@ static int stm32_parse_dt(struct device *dev,
 		device_data->dtdata->i2c_burstmax = STM32_MAX_EVENT_SIZE;
 	}
 
-	input_info(true, dev, "%s: scl: %d, sda: %d, int:%d, conn: %d, mcu_swclk: %d, mcu_nrst: %d model_name:%s mcu_fw_name:%s i2c-burstmax:%d\n",
+	input_info(true, dev, "%s: scl: %d, sda: %d, int:%d, conn: %d, mcu_swclk: %d, mcu_nrst: %d model_name1:%s model_name2:%s mcu_fw_name:%s i2c-burstmax:%d count:%d\n",
 			__func__, device_data->dtdata->gpio_scl, device_data->dtdata->gpio_sda,
 			device_data->dtdata->gpio_int, device_data->dtdata->gpio_conn, 
 			device_data->dtdata->mcu_nrst, device_data->dtdata->mcu_swclk,
-			device_data->dtdata->model_name, device_data->dtdata->mcu_fw_name,
-			device_data->dtdata->i2c_burstmax);
+			device_data->dtdata->model_name[0], device_data->dtdata->model_name[1], device_data->dtdata->mcu_fw_name,
+			device_data->dtdata->i2c_burstmax, count);
 	return 0;
 }
 #else
@@ -1179,7 +1196,6 @@ static void stm32_bus_voting_work(struct work_struct *work)
 			struct stm32_dev, bus_voting_work);
 	int ret = 0;
 
-	input_info(true, &data->client->dev, "%s: voting NONE\n", __func__);
 	if (data->stm32_bus_perf_client) {
 		if (data->voting_flag == STM32_BUS_VOTING_UP) {
 			ret = msm_bus_scale_client_update_request(data->stm32_bus_perf_client, STM32_BUS_VOTING_NONE);
@@ -1284,7 +1300,7 @@ static ssize_t pogo_get_fw_ver_ic(struct device *dev,
 		return snprintf(buf, 3, "NG");
 
 	snprintf(buff, sizeof(buff), "%s_v%d.%d.%d.%d",
-			stm32->dtdata->model_name,
+			stm32->dtdata->model_name[stm32->ic_fw_ver.model_id],
 			stm32->ic_fw_ver.fw_major_ver,
 			stm32->ic_fw_ver.fw_minor_ver,
 			stm32->ic_fw_ver.model_id,
@@ -1306,7 +1322,7 @@ static ssize_t pogo_get_fw_ver_bin(struct device *dev,
 	}
 
 	snprintf(buff, sizeof(buff), "%s_v%d.%d.%d.%d",
-			stm32->dtdata->model_name,
+			stm32->dtdata->model_name[stm32->fw_header->boot_app_ver.model_id],
 			stm32->fw_header->boot_app_ver.fw_major_ver,
 			stm32->fw_header->boot_app_ver.fw_minor_ver,
 			stm32->fw_header->boot_app_ver.model_id,
@@ -1635,7 +1651,7 @@ static ssize_t pogo_get_tc_fw_ver_bin(struct device *dev,
 	}
 
 	snprintf(buff, sizeof(buff), "%s-TC_v%02X%02X",
-			stm32->dtdata->model_name,
+			stm32->dtdata->model_name[stm32->ic_fw_ver.model_id],
 			stm32->tc_fw_ver_of_bin.major_ver & 0xFF,
 			stm32->tc_fw_ver_of_bin.minor_ver & 0xFF);
 
@@ -1656,12 +1672,12 @@ static ssize_t pogo_get_tc_fw_ver_ic(struct device *dev,
 
 	if (stm32->tc_crc == STM32_TC_CRC_OK)
 		snprintf(buff, sizeof(buff), "%s-TC_v%02X%02X",
-				stm32->dtdata->model_name,
+				stm32->dtdata->model_name[stm32->ic_fw_ver.model_id],
 				stm32->tc_fw_ver_of_ic.major_ver & 0xFF,
 				stm32->tc_fw_ver_of_ic.minor_ver & 0xFF);
 	else
 		snprintf(buff, sizeof(buff), "%s-TC_v0000",
-				stm32->dtdata->model_name);
+				stm32->dtdata->model_name[stm32->ic_fw_ver.model_id]);
 
 	input_info(true, &stm32->client->dev, "%s: %s\n", __func__, buff);
 	mutex_unlock(&stm32->dev_lock);
@@ -2028,6 +2044,22 @@ static int stm32_dev_probe(struct i2c_client *client,
 	if (ret < 0)
 		input_err(true, &client->dev, "Failed to update stm32_mcu_dev firmware %d\n", ret);
 
+	device_data->stm32_bus_scale_table = msm_bus_cl_get_pdata_from_dev(&client->dev);
+	if (device_data->stm32_bus_scale_table) {
+		device_data->stm32_bus_perf_client = msm_bus_scale_register_client(device_data->stm32_bus_scale_table);
+		input_info(true, &client->dev, "%s request success bus_scale:%d\n", __func__, device_data->stm32_bus_perf_client);
+		device_data->voting_flag = STM32_BUS_VOTING_NONE;
+	} else {
+		input_info(true, &client->dev, "%s msm_bus_cl_get_pdata failed\n", __func__);
+	}
+
+	INIT_DELAYED_WORK(&device_data->check_ic_work, stm32_check_ic_work);
+	INIT_DELAYED_WORK(&device_data->print_info_work, stm32_print_info_work);
+	INIT_DELAYED_WORK(&device_data->check_conn_work, stm32_check_conn_work);
+	INIT_DELAYED_WORK(&device_data->check_init_work, stm32_check_init_work);
+	if (device_data->stm32_bus_perf_client)
+		INIT_DELAYED_WORK(&device_data->bus_voting_work, stm32_bus_voting_work);
+
 	ret = request_threaded_irq(device_data->dev_irq, NULL, stm32_dev_isr,
 					device_data->dtdata->irq_type,
 					STM32_DRV_NAME, device_data);
@@ -2047,15 +2079,6 @@ static int stm32_dev_probe(struct i2c_client *client,
 	enable_irq_wake(device_data->conn_irq);
 	stm32_enable_irq(device_data, INT_DISABLE_NOSYNC);
 
-	device_data->stm32_bus_scale_table = msm_bus_cl_get_pdata_from_dev(&client->dev);
-	if (device_data->stm32_bus_scale_table) {
-		device_data->stm32_bus_perf_client = msm_bus_scale_register_client(device_data->stm32_bus_scale_table);
-		input_info(true, &client->dev, "%s request success bus_scale:%d\n", __func__, device_data->stm32_bus_perf_client);
-		device_data->voting_flag = STM32_BUS_VOTING_NONE;
-	} else {
-		input_info(true, &client->dev, "%s msm_bus_cl_get_pdata failed\n", __func__);
-	}
-
 	device_data->sec_pogo = sec_device_create(device_data, "sec_keypad");
 
 	if (IS_ERR(device_data->sec_pogo)) {
@@ -2073,13 +2096,6 @@ static int stm32_dev_probe(struct i2c_client *client,
 	device_init_wakeup(&client->dev, 1);
 
 	BLOCKING_INIT_NOTIFIER_HEAD(&pogo_notifier.pogo_notifier_call_chain);
-
-	INIT_DELAYED_WORK(&device_data->check_ic_work, stm32_check_ic_work);
-	INIT_DELAYED_WORK(&device_data->print_info_work, stm32_print_info_work);
-	INIT_DELAYED_WORK(&device_data->check_conn_work, stm32_check_conn_work);
-	INIT_DELAYED_WORK(&device_data->check_init_work, stm32_check_init_work);
-	if (device_data->stm32_bus_perf_client)
-		INIT_DELAYED_WORK(&device_data->bus_voting_work, stm32_bus_voting_work);
 
 	device_data->connect_state = gpio_get_value(device_data->dtdata->gpio_conn);
 	if (device_data->connect_state)

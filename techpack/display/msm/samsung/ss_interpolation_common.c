@@ -817,7 +817,10 @@ static int gen_normal_interpolation_aor_gamma(struct samsung_display_driver_data
 		vdd->panel_func.convert_GAMMA_to_V(min_gamma, min_gammaV);
 
 		max_cd = normal_tbl->candela_table[reverse_loop];
-		min_cd = normal_tbl->candela_table[reverse_loop + 1];
+		if (reverse_loop == normal_table_size - 1)
+			min_cd = max_cd;
+		else
+			min_cd = normal_tbl->candela_table[reverse_loop + 1];
 
 		dimming_mode_curr = DIMMING_MODE_MAX;
 

@@ -383,9 +383,6 @@ static ssize_t gadget_dev_desc_UDC_store(struct config_item *item,
 			ret = -EBUSY;
 			goto err;
 		}
-#ifdef CONFIG_USB_TYPEC_MANAGER_NOTIFIER
-		set_usb_enable_state();
-#endif
 #ifdef CONFIG_USB_ANDROID_SAMSUNG_COMPOSITE
 
 		gi->cdev.next_string_id = composite_string_index;
@@ -403,6 +400,9 @@ static ssize_t gadget_dev_desc_UDC_store(struct config_item *item,
 		schedule_work(&gi->work);
 	}
 	mutex_unlock(&gi->lock);
+#ifdef CONFIG_USB_TYPEC_MANAGER_NOTIFIER
+	set_usb_enable_state();
+#endif
 	return len;
 err:
 	kfree(name);
@@ -1756,14 +1756,13 @@ static int android_setup(struct usb_gadget *gadget,
 	unsigned long flags;
 	struct gadget_info *gi = container_of(cdev, struct gadget_info, cdev);
 	int value = -EOPNOTSUPP;
+	struct usb_function_instance *fi;
 #ifdef CONFIG_USB_ANDROID_SAMSUNG_COMPOSITE
 	struct usb_configuration *configuration;
 	struct usb_function *f;
 	struct usb_request		*req = cdev->req;
 
 	req->complete = android_gadget_complete;
-#else
-	struct usb_function_instance *fi;
 #endif
 
 	spin_lock_irqsave(&cdev->lock, flags);
@@ -1780,14 +1779,15 @@ static int android_setup(struct usb_gadget *gadget,
 				if (value >= 0)
 					break;
 			}
-#else
+		}
+	}
+#endif
 	list_for_each_entry(fi, &gi->available_func, cfs_list) {
 		if (fi != NULL && fi->f != NULL && fi->f->setup != NULL
 		    && fi->f->config != NULL) {
 			value = fi->f->setup(fi->f, c);
 			if (value >= 0)
 				break;
-#endif
 		}
 	}
 #ifdef CONFIG_USB_ANDROID_SAMSUNG_COMPOSITE

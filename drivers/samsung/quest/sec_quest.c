@@ -63,14 +63,18 @@ extern char param_api_gpio_test_result[256];
 
 // sysfs
 struct device *sec_nad;
+#if defined(CONFIG_SEC_FACTORY)
 struct device *sec_nad_balancer;
 static struct kobj_uevent_env quest_uevent;
+#endif
 
 // etc
 extern unsigned int lpcharge;
+struct mutex sysfs_common_lock;
+
+#if defined(CONFIG_SEC_FACTORY)
 static int erased;
 static int step_to_smd_quest_hlos;
-struct mutex sysfs_common_lock;
 #if defined(CONFIG_SEC_QUEST_AUTO_TRIGGER_KWORKER)
 struct delayed_work trigger_quest_work;
 #define WAIT_TIME_BEFORE_TRIGGER_MSECS 60000
@@ -81,6 +85,7 @@ static int testmode_enabled = 0;
 static int testmode_quefi_enabled = 1;
 static int testmode_suefi_enabled = 1;
 static int testmode_ddrscan_enabled = 1;
+#endif
 
 
 /* Please sync with enum quest_enum_item in sec_qeust.h */
@@ -115,14 +120,19 @@ char *STR_SUBITEM[SUBITEM_ITEMSCOUNT] = {
 	"SUEFI_GROUP3",
 	"SUEFI_GROUP4",
 	"SUEFI_GROUP5",
+	"SUEFI_GROUP6",
+	"SUEFI_GROUP7",
+	"SUEFI_GROUP8",
+	"SUEFI_GROUP9",
 	"QUEFI_GROUP1",
-	"QUEFI_GROUP2",	
-	"QUEFI_GROUP3",	
-	"QUEFI_GROUP4",	
-	"QUEFI_GROUP5",	
-	"QUEFI_GROUP6",	
-	"QUEFI_GROUP7",	
-	"QUEFI_GROUP8",		
+	"QUEFI_GROUP2",
+	"QUEFI_GROUP3",
+	"QUEFI_GROUP4",
+	"QUEFI_GROUP5",
+	"QUEFI_GROUP6",
+	"QUEFI_GROUP7",
+	"QUEFI_GROUP8",
+	"QUEFI_GROUP9",		
 #else
 	"QUEFI",
 	"SUEFI_CRYPTO",
@@ -132,6 +142,7 @@ char *STR_SUBITEM[SUBITEM_ITEMSCOUNT] = {
 	"HLOS_DUMMY",
 #elif defined(CONFIG_SEC_QUEST_HLOS_NATURESCENE_SMD)
 	"HLOS_NATURESCENE",
+	"HLOS_AOSSTHERMALDIFF",
 #else
 	"HLOS_CRYPTO",
 	"HLOS_ICACHE",
@@ -149,6 +160,10 @@ char *STR_SUBITEM[SUBITEM_ITEMSCOUNT] = {
 	"SMDDL_QDAF"
 #endif
 };
+
+
+#if defined(CONFIG_SEC_FACTORY)
+
 
 #if defined(CONFIG_SEC_QUEST_BPS_CLASSIFIER)
 static void sec_quest_bps_print_info(struct bps_info *bfo, char *info)
@@ -547,13 +562,11 @@ static void setup_scenario()
 			QUEST_PRINT("%s : (step=%d) reboot while running quest_hlos\n", __func__, STEP_SMDDL);
 			QUEST_PRINT("%s : Let's check lastkmsg\n", __func__);
 
-			if( param_quest_data.smd_subitem_result_first==0 )
-				param_quest_data.smd_subitem_result_first = param_quest_data.smd_subitem_result;
+			QUEST_UPDATE_SMDDL_INFO(param_quest_data.smd_subitem_result);
 			quest_initialize_curr_step();
 		}else if ( total_result == ITEM_RESULT_FAIL ) {
 			QUEST_PRINT("%s : (step=%d) total_result == ITEM_RESULT_FAIL, so initialize step\n", __func__, STEP_SMDDL);
-			if( param_quest_data.smd_subitem_result_first==0 )
-				param_quest_data.smd_subitem_result_first = param_quest_data.smd_subitem_result;
+			QUEST_UPDATE_SMDDL_INFO(param_quest_data.smd_subitem_result);
 			quest_initialize_curr_step();
 		}
 #if defined(CONFIG_SEC_QUEST_HLOS_DUMMY_SMD)
@@ -565,8 +578,7 @@ static void setup_scenario()
 				__func__, STEP_SMDDL);
 
 			check_and_update_qdaf_result();
-			if( param_quest_data.smd_subitem_result_first==0 ) // due to boot after abnormal reset
-				param_quest_data.smd_subitem_result_first = param_quest_data.smd_subitem_result;
+			QUEST_UPDATE_SMDDL_INFO(param_quest_data.smd_subitem_result); // due to boot after abnormal reset
 			quest_initialize_curr_step();
 		}
 		else if( exist_incompleted == 1 )
@@ -584,8 +596,7 @@ static void setup_scenario()
 #if defined(CONFIG_SEC_QUEST_NOT_TRIGGER_SMDDL_QDAF)
 				QUEST_PRINT("%s : SMDDL line, but skip to run SMDDL QDAF\n", __func__);
 				check_and_update_qdaf_result();
-				if( param_quest_data.smd_subitem_result_first==0 ) // due to boot after abnormal reset
-					param_quest_data.smd_subitem_result_first = param_quest_data.smd_subitem_result;
+				QUEST_UPDATE_SMDDL_INFO(param_quest_data.smd_subitem_result); // due to boot after abnormal reset
 				quest_initialize_curr_step();
 #else
 				QUEST_PRINT("%s : SMDDL line, so run SMDDL QDAF\n", __func__);
@@ -595,8 +606,7 @@ static void setup_scenario()
 			else {
 				QUEST_PRINT("%s : ERASE seq, so do not run SMDDL QDAF and finish step\n", __func__);
 				check_and_update_qdaf_result();
-				if( param_quest_data.smd_subitem_result_first==0 ) // due to boot after abnormal reset
-					param_quest_data.smd_subitem_result_first = param_quest_data.smd_subitem_result;
+				QUEST_UPDATE_SMDDL_INFO(param_quest_data.smd_subitem_result); // due to boot after abnormal reset
 				quest_initialize_curr_step();
 			}
 		}
@@ -786,8 +796,7 @@ static ssize_t store_quest_end(struct device *dev,
 #if defined(CONFIG_SEC_QUEST_NOT_TRIGGER_SMDDL_QDAF)
 			QUEST_PRINT("%s : SMDDL line, but skip to run SMDDL QDAF\n", __func__);
 			check_and_update_qdaf_result();
-			if( param_quest_data.smd_subitem_result_first==0 )
-				param_quest_data.smd_subitem_result_first = param_quest_data.smd_subitem_result;
+			QUEST_UPDATE_SMDDL_INFO(param_quest_data.smd_subitem_result);
 			quest_initialize_curr_step();
 #else
 			QUEST_PRINT("%s : SMDDL line, so run SMDDL QDAF\n", __func__);
@@ -797,13 +806,11 @@ static ssize_t store_quest_end(struct device *dev,
 		else {
 			QUEST_PRINT("%s : ERASE seq, so do not run SMDDL QDAF and finish step\n", __func__);
 			check_and_update_qdaf_result();
-			if( param_quest_data.smd_subitem_result_first==0 )
-				param_quest_data.smd_subitem_result_first = param_quest_data.smd_subitem_result;
+			QUEST_UPDATE_SMDDL_INFO(param_quest_data.smd_subitem_result);
 			quest_initialize_curr_step();
 		}
 #else
-		if( param_quest_data.smd_subitem_result_first==0 )
-			param_quest_data.smd_subitem_result_first = param_quest_data.smd_subitem_result;
+		QUEST_UPDATE_SMDDL_INFO(param_quest_data.smd_subitem_result);
 		quest_initialize_curr_step();
 #endif
 
@@ -1097,29 +1104,7 @@ static DEVICE_ATTR(nad_acat, S_IRUGO | S_IWUSR, show_quest_acat, store_quest_aca
 //////////////////////////////////////////////////
 /////// NAD_STAT /////////////////////////////////
 //////////////////////////////////////////////////
-char str_mxcpr[CPR_BPS_SZ_BYTE] = { '\0' };
-char str_cxcpr[CPR_BPS_SZ_BYTE] = { '\0' };
 char str_bps[CPR_BPS_SZ_BYTE] = { '\0' };
-
-static void make_cpr_stat_string(char *mx_str, char *cx_str)
-{
-	int modeIdx = 0;
-	int count = 0;
-
-	for(modeIdx = 0; modeIdx < QUEST_CPR_MODE_CNT; modeIdx++)
-		count += snprintf(mx_str + count, CPR_BPS_SZ_BYTE - count, "MX%dF(%d),MX%dC(%d),MX%dR(%d),",
-			param_quest_data.smd_mx_cpr[modeIdx].Modes, param_quest_data.smd_mx_cpr[modeIdx].Floor,
-			param_quest_data.smd_mx_cpr[modeIdx].Modes, param_quest_data.smd_mx_cpr[modeIdx].Ceiling,
-			param_quest_data.smd_mx_cpr[modeIdx].Modes, param_quest_data.smd_mx_cpr[modeIdx].Current);
-
-	count = 0;
-
-	for(modeIdx = 0; modeIdx < QUEST_CPR_MODE_CNT; modeIdx++)
-		count += snprintf(cx_str + count, CPR_BPS_SZ_BYTE - count, "CX%dF(%d),CX%dC(%d),CX%dR(%d),",
-			param_quest_data.smd_cx_cpr[modeIdx].Modes, param_quest_data.smd_cx_cpr[modeIdx].Floor,
-			param_quest_data.smd_mx_cpr[modeIdx].Modes, param_quest_data.smd_cx_cpr[modeIdx].Ceiling,
-			param_quest_data.smd_mx_cpr[modeIdx].Modes, param_quest_data.smd_cx_cpr[modeIdx].Current);
-}
 
 #if defined(CONFIG_SEC_QUEST_BPS_CLASSIFIER)
 static void make_bps_stat_string(char *bps_str)
@@ -1133,8 +1118,6 @@ static void make_bps_stat_string(char *bps_str)
 #endif
 static void make_additional_stat_string(char *additional_str)
 {
-	make_cpr_stat_string(str_mxcpr, str_cxcpr);
-
 #if defined(CONFIG_SEC_QUEST_BPS_CLASSIFIER)
 	/* if bps data successfully initialized and if magic needs to be checked */
 	if (sec_quest_bps_env_initialized &&
@@ -1158,18 +1141,22 @@ static void make_additional_stat_string(char *additional_str)
 		"FHST(%d),FHET(%d)," \
 		"FHITH(%d),FHMTH(%d)," \
 		"FNSR(%d)," \
+		"FMATD(%d)," \
 		"SSIR(%llX)," \
 		"DET(%d)," \
 		"QUET(%d)," \
 		"SUET(%d)," \
 		"QUPT(%d)," \
+		"SCT(%d)," \
+		"SCTH(%d)," \
 		"BR(%.2s)," \
 		"HST(%d),HET(%d)," \
 		"HITH(%d),HMTH(%d)," \
 		"NSR(%d)," \
-		"%s" \
-		"%s" \
-		"BPS(%s)",
+		"MATD(%d)," \
+		"BPS(%s)," \
+		"CHIP(%llX),"\
+		"CPER(%d)",		
 		param_quest_data.smd_quefi_init_thermal_first, param_quest_data.smd_quefi_end_thermal_first,
 		param_quest_data.smd_suefi_init_thermal_first, param_quest_data.smd_suefi_end_thermal_first,
 		param_quest_data.smd_subitem_result_first,
@@ -1181,18 +1168,23 @@ static void make_additional_stat_string(char *additional_str)
 		param_quest_data.smd_hlos_start_time_first, param_quest_data.smd_hlos_elapsed_time_first,
 		param_quest_data.smd_hlos_init_thermal_first, param_quest_data.smd_hlos_max_thermal_first,
 		param_quest_data.smd_ns_repeats_first,
+		param_quest_data.smd_max_aoss_thermal_diff_first,
 		param_quest_data.smd_subitem_result,
 		param_quest_data.smd_ddrscan_elapsed_time,
 		param_quest_data.smd_quefi_elapsed_time,
 		param_quest_data.smd_suefi_elapsed_time,
 		param_quest_data.smd_quefi_total_pause_time,
+		param_quest_data.smd_ft_self_cooling_time,
+		param_quest_data.smd_ft_thermal_after_self_cooling,
 		param_quest_data.smd_boot_reason,
 		param_quest_data.smd_hlos_start_time,param_quest_data.smd_hlos_elapsed_time,
 		param_quest_data.smd_hlos_init_thermal, param_quest_data.smd_hlos_max_thermal,
 		param_quest_data.smd_ns_repeats,
-		str_mxcpr,
-		str_cxcpr,
-		str_bps);
+		param_quest_data.smd_max_aoss_thermal_diff,
+		str_bps,
+		(param_quest_data.ap_serial)? ((param_quest_data.real_smd_register_value)? 
+			param_quest_data.ap_serial^(0xfff00000 | param_quest_data.real_smd_register_value):0):0,
+		param_quest_data.smd_cper);
 
 	QUEST_PRINT("%s : additional_str : %s\n", __func__, additional_str);
 }
@@ -1385,6 +1377,7 @@ static ssize_t store_quest_smd_subitem_result(struct device *dev,
 	else if (TEST_DUMMY(test_name)) item = SUBITEM_QUESTHLOSDUMMY;
 #elif defined(CONFIG_SEC_QUEST_HLOS_NATURESCENE_SMD)
 	if (TEST_NATURESCENE(test_name)) item = SUBITEM_QUESTHLOSNATURESCENE;
+	else if (TEST_AOSSTHERMALDIFF(test_name)) item = SUBITEM_QUESTHLOSAOSSTHERMALDIFF;
 #else
 	if (TEST_CRYPTO(test_name)) item = SUBITEM_QUESTHLOSCRYPTO;
 	else if (TEST_ICACHE(test_name)) item = SUBITEM_QUESTHLOSICACHE;
@@ -1468,6 +1461,11 @@ static ssize_t store_quest_erase(struct device *dev,
 		param_quest_data.smd_hlos_init_thermal_first = 0;
 		param_quest_data.smd_hlos_max_thermal_first = 0;
 		param_quest_data.smd_ns_repeats_first = 0;
+		param_quest_data.smd_max_aoss_thermal_diff_first = 0;
+		param_quest_data.real_smd_register_value = 0;
+		param_quest_data.ap_serial = 0;
+		param_quest_data.num_smd_try = 0;
+		param_quest_data.smd_cper = 0;
 		quest_sync_param_quest_data();
 	}
 
@@ -1517,7 +1515,7 @@ static ssize_t store_quest_main(struct device *dev,
 	param_quest_data.main_item_result = 0;
 	param_quest_data.hlos_remained_count = 1;
 #if defined(CONFIG_SEC_QUEST_UEFI)
-	param_quest_data.quefi_remained_count = 4;
+	param_quest_data.quefi_remained_count = MAIN_QUEST_QUEFI_REPEATS;
 #endif
 #if defined(CONFIG_SEC_QUEST_UEFI_ENHANCEMENT)
 	param_quest_data.suefi_remained_count = 1;
@@ -2145,8 +2143,8 @@ static ssize_t store_quest_smd_info(struct device *dev,
 			      const char *buf, size_t count)
 {
 	int idx = 0;
-	char temp[QUEST_BUFF_SIZE * 3];
-	char quest_cmd[QUEST_CMD_LIST][BUFF_SZ];
+	char temp[QUEST_CMD_LIST * QUEST_CMD_SIZE];
+	char quest_cmd[QUEST_CMD_LIST][QUEST_CMD_SIZE];
 	char *quest_ptr, *string;
 
 	QUEST_SYSFS_ENTER();
@@ -2157,50 +2155,49 @@ static ssize_t store_quest_smd_info(struct device *dev,
 	}
 
 	// parse argument
-	strlcpy(temp, buf, BUFF_SZ * 3);
+	strlcpy(temp, buf, QUEST_CMD_SIZE);
 	string = temp;
 	while (idx < QUEST_CMD_LIST) {
 		quest_ptr = strsep(&string, ",");
-		strlcpy(quest_cmd[idx++], quest_ptr, BUFF_SZ);
+		strlcpy(quest_cmd[idx++], quest_ptr, QUEST_CMD_SIZE);
 	}
 
 	QUEST_PRINT("%s : %s(%s)\n", __func__, quest_cmd[0], quest_cmd[1]);
 
 	if( strncmp(quest_cmd[0], "smd_boot_reason", 15)==0 ) {
 		strncpy(param_quest_data.smd_boot_reason, quest_cmd[1], 2);
-		if( param_quest_data.smd_boot_reason_first[0]==0 )
-			strncpy(param_quest_data.smd_boot_reason_first, quest_cmd[1], 2);
+		QUEST_UPDATE_SMDDL_INFO_WITH_STRING(param_quest_data.smd_boot_reason_first, quest_cmd[1], 2);
 	}
 
 	if( strncmp(quest_cmd[0], "smd_hlos_start_time", 19)==0 ) {
 		sscanf(quest_cmd[1], "%d", &param_quest_data.smd_hlos_start_time);
-		if( param_quest_data.smd_hlos_start_time_first==0 )
-			param_quest_data.smd_hlos_start_time_first = param_quest_data.smd_hlos_start_time;
+		QUEST_UPDATE_SMDDL_INFO(param_quest_data.smd_hlos_start_time);
 	}
 
 	if( strncmp(quest_cmd[0], "smd_hlos_elapsed_time", 21)==0 ) {
 		sscanf(quest_cmd[1], "%d", &param_quest_data.smd_hlos_elapsed_time);
-		if( param_quest_data.smd_hlos_elapsed_time_first==0 )
-			param_quest_data.smd_hlos_elapsed_time_first = param_quest_data.smd_hlos_elapsed_time;
+		QUEST_UPDATE_SMDDL_INFO(param_quest_data.smd_hlos_elapsed_time);
 	}
 
 	if( strncmp(quest_cmd[0], "smd_hlos_init_thermal", 21)==0 ) {
 		sscanf(quest_cmd[1], "%d", &param_quest_data.smd_hlos_init_thermal);
-		if( param_quest_data.smd_hlos_init_thermal_first==0 )
-			param_quest_data.smd_hlos_init_thermal_first = param_quest_data.smd_hlos_init_thermal;
+		QUEST_UPDATE_SMDDL_INFO(param_quest_data.smd_hlos_init_thermal);
 	}
 
 	if( strncmp(quest_cmd[0], "smd_hlos_max_thermal", 20)==0 ) {
 		sscanf(quest_cmd[1], "%d", &param_quest_data.smd_hlos_max_thermal);
-		if( param_quest_data.smd_hlos_max_thermal_first==0 )
-			param_quest_data.smd_hlos_max_thermal_first = param_quest_data.smd_hlos_max_thermal;
+		QUEST_UPDATE_SMDDL_INFO(param_quest_data.smd_hlos_max_thermal);
 	}
 
 	if( strncmp(quest_cmd[0], "smd_ns_repeats", 14)==0 ) {
 		sscanf(quest_cmd[1], "%d", &param_quest_data.smd_ns_repeats);
-		if( param_quest_data.smd_ns_repeats_first==0 )
-			param_quest_data.smd_ns_repeats_first = param_quest_data.smd_ns_repeats;
+		QUEST_UPDATE_SMDDL_INFO(param_quest_data.smd_ns_repeats);
 	}
+
+	if( strncmp(quest_cmd[0], "smd_max_aoss_thermal_diff", 25)==0 ) {
+		sscanf(quest_cmd[1], "%d", &param_quest_data.smd_max_aoss_thermal_diff);
+		QUEST_UPDATE_SMDDL_INFO(param_quest_data.smd_max_aoss_thermal_diff);
+	}	
 
 	quest_sync_param_quest_data();
 
@@ -2212,6 +2209,23 @@ out:
 static DEVICE_ATTR(nad_smd_info, S_IWUSR, NULL, store_quest_smd_info);
 //////////////////////////////////////////////////
 
+
+#endif	// #if defined(CONFIG_SEC_FACTORY)
+
+
+static ssize_t show_quest_fv_flashed(struct device *dev,
+				     struct device_attribute *attr, char *buf)
+{
+	//QUEST_SYSFS_ENTER();
+	//QUEST_SYSFS_EXIT();
+	mutex_lock(&sysfs_common_lock);
+	quest_load_param_quest_data();
+	mutex_unlock(&sysfs_common_lock);
+
+	return snprintf(buf, BUFF_SZ, "%d\n", param_quest_data.quest_fv_flashed);
+}
+
+static DEVICE_ATTR(quest_fv_flashed, 0444, show_quest_fv_flashed, NULL);
 
 
 
@@ -2239,14 +2253,22 @@ static int __init sec_quest_init(void)
 		return PTR_ERR(sec_nad);
 	}
 
+	ret = device_create_file(sec_nad, &dev_attr_quest_fv_flashed);
+	if (ret) {
+		QUEST_PRINT("%s: Failed to create device file\n", __func__);
+		goto err_create_nad_sysfs;
+	}	
+
+#if defined(CONFIG_SEC_FACTORY)	
+
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4,19,0)
 	sec_nad_balancer = sec_device_create(0, NULL, "sec_nad_balancer");
 #else
 	sec_nad_balancer = sec_device_create(NULL, "sec_nad_balancer");
 #endif
-	if (IS_ERR(sec_nad)) {
+	if (IS_ERR(sec_nad_balancer)) {
 		QUEST_PRINT("%s Failed to create device(sec_nad)!\n", __func__);
-		return PTR_ERR(sec_nad);
+		return PTR_ERR(sec_nad_balancer);
 	}
 
 
@@ -2393,7 +2415,6 @@ static int __init sec_quest_init(void)
 	schedule_delayed_work(&trigger_quest_work, msecs_to_jiffies(WAIT_TIME_BEFORE_TRIGGER_MSECS));
 #endif
 
-#if defined(CONFIG_SEC_FACTORY)
 	atomic_notifier_chain_register(&panic_notifier_list, &quest_panic_block);
 #endif
 

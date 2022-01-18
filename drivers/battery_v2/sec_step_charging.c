@@ -443,12 +443,8 @@ check_dc_step_change:
 
 		if (battery->step_charging_status < 0) {
 			pr_info("%s : step input current = %d\n", __func__, battery->pdata->dc_step_chg_val_iout[battery->pdata->age_step][step] / 2);
-			val.intval = battery->pdata->dc_step_chg_val_iout[battery->pdata->age_step][step] / 2;
-			psy_do_property(battery->pdata->charger_name, set,
-				POWER_SUPPLY_EXT_PROP_DIRECT_CURRENT_MAX, val);
-
 			/* updated charging current */
-			battery->charging_current = battery->pdata->dc_step_chg_val_iout[battery->pdata->age_step][step];
+			sec_bat_refresh_charging_current(battery);
 		}
 
 		battery->step_charging_status = step;
@@ -778,7 +774,8 @@ void sec_bat_set_aging_info_step_charging(struct sec_battery_info *battery)
 			if (battery->pdata->dc_step_chg_val_vfloat[battery->pdata->age_step][i] > battery->pdata->chg_float_voltage)
 				battery->pdata->dc_step_chg_val_vfloat[battery->pdata->age_step][i] = battery->pdata->chg_float_voltage;
 		if (battery->dc_step_chg_type & STEP_CHARGING_CONDITION_VOLTAGE)
-			battery->pdata->dc_step_chg_cond_vol[i] = battery->pdata->dc_step_chg_val_vfloat[battery->pdata->age_step][i];
+			if (battery->pdata->dc_step_chg_cond_vol[i] > battery->pdata->chg_float_voltage)
+				battery->pdata->dc_step_chg_cond_vol[i] = battery->pdata->chg_float_voltage;
 		if ((battery->dc_step_chg_type & STEP_CHARGING_CONDITION_INPUT_CURRENT) && (i < battery->dc_step_chg_step - 1))
 			battery->pdata->dc_step_chg_cond_iin[i] = battery->pdata->dc_step_chg_val_iout[battery->pdata->age_step][i+1] / 2;
 	}

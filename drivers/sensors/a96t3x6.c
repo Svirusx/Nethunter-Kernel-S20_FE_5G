@@ -150,7 +150,7 @@ struct a96t3x6_data {
 	int mcc;
 	u16 default_threshold;
 	u16 mcc_threshold;
-#endif	
+#endif
 };
 
 static void a96t3x6_reset(struct a96t3x6_data *data);
@@ -164,6 +164,8 @@ static int a96t3x6_fw_check(struct a96t3x6_data *data);
 static void a96t3x6_set_firmware_work(struct a96t3x6_data *data, u8 enable,
 		unsigned int time_ms);
 #endif
+
+static bool recovery_mode;
 
 static int a96t3x6_i2c_read(struct i2c_client *client,
 	u8 reg, u8 *val, unsigned int len)
@@ -436,6 +438,19 @@ static void a96t3x6_reset_for_bootmode(struct a96t3x6_data *data)
 #endif
 }
 
+static int a96t3x6_recovery_mode_check(char *str)
+{
+	if (strncmp(str, "1", 1) == 0)
+		recovery_mode = true;
+	else
+		recovery_mode = false;
+
+	GRIP_INFO("recovery_mode = %d\n", recovery_mode);
+	return true;
+}
+EXPORT_SYMBOL(a96t3x6_recovery_mode_check);
+__setup("androidboot.boot_recovery=", a96t3x6_recovery_mode_check);
+
 static void a96t3x6_reset(struct a96t3x6_data *data)
 {
 	int enable = atomic_read(&data->enable);
@@ -627,6 +642,12 @@ static void a96t3x6_firmware_work_func(struct work_struct *work)
 	u8 r_buf[2];
 #endif
 	GRIP_INFO("called\n");
+
+	//vendor partition is not mounted in recovery mode, so skip firmware check
+	if (recovery_mode) {
+		GRIP_INFO("recovery mode: skip fw check");
+		return;
+	}
 
 	ret = a96t3x6_fw_check(data);
 	if (ret) {
@@ -3309,7 +3330,7 @@ static int a96t3x6_resume(struct device *dev)
 static void a96t3x6_shutdown(struct i2c_client *client)
 {
 	struct a96t3x6_data *data = i2c_get_clientdata(client);
-
+	GRIP_INFO("%s\n", __func__);
 	a96t3x6_set_debug_work(data, 0, 1000);
 
 	disable_irq(data->irq);

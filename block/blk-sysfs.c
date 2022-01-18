@@ -103,7 +103,8 @@ queue_ra_store(struct request_queue *q, const char *page, size_t count)
 	unsigned long ra_kb;
 	ssize_t ret;
 	static const char temp[] = "temporary ";
-	
+
+	/* IOPP-ra-v2.1.4.14 */
 	if (strncmp(page, temp, sizeof(temp) - 1) != 0)
 		return count;
 	

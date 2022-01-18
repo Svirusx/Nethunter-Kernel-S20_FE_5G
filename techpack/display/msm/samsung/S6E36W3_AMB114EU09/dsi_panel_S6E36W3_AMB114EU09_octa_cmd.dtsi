@@ -25,8 +25,8 @@
 		qcom,mdss-dsi-sec-bl-pmic-control-type = "bl_ctrl_dcs";
 
 		qcom,mdss-dsi-bl-min-level = <1>;
-		qcom,mdss-dsi-bl-max-level = <36500>;
-		qcom,mdss-brightness-max-level = <36500>;
+		qcom,mdss-dsi-bl-max-level = <50000>;
+		qcom,mdss-brightness-max-level = <50000>;
 		qcom,mdss-brightness-default-level = <25500>;
 
 		qcom,mdss-dsi-interleave-mode = <0>;
@@ -589,7 +589,7 @@
  		>;
 		samsung,hbm_candela_map_table_revA = <
 			0	9600	11999	670	5
-			1	12000	25501	1000	6
+			1	12000	50000	1000	6
 		>;
 
 		/* WHITE uses table_revK 32/119/207/282/440/666 */
@@ -603,7 +603,7 @@
 
 		samsung,hbm_candela_map_table_revK = <
 			0	9600	11999	440	5		/* BLOOMX_TODO : need to modify proper just cd value for WHITE */
-			1	12000	25501	666	6
+			1	12000	50000	666	6
 		>;
 
 		/*

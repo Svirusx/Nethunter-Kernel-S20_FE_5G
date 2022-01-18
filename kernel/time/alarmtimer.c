@@ -65,6 +65,10 @@ static struct rtc_timer		rtctimer;
 static struct rtc_device	*rtcdev;
 static DEFINE_SPINLOCK(rtcdev_lock);
 
+#if IS_ENABLED(CONFIG_SEC_PM)
+extern void log_suspend_abort_reason(const char *fmt, ...);
+#endif
+
 #ifdef CONFIG_RTC_AUTO_PWRON
 /* 0|1234|56|78|90|12 */
 /* 1|2010|01|01|00|00 */
@@ -353,6 +357,9 @@ static int alarmtimer_suspend(struct device *dev)
 	struct rtc_device *rtc;
 	unsigned long flags;
 	struct rtc_time tm;
+#if IS_ENABLED(CONFIG_SEC_PM)
+	struct alarm *min_alarm = NULL;
+#endif
 
 	spin_lock_irqsave(&freezer_delta_lock, flags);
 	min = freezer_delta;
@@ -382,12 +389,24 @@ static int alarmtimer_suspend(struct device *dev)
 			expires = next->expires;
 			min = delta;
 			type = i;
+#if IS_ENABLED(CONFIG_SEC_PM)
+			min_alarm = container_of(next, struct alarm, node);
+#endif
 		}
 	}
 	if (min == 0)
 		return 0;
 
+#if IS_ENABLED(CONFIG_SEC_PM)
+	if (min_alarm)
+		pr_info("soonest alarm : %ps\n", min_alarm->function);
+#endif
+	
 	if (ktime_to_ns(min) < 2 * NSEC_PER_SEC) {
+#if IS_ENABLED(CONFIG_SEC_PM)
+		pr_info("alarmtimer suspending blocked by %ps\n", min_alarm->function);
+		log_suspend_abort_reason("alarmtimer suspending blocked by %ps\n", min_alarm->function);
+#endif
 		__pm_wakeup_event(ws, 2 * MSEC_PER_SEC);
 		return -EBUSY;
 	}

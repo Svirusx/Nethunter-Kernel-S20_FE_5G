@@ -389,7 +389,7 @@ struct stm32_devicetree_data {
 	u32 irq_type;
 	u32 irq_conn_type;
 	struct regulator *vdd_vreg;
-	const char *model_name;
+	const char *model_name[2];
 	const char *mcu_fw_name;
 	int i2c_burstmax;
 };

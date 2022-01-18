@@ -1193,6 +1193,10 @@ static bool __need_flush_quota(struct f2fs_sb_info *sbi)
 #define sec_dbg_add_time(node, type, start) (0)
 #define sec_dbg_start_jiffies(val) (0)
 #endif
+
+/* Flush quota limit : 10s */
+#define FLUSH_QUOTA_TIMEOUT	(10 * NSEC_PER_SEC)
+
 /*
  * Freeze all the FS-operations for checkpoint.
  */
@@ -1223,7 +1227,9 @@ retry_flush_quotas:
 	if (__need_flush_quota(sbi)) {
 		int locked;
 
-		if (++cnt > DEFAULT_RETRY_QUOTA_FLUSH_COUNT) {
+		if (++cnt > DEFAULT_RETRY_QUOTA_FLUSH_COUNT ||
+			time_after64(local_clock(), 
+				dbg_entry.start_time + FLUSH_QUOTA_TIMEOUT)) {
 			set_sbi_flag(sbi, SBI_QUOTA_SKIP_FLUSH);
 			set_sbi_flag(sbi, SBI_QUOTA_NEED_FLUSH);
 			goto retry_flush_dents;
@@ -1306,7 +1312,7 @@ out:
 	dbg_entry.end_time = local_clock();
 	
 	elapsed_time = dbg_entry.end_time - dbg_entry.start_time;
-	if (elapsed_time > (F2FS_SEC_BLKOPS_LOGGING_THR * NSEC_PER_SEC)) {
+	if (time_after64(elapsed_time, (u64)F2FS_SEC_BLKOPS_LOGGING_THR)) {
 		dbg_entry.ret_val = err;
 		dbg_entry.entry_idx = sbi->s_sec_blkops_total++;
 

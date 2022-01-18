@@ -822,6 +822,13 @@ static void sec_ts_sponge_dump_flush(struct sec_ts_data *ts, int dump_area)
 	}
 	
 	/* dump all events at once */
+	if (ts->sponge_dump_event * ts->sponge_dump_format > SEC_TS_MAX_SPONGE_DUMP_BUFFER) {
+		input_err(true, &ts->client->dev, "%s: wrong sponge dump read size(%d)\n",
+				__func__, ts->sponge_dump_event * ts->sponge_dump_format);
+		vfree(sec_spg_dat);
+		return;
+	}
+
 	ret = ts->sec_ts_read_sponge(ts, sec_spg_dat, ts->sponge_dump_event * ts->sponge_dump_format);
 	if (ret < 0) {
 		input_err(true, &ts->client->dev, "%s: Failed to read sponge\n", __func__);

@@ -26,6 +26,7 @@
 #endif
 #include <linux/input/matrix_keypad.h>
 #include <linux/input/pogo_i2c_notifier.h>
+#include "stm32_pogo_i2c.h"
 
 #define STM32KPD_DRV_NAME			"stm32_kpd"
 
@@ -48,10 +49,11 @@ struct stm32_keyevent_data {
 };
 
 struct stm32_keypad_dtdata {
-	struct matrix_keymap_data		*keymap_data;
+	struct matrix_keymap_data		*keymap_data1;
+	struct matrix_keymap_data		*keymap_data2;
 	int					num_row;
 	int					num_column;
-	const char				*input_name;
+	const char				*input_name[2];
 };
 
 struct stm32_keypad_dev {
@@ -65,7 +67,7 @@ struct stm32_keypad_dev {
 	struct stm32_keypad_dtdata		*dtdata;
 	int					*key_state;
 	struct notifier_block			pogo_nb;
-	char					key_name[711][10];
+	char					key_name[714][10];
 };
 
 static void stm32_release_all_key(struct stm32_keypad_dev *stm32)
@@ -152,13 +154,20 @@ static int stm32_parse_dt(struct device *dev,
 		struct stm32_keypad_dev *device_data)
 {
 	struct device_node *np = dev->of_node;
-	struct matrix_keymap_data *keymap_data;
-	int ret, keymap_len, i;
-	u32 *keymap, temp;
-	const __be32 *map;
+	struct matrix_keymap_data *keymap_data1;
+	struct matrix_keymap_data *keymap_data2;
+	int ret, keymap_len1, keymap_len2, i;
+	u32 *keymap1, *keymap2, temp;
+	const __be32 *map1;
+	const __be32 *map2;
+	int count;
 
-	ret = of_property_read_string(np, "keypad,input_name", &device_data->dtdata->input_name);
-	if (ret) {
+	count = of_property_count_strings(np, "keypad,input_name");
+	if (count < 0)
+		count = 1;
+
+	ret = of_property_read_string_array(np, "keypad,input_name", device_data->dtdata->input_name, count);
+	if (ret < 0) {
 		input_err(true, dev, "unable to get model_name\n");
 		return ret;
 	}
@@ -177,36 +186,67 @@ static int stm32_parse_dt(struct device *dev,
 	}
 	device_data->dtdata->num_column = temp;
 
-	map = of_get_property(np, "linux,keymap", &keymap_len);
+	map1 = of_get_property(np, "linux,keymap1", &keymap_len1);
 
-	if (!map) {
+	if (!map1) {
 		input_err(true, &device_data->pdev->dev, "%s Keymap not specified\n", __func__);
 		return -EINVAL;
 	}
 
-	keymap_data = devm_kzalloc(dev, sizeof(*keymap_data), GFP_KERNEL);
-	if (!keymap_data) {
+	map2 = of_get_property(np, "linux,keymap2", &keymap_len2);
+
+	if (!map2) {
+		input_err(true, &device_data->pdev->dev, "%s Keymap not specified\n", __func__);
+		return -EINVAL;
+	}
+
+	keymap_data1 = devm_kzalloc(dev, sizeof(*keymap_data1), GFP_KERNEL);
+	if (!keymap_data1) {
 		input_err(true, &device_data->pdev->dev, "%s Unable to allocate memory\n", __func__);
 		return -ENOMEM;
 	}
 
-	keymap_data->keymap_size = (unsigned int)(keymap_len / sizeof(u32));
+	keymap_data2 = devm_kzalloc(dev, sizeof(*keymap_data2), GFP_KERNEL);
+	if (!keymap_data2) {
+		input_err(true, &device_data->pdev->dev, "%s Unable to allocate memory\n", __func__);
+		return -ENOMEM;
+	}
 
-	keymap = devm_kzalloc(dev,
-			sizeof(uint32_t) * keymap_data->keymap_size, GFP_KERNEL);
-	if (!keymap) {
+	keymap_data1->keymap_size = (unsigned int)(keymap_len1 / sizeof(u32));
+	keymap_data2->keymap_size = (unsigned int)(keymap_len2 / sizeof(u32));
+
+	keymap1 = devm_kzalloc(dev,
+			sizeof(uint32_t) * keymap_data1->keymap_size, GFP_KERNEL);
+	if (!keymap1) {
 		input_err(true, &device_data->pdev->dev, "%s could not allocate memory for keymap\n", __func__);
 		return -ENOMEM;
 	}
 
-	for (i = 0; i < keymap_data->keymap_size; i++) {
-		unsigned int key = be32_to_cpup(map + i);
+	keymap2 = devm_kzalloc(dev,
+			sizeof(uint32_t) * keymap_data2->keymap_size, GFP_KERNEL);
+	if (!keymap2) {
+		input_err(true, &device_data->pdev->dev, "%s could not allocate memory for keymap\n", __func__);
+		return -ENOMEM;
+	}
+
+	for (i = 0; i < keymap_data1->keymap_size; i++) {
+		unsigned int key = be32_to_cpup(map1 + i);
 		int keycode, row, col;
 
 		row = (key >> 24) & 0xff;
 		col = (key >> 16) & 0xff;
 		keycode = key & 0xffff;
-		keymap[i] = KEY(row, col, keycode);
+		keymap1[i] = KEY(row, col, keycode);
+	}
+
+	for (i = 0; i < keymap_data2->keymap_size; i++) {
+		unsigned int key2 = be32_to_cpup(map2 + i);
+		int keycode2, row2, col2;
+
+		row2 = (key2 >> 24) & 0xff;
+		col2 = (key2 >> 16) & 0xff;
+		keycode2 = key2 & 0xffff;
+		keymap2[i] = KEY(row2, col2, keycode2);
 	}
 
 	/* short keymap for easy finding key */
@@ -310,13 +350,17 @@ static int stm32_parse_dt(struct device *dev,
 	snprintf(device_data->key_name[KEY_PREVIOUSSONG], 10, "PREV");
 	snprintf(device_data->key_name[KEY_SYSRQ], 10, "SYSRQ");
 	snprintf(device_data->key_name[709], 10, "SETTING");
+	snprintf(device_data->key_name[713], 10, "KBD SHARE");
 
-	keymap_data->keymap = keymap;
-	device_data->dtdata->keymap_data = keymap_data;
-	input_info(true, &device_data->pdev->dev, "%s, row:%d, col:%d, keymap size:%d\n",
-			device_data->dtdata->input_name,
+	keymap_data1->keymap = keymap1;
+	device_data->dtdata->keymap_data1 = keymap_data1;
+	keymap_data2->keymap = keymap2;
+	device_data->dtdata->keymap_data2 = keymap_data2;
+	input_info(true, &device_data->pdev->dev, "%s, %s row:%d, col:%d, keymap1 size:%d keymap2 size:%d count:%d\n",
+			device_data->dtdata->input_name[0], device_data->dtdata->input_name[1],
 			device_data->dtdata->num_row, device_data->dtdata->num_column,
-			device_data->dtdata->keymap_data->keymap_size);
+			device_data->dtdata->keymap_data1->keymap_size,
+			device_data->dtdata->keymap_data2->keymap_size, count);
 	return 0;
 }
 #else
@@ -327,7 +371,7 @@ static int stm32_parse_dt(struct device *dev,
 }
 #endif
 
-static int stm32_keypad_set_input_dev(struct stm32_keypad_dev *device_data)
+static int stm32_keypad_set_input_dev(struct stm32_keypad_dev *device_data, int module_id)
 {
 	struct input_dev *input_dev;
 	int ret = 0;
@@ -345,10 +389,12 @@ static int stm32_keypad_set_input_dev(struct stm32_keypad_dev *device_data)
 
 	device_data->input_dev = input_dev;
 	device_data->input_dev->dev.parent = &device_data->pdev->dev;
-	if (device_data->dtdata->input_name)
-		device_data->input_dev->name = device_data->dtdata->input_name;
+	if (device_data->dtdata->input_name[0] || device_data->dtdata->input_name[1])
+		device_data->input_dev->name = device_data->dtdata->input_name[module_id];
 	else
 		device_data->input_dev->name = "Book Cover Keyboard";
+
+	input_info(true, &device_data->pdev->dev, "%s: input_name: %s\n", __func__, device_data->input_dev->name);
 	device_data->input_dev->id.bustype = BUS_I2C;
 	device_data->input_dev->id.vendor = INPUT_VENDOR_ID_SAMSUNG;
 	device_data->input_dev->id.product = INPUT_PRODUCT_ID_POGO_KEYBOARD;
@@ -363,7 +409,12 @@ static int stm32_keypad_set_input_dev(struct stm32_keypad_dev *device_data)
 	device_data->input_dev->keycodesize = sizeof(unsigned short);
 	device_data->input_dev->keycodemax = device_data->keycode_entries;
 
-	matrix_keypad_build_keymap(device_data->dtdata->keymap_data, NULL,
+	if (module_id == 1)
+		matrix_keypad_build_keymap(device_data->dtdata->keymap_data2, NULL,
+				device_data->dtdata->num_row, device_data->dtdata->num_column,
+				device_data->keycode, device_data->input_dev);
+	else
+		matrix_keypad_build_keymap(device_data->dtdata->keymap_data1, NULL,
 			device_data->dtdata->num_row, device_data->dtdata->num_column,
 			device_data->keycode, device_data->input_dev);
 
@@ -387,7 +438,7 @@ static int stm32_kpd_pogo_notifier(struct notifier_block *nb,
 
 	switch (action) {
 	case POGO_NOTIFIER_ID_ATTACHED:
-		stm32_keypad_set_input_dev(stm32);
+		stm32_keypad_set_input_dev(stm32, pogo_data.module_id);
 		break;
 	case POGO_NOTIFIER_ID_DETACHED:
 		stm32_release_all_key(stm32);
@@ -453,10 +504,10 @@ static int stm32_keypad_probe(struct platform_device *pdev)
 		}
 	}
 
-	device_data->keycode_entries = device_data->dtdata->keymap_data->keymap_size;
+	device_data->keycode_entries = max(device_data->dtdata->keymap_data1->keymap_size, device_data->dtdata->keymap_data2->keymap_size);
 	input_info(true, &device_data->pdev->dev, "keycode entries (%d)\n", device_data->keycode_entries);
-	input_info(true, &device_data->pdev->dev, "keymap size (%d)\n",
-			device_data->dtdata->keymap_data->keymap_size);
+	input_info(true, &device_data->pdev->dev, "keymap size1 (%d) keymap size2 (%d)\n",
+			device_data->dtdata->keymap_data1->keymap_size, device_data->dtdata->keymap_data2->keymap_size);
 
 	device_data->key_state = kzalloc(device_data->dtdata->num_row * sizeof(int),
 			GFP_KERNEL);

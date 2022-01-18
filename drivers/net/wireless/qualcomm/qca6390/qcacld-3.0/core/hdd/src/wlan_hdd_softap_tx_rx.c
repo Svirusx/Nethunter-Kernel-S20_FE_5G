@@ -1130,7 +1130,7 @@ QDF_STATUS hdd_softap_rx_packet_cbk(void *adapter_context, qdf_nbuf_t rx_buf)
 					     true,
 					     STA_INFO_SOFTAP_RX_PACKET_CBK);
 		}
-		
+
 		if (qdf_unlikely(qdf_nbuf_is_ipv4_eapol_pkt(skb) &&
 				 qdf_mem_cmp(qdf_nbuf_data(skb) +
 					     QDF_NBUF_DEST_MAC_OFFSET,

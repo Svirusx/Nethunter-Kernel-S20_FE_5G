@@ -17,11 +17,7 @@
  * EPERM, ENOENT, ESRCH, etc). For unsupported errors this function returns
  * NULL.
  */
-// FIXME: BUILD ERROR for UM
-//#pragma GCC diagnostic push
-//#pragma GCC diagnostic ignored "-Wincompatible-library-redeclaration"
-const char *strerror(int errno);
-//#pragma GCC diagnostic pop
+const char *strerror_str(int errno);
 
 /**
  * strerror_r() - returns a string representation of the given error code.

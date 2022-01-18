@@ -2930,17 +2930,15 @@ QDF_STATUS wlan_parse_ftie_sha384(uint8_t *frame, uint32_t frame_len,
 		pe_err("Invalid FTIE len:%d", ie_len);
 		return QDF_STATUS_E_FAILURE;
 	}
-
 	remaining_ie_len = ie_len;
- 	pos = ie + 2;
- 	qdf_mem_copy(&assoc_rsp->sha384_ft_info, pos,
- 		     sizeof(struct wlan_sha384_ftinfo));
+	pos = ie + 2;
+	qdf_mem_copy(&assoc_rsp->sha384_ft_info, pos,
+		     sizeof(struct wlan_sha384_ftinfo));
 	ie_end = ie + ie_len;
 	pos += sizeof(struct wlan_sha384_ftinfo);
 	remaining_ie_len -= sizeof(struct wlan_sha384_ftinfo);
- 	ft_subelem = &assoc_rsp->sha384_ft_subelem;
- 	qdf_mem_zero(ft_subelem, sizeof(*ft_subelem));
-
+	ft_subelem = &assoc_rsp->sha384_ft_subelem;
+	qdf_mem_zero(ft_subelem, sizeof(*ft_subelem));
 	while (ie_end - pos >= 2) {
 		uint8_t id, len;
 
@@ -2954,9 +2952,11 @@ QDF_STATUS wlan_parse_ftie_sha384(uint8_t *frame, uint32_t frame_len,
 		 * Octets:      1            1     variable
 		 */
 		if (len < 1 || remaining_ie_len < (len + 2)) {
- 			pe_err("Invalid FT subelem length");
- 			return QDF_STATUS_E_FAILURE;
- 		}
+			pe_err("Invalid FT subelem length");
+			return QDF_STATUS_E_FAILURE;
+		}
+
+		remaining_ie_len -= (len + 2);
 
 		switch (id) {
 		case FTIE_SUBELEM_R1KH_ID:

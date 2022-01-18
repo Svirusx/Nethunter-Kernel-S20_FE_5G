@@ -20,8 +20,10 @@ extern void sec_debug_task_sched_log(int cpu, bool preempt, struct task_struct *
 
 /* called @ kernel/irq/chip.c */
 /* called @ kernel/irq/handle.c */
+extern void sec_debug_irq_sched_log(unsigned int irq, void *desc_or_fn, void *action_or_name, unsigned int en);
+
 /* called @ kernel/softirq.c */
-extern void sec_debug_irq_sched_log(unsigned int irq, void *fn, char *name, unsigned int en);
+extern void sec_debug_softirq_sched_log(unsigned int irq, void *fn, char *name, unsigned int en);
 
 /* called @ arch/arm64/kernel/traps.c */
 /* called @ drivers/cpuidle/lpm-levels.c */
@@ -44,7 +46,8 @@ static inline int sec_debug_sched_msg(char *fmt, ...) { return 0; }
 static inline void sec_debug_secure_log(u32 svc_id, u32 cmd_id) {}
 static inline void sec_debug_task_sched_log(int cpu, bool preempt, struct task_struct *task, struct task_struct *prev) {}
 static inline void sec_debug_timer_log(unsigned int type, int int_lock, void *fn) {}
-static inline void sec_debug_irq_sched_log(unsigned int irq, void *fn, char *name, unsigned int en) {}
+static inline void sec_debug_irq_sched_log(unsigned int irq, void *desc_or_fn, void *action_or_name, unsigned int en) {}
+static inline void sec_debug_softirq_sched_log(unsigned int irq, void *fn, char *name, unsigned int en) {}
 #endif /* CONFIG_SEC_DEBUG_SCHED_LOG */
 
 

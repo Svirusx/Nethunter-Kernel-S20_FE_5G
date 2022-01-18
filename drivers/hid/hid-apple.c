@@ -232,27 +232,6 @@ static int hidinput_apple_event(struct hid_device *hid, struct input_dev *input,
 			input_event(input, usage->type, code, value);
 			return 1;
 		}
-
-		if (asc->quirks & APPLE_NUMLOCK_EMULATION &&
-				(test_bit(usage->code, asc->pressed_numlock) ||
-				test_bit(LED_NUML, input->led))) {
-			trans = apple_find_translation(powerbook_numlock_keys,
-					usage->code);
-
-			if (trans) {
-				if (value)
-					set_bit(usage->code,
-							asc->pressed_numlock);
-				else
-					clear_bit(usage->code,
-							asc->pressed_numlock);
-
-				input_event(input, usage->type, trans->to,
-						value);
-			}
-
-			return 1;
-		}
 	}
 
 	if (iso_layout) {

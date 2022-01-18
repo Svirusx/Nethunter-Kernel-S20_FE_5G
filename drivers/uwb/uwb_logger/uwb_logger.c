@@ -9,24 +9,13 @@
  * published by the Free Software Foundation.
  */
 
-#include <linux/kernel.h>
-#include <linux/errno.h>
-#include <linux/string.h>
-#include <linux/types.h>
-#include <linux/stat.h>
-#include <linux/module.h>
-#include <linux/proc_fs.h>
-#include <linux/time.h>
-#include <linux/sched/clock.h>
-#include <linux/uaccess.h>
-
 #include "uwb_logger.h"
 
 #define BUF_SIZE	SZ_256K
-#define MAX_STR_LEN	128
+#define MAX_STR_LEN	160
 #define PROC_FILE_NAME	"uwblog"
 #define LOG_PREFIX	"sec-uwb"
-#define PRINT_DATE_FREQ	30
+#define PRINT_DATE_FREQ	20
 
 static char log_buf[BUF_SIZE];
 static unsigned int g_curpos;
@@ -43,17 +32,15 @@ void uwb_logger_set_max_count(int count)
 void uwb_logger_print_date_time(void)
 {
 	char tmp[64] = {0x0, };
+	struct timespec64 ts;
 	struct tm tm;
-	u64 time;
-	unsigned long nsec;
 	unsigned long sec;
 
-	time = local_clock();
-	nsec = do_div(time, 1000000000);
-	sec = get_seconds() - (sys_tz.tz_minuteswest * 60);
-	time_to_tm(sec, 0, &tm);
-	snprintf(tmp, sizeof(tmp), "!@[%02d-%02d %02d:%02d:%02d.%03lu]", tm.tm_mon + 1, tm.tm_mday,
-						tm.tm_hour, tm.tm_min, tm.tm_sec, nsec / 1000000);
+	ktime_get_real_ts64(&ts);
+	sec = ts.tv_sec - (sys_tz.tz_minuteswest * 60);
+	time64_to_tm(sec, 0, &tm);
+	snprintf(tmp, sizeof(tmp), "@%02d-%02d %02d:%02d:%02d.%03lu", tm.tm_mon + 1, tm.tm_mday,
+				tm.tm_hour, tm.tm_min, tm.tm_sec, ts.tv_nsec / 1000000);
 
 	uwb_logger_print("%s\n", tmp);
 }
@@ -62,7 +49,7 @@ void uwb_logger_print(const char *fmt, ...)
 {
 	int len;
 	va_list args;
-	char buf[MAX_STR_LEN + 16];
+	char buf[MAX_STR_LEN] = {0, };
 	u64 time;
 	unsigned long nsec;
 	volatile unsigned int curpos;
@@ -80,14 +67,16 @@ void uwb_logger_print(const char *fmt, ...)
 		uwb_logger_print_date_time();
 		log_count = PRINT_DATE_FREQ;
 	}
-
 	time = local_clock();
 	nsec = do_div(time, 1000000000);
 	len = snprintf(buf, sizeof(buf), "[%5lu.%06ld] ", (unsigned long)time, nsec / 1000);
 
 	va_start(args, fmt);
-	len += vsnprintf(buf + len, MAX_STR_LEN, fmt, args);
+	len += vsnprintf(buf + len, MAX_STR_LEN - len, fmt, args);
 	va_end(args);
+
+	if (len > MAX_STR_LEN)
+		len = MAX_STR_LEN;
 
 	curpos = g_curpos;
 	if (curpos + len >= BUF_SIZE) {
@@ -158,10 +147,7 @@ static ssize_t uwb_logger_read(struct file *file, char __user *buf, size_t len, 
 	return count;
 }
 
-static const struct file_operations uwb_logger_ops = {
-	.owner = THIS_MODULE,
-	.read = uwb_logger_read,
-};
+static sec_input_proc_ops(uwb_logger_ops, THIS_MODULE, uwb_logger_read);
 
 int uwb_logger_init(void)
 {

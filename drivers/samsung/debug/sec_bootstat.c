@@ -257,6 +257,7 @@ LIST_HEAD(device_init_time_list);
 LIST_HEAD(systemserver_init_time_list);
 
 LIST_HEAD(enhanced_boot_time_list);
+static DEFINE_SPINLOCK(enhanced_boot_time_list_lock);
 
 static int __init boot_recovery(char *str)
 {
@@ -414,7 +415,9 @@ void sec_enhanced_boot_stat_record(const char *buf)
 	t = local_clock();
 	do_div(t, 1000000ULL);
 	entry->ktime = (unsigned int)t;
+	spin_lock(&enhanced_boot_time_list_lock);
 	list_add(&entry->next, &enhanced_boot_time_list);
+	spin_unlock(&enhanced_boot_time_list_lock);
 	events_ebs++;
 }
 

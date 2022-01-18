@@ -2391,9 +2391,7 @@ int ss_panel_on_pre(struct samsung_display_driver_data *vdd)
 
 	if (!ss_panel_attach_get(vdd)) {
 		ss_read_fw_up_debug_partition();
-#if defined(CONFIG_PANEL_S6TUUM3_AMSA24VU01_WQXGA)
-		BUG_ON(1);
-#endif
+
 		LCD_ERR("ss_panel_attach_get NG\n");
 		return false;
 	}
@@ -2896,7 +2894,7 @@ int ss_panel_off_post(struct samsung_display_driver_data *vdd)
 		vdd->br_info.common_br.finger_mask_hbm_on = false;
 
 	LCD_INFO("[DISPLAY_%d] -\n", vdd->ndx);
-	SS_XLOG(SS_XLOG_FINISH);
+	SS_XLOG(vdd->cnt_mdp_clk_underflow);
 
 	return ret;
 }
@@ -3723,10 +3721,20 @@ static void ss_panel_parse_dt_bright_tables(struct device_node *np,
 				"samsung,candela_map_table_rev", panel_rev,
 				ss_parse_candella_mapping_table);
 
+#if (defined(CONFIG_MACH_X1Q_JPN_SINGLE) || \
+		(defined(CONFIG_MACH_Y2Q_JPN_SINGLE) && !defined(CONFIG_MACH_Y2Q_JPN_DCMOLY)) || \
+		defined(CONFIG_MACH_BLOOMXQ_JPN_SINGLE))
+		LCD_INFO("parse jpn AOD brightness table\n");
+		parse_dt_data(np, &info->candela_map_table[AOD][panel_rev],
+				sizeof(struct candela_map_table),
+				"samsung,aod_candela_map_table_jpn_rev", panel_rev,
+				ss_parse_candella_mapping_table);
+#else
 		parse_dt_data(np, &info->candela_map_table[AOD][panel_rev],
 				sizeof(struct candela_map_table),
 				"samsung,aod_candela_map_table_rev", panel_rev,
 				ss_parse_candella_mapping_table);
+#endif
 
 		parse_dt_data(np, &info->candela_map_table[HBM][panel_rev],
 				sizeof(struct candela_map_table),
@@ -7582,10 +7590,14 @@ brr_done:
 		LCD_INFO("delay 1frame(min_rr: %d, %dus)\n", min_rr, interval_us);
 		usleep_range(interval_us, interval_us);
 
-		ret = ss_set_normal_sde_core_clk(ddev);
-		if (ret) {
-			LCD_ERR("fail to set normal sde core clock..(%d)\n", ret);
-			SS_XLOG(ret, 0xbad2);
+		if (!vrr->running_vrr_mdp) {
+			ret = ss_set_normal_sde_core_clk(ddev);
+			if (ret) {
+				LCD_ERR("fail to set normal sde core clock..(%d)\n", ret);
+				SS_XLOG(ret, 0xbad2);
+			}
+		} else {
+			LCD_INFO("Do not set normal clk, vrr is ongoing!! (%d)\n", vrr->running_vrr_mdp);
 		}
 	} else {
 		LCD_INFO("consecutive VRR req, keep max sde clk (cur: %d%s, adj: %d%s)\n",
@@ -7867,6 +7879,14 @@ int ss_early_display_init(struct samsung_display_driver_data *vdd)
 				LCD_ERR("no samsung_module_info_read function\n");
 			else
 				vdd->module_info_loaded_dsi = vdd->panel_func.samsung_module_info_read(vdd);
+		}
+
+		/* MDNIE X,Y */
+		if (!vdd->mdnie_loaded_dsi) {
+			if (IS_ERR_OR_NULL(vdd->panel_func.samsung_mdnie_read))
+				LCD_ERR("no samsung_mdnie_read function\n");
+			else
+				vdd->mdnie_loaded_dsi = vdd->panel_func.samsung_mdnie_read(vdd);
 		}
 
 		/* Panel Unique Cell ID */

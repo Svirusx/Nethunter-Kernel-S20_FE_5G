@@ -1,21 +1,18 @@
 config SEC_QUEST
 	bool "Samsung QUEST Feature"
 	default n
-	depends on SEC_FACTORY
 	help
 	  Samsung QUEST Feature, to test chipset quality
 
 config SEC_QUEST_UEFI
 	bool "Samsung QUEST UEFI Feature"
 	default n
-	depends on SEC_FACTORY
 	help
 	  Samsung QUEST UEFI Feature, to test chipset quality
 
 config SEC_QUEST_UEFI_ENHANCEMENT
 	bool "Samsung QUEST UEFI ENHENCEMENT Feature"
 	default n
-	depends on SEC_FACTORY
 	help
 	  Samsung QUEST UEFI ENHENCEMENT Feature, to test chipset quality
 
@@ -64,21 +61,17 @@ config SEC_QUEST_CAL_HLOS_SUPPORT_FUSION
 config SEC_QUEST_AUTO_TRIGGER_KWORKER
 	bool "Samsung QUEST AUTO TRIGGER CONCEPT Feature (using kworker)"
 	default n
+	depends on SEC_FACTORY	
 	help
 	 Samsung QUEST AUTO TRIGGER CONCEPT Feature (using kworker)
 
 config SEC_QUEST_AUTO_TRIGGER_INIT_WRITE
 	bool "Samsung QUEST AUTO TRIGGER CONCEPT Feature (using init.rc write)"
 	default n
+	depends on SEC_FACTORY	
 	help
 	 Samsung QUEST AUTO TRIGGER CONCEPT Feature (using init.rc write)
 
-config SEC_QUEST_UEFI_ACT_TRIGGER
-	bool "Samsung QUEST UEFI TRIGGER CONCEPT Feature (using act)"
-	default n
-	help
-	 Samsung QUEST UEFI TRIGGER CONCEPT Feature (using act)
-	 
 config SEC_QUEST_UEFI_USER
 	bool "feature to trigger uefi quest from user binary"
 	default n

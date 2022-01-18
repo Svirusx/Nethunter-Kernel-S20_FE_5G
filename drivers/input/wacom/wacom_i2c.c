@@ -20,6 +20,7 @@
 #include "wacom_dev.h"
 
 struct wacom_i2c *g_wac_i2c;
+static void wacom_i2c_cover_handler(struct wacom_i2c *wac_i2c, char *data);
 
 void wacom_forced_release(struct wacom_i2c *wac_i2c)
 {
@@ -28,9 +29,11 @@ void wacom_forced_release(struct wacom_i2c *wac_i2c)
 		input_info(true, &wac_i2c->client->dev, "%s : [R] dd:%d,%d mc:%d & [HO] dd:%d,%d\n",
 				__func__, wac_i2c->x - wac_i2c->p_x, wac_i2c->y - wac_i2c->p_y,
 				wac_i2c->mcount, wac_i2c->x - wac_i2c->hi_x, wac_i2c->y - wac_i2c->hi_y);
+		sec_input_notify(&wac_i2c->nb, NOTIFIER_WACOM_PEN_HOVER_OUT, NULL);
 	} else  if (wac_i2c->pen_prox) {
 		input_info(true, &wac_i2c->client->dev, "%s : [HO] dd:%d,%d mc:%d\n",
 				__func__, wac_i2c->x - wac_i2c->hi_x, wac_i2c->y - wac_i2c->hi_y, wac_i2c->mcount);
+		sec_input_notify(&wac_i2c->nb, NOTIFIER_WACOM_PEN_HOVER_OUT, NULL);
 	} else {
 		input_info(true, &wac_i2c->client->dev, "%s : pen_prox(%d), pen_pressed(%d)\n",
 				__func__, wac_i2c->pen_prox, wac_i2c->pen_pressed);
@@ -41,10 +44,12 @@ void wacom_forced_release(struct wacom_i2c *wac_i2c)
 				__func__, wac_i2c->x, wac_i2c->y,
 				wac_i2c->x - wac_i2c->p_x, wac_i2c->y - wac_i2c->p_y,
 				wac_i2c->mcount, wac_i2c->x - wac_i2c->hi_x, wac_i2c->y - wac_i2c->hi_y);
+		sec_input_notify(&wac_i2c->nb, NOTIFIER_WACOM_PEN_HOVER_OUT, NULL);
 	} else  if (wac_i2c->pen_prox) {
 		input_info(true, &wac_i2c->client->dev, "%s : [HO] lx:%d ly:%d dd:%d,%d mc:%d\n",
 				__func__, wac_i2c->x, wac_i2c->y,
 				wac_i2c->x - wac_i2c->hi_x, wac_i2c->y - wac_i2c->hi_y, wac_i2c->mcount);
+		sec_input_notify(&wac_i2c->nb, NOTIFIER_WACOM_PEN_HOVER_OUT, NULL);
 	} else {
 		input_info(true, &wac_i2c->client->dev, "%s : pen_prox(%d), pen_pressed(%d)\n",
 				__func__, wac_i2c->pen_prox, wac_i2c->pen_pressed);
@@ -481,6 +486,11 @@ void wacom_select_survey_mode(struct wacom_i2c *wac_i2c, bool enable)
 						__func__, wac_i2c->epen_blocked ? "epen blocked" : "ps on & pen in");
 
 				wacom_i2c_set_survey_mode(wac_i2c, EPEN_SURVEY_MODE_GARAGE_ONLY);
+			} else if (wac_i2c->pdata->support_cover_detection) {
+				input_info(true, &client->dev, "%s: %s cover detection only\n", 
+					__func__, wac_i2c->epen_blocked ? "epen blocked" : "ps on & pen in");
+
+				wacom_i2c_set_survey_mode(wac_i2c, EPEN_SURVEY_MODE_COVER_DETECTION_ONLY);
 			} else {
 				input_info(true, &client->dev, "%s: %s & garage off. power off\n", __func__,
 						wac_i2c->epen_blocked ? "epen blocked" : "ps on & pen in");
@@ -518,6 +528,11 @@ void wacom_select_survey_mode(struct wacom_i2c *wac_i2c, bool enable)
 
 				wacom_i2c_set_survey_mode(wac_i2c,
 						EPEN_SURVEY_MODE_GARAGE_ONLY);
+			} else if (wac_i2c->pdata->support_cover_detection) {
+				input_info(true, &client->dev, "%s: %s cover detection only\n", 
+					__func__, wac_i2c->epen_blocked ? "epen blocked" : "ps on & pen in");
+
+				wacom_i2c_set_survey_mode(wac_i2c, EPEN_SURVEY_MODE_COVER_DETECTION_ONLY);
 			} else {
 				input_info(true, &client->dev, "%s: %s & garage off. power off\n",
 						__func__, wac_i2c->epen_blocked ? "epen blocked" : "ps on & pen in");
@@ -533,6 +548,10 @@ void wacom_select_survey_mode(struct wacom_i2c *wac_i2c, bool enable)
 				input_info(true, &client->dev, "%s: aop off & garage on. garage only mode\n", __func__);
 
 				wacom_i2c_set_survey_mode(wac_i2c, EPEN_SURVEY_MODE_GARAGE_ONLY);
+			} else if (wac_i2c->pdata->support_cover_detection) {
+				input_info(true, &client->dev, "%s: AOP off. cover detection only\n", 
+					__func__);
+				wacom_i2c_set_survey_mode(wac_i2c, EPEN_SURVEY_MODE_COVER_DETECTION_ONLY);
 			} else {
 				input_info(true, &client->dev, "%s: aop off & garage off. power off\n", __func__);
 
@@ -600,6 +619,9 @@ int wacom_i2c_set_survey_mode(struct wacom_i2c *wac_i2c, int mode)
 			data[0] = COM_SURVEY_SYNC_SCAN;
 		else
 			data[0] = COM_SURVEY_ASYNC_SCAN;
+		break;
+	case EPEN_SURVEY_MODE_COVER_DETECTION_ONLY:
+		data[0] = COM_SURVEY_GARAGE_ONLY;
 		break;
 	default:
 		input_err(true, &client->dev, "%s: wrong param %d\n", __func__, mode);
@@ -867,6 +889,9 @@ reset:
 				data[0], data[1], data[2], data[3], data[4], data[5],
 				data[6], data[7], data[8], data[9], data[10],
 				data[11], data[12]);
+
+		if ((data[0] & 0x0F) == NOTI_PACKET && data[1] == COVER_DETECT_PACKET)
+			 wacom_i2c_cover_handler(wac_i2c, data);
 	}
 
 	if (!wac_i2c->samplerate_state) {
@@ -1077,6 +1102,19 @@ static void wac_i2c_block_tsp_scan(struct wacom_i2c *wac_i2c, char *data)
 	}
 }
 
+static void wacom_i2c_cover_handler(struct wacom_i2c *wac_i2c, char *data)
+{
+	char change_status;
+
+	change_status = (data[3] >> 7) & 0x01;
+
+	input_info(true, &wac_i2c->client->dev, "%s: cover status %d\n", __func__, change_status);
+	input_report_switch(wac_i2c->input_dev,
+		SW_FLIP, change_status);
+	input_sync(wac_i2c->input_dev);
+	wac_i2c->flip_state = change_status;
+}
+
 static void wacom_i2c_noti_handler(struct wacom_i2c *wac_i2c, char *data)
 {
 	char pack_sub_id;
@@ -1106,6 +1144,9 @@ static void wacom_i2c_noti_handler(struct wacom_i2c *wac_i2c, char *data)
 	case GCF_PACKET:
 		wac_i2c->ble_charging_state = false;
 		sec_input_notify(&wac_i2c->nb, NOTIFIER_WACOM_PEN_CHARGING_FINISHED, NULL);
+		break;
+	case COVER_DETECT_PACKET:
+			 wacom_i2c_cover_handler(wac_i2c, data);
 		break;
 	default:
 		input_err(true, &wac_i2c->client->dev, "%s: unexpected packet %d\n", __func__, pack_sub_id);
@@ -1347,6 +1388,7 @@ static void wacom_i2c_coord_handler(struct wacom_i2c *wac_i2c, char *data)
 			input_info(true, &client->dev, "[HI]  x:%d  y:%d loc:%s (%s) \n",
 					wac_i2c->x, wac_i2c->y, location, wac_i2c->tool == BTN_TOOL_PEN ? "pen" : "rubber");
 #endif
+			sec_input_notify(&wac_i2c->nb, NOTIFIER_WACOM_PEN_HOVER_IN, NULL);
 			return;
 		}
 
@@ -1451,6 +1493,7 @@ static void wacom_i2c_coord_handler(struct wacom_i2c *wac_i2c, char *data)
 						location, wac_i2c->mcount);
 #endif
 			}
+			sec_input_notify(&wac_i2c->nb, NOTIFIER_WACOM_PEN_HOVER_OUT, NULL);
 			wac_i2c->p_x = wac_i2c->p_y = wac_i2c->hi_x = wac_i2c->hi_y = 0;
 
 		} else {
@@ -1625,9 +1668,10 @@ static void pen_insert_work(struct work_struct *work)
 {
 	struct wacom_i2c *wac_i2c =
 		container_of(work, struct wacom_i2c, pen_insert_dwork.work);
+	char data;
+	int ret = 0;
 
 #if !WACOM_SEC_FACTORY
-	int ret = 0;
 
 	if (wac_i2c->pdata->support_garage_open_test) {
 		ret = wacom_open_test(wac_i2c, WACOM_GARAGE_TEST);
@@ -1667,6 +1711,15 @@ static void pen_insert_work(struct work_struct *work)
 
 	input_info(true, &wac_i2c->client->dev, "%s : pen is %s\n", __func__,
 			(wac_i2c->function_result & EPEN_EVENT_PEN_OUT) ? "OUT" : "IN");
+
+	/* occur cover status event*/
+	if (wac_i2c->pdata->support_cover_detection) {
+		data = COM_KBDCOVER_CHECK_STATUS;
+		ret = wacom_i2c_send(wac_i2c, &data, 1);
+		if (ret < 0) {
+			input_err(true, &wac_i2c->client->dev, "%s: failed to send cover status event %d\n", __func__, ret);
+		}
+	}
 }
 
 static void init_pen_insert(struct wacom_i2c *wac_i2c)
@@ -1751,6 +1804,9 @@ static void wacom_i2c_set_input_values(struct wacom_i2c *wac_i2c,
 	input_set_capability(input_dev, EV_KEY, KEY_WAKEUP_UNLOCK);
 	input_set_capability(input_dev, EV_KEY, KEY_HOMEPAGE);
 
+	/* flip cover */
+	input_set_capability(input_dev, EV_SW, SW_FLIP);
+
 	input_set_drvdata(input_dev, wac_i2c);
 }
 
@@ -1770,7 +1826,8 @@ void wacom_print_info(struct wacom_i2c *wac_i2c)
 		wac_i2c->scan_info_fail_cnt = 1000;
 
 	input_info(true, &wac_i2c->client->dev,
-			"%s: garage %s, ps %s, pen %s, report_scan_seq %d, ble_mode(0x%x%s), epen %s, count(%u,%u,%u), mode(%d), block_cnt(%d), check(%d), test(%d,%d), ver[0x%x] #%d\n",
+			"%s: garage %s, ps %s, pen %s, report_scan_seq %d, ble_mode(0x%x%s), epen %s, count(%u,%u,%u), "
+			"mode(%d), block_cnt(%d), check(%d), test(%d,%d), ver[0x%x] #%d, cover(%d,%d)\n",
 			__func__, wac_i2c->pdata->use_garage ? "used" : "unused",
 			wac_i2c->battery_saving_mode ?  "on" : "off",
 			(wac_i2c->function_result & EPEN_EVENT_PEN_OUT) ? "out" : "in",
@@ -1780,7 +1837,8 @@ void wacom_print_info(struct wacom_i2c *wac_i2c)
 			wac_i2c->i2c_fail_count, wac_i2c->abnormal_reset_count, wac_i2c->scan_info_fail_cnt,
 			wac_i2c->check_survey_mode, wac_i2c->tsp_block_cnt, wac_i2c->check_elec,
 			wac_i2c->connection_check, wac_i2c->garage_connection_check,
-			wac_i2c->fw_ver_ic, wac_i2c->print_info_cnt_open);
+			wac_i2c->fw_ver_ic, wac_i2c->print_info_cnt_open,
+			wac_i2c->cover, wac_i2c->flip_state);
 }
 
 static void wacom_print_info_work(struct work_struct *work)
@@ -2857,12 +2915,14 @@ static struct wacom_g5_platform_data *wacom_parse_dt(struct i2c_client *client)
 	}
 
 	pdata->support_cover_noti = of_property_read_bool(np, "wacom,support_cover_noti");
+	pdata->support_cover_detection = of_property_read_bool(np, "wacom,support_cover_detection");
 
 	input_info(true, &client->dev,
 			"boot_addr: 0x%X, origin: (%d,%d), max_coords: (%d,%d), "
 			"max_pressure: %d, max_height: %d, max_tilt: (%d,%d) "
 			"invert: (%d,%d,%d), fw_path: %s, "
-			"module_ver:%d, table_swap:%d%s%s%s, cover_noti:%s\n",
+			"module_ver:%d, table_swap:%d%s%s%s, cover_noti:%d,"
+			"cover_detect:%d\n",
 			pdata->boot_addr, pdata->origin[0], pdata->origin[1],
 			pdata->max_x, pdata->max_y, pdata->max_pressure,
 			pdata->max_height, pdata->max_x_tilt, pdata->max_y_tilt,
@@ -2871,7 +2931,7 @@ static struct wacom_g5_platform_data *wacom_parse_dt(struct i2c_client *client)
 			pdata->use_garage ? ", use garage" : "",
 			pdata->support_garage_open_test ? ", support garage open test" : "",
 			pdata->regulator_boot_on ? ", boot on" : "",
-			pdata->support_cover_noti ? ", support cover noti" : "");
+			pdata->support_cover_noti, pdata->support_cover_detection);
 
 	/* remove next model */
 	ret = of_property_read_u32(np, "wacom,donotusethislcdmodule", &value);

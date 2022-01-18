@@ -250,7 +250,9 @@ static void dhd_bus_idle_scan(dhd_bus_t *bus);
 #ifdef EXYNOS_PCIE_DEBUG
 extern void exynos_pcie_register_dump(int ch_num);
 #endif /* EXYNOS_PCIE_DEBUG */
-
+#ifdef PRINT_WAKEUP_GPIO_STATUS
+extern void exynos_pin_dbg_show(unsigned int pin, const char* str);
+#endif /* PRINT_WAKEUP_GPIO_STATUS */
 #if defined(DHD_H2D_LOG_TIME_SYNC)
 static void dhdpci_bus_rte_log_time_sync_poll(dhd_bus_t *bus);
 #endif /* DHD_H2D_LOG_TIME_SYNC */
@@ -3689,15 +3691,20 @@ dhdpcie_get_mem_dump(dhd_bus_t *bus)
 #ifdef BOARD_HIKEY
 	unsigned long flags_bus;
 #endif /* BOARD_HIKEY */
+#ifdef DHD_FILE_DUMP_EVENT
+	dhd_dongledump_status_t dump_status;
+#endif /* DHD_FILE_DUMP_EVENT */
 
 	if (!bus) {
 		DHD_ERROR(("%s: bus is NULL\n", __FUNCTION__));
-		return BCME_ERROR;
+		ret = BCME_ERROR;
+		goto exit;
 	}
 
 	if (!bus->dhd) {
 		DHD_ERROR(("%s: dhd is NULL\n", __FUNCTION__));
-		return BCME_ERROR;
+		ret = BCME_ERROR;
+		goto exit;
 	}
 
 	size = bus->ramsize; /* Full mem size */
@@ -3708,8 +3715,16 @@ dhdpcie_get_mem_dump(dhd_bus_t *bus)
 	if (!p_buf) {
 		DHD_ERROR(("%s: Out of memory (%d bytes)\n",
 			__FUNCTION__, size));
-		return BCME_ERROR;
+		ret = BCME_ERROR;
+		goto exit;
 	}
+
+#ifdef DHD_FILE_DUMP_EVENT
+	dump_status = dhd_get_dump_status(bus->dhd);
+	if (dump_status != DUMP_IN_PROGRESS) {
+		dhd_set_dump_status(bus->dhd, DUMP_IN_PROGRESS);
+	}
+#endif /* DHD_FILE_DUMP_EVENT */
 
 	/* Read mem content */
 	DHD_TRACE_HW4(("Dump dongle memory\n"));
@@ -3739,6 +3754,14 @@ dhdpcie_get_mem_dump(dhd_bus_t *bus)
 		start += read_size;
 		databuf += read_size;
 	}
+
+exit:
+#ifdef DHD_FILE_DUMP_EVENT
+	if (ret != BCME_OK) {
+		dhd_set_dump_status(bus->dhd, DUMP_FAILURE);
+	}
+#endif /* DHD_FILE_DUMP_EVENT */
+
 	return ret;
 }
 
@@ -3804,6 +3827,8 @@ dhdpcie_mem_dump(dhd_bus_t *bus)
 		case DUMP_TYPE_ESCAN_SYNCID_MISMATCH:
 			/* intentional fall through */
 		case DUMP_TYPE_INVALID_SHINFO_NRFRAGS:
+			/* intentional fall through */
+		case DUMP_TYPE_P2P_DISC_BUSY:
 			if (dhdp->db7_trap.fw_db7w_trap) {
 				/* Set fw_db7w_trap_inprogress here and clear from DPC */
 				dhdp->db7_trap.fw_db7w_trap_inprogress = TRUE;
@@ -13846,6 +13871,9 @@ dhd_pcie_intr_count_dump(dhd_pub_t *dhd)
 	DHD_ERROR(("oob_irq_enabled=%d oob_gpio_level=%d\n",
 		dhdpcie_get_oob_irq_status(bus),
 		dhdpcie_get_oob_irq_level()));
+#ifdef PRINT_WAKEUP_GPIO_STATUS
+	exynos_pin_dbg_show(dhdpcie_get_oob_gpio_number(), "gpa0");
+#endif /* PRINT_WAKEUP_GPIO_STATUS */
 #endif /* BCMPCIE_OOB_HOST_WAKE */
 	DHD_ERROR(("dpc_return_busdown_count=%lu non_ours_irq_count=%lu\n",
 		bus->dpc_return_busdown_count, bus->non_ours_irq_count));

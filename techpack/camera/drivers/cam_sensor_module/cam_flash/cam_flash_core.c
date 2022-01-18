@@ -16,9 +16,40 @@
 #if defined(CONFIG_LEDS_RT8547)
 #include <linux/leds-rt8547.h>
 #endif
+#if defined(CONFIG_LEDS_KTD2692) 
+#include <linux/leds-ktd2692.h>
+#endif
 
-#if defined(CONFIG_LEDS_S2MPB02) || defined(CONFIG_LEDS_RT8547)
+#if defined(CONFIG_LEDS_KTD2692)
+extern bool sysfs_flash_op_kt;
+#endif
+#if defined(CONFIG_LEDS_RT8547) || defined(CONFIG_LEDS_S2MPB02)
 extern bool sysfs_flash_op;
+#endif
+
+#if defined(CONFIG_LEDS_KTD2692)
+static unsigned int system_rev __read_mostly;
+
+static int __init sec_hw_rev_setup(char *p)
+{
+	int ret;
+
+	ret = kstrtouint(p, 0, &system_rev);
+	if (unlikely(ret < 0)) {
+		CAM_WARN(CAM_FLASH,"androidboot.revision is malformed %s ", p);
+		return -EINVAL;
+	}
+
+	CAM_INFO(CAM_FLASH,"androidboot.revision %x ", system_rev);
+
+	return 0;
+}
+early_param("androidboot.revision", sec_hw_rev_setup);
+
+static unsigned int sec_hw_rev(void)
+{
+	return system_rev;
+}
 #endif
 
 #if defined(CONFIG_LEDS_PMIC_QPNP)
@@ -50,7 +81,7 @@ static int cam_flash_prepare(struct cam_flash_ctrl *flash_ctrl,
 		(struct cam_flash_private_soc *)
 		flash_ctrl->soc_info.soc_private;
 
-#if !defined(CONFIG_LEDS_S2MPB02) && !defined(CONFIG_LEDS_RT8547)
+#if !defined(CONFIG_LEDS_S2MPB02) && !defined(CONFIG_LEDS_RT8547) && !defined(CONFIG_LEDS_KTD2692)
 	if (!(flash_ctrl->switch_trigger)) {
 		CAM_ERR(CAM_FLASH, "Invalid argument");
 		return -EINVAL;
@@ -88,7 +119,7 @@ static int cam_flash_prepare(struct cam_flash_ctrl *flash_ctrl,
 	} else {
 		if (regulator_enable &&
 			(flash_ctrl->is_regulator_enabled == false)) {
-#if !defined(CONFIG_LEDS_S2MPB02) && !defined(CONFIG_LEDS_RT8547)
+#if !defined(CONFIG_LEDS_S2MPB02) && !defined(CONFIG_LEDS_RT8547) && !defined(CONFIG_LEDS_KTD2692)
 			rc = qpnp_flash_led_prepare(flash_ctrl->switch_trigger,
 				ENABLE_REGULATOR, NULL);
 			if (rc) {
@@ -100,7 +131,7 @@ static int cam_flash_prepare(struct cam_flash_ctrl *flash_ctrl,
 			flash_ctrl->is_regulator_enabled = true;
 		} else if ((!regulator_enable) &&
 			(flash_ctrl->is_regulator_enabled == true)) {
-#if !defined(CONFIG_LEDS_S2MPB02) && !defined(CONFIG_LEDS_RT8547)
+#if !defined(CONFIG_LEDS_S2MPB02) && !defined(CONFIG_LEDS_RT8547) && !defined(CONFIG_LEDS_KTD2692)
 			rc = qpnp_flash_led_prepare(flash_ctrl->switch_trigger,
 				DISABLE_REGULATOR, NULL);
 			if (rc) {
@@ -220,7 +251,7 @@ int cam_flash_pmic_power_ops(struct cam_flash_ctrl *fctrl,
 {
 	int rc = 0;
 
-#if !defined(CONFIG_LEDS_S2MPB02) && !defined(CONFIG_LEDS_RT8547)
+#if !defined(CONFIG_LEDS_S2MPB02) && !defined(CONFIG_LEDS_RT8547) && !defined(CONFIG_LEDS_KTD2692)
 	if (!(fctrl->switch_trigger)) {
 		CAM_ERR(CAM_FLASH, "Invalid argument");
 		return -EINVAL;
@@ -547,91 +578,171 @@ static int cam_flash_torch(
 
 	return rc;
 }
-#elif defined(CONFIG_LEDS_RT8547)
-int cam_flash_off(struct cam_flash_ctrl *flash_ctrl)
-{
-	if (!flash_ctrl) {
-		CAM_ERR(CAM_FLASH, "Flash control Null");
-		return -EINVAL;
+#elif defined(CONFIG_LEDS_RT8547) || defined (CONFIG_LEDS_KTD2692)
+
+		int cam_flash_off(struct cam_flash_ctrl *flash_ctrl)
+		{
+			unsigned int board_rev = sec_hw_rev();
+			if(board_rev >7){
+				if (!flash_ctrl) {
+					CAM_ERR(CAM_FLASH, "Flash control Null");
+					return -EINVAL;
+				}
+
+				CAM_INFO(CAM_FLASH, "CAM Flash OFF");
+				ktd2692_led_mode_ctrl(KTD2692_DISABLES_TORCH_FLASH_MODE, 0);
+
+				flash_ctrl->flash_state = CAM_FLASH_STATE_START;
+				return 0;
+			}else{
+				if (!flash_ctrl) {
+					CAM_ERR(CAM_FLASH, "Flash control Null");
+					return -EINVAL;
+				}
+
+				CAM_INFO(CAM_FLASH, "CAM Flash OFF");
+				rt8547_led_mode_ctrl(RT8547_DISABLES_TORCH_FLASH_MODE, 0);
+
+				flash_ctrl->flash_state = CAM_FLASH_STATE_START;
+				return 0;
+			}
+		}
+
+		static int cam_flash_low(
+			struct cam_flash_ctrl *flash_ctrl,
+			struct cam_flash_frame_setting *flash_data)
+		{
+			unsigned int board_rev = sec_hw_rev();
+			if(board_rev >7){
+				int rc = 0;
+
+				if (!flash_data) {
+					CAM_ERR(CAM_FLASH, "Flash Data Null");
+					return -EINVAL;
+				}
+
+				CAM_INFO(CAM_FLASH, "CAM Low Flash ON");
+				rc =  ktd2692_led_mode_ctrl(KTD2692_ENABLE_TORCH_MODE, 200);
+				if (rc)
+					CAM_ERR(CAM_FLASH, "Fire Low Flash failed: %d", rc);
+
+				return rc;
+			}else{
+				int rc = 0;
+
+				if (!flash_data) {
+					CAM_ERR(CAM_FLASH, "Flash Data Null");
+					return -EINVAL;
+				}
+
+				CAM_INFO(CAM_FLASH, "CAM Low Flash ON");
+				rc = 	rt8547_led_mode_ctrl(RT8547_ENABLE_TORCH_MODE, RT8547_TORCH_CURRENT_275mA);
+				if (rc)
+					CAM_ERR(CAM_FLASH, "Fire Low Flash failed: %d", rc);
+
+				return rc;
+			}
+			
+		}
+		static int cam_flash_high(
+			struct cam_flash_ctrl *flash_ctrl,
+			struct cam_flash_frame_setting *flash_data)
+		{
+			unsigned int board_rev = sec_hw_rev();
+			if(board_rev >7){
+				int rc = 0;
+				CAM_INFO(CAM_FLASH, "CAM Flash ON Entered ");
+				if (flash_data->led_current_ma[0] == 100) {
+					rc =  ktd2692_led_mode_ctrl(KTD2692_ENABLE_TORCH_MODE, 125);
+				}
+				else if (flash_data->led_current_ma[0] == 240) {
+					rc =  ktd2692_led_mode_ctrl(KTD2692_ENABLE_TORCH_MODE, 225);
+				}
+				else {
+					rc = ktd2692_led_mode_ctrl(KTD2692_ENABLE_FLASH_MODE, 1400);
+				}
+
+				CAM_INFO(CAM_FLASH, "CAM Flash ON, current = %d",flash_data->led_current_ma[0]);
+				if (rc)
+					CAM_ERR(CAM_FLASH, "Fire Flash Failed: %d", rc);
+
+				return rc;
+			}else{
+				int rc = 0;
+
+				if (flash_data->led_current_ma[0] == 100) {
+					rc = rt8547_led_mode_ctrl(RT8547_ENABLE_TORCH_MODE, RT8547_TORCH_CURRENT_125mA);
+				}
+				else if (flash_data->led_current_ma[0] == 240) {
+					rc = rt8547_led_mode_ctrl(RT8547_ENABLE_TORCH_MODE, RT8547_TORCH_CURRENT_300mA);
+				}
+				else {
+					rc = rt8547_led_mode_ctrl(RT8547_ENABLE_FLASH_MODE, RT8547_FLASH_CURRENT_1400mA);
+				}
+
+				CAM_INFO(CAM_FLASH, "CAM Flash ON");
+				if (rc)
+					CAM_ERR(CAM_FLASH, "Fire Flash Failed: %d", rc);
+
+				return rc;
+			}
+		}
+
+		static int cam_flash_torch(
+			struct cam_flash_ctrl *flash_ctrl,
+			struct cam_flash_frame_setting *flash_data)
+		{
+			unsigned int board_rev = sec_hw_rev();
+			if(board_rev >7){
+				int rc = 0;
+
+				CAM_INFO(CAM_FLASH, "CAM Torch Entered");
+				if (!flash_data) {
+					CAM_ERR(CAM_FLASH, "Flash Data Null");
+					return -EINVAL;
+				}
+
+				CAM_INFO(CAM_FLASH, "CAM Torch Flash ON, %d mA", flash_data->led_current_ma[0]);
+			#if defined(CONFIG_FLASH_CURRENT_JAPAN)
+					rc =  ktd2692_led_mode_ctrl(KTD2692_ENABLE_TORCH_MODE, 50);
+			#else
+				if (flash_data->led_current_ma[0] == 140) {
+					rc =  ktd2692_led_mode_ctrl(KTD2692_ENABLE_TORCH_MODE, 100);
+				} else {
+					rc =  ktd2692_led_mode_ctrl(KTD2692_ENABLE_TORCH_MODE, 175);
+				}
+			#endif
+
+				if (rc)
+					CAM_ERR(CAM_FLASH, "Fire Torch failed: %d", rc);
+
+				return rc;
+			}else{
+				int rc = 0;
+				if (!flash_data) {
+					CAM_ERR(CAM_FLASH, "Flash Data Null");
+					return -EINVAL;
+				}
+
+			#if defined(CONFIG_FLASH_CURRENT_JAPAN)
+				CAM_INFO(CAM_FLASH, "CAM Torch Flash ON");
+					rc = rt8547_led_mode_ctrl(RT8547_ENABLE_TORCH_MODE, RT8547_TORCH_CURRENT_50mA);
+			#else
+				CAM_INFO(CAM_FLASH, "CAM Torch Flash ON, %d mA", flash_data->led_current_ma[0]);
+				if (flash_data->led_current_ma[0] == 140) {
+					rc = rt8547_led_mode_ctrl(RT8547_ENABLE_TORCH_MODE, RT8547_TORCH_CURRENT_125mA);
+				} else {
+					rc = rt8547_led_mode_ctrl(RT8547_ENABLE_TORCH_MODE, RT8547_TORCH_CURRENT_225mA);
+				}
+			#endif
+
+				if (rc)
+					CAM_ERR(CAM_FLASH, "Fire Torch failed: %d", rc);
+
+			return rc;
+		}
+
 	}
-
-	CAM_INFO(CAM_FLASH, "CAM Flash OFF");
-	rt8547_led_mode_ctrl(RT8547_DISABLES_TORCH_FLASH_MODE, 0);
-
-	flash_ctrl->flash_state = CAM_FLASH_STATE_START;
-	return 0;
-}
-
-static int cam_flash_low(
-	struct cam_flash_ctrl *flash_ctrl,
-	struct cam_flash_frame_setting *flash_data)
-{
-	int rc = 0;
-
-	if (!flash_data) {
-		CAM_ERR(CAM_FLASH, "Flash Data Null");
-		return -EINVAL;
-	}
-
-	CAM_INFO(CAM_FLASH, "CAM Low Flash ON");
-	rc = 	rt8547_led_mode_ctrl(RT8547_ENABLE_TORCH_MODE, RT8547_TORCH_CURRENT_275mA);
-	if (rc)
-		CAM_ERR(CAM_FLASH, "Fire Low Flash failed: %d", rc);
-
-	return rc;
-}
-
-static int cam_flash_high(
-	struct cam_flash_ctrl *flash_ctrl,
-	struct cam_flash_frame_setting *flash_data)
-{
-	int rc = 0;
-
-	if (flash_data->led_current_ma[0] == 100) {
-		rc = rt8547_led_mode_ctrl(RT8547_ENABLE_TORCH_MODE, RT8547_TORCH_CURRENT_125mA);
-	}
-	else if (flash_data->led_current_ma[0] == 240) {
-		rc = rt8547_led_mode_ctrl(RT8547_ENABLE_TORCH_MODE, RT8547_TORCH_CURRENT_300mA);
-	}
-	else {
-		rc = rt8547_led_mode_ctrl(RT8547_ENABLE_FLASH_MODE, RT8547_FLASH_CURRENT_1400mA);
-	}
-
-	CAM_INFO(CAM_FLASH, "CAM Flash ON");
-	if (rc)
-		CAM_ERR(CAM_FLASH, "Fire Flash Failed: %d", rc);
-
-	return rc;
-}
-
-static int cam_flash_torch(
-	struct cam_flash_ctrl *flash_ctrl,
-	struct cam_flash_frame_setting *flash_data)
-{
-	int rc = 0;
-
-	if (!flash_data) {
-		CAM_ERR(CAM_FLASH, "Flash Data Null");
-		return -EINVAL;
-	}
-
-#if defined(CONFIG_FLASH_CURRENT_JAPAN)
-	CAM_INFO(CAM_FLASH, "CAM Torch Flash ON");
-		rc = rt8547_led_mode_ctrl(RT8547_ENABLE_TORCH_MODE, RT8547_TORCH_CURRENT_50mA);
-#else
-	CAM_INFO(CAM_FLASH, "CAM Torch Flash ON, %d mA", flash_data->led_current_ma[0]);
-	if (flash_data->led_current_ma[0] == 140) {
-		rc = rt8547_led_mode_ctrl(RT8547_ENABLE_TORCH_MODE, RT8547_TORCH_CURRENT_125mA);
-	} else {
-		rc = rt8547_led_mode_ctrl(RT8547_ENABLE_TORCH_MODE, RT8547_TORCH_CURRENT_225mA);
-	}
-#endif
-
-	if (rc)
-		CAM_ERR(CAM_FLASH, "Fire Torch failed: %d", rc);
-
-	return rc;
-}
 #else
 static int cam_flash_ops(struct cam_flash_ctrl *flash_ctrl,
 	struct cam_flash_frame_setting *flash_data, enum camera_flash_opcode op)
@@ -1020,7 +1131,7 @@ int cam_flash_pmic_apply_setting(struct cam_flash_ctrl *fctrl,
 					return rc;
 				}
 			}
-#if defined(CONFIG_LEDS_S2MPB02) || defined(CONFIG_LEDS_RT8547)
+#if defined(CONFIG_LEDS_S2MPB02) || defined(CONFIG_LEDS_RT8547) || defined(CONFIG_LEDS_KTD2692)
 			if (flash_data->opcode ==
 				CAMERA_SENSOR_FLASH_OP_FIRETORCH) {
 				rc = cam_flash_torch(fctrl, flash_data);
@@ -1064,7 +1175,7 @@ int cam_flash_pmic_apply_setting(struct cam_flash_ctrl *fctrl,
 					"LED off failed: %d",
 					rc);
 			}
-#if defined(CONFIG_LEDS_S2MPB02) || defined(CONFIG_LEDS_RT8547)
+#if defined(CONFIG_LEDS_S2MPB02) || defined(CONFIG_LEDS_RT8547) || defined(CONFIG_LEDS_KTD2692)
 			else if (flash_data->opcode ==
 				CAMERA_SENSOR_FLASH_OP_FIRETORCH) {
 				rc = cam_flash_torch(fctrl, flash_data);
@@ -1107,9 +1218,11 @@ int cam_flash_pmic_apply_setting(struct cam_flash_ctrl *fctrl,
 				/* Turn On Torch */
 				if (fctrl->flash_state ==
 					CAM_FLASH_STATE_START) {
-#if defined(CONFIG_LEDS_S2MPB02) || defined(CONFIG_LEDS_RT8547)
+#if defined(CONFIG_LEDS_S2MPB02) || defined(CONFIG_LEDS_RT8547) || defined(CONFIG_LEDS_KTD2692)
+					CAM_INFO(CAM_FLASH,"cam_flash_torch");
 					rc = cam_flash_torch(fctrl, flash_data);
 #else
+					CAM_INFO(CAM_FLASH,"cam_flash_low");
 					rc = cam_flash_low(fctrl, flash_data);
 #endif
 					if (rc) {
@@ -1156,7 +1269,7 @@ int cam_flash_pmic_apply_setting(struct cam_flash_ctrl *fctrl,
 				}
 			}
 		}
-#if defined(CONFIG_LEDS_S2MPB02) || defined(CONFIG_LEDS_RT8547)
+#if defined(CONFIG_LEDS_S2MPB02) || defined(CONFIG_LEDS_RT8547) || defined(CONFIG_LEDS_KTD2692)
 		else if ((flash_data->opcode ==
 			CAMERA_SENSOR_FLASH_OP_FIRETORCH) &&
 			(flash_data->cmn_attr.is_settings_valid) &&
@@ -1929,7 +2042,7 @@ int cam_flash_pmic_pkt_parser(struct cam_flash_ctrl *fctrl, void *arg)
 			flash_query_info =
 				(struct cam_flash_query_curr *)cmd_buf;
 
-#if !defined(CONFIG_LEDS_S2MPB02) && !defined(CONFIG_LEDS_RT8547)
+#if !defined(CONFIG_LEDS_S2MPB02) && !defined(CONFIG_LEDS_RT8547) && !defined(CONFIG_LEDS_KTD2692)
 			if (soc_private->is_wled_flash)
 				rc = wled_flash_led_prepare(
 					fctrl->switch_trigger,
@@ -2109,16 +2222,24 @@ int cam_flash_release_dev(struct cam_flash_ctrl *fctrl)
 void cam_flash_shutdown(struct cam_flash_ctrl *fctrl)
 {
 	int rc;
-
 #if defined(CONFIG_LEDS_S2MPB02)
 	sysfs_flash_op = 0;
 	s2mpb02_led_en(S2MPB02_FLASH_LED_1, 0, S2MPB02_LED_TURN_WAY_I2C);/* flash, off */
 	s2mpb02_led_en(S2MPB02_TORCH_LED_1, 0, S2MPB02_LED_TURN_WAY_I2C);/* torch, off */
 	s2mpb02_led_en(S2MPB02_FLASH_LED_1, 0, S2MPB02_LED_TURN_WAY_GPIO);/* flash, off */
 	s2mpb02_led_en(S2MPB02_TORCH_LED_1, 0, S2MPB02_LED_TURN_WAY_GPIO);/* torch, off */
-#elif defined(CONFIG_LEDS_RT8547)
-	sysfs_flash_op = 0;
-	rt8547_led_mode_ctrl(RT8547_DISABLES_TORCH_FLASH_MODE, 0);
+#elif defined(CONFIG_LEDS_KTD2692) || defined(CONFIG_LEDS_RT8547)
+	unsigned int board_rev = sec_hw_rev();
+	if ( board_rev > 7)
+	{
+		sysfs_flash_op_kt = 0;
+		ktd2692_led_mode_ctrl(KTD2692_DISABLES_TORCH_FLASH_MODE, 0);
+	}
+	else
+	{	
+		sysfs_flash_op = 0;
+		rt8547_led_mode_ctrl(RT8547_DISABLES_TORCH_FLASH_MODE, 0);
+	}
 #endif
 #if defined(CONFIG_LEDS_PMIC_QPNP)
 	cam_torch_off(fctrl);

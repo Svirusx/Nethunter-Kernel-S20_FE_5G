@@ -7091,6 +7091,12 @@ static int get_start_cpu(struct task_struct *p)
 		return start_cpu;
 	}
 #endif /* CONFIG_SCHED_SEC_TASK_BOOST */
+
+	if (task_boost > TASK_BOOST_ON_MID) {
+		start_cpu = rd->max_cap_orig_cpu;
+		return start_cpu;
+	}
+
 	/*
 	 * note about min/mid/max_cap_orig_cpu - either all of them will be -ve
 	 * or just mid will be -1, there never be any other combinations of -1s
@@ -7099,11 +7105,9 @@ static int get_start_cpu(struct task_struct *p)
 	if (task_skip_min || boosted) {
 		start_cpu = rd->mid_cap_orig_cpu == -1 ?
 			rd->max_cap_orig_cpu : rd->mid_cap_orig_cpu;
-	}
-
-	if (task_boost > TASK_BOOST_ON_MID) {
-		start_cpu = rd->max_cap_orig_cpu;
+#ifdef CONFIG_WALT_POWER_FEATURE
 		return start_cpu;
+#endif
 	}
 
 	if (start_cpu == -1 || start_cpu == rd->max_cap_orig_cpu)

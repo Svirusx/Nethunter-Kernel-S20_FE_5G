@@ -398,6 +398,15 @@ typedef struct dhd_info {
 	pkt_pool_t rx_pkt_pool;
 	tsk_ctl_t rx_pktpool_thread;
 #endif /* RX_PKT_POOL */
+#ifdef DHD_PERIODIC_CNTRS
+	timer_list_compat_t dhd_periodic_cntrs_timer;
+	bool dhd_periodic_cntrs_tmr_valid;
+	tsk_ctl_t thr_periodic_cntrs_ctl;
+#endif /* DHD_PERIODIC_CNTRS */
+#ifdef DHD_FILE_DUMP_EVENT
+	osl_atomic_t dump_status;
+	struct work_struct dhd_dump_proc_work;
+#endif /* DHD_FILE_DUMP_EVENT */
 } dhd_info_t;
 
 /** priv_link is the link between netdev and the dhdif and dhd_info structs. */
@@ -485,7 +494,8 @@ extern uint fis_enab;
 	(defined(CONFIG_SOC_EXYNOS9820) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 187))) \
 	|| (defined(CONFIG_ARCH_MSM) && (((LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 170)) && \
 	(LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0))) || (LINUX_VERSION_CODE >= \
-	KERNEL_VERSION(4, 19, 110))))
+	KERNEL_VERSION(4, 19, 110)))) || ((defined(CONFIG_SOC_EXYNOS9110) || \
+	defined(CONFIG_SOC_S5E5515)) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 151)))
 #define WAKELOCK_BACKPORT
 #endif /* WAKELOCK_BACKPORT */
 

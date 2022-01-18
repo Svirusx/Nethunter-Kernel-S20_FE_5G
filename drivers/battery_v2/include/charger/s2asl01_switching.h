@@ -163,6 +163,11 @@ struct s2asl01_platform_data {
 	bool tsd_en;
 };
 
+enum s2asl01_ver {
+	VER_6030 = 0,
+	VER_6130,
+};
+
 struct s2asl01_switching_data {
 	struct device           *dev;
 	struct i2c_client       *client;
@@ -173,6 +178,7 @@ struct s2asl01_switching_data {
 	struct delayed_work	limiter_isr_work;
 	int rev_id;
 	int es_num;
+	int ic_ver;
 	int irq_bat_int;
 	bool in_ok;
 	bool supllement_mode;

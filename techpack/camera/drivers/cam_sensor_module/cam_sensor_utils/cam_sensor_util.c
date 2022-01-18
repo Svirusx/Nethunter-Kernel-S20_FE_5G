@@ -1735,6 +1735,14 @@ int cam_sensor_core_power_up(struct cam_sensor_power_ctrl_t *ctrl,
 			return -EINVAL;
 		}
 
+#if defined(CONFIG_SEC_R8Q_PROJECT)
+		/* This change for is done temporarily for R8Q Factory timing issue*/
+		if (power_setting->seq_type == SENSOR_VIO) 
+		{
+			usleep_range(20000, 25000);
+		}
+#endif
+
 		CAM_DBG(CAM_SENSOR, "seq_type %d", power_setting->seq_type);
 
 		switch (power_setting->seq_type) {

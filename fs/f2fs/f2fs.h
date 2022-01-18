@@ -1497,7 +1497,8 @@ struct f2fs_sec_heimdallfs_stat {
 
 #ifdef CONFIG_F2FS_SEC_BLOCK_OPERATIONS_DEBUG
 #define F2FS_SEC_BLKOPS_ENTRIES		10
-#define F2FS_SEC_BLKOPS_LOGGING_THR	5		// > 5 Secs -> logging
+/* BLOCK_OPERATIONS logging threshold > 10s */
+#define F2FS_SEC_BLKOPS_LOGGING_THR	(10 * NSEC_PER_SEC)
 enum sec_blkops_dbg_type {
 	F2FS_SEC_DBG_DENTS,
 	F2FS_SEC_DBG_IMETA,
@@ -1742,6 +1743,8 @@ struct f2fs_sb_info {
 	__u32 s_chksum_seed;
 
 	struct workqueue_struct *post_read_wq;	/* post read workqueue */
+
+	unsigned int sec_hqm_preserve;
 	struct f2fs_sec_stat_info sec_stat;
 	struct f2fs_sec_fsck_info sec_fsck_stat;
 

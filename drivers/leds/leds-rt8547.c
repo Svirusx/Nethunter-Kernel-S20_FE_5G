@@ -524,11 +524,44 @@ static struct platform_driver rt8547_led_driver = {
 	},
 };
 
+#if defined(CONFIG_SEC_R8Q_PROJECT)
+static unsigned int system_rev __read_mostly;
+
+static int __init sec_hw_rev_setup(char *p)
+{
+	int ret;
+
+	ret = kstrtouint(p, 0, &system_rev);
+	if (unlikely(ret < 0)) {
+		pr_info("%s:androidboot.revision is malformed %s ",__func__, p);
+		return -EINVAL;
+	}
+
+	pr_info("%s:androidboot.revision %x \n", __func__,system_rev);
+
+	return 0;
+}
+early_param("androidboot.revision", sec_hw_rev_setup);
+
+static unsigned int sec_hw_rev(void)
+{
+	return system_rev;
+}
+#endif 
+
 static int __init rt8547_led_driver_init(void)
 {
 	int rc = 0;
+	#if defined(CONFIG_SEC_R8Q_PROJECT)
+	unsigned int board_rev = sec_hw_rev();
+	if(board_rev < 8)
+	{
+		return platform_driver_register(&rt8547_led_driver);
+	}
+	#else
+		return platform_driver_register(&rt8547_led_driver);
+	#endif
 
-	return platform_driver_register(&rt8547_led_driver);
 	if (rc < 0) {
 		pr_info("%s: platform_driver_register Failed: rc = %d",
 			__func__, rc);

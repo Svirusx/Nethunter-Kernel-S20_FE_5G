@@ -529,11 +529,13 @@ static long ss_mafpc_ioctl(struct file *file, unsigned int cmd, unsigned long ar
 		vdd->mafpc.en = true;
 		break;
 	case IOCTL_MAFPC_ON_INSTANT:
-		if (!ss_is_ready_to_send_cmd(vdd)) {
-			LCD_ERR("Panel is not ready. Panel State(%d)\n", vdd->panel_state);
-			return -ENODEV;
-		}
 		vdd->mafpc.en = true;
+		if (!ss_is_ready_to_send_cmd(vdd)) {
+			LCD_INFO("Panel is not ready(%d), will apply next display on\n",
+					vdd->panel_state);
+			break;
+		}
+
 		ss_mafpc_img_write(vdd, true);
 		ss_mafpc_enable(vdd, true);
 		break;

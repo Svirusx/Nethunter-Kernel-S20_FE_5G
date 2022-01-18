@@ -2732,6 +2732,29 @@ static void fts_set_input_prop(struct fts_ts_info *info, struct input_dev *dev, 
 	input_set_drvdata(dev, info);
 }
 
+static int fts_input_notify_call(struct notifier_block *n, unsigned long data, void *v)
+{
+	struct fts_ts_info *info = container_of(n, struct fts_ts_info, fts_input_nb);
+	int ret = 0;
+	u8 regAdd[3] = { FTS_CMD_SET_FUNCTION_ONOFF, FTS_FUNCTION_SET_HOVER_DETECTION, 0 };
+
+	switch (data) {
+	case NOTIFIER_WACOM_PEN_HOVER_IN:
+		regAdd[2] = 1;
+		ret = fts_write_reg(info, regAdd, 3);
+		input_info(true, &info->client->dev, "%s: pen hover in detect, ret=%d\n", __func__, ret);
+		break;
+	case NOTIFIER_WACOM_PEN_HOVER_OUT:
+		regAdd[2] = 0;
+		ret = fts_write_reg(info, regAdd, 3);
+		input_info(true, &info->client->dev, "%s: pen hover out detect, ret=%d\n", __func__, ret);
+		break;
+	default:
+		break;
+	}
+	return ret;
+}
+
 static int fts_probe(struct i2c_client *client, const struct i2c_device_id *idp)
 {
 	int retval;
@@ -2913,6 +2936,8 @@ static int fts_probe(struct i2c_client *client, const struct i2c_device_id *idp)
 	}
 #endif
 
+	sec_input_register_notify(&info->fts_input_nb, fts_input_notify_call, 1);
+
 	info->probe_done = true;
 	input_info(true, &info->client->dev, "%s: done\n", __func__);
 	input_log_fix();
@@ -2974,6 +2999,8 @@ static int fts_remove(struct i2c_client *client)
 
 	input_info(true, &info->client->dev, "%s\n", __func__);
 	info->shutdown_is_on_going = true;
+
+	sec_input_unregister_notify(&info->fts_input_nb);
 
 	disable_irq_nosync(info->client->irq);
 	free_irq(info->client->irq, info);

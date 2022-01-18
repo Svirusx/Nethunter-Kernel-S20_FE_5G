@@ -304,6 +304,12 @@ static void bluesleep_sleep_work(struct work_struct *work)
 
 	mutex_lock(&bluesleep_mutex);
 
+	if (bsi->uport == NULL) {
+		BT_DBG("%s - uport is null", __func__);
+		mutex_unlock(&bluesleep_mutex);
+		return;
+	}
+
 	if (bluesleep_can_sleep()) {
 		/* already asleep, this is an error case */
 		if (test_bit(BT_ASLEEP, &flags)) {
@@ -532,6 +538,8 @@ static ssize_t bluesleep_write_proc_lpm(struct file *file, const char __user *bu
 	if (copy_from_user(&b, buffer, 1))
 		return -EFAULT;
 
+    mutex_lock(&bluesleep_mutex);
+
 	if (b == '0') {
 		BT_ERR("(%s) Unreg HCI notifier.", __func__);
 		/* HCI_DEV_UNREG */
@@ -564,6 +572,8 @@ static ssize_t bluesleep_write_proc_lpm(struct file *file, const char __user *bu
 	}
 
 	BT_ERR("(%s) Reg HCI notifier 333.", __func__);
+
+    mutex_unlock(&bluesleep_mutex);
 
 	return count;
 }

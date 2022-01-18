@@ -52,6 +52,28 @@ static void init_br_info(struct samsung_display_driver_data *vdd,
 	LCD_INFO("br_data_size (%d) = hbm_size (%d) + normal_size (%d) + hmd_size (%d)\n",
 		gamma_tbl->br_data_size, hbm_size, normal_size, hmd_size);
 
+	/* In general gamma flash, HBM has no gamma data, but some DDI, like hubble HAB, it has 800nit gamma data
+	 * for HBM mode.. And its gamma flash is way different from general gamma flash..
+	 * So, in general gamma flash calculation, br_data_size = 7358 bytes,
+	 * but hubble DDI's real br_data_size = 7392..
+	 * In result,
+	 * - out of bounds access: br_data_raw is allocated with 7358 bytes, but will be accessed with 7392 bytes..
+	 * - 48/96hz mode cannot have enough and right gamma flash raw data due to ss_copy_flash_gamma().
+	 *   It is HMD AOR data area for HBM 48/96hz mode, and there is no scenario for this, so no impact to customer.
+	 * To resolve this, update br_data_size with real flash size.
+	 */
+	if (!strcmp(vdd->br_info.flash_gamma_type, "flash")) {
+		int start_addr = gamma_tbl->flash_gamma_bank_start;
+		int end_addr = gamma_tbl->flash_gamma_bank_end;
+		int total_size = end_addr - start_addr + 1;
+
+		if (gamma_tbl->br_data_size < total_size) {
+			LCD_INFO("flash size is greater than table size.. update: %d -> %d\n",
+					gamma_tbl->br_data_size, total_size);
+			gamma_tbl->br_data_size = total_size;
+		}
+	}
+
 	/*
 		free alloc memory : test purpose for slab memory integrity
 	*/

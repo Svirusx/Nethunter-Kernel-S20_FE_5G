@@ -116,49 +116,6 @@ static int sec_dual_check_eoc_status(struct sec_dual_battery_info *battery)
 		return POWER_SUPPLY_STATUS_CHARGING;
 }
 
-/* this function dose not work after 1st full charging, this is only for 2nd full charging */
-static int sec_dual_check_each_eoc(struct sec_dual_battery_info *battery)
-{
-	union power_supply_propval value;
-	bool eoc_status = false;
-
-	value.intval = SEC_BATTERY_CURRENT_MA;
-	psy_do_property(battery->pdata->main_limiter_name, get,
-		(enum power_supply_property)POWER_SUPPLY_EXT_PROP_CHG_CURRENT, value);
-	battery->main_current_avg = value.intval;
-
-	if ((battery->main_current_avg <= battery->pdata->main_full_condition_eoc)
-		&& (battery->main_voltage_avg >= battery->pdata->main_full_condition_vcell[battery->age_step])) {
-		pr_info("%s Main Batt eoc condition is done (1st charging)\n", __func__);
-		battery->full_total_status |= SEC_DUAL_BATTERY_MAIN_CONDITION_DONE;
-		/* main supplement mode enable */
-		value.intval = 1;
-		psy_do_property(battery->pdata->main_limiter_name, set,
-			POWER_SUPPLY_PROP_CHARGE_FULL, value);
-		eoc_status = true;
-	}
-
-	value.intval = SEC_BATTERY_CURRENT_MA;
-	psy_do_property(battery->pdata->sub_limiter_name, get,
-		(enum power_supply_property)POWER_SUPPLY_EXT_PROP_CHG_CURRENT, value);
-	battery->sub_current_avg = value.intval;
-
-	if ((battery->sub_current_avg <= battery->pdata->sub_full_condition_eoc)
-		&& (battery->sub_voltage_avg >= battery->pdata->sub_full_condition_vcell[battery->age_step])) {
-		pr_info("%s Sub Batt eoc condition is done (1st charging)\n", __func__);
-		battery->full_total_status |= SEC_DUAL_BATTERY_SUB_CONDITION_DONE;
-		/* main supplement mode enable */
-		value.intval = 1;
-		psy_do_property(battery->pdata->sub_limiter_name, set,
-			POWER_SUPPLY_PROP_CHARGE_FULL, value);
-		eoc_status = true;
-	}
-	if (eoc_status)
-		return POWER_SUPPLY_STATUS_FULL;
-	else
-		return POWER_SUPPLY_STATUS_CHARGING;
-}
-
 #if 0
 static int sec_dual_check_eoc_current(struct sec_dual_battery_info *battery)
 {
@@ -266,9 +223,6 @@ static int sec_dual_battery_get_property(struct power_supply *psy,
 			pr_info("%s : skip checking eoc status because not 2nd charging(charging mode: %d)\n",
 				__func__, value.intval);
 		}
-		break;
-	case POWER_SUPPLY_PROP_CHARGE_FULL:
-		val->intval = sec_dual_check_each_eoc(battery);
 		break;
 	case POWER_SUPPLY_PROP_VOLTAGE_AVG:
 		if (value.intval == SEC_DUAL_BATTERY_MAIN)

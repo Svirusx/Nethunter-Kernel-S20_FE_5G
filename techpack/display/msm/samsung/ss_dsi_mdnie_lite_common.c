@@ -205,8 +205,6 @@ int update_dsi_tcon_mdnie_register(struct samsung_display_driver_data *vdd)
 		tune_data_dsi  = mdnie_data->DSI_GRAYSCALE_NEGATIVE_MDNIE;
 	} else if (tune->color_lens_enable == true) {
 		tune_data_dsi  = mdnie_data->DSI_COLOR_LENS_MDNIE;
-	} else if (tune->hdr) {
-		tune_data_dsi = mdnie_data->hdr_tune_value_dsi[tune->hdr];
 	} else if (tune->hmt_color_temperature) {
 		tune_data_dsi =
 			mdnie_data->hmt_color_temperature_tune_value_dsi[tune->hmt_color_temperature];
@@ -223,6 +221,8 @@ int update_dsi_tcon_mdnie_register(struct samsung_display_driver_data *vdd)
 		} else {
 			tune_data_dsi  = mdnie_data->DSI_HBM_CE_D65_MDNIE;
 		}
+	} else if (tune->hdr) {
+		tune_data_dsi = mdnie_data->hdr_tune_value_dsi[tune->hdr];
 	} else if (tune->mdnie_app == EMAIL_APP) {
 		/*
 			Some kind of panel doesn't suooprt EMAIL_APP mode, but SSRM module use same control logic.

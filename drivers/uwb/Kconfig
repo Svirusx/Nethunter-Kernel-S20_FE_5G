@@ -84,4 +84,10 @@ config UWB_SR100
 	help
 	  NXP SR100 UWB controller support.
 
+config ACPM_INIT
+	bool "ACPM INIT"
+	default n
+	help
+	  ACPM INIT must be called to use CLK4 in S5910.
+
 source "drivers/uwb/uwb_logger/Kconfig"

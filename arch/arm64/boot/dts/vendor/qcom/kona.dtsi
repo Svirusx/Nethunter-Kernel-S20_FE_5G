@@ -571,7 +571,7 @@
 			alloc-ranges = <0x0 0x00000000 0x0 0xffffffff>;
 			reusable;
 			alignment = <0x0 0x400000>;
-			size = <0x0 0x1800000>;
+			size = <0x0 0x1C00000>;
 		};
 
 		/* global autoconfigured region for contiguous allocations */
@@ -3944,6 +3944,7 @@
 		qcom,fastrpc-adsp-audio-pdr;
 		qcom,fastrpc-adsp-sensors-pdr;
 		qcom,rpc-latency-us = <235>;
+		qcom,secure-domains = <0x0F>;
 		qcom,qos-cores = <0 1 2 3>;
 
 		qcom,msm_fastrpc_compute_cb1 {

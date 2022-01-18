@@ -575,6 +575,7 @@ static int set_debug_reset_header(struct debug_reset_header *header)
 	return ret;
 }
 
+static uint32_t summary_size;
 static int sec_reset_summary_info_init(void)
 {
 	int ret = 0;
@@ -590,14 +591,15 @@ static int sec_reset_summary_info_init(void)
 	summary_info = get_debug_reset_header();
 	if (summary_info == NULL)
 		return -EINVAL;
+	summary_size = dbg_parttion_get_part_size(debug_index_reset_summary);
 
-	if (summary_info->summary_size > SEC_DEBUG_RESET_SUMMARY_SIZE) {
+	if (summary_info->summary_size > summary_size) {
 		pr_err("summary_size has problem.\n");
 		ret = -EINVAL;
 		goto error_summary_info;
 	}
 
-	summary_buf = vmalloc(SEC_DEBUG_RESET_SUMMARY_SIZE);
+	summary_buf = vmalloc(summary_size);
 	if (!summary_buf) {
 		pr_err("fail - kmalloc for summary_buf\n");
 		ret = -ENOMEM;
@@ -652,7 +654,7 @@ static ssize_t sec_reset_summary_info_proc_read(struct file *file,
 	}
 
 	if ((pos >= summary_info->summary_size) ||
-	    (pos >= SEC_DEBUG_RESET_SUMMARY_SIZE)) {
+	    (pos >= summary_size)) {
 		pr_info("pos %lld, size %d\n", pos, summary_info->summary_size);
 		sec_reset_summary_completed();
 		mutex_unlock(&summary_mutex);

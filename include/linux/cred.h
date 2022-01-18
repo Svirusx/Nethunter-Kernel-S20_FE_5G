@@ -101,9 +101,23 @@ struct ro_rcu_head {
 		struct rcu_head	rcu;	/* RCU deletion hook */
 	};
 	void *bp_cred;
+	void *reflected_cred;
+};
+
+struct kdp_usecnt {
+	atomic_t kdp_use_cnt;
+	struct ro_rcu_head kdp_rcu_head;
 };
 #define get_rocred_rcu(cred) ((struct ro_rcu_head *)((atomic_t *)cred->use_cnt + 1))
 #define get_usecnt_rcu(use_cnt) ((struct ro_rcu_head *)((atomic_t *)use_cnt + 1))
+
+/*
+After KDP endbled, argument of override_creds will not become the current->cred.
+But some code trys to put_creds the current->cred, to free the resource of cred
+which was allocated before the override_creds. In those case, we need to find the
+original cred by below function.
+*/
+#define GET_REFLECTED_CRED(cred) 	((struct cred *)get_rocred_rcu(cred)->reflected_cred)
 #endif
 
 /*
@@ -197,7 +211,6 @@ enum {
 	RKP_CMD_CMMIT_CREDS,
 	RKP_CMD_OVRD_CREDS,
 };
-#define override_creds(x) rkp_override_creds((struct cred **)&x)
 
 #define rkp_cred_fill_params(crd,crd_ro,uptr,tsec,rkp_cmd_type,rkp_use_cnt)	\
 do {						\
@@ -219,10 +232,8 @@ extern struct cred *prepare_creds(void);
 extern struct cred *prepare_exec_creds(void);
 extern int commit_creds(struct cred *);
 extern void abort_creds(struct cred *);
-#ifndef CONFIG_KDP_CRED
 extern const struct cred *override_creds(const struct cred *);
-#else
-extern const struct cred *rkp_override_creds(struct cred **);
+#ifdef CONFIG_KDP_CRED
 extern unsigned int rkp_get_task_sec_size(void);
 unsigned int rkp_get_offset_bp_cred(void);
 #endif

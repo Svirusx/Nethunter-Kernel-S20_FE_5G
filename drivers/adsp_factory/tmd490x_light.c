@@ -663,6 +663,7 @@ void light_lcd_version_dualization(struct adsp_data *data)
 			pr_err("[FACTORY] %s: fd read fail(%s): %d\n",
 				__func__, ret);
 		} else {
+			ver_str[LIGHT_LCD_TYPE_STRING_LENGTH - 1] = '\0';
 			pr_info("[FACTORY] %s: data: %s\n", __func__, ver_str);
 			lcd_ver = ver_str[LIGHT_LCD_VERSION_CHAR_NUM] - '0';
 		}

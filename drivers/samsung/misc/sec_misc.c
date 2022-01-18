@@ -129,6 +129,10 @@ struct msm_power_dou {
 	uint32_t raw;
 	uint32_t revision_bit;
 	uint32_t bins;
+	uint32_t qfprom_raw_pte_row3_28_bit;
+	uint32_t qfprom_raw_pte_row3_28_raw;
+	uint32_t qfprom_raw_pte_row3_27_raw;
+	uint32_t qfprom_raw_pte_row3_27_bit;
 };
 
 #define __get_bit_field(__raw, __nr, __shift)				\
@@ -182,6 +186,48 @@ static struct msm_power_dou *__msm_power_dou_get_instance(void)
 		shift = 29;
 	power_dou.bins = __get_bit_field(power_dou.raw, nr, shift);
 
+	if (np) {
+		uint32_t reg_phys_dt = 0;
+		power_dou.qfprom_raw_pte_row3_28_raw = 0;
+		power_dou.qfprom_raw_pte_row3_28_bit = 0;
+		power_dou.qfprom_raw_pte_row3_27_raw = 0;
+		power_dou.qfprom_raw_pte_row3_27_bit = 0;
+
+		if (!of_property_read_u32(np, "msm_power_dou,qfprom_raw_pte_row3_28_reg", &reg_phys_dt)) {
+			if (reg_phys_dt) {
+				reg_virt = ioremap_nocache((phys_addr_t)reg_phys_dt, SZ_4K);
+				if (reg_virt) {
+					power_dou.qfprom_raw_pte_row3_28_raw = readl_relaxed(reg_virt);
+					iounmap(reg_virt);
+
+					/* default - nr = 1 / shift = 28 */
+					if (of_property_read_u32(np, "msm_power_dou,qfprom_raw_pte_row3_28_nr", &nr))
+						nr = 1;
+					if (of_property_read_u32(np, "msm_power_dou,qfprom_raw_pte_row3_28_shift", &shift))
+						shift = 28;
+					power_dou.qfprom_raw_pte_row3_28_bit = __get_bit_field(power_dou.qfprom_raw_pte_row3_28_raw, nr, shift);
+				}
+			}
+		}
+
+		if (!of_property_read_u32(np, "msm_power_dou,qfprom_raw_pte_row3_27_reg", &reg_phys_dt)) {
+			if (reg_phys_dt) {
+				reg_virt = ioremap_nocache((phys_addr_t)reg_phys_dt, SZ_4K);
+				if (reg_virt) {
+					power_dou.qfprom_raw_pte_row3_27_raw = readl_relaxed(reg_virt);
+					iounmap(reg_virt);
+
+					/* default - nr = 1 / shift = 27 */
+					if (of_property_read_u32(np, "msm_power_dou,qfprom_raw_pte_row3_27_nr", &nr))
+						nr = 1;
+					if (of_property_read_u32(np, "msm_power_dou,qfprom_raw_pte_row3_27_shift", &shift))
+						shift = 27;
+					power_dou.qfprom_raw_pte_row3_27_bit = __get_bit_field(power_dou.qfprom_raw_pte_row3_27_raw, nr, shift);
+				}
+			}
+		}
+	}
+
 	return &power_dou;
 }
 
@@ -224,7 +270,8 @@ static ssize_t msm_doub_show(struct device *dev,
 
 	pr_debug("POWER DOU BINS : 0x%08x\n", power_dou->bins);
 
-	return scnprintf(buf, PAGE_SIZE, "%02u\n", power_dou->bins);
+	return scnprintf(buf, PAGE_SIZE, "%02u\n", (power_dou->qfprom_raw_pte_row3_28_bit << 3) |
+			(power_dou->qfprom_raw_pte_row3_27_bit << 2) | power_dou->bins);
 }
 
 static DEVICE_ATTR_RO(msm_doub);

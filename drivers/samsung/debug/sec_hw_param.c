@@ -172,6 +172,8 @@ void battery_last_dcvs(int cap, int volt, int temp, int curr)
 	phealth->battery.tail++;
 }
 
+EXPORT_SYMBOL_GPL(battery_last_dcvs);
+
 static ssize_t show_last_dcvs(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
@@ -1123,55 +1125,100 @@ static ssize_t show_extrt_info(struct device *dev,
 	if (tz_diag_info->magic_num != TZ_DIAG_LOG_MAGIC) {
 		special_scnprintf(buf, offset,
 				"\"ERR\":\"tzlog magic num error\"");
+		goto out;
+	}
+
+	if (tz_diag_info->version > TZBSP_DIAG_VERSION_V9_2) {
+		struct tzbsp_encr_info_t *encr_info = (struct tzbsp_encr_info_t *)((void *)tz_diag_info
+				+ tz_diag_info->v9_3.encr_info_for_log_off);
+		
+		if (encr_info->chunks[1].size_to_encr > 0x200) {	/* 512 byte */
+			special_scnprintf(buf, offset,
+					"\"ERR\":\"tzlog size over\"");
+			goto out;
+		}
+
+		special_scnprintf(buf, offset, "\"TZDA\":\"");
+		special_scnprintf(buf, offset, "%08X%08X",
+				cpu_to_be32(tz_diag_info->magic_num),
+				cpu_to_be32(tz_diag_info->version));
+		special_scnprintf(buf, offset, "%08X%08X%08X%08X",
+				cpu_to_be32(tz_diag_info->ring_off),
+				cpu_to_be32(tz_diag_info->ring_len),
+				cpu_to_be32(tz_diag_info->v9_3.encr_info_for_log_off),
+				cpu_to_be32(encr_info->chunks[1].size_to_encr));
+
+		for (i = 0; i < TZBSP_AES_256_ENCRYPTED_KEY_SIZE; i++)
+			special_scnprintf(buf, offset, "%02X", encr_info->key[i]);
+
+		for (i = 0; i < TZBSP_NONCE_LEN; i++)
+			special_scnprintf(buf, offset, "%02X", encr_info->chunks[1].nonce[i]);
+
+		for (i = 0; i < TZBSP_TAG_LEN; i++)
+			special_scnprintf(buf, offset, "%02X", encr_info->chunks[1].tag[i]);
+
+		log_v9_2 = (struct tzdbg_log_v9_2_t *)((void *)tz_diag_info
+				+ tz_diag_info->ring_off - sizeof(struct tzdbg_log_pos_v9_2_t));
+		special_scnprintf(buf, offset, "%08X%08X",
+				cpu_to_be32(log_v9_2->log_pos.wrap),
+				cpu_to_be32(log_v9_2->log_pos.offset));
+
+		for (i = 0; i < encr_info->chunks[1].size_to_encr; i++)
+			special_scnprintf(buf, offset, "%02X", log_v9_2->log_buf[i]);
+		
+		special_scnprintf(buf, offset, "\"");
 	} else {
 		if (tz_diag_info->ring_len > 0x200) {	/* 512 byte */
 			special_scnprintf(buf, offset,
 					"\"ERR\":\"tzlog size over\"");
-		} else {
-			special_scnprintf(buf, offset, "\"TZDA\":\"");
-			special_scnprintf(buf, offset, "%08X%08X%08X",
-					tz_diag_info->magic_num,
-					tz_diag_info->version,
-					tz_diag_info->cpu_count);
-			special_scnprintf(buf, offset, "%08X%08X%08X",
-					tz_diag_info->ring_off,
-					tz_diag_info->ring_len,
-					tz_diag_info->num_interrupts);
-
-			for (i = 0; i < TZBSP_AES_256_ENCRYPTED_KEY_SIZE; i++)
-				special_scnprintf(buf, offset, "%02X",
-						tz_diag_info->key[i]);
-
-			for (i = 0; i < TZBSP_NONCE_LEN; i++)
-				special_scnprintf(buf, offset, "%02X",
-						tz_diag_info->nonce[i]);
-
-			for (i = 0; i < TZBSP_TAG_LEN; i++)
-				special_scnprintf(buf, offset, "%02X",
-						tz_diag_info->tag[i]);
-
-			if (tz_diag_info->version >= TZBSP_DIAG_VERSION_V9_2) {  // sm8350
-				log_v9_2 = (struct tzdbg_log_v9_2_t *)&tz_diag_info->ring_buffer;
-				special_scnprintf(buf, offset, "%08X%08X",
-						log_v9_2->log_pos.wrap,
-						log_v9_2->log_pos.offset);
-
-				for (i = 0; i < tz_diag_info->ring_len; i++)
-					special_scnprintf(buf, offset, "%02X",
-							log_v9_2->log_buf[i]);
-
-			} else {
-				special_scnprintf(buf, offset, "%04X%04X",
-						tz_diag_info->ring_buffer.log_pos.wrap,
-						tz_diag_info->ring_buffer.log_pos.offset);
-
-				for (i = 0; i < tz_diag_info->ring_len; i++)
-					special_scnprintf(buf, offset, "%02X",
-							tz_diag_info->ring_buffer.log_buf[i]);
-			}
-
-			special_scnprintf(buf, offset, "\"");
+			goto out;
 		}
+
+		special_scnprintf(buf, offset, "\"TZDA\":\"");
+		special_scnprintf(buf, offset, "%08X%08X",
+				tz_diag_info->magic_num,
+				tz_diag_info->version);
+		special_scnprintf(buf, offset, "%08X%08X%08X%08X",
+				tz_diag_info->cpu_count,
+				tz_diag_info->ring_off,
+				tz_diag_info->ring_len,
+				tz_diag_info->v9_2.num_interrupts);
+
+		for (i = 0; i < TZBSP_AES_256_ENCRYPTED_KEY_SIZE; i++)
+			special_scnprintf(buf, offset, "%02X",
+					tz_diag_info->v9_2.key[i]);
+
+		for (i = 0; i < TZBSP_NONCE_LEN; i++)
+			special_scnprintf(buf, offset, "%02X",
+					tz_diag_info->v9_2.nonce[i]);
+
+		for (i = 0; i < TZBSP_TAG_LEN; i++)
+			special_scnprintf(buf, offset, "%02X",
+					tz_diag_info->v9_2.tag[i]);
+
+		if (tz_diag_info->version == TZBSP_DIAG_VERSION_V9_2) {
+			log_v9_2 = (struct tzdbg_log_v9_2_t *)((void *)tz_diag_info
+				+ tz_diag_info->ring_off - sizeof(struct tzdbg_log_pos_v9_2_t));
+
+			special_scnprintf(buf, offset, "%08X%08X",
+					log_v9_2->log_pos.wrap,
+					log_v9_2->log_pos.offset);
+
+			for (i = 0; i < tz_diag_info->ring_len; i++)
+				special_scnprintf(buf, offset, "%02X",
+						log_v9_2->log_buf[i]);
+		} else {
+			struct tzdbg_log_t *log = (struct tzdbg_log_t *)((void *)tz_diag_info
+				+ tz_diag_info->ring_off - sizeof(struct tzdbg_log_pos_t));
+			special_scnprintf(buf, offset, "%04X%04X",
+					log->log_pos.wrap,
+					log->log_pos.offset);
+
+			for (i = 0; i < tz_diag_info->ring_len; i++)
+				special_scnprintf(buf, offset, "%02X", log->log_buf[i]);
+		}
+
+		special_scnprintf(buf, offset, "\"");
 	}
 
 out:
@@ -1217,10 +1264,10 @@ static ssize_t show_extrm_info(struct device *dev,
 	offset += scnprintf((char*)(buf + offset), SPECIAL_LEN_STR - offset,
 			"\"RWC\":\"%d\",", sec_debug_get_reset_write_cnt());
 
-	extrm_buf[SEC_DEBUG_RESET_ETRM_SIZE-1] = '\0';
+	extrm_buf[SEC_DEBUG_RESET_ETRM_SIZE - 1] = '\0';
 
 	offset += scnprintf((char*)(buf + offset), SPECIAL_LEN_STR - offset,
-			"\"RKP\":\"%s\"", &extrm_buf[offset]);
+			"\"RKP\":\"%s\"", extrm_buf);
 out:
 	if (extrm_buf)
 		kfree(extrm_buf);

@@ -67,6 +67,7 @@
 #include "wlan_scan_utils_api.h"
 #include "wlan_p2p_cfg_api.h"
 #include "cfg_nan_api.h"
+#include "nan_ucfg_api.h"
 
 #include <ol_defines.h>
 
@@ -1547,11 +1548,12 @@ QDF_STATUS csr_update_channel_list(struct mac_context *mac)
 				}
 			}
 
+			if (!ucfg_is_nan_allowed_on_freq(mac->pdev,
+				pChanList->chanParam[num_channel].freq))
+				pChanList->chanParam[num_channel].nan_disabled =
+					true;
 
-			if (CHANNEL_STATE_ENABLE == channel_state)
-				pChanList->chanParam[num_channel].dfsSet =
-					false;
-			else
+			if (CHANNEL_STATE_ENABLE != channel_state)
 				pChanList->chanParam[num_channel].dfsSet =
 					true;
 
@@ -10191,20 +10193,26 @@ csr_roaming_state_config_cnf_processor(struct mac_context *mac_ctx,
 	if (!scan_result) {
 		/* If we are roaming TO an Infrastructure BSS... */
 		QDF_ASSERT(scan_result);
+		csr_roam_complete(mac_ctx, eCsrJoinFailure, NULL, vdev_id);
 		return;
 	}
 
 	if (!csr_is_infra_bss_desc(bss_desc)) {
 		sme_warn("found BSSType mismatching the one in BSS descp");
-		return;
+		/* here we allow the connection even if ess is not set.
+		 * previously it return directly which cause serialization cmd
+		 * timeout.
+		 */
 	}
 
 	local_ies = (tDot11fBeaconIEs *) scan_result->Result.pvIes;
 	if (!local_ies) {
 		status = csr_get_parsed_bss_description_ies(mac_ctx, bss_desc,
 							    &local_ies);
-		if (!QDF_IS_STATUS_SUCCESS(status))
+		if (!QDF_IS_STATUS_SUCCESS(status)) {
+			csr_roam(mac_ctx, cmd, false);
 			return;
+		}
 		is_ies_malloced = true;
 	}
 

@@ -155,7 +155,7 @@ static void blk_mq_check_disk_inflight_rw(struct blk_mq_hw_ctx *hctx,
 {
 	struct mq_inflight *mi = priv;
 
-	/* This function sholud be called only when mi->part is a whole disk */
+	/* This function should be called only when mi->part is a whole disk */
 	mi->inflight[rq_data_dir(rq)]++;
 }
 

@@ -9142,7 +9142,7 @@ static void msm_update_dai_link(struct platform_device *pdev,
 		return;
 	}
 
-	if (soc_find_component(component_of_node, NULL) != NULL) {
+	if (soc_find_component_locked(component_of_node, NULL) != NULL) {
 		dev_dbg(&pdev->dev,
 			"%s: component devs are connected\n",
 			__func__);

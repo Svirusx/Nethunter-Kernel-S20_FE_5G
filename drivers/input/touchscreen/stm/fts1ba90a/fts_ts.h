@@ -248,6 +248,7 @@
 #define FTS_FUNCTION_SET_TOUCHABLE_AREA			0x0F
 #define FTS_FUNCTION_SET_NOTE_MODE			0x10
 #define FTS_FUNCTION_SET_GAME_MODE			0x11
+#define FTS_FUNCTION_SET_HOVER_DETECTION		0x12
 
 /* FTS DEBUG FLAG */
 #define FTS_DEBUG_PRINT_I2C_READ_CMD			0x04
@@ -838,6 +839,8 @@ struct fts_ts_info {
 	struct power_supply *psy;
 	u8 tsp_temp_data;
 	bool tsp_temp_data_skip;
+
+	struct notifier_block fts_input_nb;
 
 	int (*stop_device)(struct fts_ts_info *info, bool lpmode);
 	int (*start_device)(struct fts_ts_info *info);

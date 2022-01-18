@@ -46,6 +46,12 @@ ktime_t time_vrr;
 int init_smooth_off;
 int poc_done;
 
+/* Add finger_exit_cnt flag to keep smooth off
+ * until 2nd brightness event comes from HBM->Normal
+ * after finger_mask_updated.
+ */
+static bool finger_exit_cnt;
+
 static struct dsi_panel_cmd_set *__ss_vrr(struct samsung_display_driver_data *vdd,
 					int *level_key, bool is_hbm, bool is_hmt)
 {
@@ -637,6 +643,7 @@ static int samsung_panel_on_pre(struct samsung_display_driver_data *vdd)
 	prev_refresh_rate = 0;	/* make previous refresh_rate 0 before start */
 	time_vrr = 0;	/* make timestamp 0 for freq calculation */
 	init_smooth_off = 1;
+	finger_exit_cnt = 0;
 
 	if (vdd->manufacture_id_dsi > 0x801413) {/* Support Samsung IP if higher revision*/
 		LCD_INFO("Support mdnie, selfmask.\n");
@@ -809,10 +816,11 @@ static struct dsi_panel_cmd_set * ss_brightness_gamma_mode2_normal(struct samsun
 
 	pcmds = ss_get_cmds(vdd, TX_GAMMA_MODE2_NORMAL);
 
-	LCD_INFO("Normal : bl_level:%d, prev_bl:%d, finger:%d Pstate:%d(2:on),%d,%d\n",
-		vdd->br_info.common_br.bl_level, prev_bl_s6tuum3, vdd->finger_mask_updated,
+	LCD_INFO("Normal : bl_level:%d, prev_bl:%d, finger:%d exit_cnt:%d Pstate:%d(2:on),%d,%d\n",
+		vdd->br_info.common_br.bl_level, prev_bl_s6tuum3, vdd->finger_mask_updated, finger_exit_cnt,
 		vdd->panel_state, vdd->display_status_dsi.wait_disp_on, init_smooth_off);
-	if (vdd->finger_mask_updated)
+
+	if (vdd->finger_mask_updated || finger_exit_cnt)
 		pcmds->cmds[2].msg.tx_buf[1] = 0x20;
 	else if (vdd->display_status_dsi.wait_disp_on)
 		pcmds->cmds[2].msg.tx_buf[1] = 0x20;
@@ -833,6 +841,11 @@ static struct dsi_panel_cmd_set * ss_brightness_gamma_mode2_normal(struct samsun
 
 	pcmds->cmds[1].msg.tx_buf[1] = get_bit(vdd->br_info.common_br.gm2_wrdisbv, 0, 8); /* DBV [7:0] */
 	pcmds->cmds[1].msg.tx_buf[2] = get_bit(vdd->br_info.common_br.gm2_wrdisbv, 8, 3); /* DBV [10:8] */
+
+	if (vdd->finger_mask_updated)
+		finger_exit_cnt = 1;
+	else
+		finger_exit_cnt = 0;
 
 	*level_key = LEVEL_KEY_NONE;
 	prev_bl_s6tuum3 = vdd->br_info.common_br.bl_level;

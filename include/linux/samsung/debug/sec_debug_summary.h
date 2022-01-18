@@ -74,8 +74,4 @@ static inline void sec_modify_restart_level_mdm(int value) { }
 static inline void sec_set_mdm_summary_info(char *str_buf) { }
 #endif	/* CONFIG_SEC_DEBUG_MDM_FILE_INFO */
 
-#ifndef CONFIG_SAMSUNG_PRODUCT_SHIP
-extern unsigned long sec_delay_check;
-#endif
-
 #endif	/* __INDIRECT__SEC_DEBUG_SUMMARY_H__ */

@@ -245,7 +245,6 @@ struct reg_ioctl {
 #define TOUCH_REF_ABNORMAL_TEST_MODE		33
 #define DEF_RAW_SELF_SSR_DATA_MODE		39	/* SELF SATURATION RX */
 #define DEF_RAW_SELF_SFR_UNIT_DATA_MODE		40
-#define DEF_RAW_LP_DUMP				41
 
 /*  Other Things */
 #define INIT_RETRY_CNT				3
@@ -793,10 +792,6 @@ struct zt75xx_ts_info {
 	bool is_cal_done;
 	int debug_flag;
 	u8 ito_test[4];
-
-	u8 *lp_dump;
-	int lp_dump_index;
-	int lp_dump_readmore;
 };
 
 /*<= you must set key button mapping*/
@@ -3671,7 +3666,6 @@ static int zt75xx_ts_set_lowpowermode(struct zt75xx_ts_info *info, u8 mode)
 	info->work_state = prev_work_state;
 	up(&info->work_lock);
 
-	info->lp_dump_readmore = 1;
 	return 0;
 }
 
@@ -3723,16 +3717,12 @@ fail:
 	return 0;
 }
 
-static ssize_t get_lp_dump(struct device *dev, struct device_attribute *attr, char *buf);
 static int zt75xx_ts_stop(struct zt75xx_ts_info *info)
 {
 	if (info->power_state == POWER_STATE_OFF) {
 		input_err(true, &info->client->dev, "%s: already power off\n", __func__);
 		return 0;
 	}
-
-	if (info->sec.fac_dev)
-		get_lp_dump(info->sec.fac_dev, NULL, NULL);
 
 	disable_irq(info->irq);
 	down(&info->work_lock);
@@ -9414,164 +9404,6 @@ static ssize_t read_support_feature(struct device *dev,
 	return snprintf(buf, SEC_CMD_BUF_SIZE, "%s\n", buff);
 }
 
-static ssize_t get_lp_dump(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	struct sec_cmd_data *sec = dev_get_drvdata(dev);
-	struct zt75xx_ts_info *info;
-	u8 string_data[1004] = {0, };
-	u16 current_index;
-	u8 dump_format, dump_num;
-	u16 dump_start, dump_end;
-	int i, j, retry = 3;
-	u8 buffer[30];
-	u8 position = ZT75XX_TS_SPONGE_LP_DUMP_1DATA_LEN;
-	u8 current_mode;
-
-	if (!sec)
-		return -ENODEV;
-
-	info = container_of(sec, struct zt75xx_ts_info, sec);
-	if (!info)
-		return -ENODEV;
-
-	if (!info->lp_dump)
-		return -ENODEV;
-
-	disable_irq(info->client->irq);
-
-	current_mode = info->power_state;
-
-	if (info->lp_dump_readmore == 0)
-		goto read_buf;
-
-	if (info->power_state == POWER_STATE_OFF) {
-		input_err(true, &info->client->dev, "%s: power off in IC\n", __func__);
-		goto read_buf;
-	}
-
-	write_reg(info->client, 0x0A, 0x0A);
-	if (write_reg(info->client, ZT75XX_TOUCH_MODE, DEF_RAW_LP_DUMP) != I2C_SUCCESS) {
-		input_err(true, &info->client->dev,	"%s: Fail to set ZINITX_TOUCH_MODE %d\n",__func__, DEF_RAW_LP_DUMP);
-		goto read_ic;
-	}
-
-	do {
-		usleep_range(20 * 1000, 20 * 1000);
-		if (read_raw_data(info->client, ZT75XX_RAWDATA_REG, (u8 *)string_data, 1004) < 0) {
-			input_err(true, &info->client->dev, "%s: error read zinitix tc raw data\n", __func__);
-			info->work_state = NOTHING;
-			goto read_ic;
-		}
-
-		input_info(true, &info->client->dev, "%s: data[0]:%02X, data[1]:%02X, data[2]:%02X, data[3]:%02X\n",
-				__func__, string_data[0], string_data[1], string_data[2], string_data[3]);
-
-		if (string_data[0] == 0x0A && string_data[1] == 0x64)
-			break;
-	} while (retry--);
-
-	dump_format = string_data[0];
-	dump_num = string_data[1];
-	dump_start = 4;
-	dump_end = dump_start + (dump_format * (dump_num - 1));
-	current_index = (string_data[3] & 0xFF) << 8 | (string_data[2] & 0xFF);
-	if (current_index > dump_end || current_index < dump_start) {
-		input_err(true, &info->client->dev, "Failed LP log, current_index = %d \n", current_index);
-		if (buf)
-			snprintf(buf, SEC_CMD_BUF_SIZE,	"NG, Failed LP log, current_index=%d",current_index);
-		goto read_ic;
-	}
-
-	input_info(true, &info->client->dev, "%s: DEBUG format=%d, num=%d, start=%d, end=%d, current_index=%d\n",
-			__func__, dump_format, dump_num, dump_start, dump_end, current_index);
-
-	for (i = dump_num - 1 ; i >= 0 ; i--) {
-		u16 string_addr;
-		int value = 0;
-
-		if (current_index < (dump_format * i))
-			string_addr = (dump_format * dump_num) + current_index - (dump_format * i);
-		else
-			string_addr = current_index - (dump_format * i);
-
-		if (string_addr < dump_start)
-			string_addr += (dump_format * dump_num);
-
-		for (j = 0; j < 10; j++)
-			value += string_data[string_addr + j];
-		if (value == 0)
-			continue;
-
-		info->lp_dump[info->lp_dump_index] = (string_addr >> 8) & 0xFF;
-		info->lp_dump[info->lp_dump_index + 1] = string_addr & 0xFF;
-
-		for (j = 0; j < 10; j += 2) {
-			info->lp_dump[info->lp_dump_index + 2 + j] = string_data[string_addr + j + 1];
-			info->lp_dump[info->lp_dump_index + 2 + j + 1] = string_data[string_addr + j];
-		}
-		
-		info->lp_dump_index += position;
-		if (info->lp_dump_index > ((ZT75XX_TS_SPONGE_LP_DUMP_LENGTH - 1) * ZT75XX_TS_SPONGE_LP_DUMP_1DATA_LEN))
-			info->lp_dump_index = 0;
-	}
-
-read_ic:
-	write_reg(info->client, 0x0A, 0x0A);
-
-	if (write_reg(info->client, ZT75XX_TOUCH_MODE, TOUCH_POINT_MODE) != I2C_SUCCESS)
-		input_err(true, &info->client->dev,"%s: Fail to set ZINITX_TOUCH_MODE %d\n",__func__, TOUCH_POINT_MODE);
-
-	if (current_mode == POWER_STATE_LPM)
-		zt75xx_ts_set_lowpowermode(info, TO_LOWPOWER_MODE);
-
-	enable_irq(info->client->irq);
-
-read_buf:
-	if (buf) {
-		int pos = info->lp_dump_index;
-		int value = 0;
-
-		for (i = 0; i < ZT75XX_TS_SPONGE_LP_DUMP_LENGTH; i++) {
-			if (pos >= (ZT75XX_TS_SPONGE_LP_DUMP_LENGTH * ZT75XX_TS_SPONGE_LP_DUMP_1DATA_LEN))
-				pos = 0;
-
-			for (j = 0; j < 10; j++) {
-				value += info->lp_dump[pos + 2 + j];
-			}
-			if (value == 0) {
-				pos += position;
-				continue;
-			}
-			snprintf(buffer, sizeof(buffer), "%03d: ", info->lp_dump[pos] << 8 | info->lp_dump[pos + 1]);
-			strlcat(buf, buffer, PAGE_SIZE);
-			memset(buffer, 0x00, sizeof(buffer));
-
-			for (j = 0; j < 10; j++) {
-				snprintf(buffer, sizeof(buffer), "%02X", info->lp_dump[pos + 2 + j]);
-				strlcat(buf, buffer, PAGE_SIZE);
-				memset(buffer, 0x00, sizeof(buffer));
-			}
-
-			snprintf(buffer, sizeof(buffer), "\n");
-			strlcat(buf, buffer, PAGE_SIZE);
-			memset(buffer, 0x00, sizeof(buffer));
-
-			pos += position;
-		}
-	}
-
-	info->lp_dump_readmore = 0;
-
-	if (buf) {
-		if (strlen(buf) == 0)
-			snprintf(buf, SEC_CMD_BUF_SIZE, "empty");
-
-		return strnlen(buf, PAGE_SIZE);
-	}
-
-	return 0;
-}
-
 static DEVICE_ATTR(scrub_pos, S_IRUGO, scrub_position_show, NULL);
 static DEVICE_ATTR(sensitivity_mode, S_IRUGO | S_IWUSR | S_IWGRP, sensitivity_mode_show, sensitivity_mode_store);
 static DEVICE_ATTR(wet_mode, S_IRUGO | S_IWUSR | S_IWGRP, read_wet_mode_show, clear_wet_mode_store);
@@ -9581,7 +9413,6 @@ static DEVICE_ATTR(module_id, S_IRUGO, read_module_id_show, NULL);
 static DEVICE_ATTR(ta_mode, S_IWUSR | S_IWGRP, NULL, set_ta_mode_store);
 static DEVICE_ATTR(prox_power_off, S_IRUGO | S_IWUSR | S_IWGRP, prox_power_off_show, prox_power_off_store);
 static DEVICE_ATTR(support_feature, S_IRUGO, read_support_feature, NULL);
-static DEVICE_ATTR(get_lp_dump, 0444, get_lp_dump, NULL);
 
 static struct attribute *touchscreen_attributes[] = {
 	&dev_attr_scrub_pos.attr,
@@ -9593,7 +9424,6 @@ static struct attribute *touchscreen_attributes[] = {
 	&dev_attr_ta_mode.attr,
 	&dev_attr_prox_power_off.attr,
 	&dev_attr_support_feature.attr,
-	&dev_attr_get_lp_dump.attr,
 	NULL,
 };
 
@@ -11059,10 +10889,6 @@ static int zt75xx_ts_probe(struct i2c_client *client,
 #endif
 	input_info(true, &client->dev, "%s: done\n", __func__);
 	input_log_fix();
-
-	info->lp_dump = kzalloc(ZT75XX_TS_SPONGE_LP_DUMP_LENGTH * ZT75XX_TS_SPONGE_LP_DUMP_1DATA_LEN, GFP_KERNEL);
-	if (!info->lp_dump)
-		input_err(true, &client->dev, "%s: lp dump alloc failed\n", __func__);
 
 	return 0;
 

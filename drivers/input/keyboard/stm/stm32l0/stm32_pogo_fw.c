@@ -6,15 +6,15 @@
  *     STM32 target needs at least t-ms delay after reset msecs
  *  2. Target I2C slave dddress
  */
-const u32 sysboot_i2c_startup_delay = 50; /* msec */
+static const u32 sysboot_i2c_startup_delay = 50; /* msec */
 
 /* STM32MCU PID */
-const u16 product_id = 0x460;
+static const u16 product_id = 0x460;
 
 /* Flash memory characteristics from target datasheet (msec unit) */
-const u32 flash_prog_time = 37; /* per page or sector */
-const u32 flash_full_erase_time = 40 * 32; /* 2K erase time(40ms) * 32 pages */
-const u32 flash_page_erase_time = 36; /* per page or sector */
+static const u32 flash_prog_time = 37; /* per page or sector */
+static const u32 flash_full_erase_time = 40 * 32; /* 2K erase time(40ms) * 32 pages */
+static const u32 flash_page_erase_time = 36; /* per page or sector */
 
 /* Flash memory page(or sector) structure */
 stm32_page_type stm32_memory_pages[] = {

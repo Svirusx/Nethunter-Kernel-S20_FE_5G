@@ -1934,6 +1934,9 @@ struct samsung_display_driver_data {
 
 	/* flag to support reading module id at probe timing */
 	bool support_early_id_read;
+
+	/* mdp clock underflow */
+	int cnt_mdp_clk_underflow;
 };
 
 extern struct list_head vdds_list;

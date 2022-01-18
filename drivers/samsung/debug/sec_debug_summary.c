@@ -107,23 +107,17 @@ static inline void __summary_save_dying_msg_for_user_reset_debug(
 #define ARCH_INSTR_SIZE	0x4
 #endif
 
-#ifndef CONFIG_SAMSUNG_PRODUCT_SHIP
-unsigned long sec_delay_check __read_mostly = 1;
-EXPORT_SYMBOL(sec_delay_check);
-#endif
-
 int sec_debug_summary_save_die_info(const char *str, struct pt_regs *regs)
 {
 #ifndef CONFIG_SAMSUNG_PRODUCT_SHIP
 	sec_delay_check = 0;
 #endif
-	if (!secdbg_apss)
-		return -ENOMEM;
-
-	snprintf(secdbg_apss->excp.pc_sym, sizeof(secdbg_apss->excp.pc_sym),
-		"%pS", (void *)regs->PT_REGS_PC);
-	snprintf(secdbg_apss->excp.lr_sym, sizeof(secdbg_apss->excp.lr_sym),
-		"%pS", (void *)regs->PT_REGS_LR);
+	if (secdbg_apss) {
+		snprintf(secdbg_apss->excp.pc_sym, sizeof(secdbg_apss->excp.pc_sym),
+				"%pS", (void *)regs->PT_REGS_PC);
+		snprintf(secdbg_apss->excp.lr_sym, sizeof(secdbg_apss->excp.lr_sym),
+				"%pS", (void *)regs->PT_REGS_LR);
+	}
 
 	__summary_save_dying_msg_for_user_reset_debug(str,
 			(void *)regs->PT_REGS_PC, (void *)regs->PT_REGS_LR);
@@ -136,16 +130,15 @@ int sec_debug_summary_save_panic_info(const char *str, unsigned long caller)
 #ifndef CONFIG_SAMSUNG_PRODUCT_SHIP
 	sec_delay_check = 0;
 #endif
-	if (!secdbg_apss)
-		return -ENOMEM;
-
-	snprintf(secdbg_apss->excp.panic_caller,
-		sizeof(secdbg_apss->excp.panic_caller), "%pS", (void *)caller);
-	snprintf(secdbg_apss->excp.panic_msg,
-		sizeof(secdbg_apss->excp.panic_msg), "%s", str);
-	snprintf(secdbg_apss->excp.thread,
-		sizeof(secdbg_apss->excp.thread), "%s:%d", current->comm,
-		task_pid_nr(current));
+	if (secdbg_apss) {
+		snprintf(secdbg_apss->excp.panic_caller,
+			sizeof(secdbg_apss->excp.panic_caller), "%pS", (void *)(caller - ARCH_INSTR_SIZE));
+		snprintf(secdbg_apss->excp.panic_msg,
+			sizeof(secdbg_apss->excp.panic_msg), "%s", str);
+		snprintf(secdbg_apss->excp.thread,
+			sizeof(secdbg_apss->excp.thread), "%s:%d", current->comm,
+			task_pid_nr(current));
+	}
 
 	__summary_save_dying_msg_for_user_reset_debug(str,
 			(void *)(caller - ARCH_INSTR_SIZE), (void *)caller);
@@ -329,8 +322,13 @@ static void __init summary_init_infomon(void)
 	summary_add_info_mon("Hardware name", -1, __pa(sec_debug_arch_desc));
 }
 
+#if defined(CONFIG_SEC_DEBUG_SCHED_LOG_PER_CPU) 
+#define phys_addr_of_secdbg_last_pet_ns_paddr(__member)	\
+	(secdbg_paddr + offsetof(struct sec_debug_last_pet_ns, __member))
+#else
 #define phys_addr_of_secdbg_paddr(__member)	\
 	(secdbg_paddr + offsetof(struct sec_debug_log, __member))
+#endif
 
 #ifdef CONFIG_SEC_DEBUG_VERBOSE_SUMMARY_HTML
 static void __init __summary_init_varmon_verbose(void)
@@ -352,6 +350,20 @@ static void __init summary_init_varmon(void)
 	uint64_t last_pet_paddr;
 	uint64_t last_ns_paddr;
 
+#if defined(CONFIG_SEC_DEBUG_SCHED_LOG_PER_CPU) 
+	/* save paddrs of last_pet und last_ns */
+	if (secdbg_paddr && secdbg_last_pet_ns) {
+		last_pet_paddr = phys_addr_of_secdbg_last_pet_ns_paddr(last_pet);
+		summary_add_var_mon("last_pet",
+			sizeof((secdbg_last_pet_ns->last_pet)), last_pet_paddr);
+
+		last_ns_paddr = phys_addr_of_secdbg_last_pet_ns_paddr(last_ns);
+		summary_add_var_mon("last_ns",
+				sizeof((secdbg_last_pet_ns->last_ns.counter)),
+				last_ns_paddr);
+	} else
+		pr_emerg("**** secdbg_last_pet_ns or secdbg_paddr is not initialized ****\n");
+#else
 	/* save paddrs of last_pet und last_ns */
 	if (secdbg_paddr && secdbg_log) {
 		last_pet_paddr = phys_addr_of_secdbg_paddr(last_pet);
@@ -364,6 +376,7 @@ static void __init summary_init_varmon(void)
 				last_ns_paddr);
 	} else
 		pr_emerg("**** secdbg_log or secdbg_paddr is not initialized ****\n");
+#endif
 
 #if defined(CONFIG_ARM) || defined(CONFIG_ARM64)
 #if LINUX_VERSION_CODE < KERNEL_VERSION(5,4,0)
@@ -375,10 +388,36 @@ static void __init summary_init_varmon(void)
 	__summary_init_varmon_verbose();
 }
 
+#if defined(CONFIG_SEC_DEBUG_SCHED_LOG_PER_CPU) 
+DECLARE_PER_CPU(struct sec_debug_log, sec_debug_log_cpu);
+#endif
+
 static void __init summary_init_sched_log(void)
 {
 	struct sec_debug_summary_sched_log *sched_log = &(secdbg_apss->sched_log);
 
+#if defined(CONFIG_SEC_DEBUG_SCHED_LOG_PER_CPU) 
+	sched_log->sched_idx_vaddr = (uint64_t)&sec_debug_log_cpu + offsetof(struct sec_debug_log, sched);
+	sched_log->sched_buf_vaddr = (uint64_t)&sec_debug_log_cpu + offsetof(struct sec_debug_log, sched) + offsetof(struct sched_log, buf);
+	sched_log->sched_struct_buf_sz = sizeof(struct sched_buf);
+	sched_log->sched_struct_log_sz = sizeof(struct sched_log);
+	sched_log->sched_array_cnt = SCHED_LOG_MAX;
+
+	sched_log->irq_idx_vaddr = (uint64_t)&sec_debug_log_cpu + offsetof(struct sec_debug_log, irq);
+	sched_log->irq_buf_vaddr = (uint64_t)&sec_debug_log_cpu + offsetof(struct sec_debug_log, irq) + offsetof(struct irq_log, buf);
+	sched_log->irq_struct_buf_sz = sizeof(struct irq_buf);
+	sched_log->irq_struct_log_sz = sizeof(struct irq_log);
+	sched_log->irq_array_cnt = SCHED_LOG_MAX;
+
+#ifdef CONFIG_SEC_DEBUG_MSG_LOG
+	sched_log->msglog_idx_vaddr = (uint64_t)&sec_debug_log_cpu + offsetof(struct sec_debug_log, secmsg); 
+	sched_log->msglog_buf_vaddr = (uint64_t)&sec_debug_log_cpu + offsetof(struct sec_debug_log, secmsg) + offsetof(struct secmsg_log, buf); 
+	sched_log->msglog_struct_buf_sz = sizeof(struct secmsg_buf);
+	sched_log->msglog_struct_log_sz = sizeof(struct secmsg_log);
+	sched_log->msglog_array_cnt = MSG_LOG_MAX;
+#endif
+
+#else
 	sched_log->sched_idx_paddr = phys_addr_of_secdbg_paddr(sched[0].idx);
 	sched_log->sched_buf_paddr = phys_addr_of_secdbg_paddr(sched[0].buf);
 	sched_log->sched_struct_buf_sz = sizeof(struct sched_buf);
@@ -409,6 +448,8 @@ static void __init summary_init_sched_log(void)
 	sched_log->msglog_struct_buf_sz = sizeof(struct secmsg_buf);
 	sched_log->msglog_struct_log_sz = sizeof(struct secmsg_log);
 	sched_log->msglog_array_cnt = MSG_LOG_MAX;
+#endif
+
 #endif
 }
 

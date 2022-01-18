@@ -1,6 +1,8 @@
 #!/bin/bash
 
+export ARCH=arm64
 mkdir out
+
 BUILD_CROSS_COMPILE=$(pwd)/toolchain/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/bin/aarch64-linux-android-
 KERNEL_LLVM_BIN=$(pwd)/toolchain/llvm-arm-toolchain-ship/10.0/bin/clang
 CLANG_TRIPLE=aarch64-linux-gnu-

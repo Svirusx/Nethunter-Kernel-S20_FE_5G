@@ -113,11 +113,11 @@
 #include <linux/compat.h>
 #endif
 
-#ifdef CONFIG_ARCH_EXYNOS
+#if defined(CONFIG_ARCH_EXYNOS) && !defined(CONFIG_SOC_S5E5515)
 #ifndef SUPPORT_EXYNOS7420
 #include <linux/exynos-pci-ctrl.h>
 #endif /* SUPPORT_EXYNOS7420 */
-#endif /* CONFIG_ARCH_EXYNOS */
+#endif /* defined(CONFIG_ARCH_EXYNOS) && !defined(CONFIG_SOC_S5E5515) */
 
 #ifdef DHD_L2_FILTER
 #include <bcmicmp.h>
@@ -561,8 +561,10 @@ BCMFASTPATH(dhd_start_xmit)(struct sk_buff *skb, struct net_device *net)
 			__FUNCTION__, dhd->pub.busstate, dhd->pub.dhd_bus_busy_state));
 		DHD_BUS_BUSY_CLEAR_IN_TX(&dhd->pub);
 #ifdef PCIE_FULL_DONGLE
-		/* Stop tx queues if suspend is in progress */
-		if (DHD_BUS_CHECK_ANY_SUSPEND_IN_PROGRESS(&dhd->pub)) {
+		/* Stop tx queues if suspend is in progress or suspended */
+		if (DHD_BUS_CHECK_ANY_SUSPEND_IN_PROGRESS(&dhd->pub) ||
+			(dhd->pub.busstate == DHD_BUS_SUSPEND &&
+			!DHD_BUS_BUSY_CHECK_RESUME_IN_PROGRESS(&dhd->pub))) {
 			dhd_bus_stop_queue(dhd->pub.bus);
 		}
 #endif /* PCIE_FULL_DONGLE */
@@ -937,27 +939,28 @@ dhd_eap_txcomplete(dhd_pub_t *dhdp, void *txp, bool success, int ifidx)
 	struct ether_header *eh;
 	uint16 type;
 
-	if (!success) {
-		/* XXX where does this stuff belong to? */
-		dhd_prot_hdrpull(dhdp, NULL, txp, NULL, NULL);
+	/* XXX where does this stuff belong to? */
+	dhd_prot_hdrpull(dhdp, NULL, txp, NULL, NULL);
 
-		/* XXX Use packet tag when it is available to identify its type */
-		eh = (struct ether_header *)PKTDATA(dhdp->osh, txp);
-		type  = ntoh16(eh->ether_type);
-		if (type == ETHER_TYPE_802_1X) {
-			if (dhd_is_4way_msg((uint8 *)eh) == EAPOL_4WAY_M4) {
-				dhd_if_t *ifp = NULL;
-				ifp = dhd->iflist[ifidx];
-				if (!ifp || !ifp->net) {
-					return;
-				}
-
+	/* XXX Use packet tag when it is available to identify its type */
+	eh = (struct ether_header *)PKTDATA(dhdp->osh, txp);
+	type  = ntoh16(eh->ether_type);
+	if (type == ETHER_TYPE_802_1X) {
+		if (dhd_is_4way_msg((uint8 *)eh) == EAPOL_4WAY_M4) {
+			dhd_if_t *ifp = NULL;
+			ifp = dhd->iflist[ifidx];
+			if (!ifp || !ifp->net) {
+				return;
+			}
+			if (!success) {
 				DHD_INFO(("%s: M4 TX failed on %d.\n",
-					__FUNCTION__, ifidx));
+						__FUNCTION__, ifidx));
 
 				OSL_ATOMIC_SET(dhdp->osh, &ifp->m4state, M4_TXFAILED);
 				schedule_delayed_work(&ifp->m4state_work,
-					msecs_to_jiffies(MAX_4WAY_TIMEOUT_MS));
+						msecs_to_jiffies(MAX_4WAY_TIMEOUT_MS));
+			} else {
+				cancel_delayed_work(&ifp->m4state_work);
 			}
 		}
 	}

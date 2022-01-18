@@ -585,9 +585,13 @@ static int argos_pm_qos_notify(struct notifier_block *nfb,
 
 	prev_level = cnode->prev_level;
 
-	pr_debug("name:%s, speed:%ldMbps\n", cnode->desc, speed);
-
 	argos_blocked = cnode->argos_block;
+
+	if (cnode->tables[0].items[THRESHOLD] == 0) {
+		pr_debug("skip not used name:%s, speed:%ldMbps\n",\
+			 cnode->desc, speed);
+		goto out;
+	}
 
 	/* Find proper level */
 	for (level = 0; level < cnode->ntables; level++) {

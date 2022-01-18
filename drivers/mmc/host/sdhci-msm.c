@@ -5306,13 +5306,13 @@ static ssize_t t_flash_detect_show(struct device *dev,
 {
 	struct sdhci_msm_host *msm_host = dev_get_drvdata(dev);
 #if defined(CONFIG_SEC_NO_SD_DETECT) || defined(CONFIG_SEC_HYBRID_TRAY)
-	if (msm_host->mmc->card) {
-		pr_debug("External sd: card inserted.\n");
-		return sprintf(buf, "Insert\n");
-	}
 	if (!mmc_gpio_get_cd(msm_host->mmc)) {
 		pr_debug("SD slot tray Removed.\n");
 		return sprintf(buf, "Notray\n");
+	}
+	if (msm_host->mmc->card) {
+		pr_debug("External sd: card inserted.\n");
+		return sprintf(buf, "Insert\n");
 	}
 	pr_debug("External sd: card removed.\n");
 	return sprintf(buf, "Remove\n");

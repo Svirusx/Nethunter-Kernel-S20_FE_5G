@@ -347,7 +347,7 @@ static void s2asl01_set_fast_charging_current_limit(
 	u8 data = 0;
 	int dest_current = 0;
 
-	if (switching->rev_id == 0 || switching->rev_id >= 2) {
+	if (switching->rev_id == 0 || switching->ic_ver == VER_6130) {
 		if (charging_current <= 50)
 			data = 0x00;
 		else if (charging_current > 50 && charging_current <= 3200)
@@ -393,7 +393,7 @@ static int s2asl01_get_fast_charging_current_limit(
 		data = 0x3F;
 	}
 
-	if (switching->rev_id == 0 || switching->rev_id >= 2)
+	if (switching->rev_id == 0 || switching->ic_ver == VER_6130)
 		charging_current = (data + 1) * 50;
 	else {
 		if ((data >= 0x00) && (data <= 0x04))
@@ -410,22 +410,31 @@ static void s2asl01_set_trickle_charging_current_limit(
 {
 	u8 data = 0;
 
-	if (switching->rev_id == 0 || switching->rev_id >= 2) {
+	if (switching->ic_ver == VER_6130) {
 		if (charging_current <= 50)
 			data = 0x00;
-		else if (charging_current > 50 && charging_current <= 500)
+		else if (charging_current > 50 && charging_current <= 550)
 			data = (charging_current / 50) - 1;
 		else
-			data = 0x09;
+			data = 0x0A;
 	} else {
-		if (charging_current <= 50)
-			data = 0x00;
-		else if (charging_current > 50 && charging_current <= 350)
-			data = (charging_current - 50) / 75;
-		else if (charging_current > 350 && charging_current <= 550)
-			data = ((charging_current - 350) / 50) + 4;
-		else
-			data = 0x08;
+		if (switching->rev_id == 0) {
+			if (charging_current <= 50)
+				data = 0x00;
+			else if (charging_current > 50 && charging_current <= 500)
+				data = (charging_current / 50) - 1;
+			else
+				data = 0x09;
+		} else {
+			if (charging_current <= 50)
+				data = 0x00;
+			else if (charging_current > 50 && charging_current <= 350)
+				data = (charging_current - 50) / 75;
+			else if (charging_current > 350 && charging_current <= 550)
+				data = ((charging_current - 350) / 50) + 4;
+			else
+				data = 0x08;
+		}
 	}
 
 	pr_info("%s [%s]: current %d, 0x%02x\n", __func__, current_limiter_type_str[switching->pdata->bat_type], charging_current, data);
@@ -444,21 +453,29 @@ static int s2asl01_get_trickle_charging_current_limit(
 
 	data = data & TRICKLE_CHG_CURRENT_LIMIT_MASK;
 
-	if (switching->rev_id == 0 || switching->rev_id >= 2) {
-		if (data > 0x09) {
+	if (switching->ic_ver == VER_6130) {
+		if (data > 0x0A) {
 			pr_err("%s: Invalid trickle charging current limit value\n", __func__);
-			data = 0x09;
+			data = 0x0A;
 		}
 		charging_current = (data + 1) * 50;
 	} else {
-		if (data > 0x08) {
-			pr_err("%s: Invalid trickle charging current limit value\n", __func__);
-			data = 0x08;
+		if (switching->rev_id == 0) {
+			if (data > 0x09) {
+				pr_err("%s: Invalid trickle charging current limit value\n", __func__);
+				data = 0x09;
+			}
+			charging_current = (data + 1) * 50;
+		} else {
+			if (data > 0x08) {
+				pr_err("%s: Invalid trickle charging current limit value\n", __func__);
+				data = 0x08;
+			}
+			if ((data >= 0x00) && (data <= 0x04))
+				charging_current = (data * 75) + 50;
+			else
+				charging_current = ((data - 4) * 50) + 350;
 		}
-		if ((data >= 0x00) && (data <= 0x04))
-			charging_current = (data * 75) + 50;
-		else
-			charging_current = ((data - 4) * 50) + 350;
 	}
 
 	return charging_current;
@@ -1049,15 +1066,18 @@ static void s2asl01_get_rev_id(struct s2asl01_switching_data *switching)
 
 	/* rev ID */
 	s2asl01_read_reg(switching->client, S2ASL01_SWITCHING_ID, &val1);
+	if (val1 & 0x01)
+		switching->ic_ver = VER_6130;
+	else
+		switching->ic_ver = VER_6030;
 
 	switching->es_num = (val1 & 0xC0) >> 6;
 	switching->rev_id = (val1 & 0x30) >> 4;
 
-	pr_info("%s [%s]: rev id : %d, es_num = %d\n",
+	pr_info("%s [%s]: rev id : %d, es_num = %d, ic_ver = %d\n",
 		__func__,
 		current_limiter_type_str[switching->pdata->bat_type],
-		switching->rev_id,
-		switching->es_num);
+		switching->rev_id, switching->es_num, switching->ic_ver);
 }
 
 static void s2asl01_init_regs(struct s2asl01_switching_data *switching)

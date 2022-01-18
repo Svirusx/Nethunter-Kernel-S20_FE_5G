@@ -25,7 +25,7 @@
 #include <linux/file.h>
 #include <linux/syscalls.h>
 #include <linux/delay.h>
-
+#include <linux/of.h>
 #include <linux/sec_debug.h>
 
 #define PRINT_MSG_CYCLE	20
@@ -45,6 +45,41 @@ static DEFINE_MUTEX(ap_health_work_lock);
 static DEFINE_MUTEX(debug_partition_mutex);
 static BLOCKING_NOTIFIER_HEAD(dbg_partition_notifier_list);
 static char debugpartition_path[60];
+
+static struct {
+	uint32_t offset;
+	uint32_t size;
+	uint32_t default_size;
+} debug_part_table[DEBUG_PART_MAX_TABLE] = {
+	[debug_index_reset_header] = {.offset = SEC_DEBUG_RESET_HEADER_OFFSET,
+										.size = sizeof(struct debug_reset_header)},
+	[debug_index_reset_ex_info] = {.offset = SEC_DEBUG_EXTRA_INFO_OFFSET,
+									.size = SEC_DEBUG_EX_INFO_SIZE},
+	[debug_index_ap_health] = {.offset = SEC_DEBUG_AP_HEALTH_OFFSET,
+								.size = SEC_DEBUG_AP_HEALTH_SIZE},
+	[debug_index_lcd_debug_info] = {.offset = SEC_DEBUG_LCD_DEBUG_OFFSET,
+								.size = sizeof(struct lcd_debug_t)},
+	[debug_index_reset_history] = {.offset = SEC_DEBUG_RESET_HISTORY_OFFSET,
+								.size = SEC_DEBUG_RESET_HISTORY_SIZE},
+	[debug_index_onoff_history] = {.offset = SEC_DEBUG_ONOFF_HISTORY_OFFSET,
+								.size = sizeof(onoff_history_t)},
+	[debug_index_reset_tzlog] = {.offset = SEC_DEBUG_RESET_TZLOG_OFFSET,
+								.size = SEC_DEBUG_RESET_TZLOG_SIZE},
+	[debug_index_reset_extrc_info] = {.offset = SEC_DEBUG_RESET_EXTRC_OFFSET,
+									.size = SEC_DEBUG_RESET_EXTRC_SIZE},
+	[debug_index_auto_comment] = {.offset = SEC_DEBUG_AUTO_COMMENT_OFFSET,
+								.size = SEC_DEBUG_AUTO_COMMENT_SIZE},
+	[debug_index_reset_rkplog] = {.offset = SEC_DEBUG_RESET_ETRM_OFFSET,
+								.size = SEC_DEBUG_RESET_ETRM_SIZE},
+	[debug_index_modem_info] = {.offset = SEC_DEBUG_RESET_MODEM_OFFSET,
+								.size = sizeof(struct sec_debug_summary_data_modem)},
+	[debug_index_reset_klog] = {.offset = SEC_DEBUG_RESET_KLOG_OFFSET,
+								.size = SEC_DEBUG_RESET_KLOG_SIZE},
+	[debug_index_reset_lpm_klog] = {.offset = SEC_DEBUG_RESET_LPM_KLOG_OFFSET,
+								.size = SEC_DEBUG_RESET_LPM_KLOG_SIZE},
+	[debug_index_reset_summary] = {.offset = SEC_DEBUG_RESET_SUMMARY_OFFSET,
+								.default_size = SEC_DEBUG_RESET_SUMMARY_SIZE},
+};
 
 static int __init get_bootdevice(char *str)
 {
@@ -137,7 +172,7 @@ static void ap_health_work_write_fn(struct work_struct *work)
 		goto openfail_retry;
 	}
 
-	ret = vfs_llseek(filp, SEC_DEBUG_AP_HEALTH_OFFSET, SEEK_SET);
+	ret = vfs_llseek(filp, debug_part_table[debug_index_ap_health].offset, SEEK_SET);
 	if (ret < 0) {
 		pr_err("FAIL LLSEEK\n");
 		ret = false;
@@ -189,8 +224,8 @@ static bool init_lcd_debug_data(void)
 		mutex_lock(&debug_partition_mutex);
 
 		sched_debug_data.value = &lcd_debug;
-		sched_debug_data.offset = SEC_DEBUG_LCD_DEBUG_OFFSET;
-		sched_debug_data.size = sizeof(struct lcd_debug_t);
+		sched_debug_data.offset = debug_part_table[debug_index_lcd_debug_info].offset;
+		sched_debug_data.size = debug_part_table[debug_index_lcd_debug_info].size;
 		sched_debug_data.direction = PARTITION_WR;
 
 		schedule_work(&sched_debug_data.debug_partition_work);
@@ -221,8 +256,8 @@ static void init_ap_health_data(void)
 		mutex_lock(&debug_partition_mutex);
 
 		sched_debug_data.value = &ap_health_data;
-		sched_debug_data.offset = SEC_DEBUG_AP_HEALTH_OFFSET;
-		sched_debug_data.size = sizeof(ap_health_t);
+		sched_debug_data.offset = debug_part_table[debug_index_ap_health].offset;
+		sched_debug_data.size = debug_part_table[debug_index_ap_health].size;
 		sched_debug_data.direction = PARTITION_WR;
 
 		schedule_work(&sched_debug_data.debug_partition_work);
@@ -248,6 +283,7 @@ static void init_debug_partition(void)
 
 	/*++ add here need init data ++*/
 	init_ap_health_data();
+	init_lcd_debug_data();
 	/*-- add here need init data --*/
 
 	while (1) {
@@ -258,8 +294,8 @@ static void init_debug_partition(void)
 		init_reset_header.magic = DEBUG_PARTITION_MAGIC;
 
 		sched_debug_data.value = &init_reset_header;
-		sched_debug_data.offset = SEC_DEBUG_RESET_HEADER_OFFSET;
-		sched_debug_data.size = sizeof(struct debug_reset_header);
+		sched_debug_data.offset = debug_part_table[debug_index_reset_header].offset;
+		sched_debug_data.size = debug_part_table[debug_index_reset_header].size;
 		sched_debug_data.direction = PARTITION_WR;
 
 		schedule_work(&sched_debug_data.debug_partition_work);
@@ -291,8 +327,8 @@ static int check_magic_data(void)
 	mutex_lock(&debug_partition_mutex);
 
 	sched_debug_data.value = &partition_header;
-	sched_debug_data.offset = SEC_DEBUG_RESET_HEADER_OFFSET;
-	sched_debug_data.size = sizeof(struct debug_reset_header);
+	sched_debug_data.offset = debug_part_table[debug_index_reset_header].offset;
+	sched_debug_data.size = debug_part_table[debug_index_reset_header].size;
 	sched_debug_data.direction = PARTITION_RD;
 
 	schedule_work(&sched_debug_data.debug_partition_work);
@@ -331,73 +367,16 @@ bool read_debug_partition(enum debug_partition_index index, void *value)
 	if (check_magic_data())
 		return false;
 
-	switch (index) {
-		case debug_index_reset_ex_info:
+	if (index < debug_index_max) {
+		if (debug_part_table[index].size) {
 			READ_DEBUG_PARTITION(value,
-						 SEC_DEBUG_EXTRA_INFO_OFFSET,
-						 SEC_DEBUG_EX_INFO_SIZE);
-			break;
-		case debug_index_reset_klog_info:
-		case debug_index_reset_summary_info:
-			READ_DEBUG_PARTITION(value,
-						 SEC_DEBUG_RESET_HEADER_OFFSET,
-						 sizeof(struct debug_reset_header));
-			break;
-		case debug_index_reset_summary:
-			READ_DEBUG_PARTITION(value,
-						 SEC_DEBUG_RESET_SUMMARY_OFFSET,
-						 SEC_DEBUG_RESET_SUMMARY_SIZE);
-			break;
-		case debug_index_reset_klog:
-			READ_DEBUG_PARTITION(value,
-						 SEC_DEBUG_RESET_KLOG_OFFSET,
-						 SEC_DEBUG_RESET_KLOG_SIZE);
-			break;
-		case debug_index_reset_tzlog:
-			READ_DEBUG_PARTITION(value,
-						SEC_DEBUG_RESET_TZLOG_OFFSET,
-						SEC_DEBUG_RESET_TZLOG_SIZE);
-			break;
-		case debug_index_ap_health:
-			READ_DEBUG_PARTITION(value,
-						 SEC_DEBUG_AP_HEALTH_OFFSET,
-						 SEC_DEBUG_AP_HEALTH_SIZE);
-			break;
-		case debug_index_reset_extrc_info:
-			READ_DEBUG_PARTITION(value,
-					SEC_DEBUG_RESET_EXTRC_OFFSET,
-					SEC_DEBUG_RESET_EXTRC_SIZE);
-			break;
-		case debug_index_lcd_debug_info:
-			READ_DEBUG_PARTITION(value,
-					SEC_DEBUG_LCD_DEBUG_OFFSET,
-					sizeof(struct lcd_debug_t));
-			break;
-		case debug_index_modem_info:
-			READ_DEBUG_PARTITION(value,
-					SEC_DEBUG_RESET_MODEM_OFFSET,
-					sizeof(struct sec_debug_summary_data_modem));
-			break;
-		case debug_index_auto_comment:
-			READ_DEBUG_PARTITION(value,
-						 SEC_DEBUG_AUTO_COMMENT_OFFSET,
-						 SEC_DEBUG_AUTO_COMMENT_SIZE);
-			break;
-		case debug_index_reset_history:
-			READ_DEBUG_PARTITION(value,
-						SEC_DEBUG_RESET_HISTORY_OFFSET,
-						SEC_DEBUG_RESET_HISTORY_SIZE);
-			break;
-		case debug_index_reset_rkplog:
-			READ_DEBUG_PARTITION(value,
-						SEC_DEBUG_RESET_ETRM_OFFSET,
-						SEC_DEBUG_RESET_ETRM_SIZE);
-			break;
-		default:
-			return false;
+							debug_part_table[index].offset,
+							debug_part_table[index].size);
+			return true;
+		}
 	}
 
-	return true;
+	return false;
 }
 
 bool write_debug_partition(enum debug_partition_index index, void *value)
@@ -405,63 +384,28 @@ bool write_debug_partition(enum debug_partition_index index, void *value)
 	if (check_magic_data())
 		return false;
 
-	switch (index) {
-		case debug_index_reset_klog_info:
-		case debug_index_reset_summary_info:
-			mutex_lock(&debug_partition_mutex);
-			sched_debug_data.value =
-				(struct debug_reset_header *)value;
-			sched_debug_data.offset = SEC_DEBUG_RESET_HEADER_OFFSET;
-			sched_debug_data.size =
-				sizeof(struct debug_reset_header);
-			sched_debug_data.direction = PARTITION_WR;
-			schedule_work(&sched_debug_data.debug_partition_work);
-			wait_for_completion(&sched_debug_data.work);
-			mutex_unlock(&debug_partition_mutex);
-			break;
-		case debug_index_reset_ex_info:
-		case debug_index_reset_summary:
-			// do nothing.
-			break;
-		case debug_index_lcd_debug_info:
-			mutex_lock(&debug_partition_mutex);
-			sched_debug_data.value = (struct lcd_debug_t *)value;
-			sched_debug_data.offset = SEC_DEBUG_LCD_DEBUG_OFFSET;
-			sched_debug_data.size = sizeof(struct lcd_debug_t);
-			sched_debug_data.direction = PARTITION_WR;
-			schedule_work(&sched_debug_data.debug_partition_work);
-			wait_for_completion(&sched_debug_data.work);
-			mutex_unlock(&debug_partition_mutex);
-			break;
-#ifdef CONFIG_SEC_LOG_STORE_LAST_KMSG
-		case debug_index_reset_klog:
-			mutex_lock(&debug_partition_mutex);
-			sched_debug_data.value = value;
-			sched_debug_data.offset = SEC_DEBUG_RESET_KLOG_OFFSET;
-			sched_debug_data.size = SEC_DEBUG_RESET_KLOG_SIZE;
-			sched_debug_data.direction = PARTITION_WR;
-			schedule_work(&sched_debug_data.debug_partition_work);
-			wait_for_completion(&sched_debug_data.work);
-			mutex_unlock(&debug_partition_mutex);
-			break;
-#endif
-#if IS_ENABLED(CONFIG_SEC_LOG_STORE_LPM_KMSG)
-		case debug_index_reset_lpm_klog:
-			mutex_lock(&debug_partition_mutex);
-			sched_debug_data.value = value;
-			sched_debug_data.offset = SEC_DEBUG_RESET_LPM_KLOG_OFFSET;
-			sched_debug_data.size = SEC_DEBUG_RESET_LPM_KLOG_SIZE;
-			sched_debug_data.direction = PARTITION_WR;
-			schedule_work(&sched_debug_data.debug_partition_work);
-			wait_for_completion(&sched_debug_data.work);
-			mutex_unlock(&debug_partition_mutex);
-			break;
-#endif
-		default:
-			return false;
+	if (index < debug_index_max) {
+		if (index == debug_index_reset_klog_info
+			|| index == debug_index_reset_summary_info
+			|| index == debug_index_lcd_debug_info
+			|| index == debug_index_reset_klog
+			|| index == debug_index_reset_lpm_klog
+			|| index == debug_index_onoff_history) {
+			if (debug_part_table[index].size) {
+				mutex_lock(&debug_partition_mutex);
+				sched_debug_data.value = value;
+				sched_debug_data.offset = debug_part_table[index].offset;
+				sched_debug_data.size = debug_part_table[index].size;
+				sched_debug_data.direction = PARTITION_WR;
+				schedule_work(&sched_debug_data.debug_partition_work);
+				wait_for_completion(&sched_debug_data.work);
+				mutex_unlock(&debug_partition_mutex);
+				return true;
+			}
+		}
 	}
 
-	return true;
+	return false;
 }
 
 static int is_boot_recovery;
@@ -548,9 +492,81 @@ static struct notifier_block dbg_partition_panic_notifier_block = {
 	.notifier_call = dbg_partition_panic_prepare,
 };
 
+uint32_t dbg_parttion_get_part_size(uint32_t idx)
+{
+	if (idx < DEBUG_PART_MAX_TABLE)
+		return debug_part_table[idx].size;
+	
+	return 0;
+}
+
+static int dbg_partition_fix_part_table(void)
+{
+	int i;
+
+	for (i = 0; i < DEBUG_PART_MAX_TABLE; i++) {
+		if (!debug_part_table[i].size)
+			debug_part_table[i].size = debug_part_table[i].default_size;
+	}
+
+	return 0;
+}
+
+static int dbg_partition_make_part_table(void)
+{
+	struct device_node *parent;
+	int i, ret = 0;
+	uint32_t offset, size;
+
+	parent = of_find_node_by_path("/sec_debug_partition");
+	if (!parent) {
+		pr_err("sec_debug_partition node is not in device tree\n");
+		return -ENODEV;
+	}
+
+	of_get_property(parent, "part-table", &size);
+	if (!size) {
+		pr_err("part-table node is not in device tree\n");
+		return -ENODEV;
+	}
+
+	if (size != DEBUG_PART_MAX_TABLE * 2 * sizeof(u32)) {
+		pr_err("part-table has wrong size\n");
+		return -EINVAL;
+	}
+
+	for (i = 0; i < DEBUG_PART_MAX_TABLE; i++) {
+		ret = of_property_read_u32_index(parent, "part-table", i * 2, &offset);
+		if (ret) {
+			pr_err("part-table %d offset read error - %d\n", i, ret);
+			return -EINVAL;
+		}
+		ret = of_property_read_u32_index(parent, "part-table", i * 2 + 1, &size);
+		if (ret) {
+			pr_err("part-table %d size read error - %d\n", i, ret);
+			return -EINVAL;
+		}
+
+		if (offset + size > SEC_DEBUG_PARTITION_SIZE) {
+			pr_err("part-table oversize 0x%x\n", offset + size);
+			return -EINVAL;
+		}
+
+		debug_part_table[i].offset = offset;
+
+		if (!debug_part_table[i].size)
+			debug_part_table[i].size = size;
+	}
+
+	return 0;
+}
+
 static int __init sec_debug_partition_init(void)
 {
 	pr_info("start\n");
+
+	dbg_partition_make_part_table();
+	dbg_partition_fix_part_table();
 
 	sched_debug_data.offset = 0;
 	sched_debug_data.direction = 0;

@@ -190,16 +190,19 @@ static long perf_mgr_ioctl(struct file *file, unsigned int cmd, unsigned long ar
 		 *we initialize boosting information of the task.
 		 */
 
+			tmp_task = find_task_by_vpid(ofi.tid);
+
+			if (tmp_task == NULL ||
+				tmp_task->drawing_flag != task->drawing_flag)
+				continue;
+				
 			if (++(fi->last_update_frame) > hold_frame_count) {
 				fi->last_update_frame = 0;
 				fi->updated_fps_util = 0;
-				task->drawing_mig_boost = 0;
+				tmp_task->drawing_mig_boost = 0;
 			}
 
-			tmp_task = find_task_by_vpid(ofi.tid);
-			if (tmp_task != NULL &&
-				tmp_task->drawing_flag == task->drawing_flag)
-				rn_sum += get_task_util(tmp_task);
+			rn_sum += get_task_util(tmp_task);
 		}
 		rcu_read_unlock();
 

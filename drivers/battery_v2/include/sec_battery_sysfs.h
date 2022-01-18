@@ -275,6 +275,7 @@ enum {
 #endif
 	BOOT_COMPLETED,
 	PD_DISABLE,
+	BATT_FULL_CAPACITY,
 };
 
 #endif /* __SEC_BATTERY_SYSFS_H */

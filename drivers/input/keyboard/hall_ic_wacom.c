@@ -193,8 +193,8 @@ static int hall_wacom_probe(struct platform_device *pdev)
 
 	input_set_drvdata(input, ddata);
 
-	input->name = "wacom_hall";
-	input->phys = "wacom_hall";
+	input->name = "hall_wacom";
+	input->phys = "hall_wacom";
 	input->dev.parent = &pdev->dev;
 
 	input->evbit[0] |= BIT_MASK(EV_SW);

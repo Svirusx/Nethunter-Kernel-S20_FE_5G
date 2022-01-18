@@ -508,10 +508,63 @@ end:
 }
 
 /**
+ * get max dex resolution of current dongle/cable.
+ * it's decided by secdp_check_adapter_type() at connection moment.
+ */
+enum dex_support_res_t secdp_get_dex_res(void)
+{
+	struct dp_display_private *dp = g_secdp_priv;
+	enum dex_support_res_t res = dp->sec.dex.res;
+
+	if (dp->sec.dex.adapter_check_skip)
+		res = DEX_RES_MAX;
+
+	return res;
+}
+
+/**
+ * check if dex is running
+ */
+bool secdp_check_dex_mode(void)
+{
+	struct dp_display_private *dp = g_secdp_priv;
+	bool mode = false;
+
+	if (secdp_get_dex_res() == DEX_RES_NOT_SUPPORT)
+		goto end;
+
+	if (dp->sec.dex.setting_ui == DEX_DISABLED &&
+			dp->sec.dex.curr == DEX_DISABLED)
+		goto end;
+
+	mode = true;
+end:
+	return mode;
+}
+
+bool secdp_dex_adapter_skip_show(void)
+{
+	struct dp_display_private *dp = g_secdp_priv;
+	bool skip = dp->sec.dex.adapter_check_skip;
+
+	DP_DEBUG("skip: %d\n", skip);
+
+	return skip;
+}
+
+void secdp_dex_adapter_skip_store(bool skip)
+{
+	struct dp_display_private *dp = g_secdp_priv;
+
+	dp->sec.dex.adapter_check_skip = skip;
+	DP_INFO("skip: %d\n", dp->sec.dex.adapter_check_skip);
+}
+
+/**
  * check connected dongle type with given vid and pid. Based upon this info,
  * we can decide maximum dex resolution for that cable/adapter.
  */
-static enum dex_support_res_t secdp_check_adapter_type(CC_NOTI_TYPEDEF *noti)
+static enum dex_support_res_t secdp_dex_adapter_check(CC_NOTI_TYPEDEF *noti)
 {
 	struct dp_display_private *dp = g_secdp_priv;
 	enum dex_support_res_t type = DEX_RES_DFT; /* default resolution */
@@ -532,18 +585,8 @@ static enum dex_support_res_t secdp_check_adapter_type(CC_NOTI_TYPEDEF *noti)
 
 	if (ven_id == SAMSUNG_VENDOR_ID) {
 		switch (prod_id) {
-		case 0xa029: /* PAD */
-		case 0xa020: /* Station */
-		case 0xa02a:
-		case 0xa02b:
-		case 0xa02c:
-		case 0xa02d:
-		case 0xa02e:
-		case 0xa02f:
-		case 0xa030:
-		case 0xa031:
-		case 0xa032:
-		case 0xa033:
+		case DEXDOCK_PRODUCT_ID:
+		case DEXPAD_PRODUCT_ID:
 			type = DEX_RES_MAX;
 			break;
 		default:
@@ -636,7 +679,7 @@ int secdp_show_hmd_dev(char *buf)
 end:
 	return rc;
 }
-#endif
+#endif/*CONFIG_SEC_DISPLAYPORT_ENG*/
 
 int secdp_store_hmd_dev(char *str, size_t len, int num_hmd)
 {
@@ -831,7 +874,22 @@ void secdp_debug_prefer_ratio_store(int ratio)
 	dp->sec.prefer_ratio = ratio;
 	DP_DEBUG("ratio: %d\n", dp->sec.prefer_ratio);
 }
-#endif
+
+int secdp_show_link_param(char *buf)
+{
+	struct dp_display_private *dp = g_secdp_priv;
+	int rc = 0;
+
+	rc += scnprintf(buf + rc, PAGE_SIZE - rc,
+			"v_level: %u, p_level: %u\nlane_cnt: %u\nbw_code: 0x%x\n",
+			dp->link->phy_params.v_level,
+			dp->link->phy_params.p_level,
+			dp->link->link_params.lane_count,
+			dp->link->link_params.bw_code);
+
+	return rc;
+}
+#endif/*CONFIG_SEC_DISPLAYPORT_ENG*/
 
 static inline bool dp_display_is_hdcp_enabled(struct dp_display_private *dp)
 {
@@ -1988,32 +2046,6 @@ void secdp_dex_do_reconnecting(void)
 	dp->sec.dex.reconnecting = false;
 	mutex_unlock(&dp->attention_lock);
 }
-
-/** check if dex is running now */
-bool secdp_check_dex_mode(void)
-{
-	struct dp_display_private *dp = g_secdp_priv;
-	bool mode = false;
-
-	if (dp->sec.dex.res == DEX_RES_NOT_SUPPORT)
-		goto end;
-
-	if (dp->sec.dex.setting_ui == DEX_DISABLED &&
-		dp->sec.dex.curr == DEX_DISABLED)
-		goto end;
-
-	mode = true;
-end:
-	return mode;
-}
-
-/** get dex resolution. it depends on which dongle/adapter is connected */
-enum dex_support_res_t secdp_get_dex_res(void)
-{
-	struct dp_display_private *dp = g_secdp_priv;
-
-	return dp->sec.dex.res;
-}
 #endif
 
 static int dp_display_usbpd_configure_cb(struct device *dev)
@@ -2753,7 +2785,7 @@ static void secdp_ccic_connect_init(struct dp_display_private *dp,
 	 * resource clear will be made later at "secdp_process_attention"
 	 */
 	dp->sec.dex.res = connect ?
-		secdp_check_adapter_type(noti) : DEX_RES_NOT_SUPPORT;
+		secdp_dex_adapter_check(noti) : DEX_RES_NOT_SUPPORT;
 	dp->sec.dex.prev = dp->sec.dex.curr = dp->sec.dex.status = DEX_DISABLED;
 	dp->sec.dex.reconnecting = 0;
 

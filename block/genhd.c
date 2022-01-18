@@ -1093,7 +1093,7 @@ static int show_iodevs(struct seq_file *seqf, void *v)
 	struct hd_struct *part;
 	char buf[BDEVNAME_SIZE];
 
-	/* Don't show non-partitionable removeable devices or empty devices */
+	/* Don't show non-partitionable removable devices or empty devices */
 	if (!get_capacity(sgp) || (!disk_max_parts(sgp) &&
 				(sgp->flags & GENHD_FL_REMOVABLE)))
 		return 0;
@@ -1694,7 +1694,7 @@ static const struct seq_operations diskstats_op = {
 	.show	= diskstats_show
 };
 
-/* IOPP-iod-v1.1.4.19 - change inflight count */
+/* IOPP-iod-v1.1.k4.19 */
 #define PG2KB(x) ((unsigned long)((x) << (PAGE_SHIFT - 10)))
 static int iostats_show(struct seq_file *seqf, void *v)
 {
@@ -1740,14 +1740,13 @@ static int iostats_show(struct seq_file *seqf, void *v)
 				inflight[0] + inflight[1],
 				jiffies_to_msecs(part_stat_read(hd, io_ticks)),
 				jiffies_to_msecs(part_stat_read(hd, time_in_queue)),
-				/* followings are added */
+				/* following are added */
 				part_stat_read(hd, ios[STAT_DISCARD]),
 				part_stat_read(hd, sectors[STAT_DISCARD]),
 				part_stat_read(hd, flush_ios),
 				gp->queue->flush_ios,
 
 				inflight[0], /* read request count */
-				/* hd->io_time_us / USEC_PER_MSEC, */
 				gp->queue->in_flight_time / USEC_PER_MSEC,
 				PG2KB(thresh),
 				PG2KB(bdi->last_thresh),

@@ -47,6 +47,7 @@ struct stm32_pogo_notifier {
 struct pogo_data_struct {
 	u8 size;
 	char *data;
+	int module_id;
 };
 
 int pogo_notifier_register(struct notifier_block *nb, notifier_fn_t notifier, pogo_notifier_device_t listener);

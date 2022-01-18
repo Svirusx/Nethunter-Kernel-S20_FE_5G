@@ -23,8 +23,8 @@
 		qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_dcs";
 
 		qcom,mdss-dsi-bl-min-level = <1>;
-		qcom,mdss-dsi-bl-max-level = <400>;
-		qcom,mdss-brightness-max-level = <400>;
+		qcom,mdss-dsi-bl-max-level = <453>;
+		qcom,mdss-brightness-max-level = <453>;
 		qcom,mdss-brightness-default-level = <255>;
 		qcom,mdss-dsi-interleave-mode = <0>;
 		qcom,mdss-dsi-panel-type = "dsi_cmd_mode";
@@ -1254,14 +1254,14 @@
 			141	397	397	1002	695	0
 			142	398	398	1009	697	0
 			143	399	399	1016	698	0
-			144	400	400	1023	700	0
+			144	400	453	1023	700	0
 		>;
 
 		samsung,aod_candela_map_table_revA = <
 		/*   <idx>   <from>  <till>  <gm2_wrdisbv> <cd> */
 			0	0	11	0	2
 			1	12	29	0	10
-			2	30	52	0	30 
+			2	30	52	0	30
 			3	53	255	0	60
 		>;
 

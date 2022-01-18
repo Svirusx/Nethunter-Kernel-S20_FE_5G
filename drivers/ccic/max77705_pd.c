@@ -321,7 +321,7 @@ int max77705_get_apdo_max_power(unsigned int *pdo_pos, unsigned int *taMaxVol, u
 		if (!(pd_noti.sink_status.power_list[i].apdo)) {
 			max_voltage = pd_noti.sink_status.power_list[i].max_voltage;
 			max_current = pd_noti.sink_status.power_list[i].max_current;
-			max_power = max_voltage*max_current;	/* uW */
+			max_power = (max_voltage * max_current > max_power) ? (max_voltage * max_current) : max_power;
 			*taMaxPwr = max_power;	/* mW */
 		}
 	}
@@ -1101,6 +1101,7 @@ static void max77705_pd_check_pdmsg(struct max77705_usbc_platform_data *usbc_dat
 		}
 		break;
 	case PRSWAP_SWAPTOSRC:
+		max77705_notify_prswap(usbc_data, PRSWAP_SNKTOSWAP);
 		max77705_vbus_turn_on_ctrl(usbc_data, ON, false);
 		msg_maxim("PRSWAP_SNKTOSRC : [%x]", pd_msg);
 		break;

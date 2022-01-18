@@ -1026,22 +1026,34 @@ static ssize_t lcd_onoff_store(struct device *dev,
 	return size;
 }
 #endif
-static ssize_t abs_lcd_onoff_store(struct device *dev,
+static ssize_t algo_lcd_onoff_store(struct device *dev,
 	struct device_attribute *attr, const char *buf, size_t size)
 {
-	int32_t msg_buf[2];
-	int new_value;
+	int32_t msg_buf[2] = {0, };
+	int cmd_type;
 
-	if (sysfs_streq(buf, "0"))
-		new_value = 0;
-	else if (sysfs_streq(buf, "1"))
-		new_value = 1;
-	else
+	if (kstrtoint(buf, 10, &cmd_type)) {
+		pr_err("[FACTORY] %s: kstrtoint fail\n", __func__);
 		return size;
+	}
 
-	pr_info("[FACTORY] %s: new_value %d\n", __func__, new_value);
-	msg_buf[0] = OPTION_TYPE_SSC_ABS_LCD_TYPE;
-	msg_buf[1] = new_value;
+	switch (cmd_type) {
+	case COMMON_DATA_SET_ABS_ON:
+	case COMMON_DATA_SET_ABS_OFF:
+		msg_buf[0] = OPTION_TYPE_SSC_ABS_LCD_TYPE;
+		msg_buf[1] = (cmd_type == COMMON_DATA_SET_ABS_ON) ? 1 : 0;
+		break;
+	case COMMON_DATA_SET_LCD_INTENT_ON:
+	case COMMON_DATA_SET_LCD_INTENT_OFF:
+		msg_buf[0] = OPTION_TYPE_SSC_LCD_INTENT_TYPE;
+		msg_buf[1] = (cmd_type == COMMON_DATA_SET_LCD_INTENT_ON) ? 1 : 0;
+		break;
+	default:
+		pr_info("[FACTORY] %s: Not support:%d \n", __func__, cmd_type);
+		return size;
+	}
+
+	pr_info("[FACTORY] %s: lcd:%d,%d\n", __func__, msg_buf[0], msg_buf[1]);
 	adsp_unicast(msg_buf, sizeof(msg_buf),
 		MSG_SSC_CORE, 0, MSG_TYPE_OPTION_DEFINE);
 
@@ -1145,7 +1157,7 @@ static void print_sensor_dump(struct adsp_data *data, int sensor)
 	}
 }
 
-void print_ssr_history()
+static void print_ssr_history(void)
 {
 	int i;
 
@@ -1347,7 +1359,7 @@ static DEVICE_ATTR(fac_fstate, 0220, NULL, fac_fstate_store);
 static DEVICE_ATTR(update_ssc_flip, 0220, NULL, update_ssc_flip_store);
 #endif
 static DEVICE_ATTR(support_dual_sensor, 0440, support_dual_sensor_show, NULL);
-static DEVICE_ATTR(abs_lcd_onoff, 0220, NULL, abs_lcd_onoff_store);
+static DEVICE_ATTR(algo_lcd_onoff, 0220, NULL, algo_lcd_onoff_store);
 static DEVICE_ATTR(sensor_dump, 0444, sensor_dump_show, NULL);
 #ifdef CONFIG_SUPPORT_SSC_SPU
 static DEVICE_ATTR(ssc_firmware_info, 0440, ssc_firmware_info_show, NULL);
@@ -1377,7 +1389,7 @@ static struct device_attribute *core_attrs[] = {
 	&dev_attr_update_ssc_flip,
 #endif
 	&dev_attr_support_dual_sensor,
-	&dev_attr_abs_lcd_onoff,
+	&dev_attr_algo_lcd_onoff,
 	&dev_attr_sensor_dump,
 #ifdef CONFIG_SUPPORT_SSC_SPU
 	&dev_attr_ssc_firmware_info,

@@ -47,7 +47,11 @@ int rkp_cred_enable __kdp_ro = 0;
 static struct kmem_cache *cred_jar_ro;
 struct kmem_cache *tsec_jar;
 struct kmem_cache *usecnt_jar;
-atomic_t init_cred_use_cnt = ATOMIC_INIT(4);
+struct kdp_usecnt init_cred_use_cnt = {
+	.kdp_use_cnt = ATOMIC_INIT(4),
+	.kdp_rcu_head.non_rcu = 0,
+	.kdp_rcu_head.bp_cred = (void *)0,
+};
 
 unsigned int rkp_get_usecount(struct cred *cred)
 {
@@ -113,7 +117,7 @@ struct cred init_cred = {
 	.user_ns		= &init_user_ns,
 	.group_info		= &init_groups,
 #ifdef CONFIG_KDP_CRED
-	.use_cnt		= &init_cred_use_cnt,
+	.use_cnt		= (atomic_t *)&init_cred_use_cnt,
 	.bp_task		= &init_task,
 	.bp_pgd			= (void *) 0,
 	.type			= 0,
@@ -815,16 +819,9 @@ EXPORT_SYMBOL(abort_creds);
  * Install a set of temporary override subjective credentials on the current
  * process, returning the old set for later reversion.
  */
-#ifdef CONFIG_KDP_CRED
-const struct cred *rkp_override_creds(struct cred **cnew)
-#else
 const struct cred *override_creds(const struct cred *new)
-#endif
 {
 	const struct cred *old = current->cred;
-#ifdef CONFIG_KDP_CRED
-	struct cred *new = *cnew;
-#endif
 
 	kdebug("override_creds(%p{%d,%d})", new,
 	       atomic_read(&new->usage),
@@ -832,21 +829,7 @@ const struct cred *override_creds(const struct cred *new)
 
 	validate_creds(old);
 	validate_creds(new);
-#ifdef CONFIG_KDP_CRED
-	if (rkp_cred_enable) {
-		volatile unsigned int rkp_use_count = rkp_get_usecount(new);
-		struct cred *new_ro;
 
-		new_ro = prepare_ro_creds(new, RKP_CMD_OVRD_CREDS, rkp_use_count);
-		*cnew = new_ro;
-		rcu_assign_pointer(current->cred, new_ro);
-		put_cred(new);
-	} else {
-		get_new_cred((struct cred *)new);
-		alter_cred_subscribers(new, 1);
-		rcu_assign_pointer(current->cred, new);
-	}
-#else
 	/*
 	 * NOTE! This uses 'get_new_cred()' rather than 'get_cred()'.
 	 *
@@ -860,8 +843,17 @@ const struct cred *override_creds(const struct cred *new)
 	 */
 	get_new_cred((struct cred *)new);
 	alter_cred_subscribers(new, 1);
+#ifdef CONFIG_KDP_CRED
+	if (rkp_cred_enable) {
+		volatile unsigned int rkp_use_count = rkp_get_usecount((struct cred *)new);
+		struct cred *new_ro;
+
+		new_ro = prepare_ro_creds((struct cred *)new, RKP_CMD_OVRD_CREDS, rkp_use_count);
+		get_rocred_rcu(new_ro)->reflected_cred = (void *)new;
+		rcu_assign_pointer(current->cred, new_ro);
+	} else
+#endif
 	rcu_assign_pointer(current->cred, new);
-#endif  /* CONFIG_KDP_CRED */
 	alter_cred_subscribers(old, -1);
 
 	kdebug("override_creds() = %p{%d,%d}", old,
@@ -869,11 +861,8 @@ const struct cred *override_creds(const struct cred *new)
 	       read_cred_subscribers(old));
 	return old;
 }
-#ifdef CONFIG_KDP_CRED
-EXPORT_SYMBOL(rkp_override_creds);
-#else
 EXPORT_SYMBOL(override_creds);
-#endif
+
 /**
  * revert_creds - Revert a temporary subjective credentials override
  * @old: The credentials to be restored
@@ -894,6 +883,15 @@ void revert_creds(const struct cred *old)
 	alter_cred_subscribers(old, 1);
 	rcu_assign_pointer(current->cred, old);
 	alter_cred_subscribers(override, -1);
+#ifdef CONFIG_KDP_CRED
+	if (rkp_cred_enable) {
+		if (rkp_ro_page((unsigned long)override)){
+			if(get_rocred_rcu(override)->reflected_cred)
+				put_cred((struct cred *)get_rocred_rcu(override)->reflected_cred);
+			put_cred(override);
+		}
+	}
+#endif
 	put_cred(override);
 }
 EXPORT_SYMBOL(revert_creds);
@@ -936,7 +934,7 @@ void __init cred_init(void)
 			panic("Unable to create RO security cache\n");
 		}
 
-		usecnt_jar = kmem_cache_create("usecnt_jar", sizeof(atomic_t) + sizeof(struct ro_rcu_head),
+		usecnt_jar = kmem_cache_create("usecnt_jar",  sizeof(struct kdp_usecnt),
 				0, SLAB_HWCACHE_ALIGN|SLAB_PANIC|SLAB_ACCOUNT, usecnt_ctor);
 		if(!usecnt_jar) {
 			panic("Unable to create use count jar\n");

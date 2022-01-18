@@ -2147,12 +2147,12 @@ static ssize_t store_mac_addr(struct kobject *kobj,
 			    size_t count)
 {
 	sscanf(buf, "%02X:%02X:%02X:%02X:%02X:%02X",
-		(unsigned int*)&mac_from_macloader[0],
-		(unsigned int*)&mac_from_macloader[1],
-		(unsigned int*)&mac_from_macloader[2],
-		(unsigned int*)&mac_from_macloader[3],
-		(unsigned int*)&mac_from_macloader[4],
-		(unsigned int*)&mac_from_macloader[5]);
+		(const u8*)&mac_from_macloader[0],
+		(const u8*)&mac_from_macloader[1],
+		(const u8*)&mac_from_macloader[2],
+		(const u8*)&mac_from_macloader[3],
+		(const u8*)&mac_from_macloader[4],
+		(const u8*)&mac_from_macloader[5]);
 
 	cnss_pr_info("Assigning MAC from Macloader %02x:%02x:%02x:%02x:%02x:%02x\n",
 		mac_from_macloader[0], mac_from_macloader[1],mac_from_macloader[2],
@@ -2160,7 +2160,7 @@ static ssize_t store_mac_addr(struct kobject *kobj,
 
 	cnss_utils_set_wlan_mac_address(mac_from_macloader, MAC_ADDR_SIZE);
 
-	return 0;
+	return count;
 }
 
 static ssize_t show_verinfo(struct kobject *kobj,
@@ -2211,7 +2211,7 @@ static ssize_t store_pm_info(struct kobject *kobj,
 	pm_from_macloader = !pm_from_macloader;
 	cnss_pr_info("pm_from_macloader %d\n", pm_from_macloader);
 
-	return 0;
+	return count;
 }
 
 int cnss_sysfs_get_pm_info(void)
@@ -2229,7 +2229,7 @@ static ssize_t store_ant_info(struct kobject *kobj,
 	sscanf(buf, "%d", &ant_from_macloader);
 	cnss_pr_info("ant_from_macloader %d\n", ant_from_macloader);
 
-	return 0;
+	return count;
 }
 
 static ssize_t show_wificableinfo(struct kobject *kobj,
@@ -2268,7 +2268,7 @@ static ssize_t store_memdump_info(struct kobject *kobj,
 			    size_t count)
 {
 	cnss_pr_info("%s called\n", __func__);
-	return 0;
+	return count;
 }
 
 static struct kobj_attribute sec_mac_addr_attribute =

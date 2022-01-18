@@ -288,6 +288,8 @@ static void show_extra_register_data(struct pt_regs *regs, int nbytes)
 
 	fs = get_fs();
 	set_fs(KERNEL_DS);
+	show_data(regs->pc - nbytes, nbytes * 2, "PC");
+	show_data(regs->regs[30] - nbytes, nbytes * 2, "LR");
 	show_data(regs->sp - nbytes, nbytes * 2, "SP");
 	for (i = 0; i < 30; i++) {
 		char name[4];
@@ -340,7 +342,7 @@ void __show_regs(struct pt_regs *regs)
 		pr_cont("\n");
 	}
 
-	if (!user_mode(regs))
+	if (!user_mode(regs) && (oops_in_progress == 1 || oops_in_progress == 2))
 		show_extra_register_data(regs, 128);
 
 }

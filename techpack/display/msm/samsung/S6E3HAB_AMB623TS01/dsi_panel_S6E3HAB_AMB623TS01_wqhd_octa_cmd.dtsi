@@ -1765,6 +1765,14 @@
 			3	9400	25500	60
 		>;
 
+		samsung,aod_candela_map_table_jpn_revA = <
+			/*<idx>   <from>  <till> <candella> */
+			0	0	4899	2
+			1	4900	10399	10
+			2	10400	13399	30
+			3	13400	25500	60
+		>;
+
 		samsung,hbm_candela_map_table_revA = <
 		/*	idx	from 	end		cd	auto */
 			0	258	260	405	6

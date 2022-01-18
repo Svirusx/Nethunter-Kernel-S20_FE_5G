@@ -129,11 +129,23 @@ enum {
 };
 #endif
 
+enum {
+	COMMON_DATA_SET_ABS_OFF,		// 0x00 00 47 C1
+	COMMON_DATA_SET_ABS_ON,			// 0x01 00 47 C1
+#ifdef CONFIG_SUPPORT_VFOLD_FLEX
+	COMMON_DATA_SET_MAIN_ON,		// 0x02 00 47 C1
+	COMMON_DATA_SET_SUB_ON,			// 0x03 00 47 C1
+#endif
+	COMMON_DATA_SET_LCD_INTENT_ON = 0xf1,	// 0xf1 00 47 C1
+	COMMON_DATA_SET_LCD_INTENT_OFF,		// 0xf2 00 47 C1
+};
+
 // for ssc_core sensor type
 enum {
 	OPTION_TYPE_SSC_CHARGING_STATE,    // for pocket mode
 	OPTION_TYPE_SSC_ABS_LCD_TYPE,      // for pocket mode
-	OPTION_TYPE_SSC_LCD_TYPE,          // for pocket mode
+	OPTION_TYPE_SSC_LCD_TYPE,          // for pocket mode + auto roation
+	OPTION_TYPE_SSC_LCD_INTENT_TYPE,   // for auto rotation
 	OPTION_TYPE_SSC_DUMP_TYPE,         // for pocket mode
 	OPTION_TYPE_SSC_AOD_RECT,          // for AOD
 	OPTION_TYPE_SSC_AOD_LIGHT_CIRCLE,  // for AOD

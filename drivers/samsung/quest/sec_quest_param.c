@@ -112,11 +112,12 @@ void quest_print_param_quest_data()
 
 	QUEST_PRINT("curr_step : %d\n", param_quest_data.curr_step);
 
-	QUEST_PRINT("hlos_count(%d) quefi_count(%d) suefi_count(%d) ddrscan_count(%d)\n",
+	QUEST_PRINT("hlos_count(%d) quefi_count(%d) suefi_count(%d) ddrscan_count(%d), num_smd_try(%d)\n",
  		param_quest_data.hlos_remained_count,
 		param_quest_data.quefi_remained_count,
 		param_quest_data.suefi_remained_count,
-		param_quest_data.ddrscan_remained_count);
+		param_quest_data.ddrscan_remained_count,
+		param_quest_data.num_smd_try);
 
 	QUEST_PRINT("err_codes          : (%llu)\n",	param_quest_data.err_codes);
 
@@ -141,11 +142,16 @@ void quest_print_param_quest_data()
 	QUEST_PRINT("smd_quefi_elapsed_time       : (%d)\n", param_quest_data.smd_quefi_elapsed_time);
 	QUEST_PRINT("smd_suefi_elapsed_time       : (%d)\n", param_quest_data.smd_suefi_elapsed_time);
 	QUEST_PRINT("smd_quefi_total_pause_time   : (%d)\n", param_quest_data.smd_quefi_total_pause_time);
+
+	QUEST_PRINT("smd_ft_self_cooling_time     : (%d)\n", param_quest_data.smd_ft_self_cooling_time);
+	QUEST_PRINT("smd_ft_thermal_after_self_cooling   : (%d)\n", param_quest_data.smd_ft_thermal_after_self_cooling);
+	
 	QUEST_PRINT("smd_boot_reason              : (%.2s)\n", param_quest_data.smd_boot_reason);
 	QUEST_PRINT("smd_hlos_start_time          : (%d)\n", param_quest_data.smd_hlos_start_time);
 	QUEST_PRINT("smd_hlos_elapsed_time        : (%d)\n", param_quest_data.smd_hlos_elapsed_time);
 #if defined(CONFIG_SEC_QUEST_HLOS_NATURESCENE_SMD)
 	QUEST_PRINT("smd_ns_repeats               : (%d)\n", param_quest_data.smd_ns_repeats);
+	QUEST_PRINT("smd_max_aoss_thermal_diff    : (%d)\n", param_quest_data.smd_max_aoss_thermal_diff);
 #endif
 	QUEST_PRINT("smd_hlos_init_thermal        : (%d)\n", param_quest_data.smd_hlos_init_thermal);
 	QUEST_PRINT("smd_hlos_max_thermal         : (%d)\n", param_quest_data.smd_hlos_max_thermal);
@@ -169,9 +175,11 @@ void quest_print_param_quest_data()
 	QUEST_PRINT("smd_hlos_elapsed_time_first    : (%d)\n", param_quest_data.smd_hlos_elapsed_time_first);
 #if defined(CONFIG_SEC_QUEST_HLOS_NATURESCENE_SMD)
 	QUEST_PRINT("smd_ns_repeats_first           : (%d)\n", param_quest_data.smd_ns_repeats_first);
+	QUEST_PRINT("smd_max_aoss_thermal_diff_first: (%d)\n", param_quest_data.smd_max_aoss_thermal_diff_first);
 #endif
 	QUEST_PRINT("smd_hlos_init_thermal_first    : (%d)\n", param_quest_data.smd_hlos_init_thermal_first);
 	QUEST_PRINT("smd_hlos_max_thermal_first     : (%d)\n", param_quest_data.smd_hlos_max_thermal_first);
+	QUEST_PRINT("smd_CPER     : (%d)\n", param_quest_data.smd_cper);
 
 	QUEST_PRINT("======================\n");
 }
@@ -220,8 +228,6 @@ void quest_sync_param_quest_ddr_result_data(void)
 
 void quest_clear_param_quest_data()
 {
-	int modeIdx = 0;
-
 	param_quest_data.smd_item_result = 0;
 	param_quest_data.smd_subitem_result = 0;
 	param_quest_data.cal_item_result = 0;
@@ -255,6 +261,10 @@ void quest_clear_param_quest_data()
 	param_quest_data.smd_hlos_init_thermal = 0;
 	param_quest_data.smd_hlos_max_thermal = 0;
 	param_quest_data.smd_ns_repeats = 0;
+	param_quest_data.smd_max_aoss_thermal_diff = 0;
+
+	param_quest_data.smd_ft_self_cooling_time = 0;
+	param_quest_data.smd_ft_thermal_after_self_cooling = 0;	
 
 	// let's keep last information
 	//param_quest_data.smd_subitem_result_first = 0;
@@ -271,22 +281,9 @@ void quest_clear_param_quest_data()
 	//param_quest_data.smd_hlos_init_thermal_first = 0;
 	//param_quest_data.smd_hlos_max_thermal_first = 0;
 	//param_quest_data.smd_ns_repeats_first = 0;
-
 	//param_quest_data.smd_quefi_rework = 0;
 	//param_quest_data.smd_suefi_rework = 0;
-
-	for(modeIdx = 0; modeIdx < QUEST_CPR_MODE_CNT; modeIdx++)
-	{
-		param_quest_data.curr_mx_cpr[modeIdx].Modes = 0;
-		param_quest_data.curr_mx_cpr[modeIdx].Floor = 0;
-		param_quest_data.curr_mx_cpr[modeIdx].Ceiling = 0;
-		param_quest_data.curr_mx_cpr[modeIdx].Current = 0;
-
-		param_quest_data.curr_cx_cpr[modeIdx].Modes = 0;
-		param_quest_data.curr_cx_cpr[modeIdx].Floor = 0;
-		param_quest_data.curr_cx_cpr[modeIdx].Ceiling = 0;
-		param_quest_data.curr_mx_cpr[modeIdx].Current = 0;
-	}
+	//param_quest_data.smd_max_aoss_thermal_diff_first = 0;	
 
 	quest_sync_param_quest_data();
 

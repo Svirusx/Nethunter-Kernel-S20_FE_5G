@@ -317,6 +317,12 @@ static void sde_encoder_phys_cmd_te_rd_ptr_irq(void *arg, int irq_idx)
 
 
 #if defined(CONFIG_DISPLAY_SAMSUNG)
+	/* case 05295952: detect MDP clock underflow that causes line noise */
+	if (vdd && info[0].wr_ptr_line_count > (phys_enc->cached_mode.vdisplay/3) &&
+			info[0].wr_ptr_line_count < phys_enc->cached_mode.vdisplay)
+		SS_XLOG(info[0].wr_ptr_line_count, ++vdd->cnt_mdp_clk_underflow);
+
+
 	if (vdd && vdd->vrr.support_te_mod && vdd->vrr.te_mod_on && vdd->vrr.te_mod_divider > 0) {
 		vdd->vrr.te_mod_cnt = (vdd->vrr.te_mod_cnt + 1) % vdd->vrr.te_mod_divider;
 

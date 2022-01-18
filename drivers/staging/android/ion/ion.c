@@ -1124,7 +1124,7 @@ struct dma_buf *ion_alloc_dmabuf(size_t len, unsigned int heap_id_mask,
 	task_cputime(current, &utime, &stime_e);
 	stime_d = stime_e - stime_s;
 	if (!IS_ERR(dmabuf) && stime_d / NSEC_PER_MSEC > 100) {
-		pr_info("%s ion_heap_id: %d mask=0x%x timeJS(ms):%u/%llu len:0x%zx",
+		pr_info("%s ion_heap_id: %d mask=0x%x timeJS(ms):%u/%llu len:0x%zu\n",
 			__func__, heap->id, heap_id_mask,
 			jiffies_to_msecs(jiffies - jiffies_s),
 			stime_d / NSEC_PER_MSEC, len);
@@ -1189,6 +1189,97 @@ int ion_alloc_fd(size_t len, unsigned int heap_id_mask, unsigned int flags)
 		dma_buf_put(dmabuf);
 
 	return fd;
+}
+
+#define MAX_ION_ACC_PROCESS	16	/* should be smaller than bitmap */
+struct ion_size_account {
+	char task_comm[TASK_COMM_LEN];
+	pid_t pid;
+	size_t size;
+};
+static struct ion_size_account ion_size_acc[MAX_ION_ACC_PROCESS];
+static int ion_dbg_idx_new;
+static int ion_dbg_idx_last;
+
+static inline int __ion_account_add_buf_locked(struct ion_buffer *buffer)
+{
+	int i;
+
+	if (ion_dbg_idx_new &&
+			(ion_size_acc[ion_dbg_idx_last].pid == buffer->pid)) {
+		ion_size_acc[ion_dbg_idx_last].size += buffer->size;
+		return 0;
+	}
+	for (i = 0; i < ion_dbg_idx_new; i++) {
+		if (ion_size_acc[i].pid == buffer->pid) {
+			ion_size_acc[i].size += buffer->size;
+			ion_dbg_idx_last = i;
+			return 0;
+		}
+	}
+	if (ion_dbg_idx_new == MAX_ION_ACC_PROCESS) {
+		pr_warn_once("out of ion_size_account idx\n");
+		return -1;
+	}
+	ion_size_acc[ion_dbg_idx_new].pid = buffer->pid;
+	ion_size_acc[ion_dbg_idx_new].size = buffer->size;
+	strncpy(ion_size_acc[ion_dbg_idx_new].task_comm, buffer->task_comm,
+		TASK_COMM_LEN);
+	ion_dbg_idx_last = ion_dbg_idx_new++;
+	return 0;
+}
+
+static inline void __ion_account_print_locked(void)
+{
+	int i, heaviest_idx;
+	size_t heaviest_size = 0;
+	size_t total = 0;
+
+	if (!ion_dbg_idx_new)
+		return;
+	pr_info("ion_size: accounted by thread group\n");
+	pr_info("ion_size: %16s( %3s ) %8s\n", "task_comm", "pid", "size(kb)");
+	for (i = 0; i < ion_dbg_idx_new; i++) {
+		pr_info("[%d]       %16s(%5u) %8zu\n", i, ion_size_acc[i].task_comm,
+			ion_size_acc[i].pid, ion_size_acc[i].size / SZ_1K);
+		if (heaviest_size < ion_size_acc[i].size) {
+			heaviest_size = ion_size_acc[i].size ;
+			heaviest_idx = i;
+		}
+		total += ion_size_acc[i].size;
+	}
+	if (heaviest_size)
+		pr_info("heaviest_task_ion:%s(%5u) size:%zuKB, total:%zuKB/%luKB\n",
+			ion_size_acc[heaviest_idx].task_comm,
+			ion_size_acc[heaviest_idx].pid, heaviest_size / SZ_1K,
+			total / SZ_1K, totalram_pages << (PAGE_SHIFT - 10));
+}
+
+bool ion_account_print_usage(void)
+{
+	struct rb_node *n;
+	struct ion_buffer *buffer;
+	unsigned int system_heap_id;
+	struct ion_device *dev = internal_dev;
+	bool locked;
+
+	system_heap_id = get_ion_system_heap_id();
+	if (IS_ERR(ERR_PTR(system_heap_id)))
+		return false;
+	locked = mutex_trylock(&dev->buffer_lock);
+	if (!locked)
+		return false;
+	ion_dbg_idx_new = 0;
+	ion_dbg_idx_last = -1;
+	for (n = rb_first(&dev->buffers); n; n = rb_next(n)) {
+		buffer = rb_entry(n, struct ion_buffer, node);
+		if (buffer->heap->id == system_heap_id)
+			__ion_account_add_buf_locked(buffer);
+	}
+	__ion_account_print_locked();
+	mutex_unlock(&dev->buffer_lock);
+
+	return true;
 }
 
 int ion_query_heaps(struct ion_heap_query *query)

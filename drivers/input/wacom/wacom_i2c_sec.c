@@ -1595,6 +1595,19 @@ static ssize_t get_epen_pos_show(struct device *dev,
 			max_x, max_y);
 }
 
+static ssize_t flip_status_detect_show(struct device *dev,
+		struct device_attribute *attr,
+		char *buf)
+{
+	struct sec_cmd_data *sec = dev_get_drvdata(dev);
+	struct wacom_i2c *wac_i2c = container_of(sec, struct wacom_i2c, sec);
+
+	input_info(true, &wac_i2c->client->dev, "%s: %d\n",
+			__func__,	wac_i2c->flip_state);
+
+	return snprintf(buf, PAGE_SIZE, "%d\n", wac_i2c->flip_state);
+}
+
 /* firmware update */
 static DEVICE_ATTR(epen_firm_update, (S_IWUSR | S_IWGRP),
 		NULL, epen_firmware_update_store);
@@ -1647,6 +1660,8 @@ static DEVICE_ATTR(epen_fac_garage_mode, (S_IRUGO | S_IWUSR | S_IWGRP),
 static DEVICE_ATTR(epen_fac_garage_rawdata, S_IRUGO,
 		epen_fac_garage_rawdata_show, NULL);
 #endif
+static DEVICE_ATTR(flip_status_detect, 0444,
+		flip_status_detect_show, NULL);
 
 static struct attribute *epen_attributes[] = {
 	&dev_attr_epen_firm_update.attr,
@@ -1677,6 +1692,7 @@ static struct attribute *epen_attributes[] = {
 	&dev_attr_epen_fac_garage_mode.attr,
 	&dev_attr_epen_fac_garage_rawdata.attr,
 #endif
+	&dev_attr_flip_status_detect.attr,
 	NULL,
 };
 

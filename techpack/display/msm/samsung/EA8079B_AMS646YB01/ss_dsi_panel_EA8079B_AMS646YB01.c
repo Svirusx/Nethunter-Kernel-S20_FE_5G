@@ -525,6 +525,8 @@ static char ss_panel_revision(struct samsung_display_driver_data *vdd)
 	return (vdd->panel_revision + 'A');
 }
 
+static bool finger_exit_cnt;
+
 #define get_bit(value, shift, width)	((value >> shift) & (GENMASK(width - 1, 0)))
 static struct dsi_panel_cmd_set * ss_brightness_gamma_mode2_normal(struct samsung_display_driver_data *vdd, int *level_key)
 {
@@ -543,13 +545,19 @@ static struct dsi_panel_cmd_set * ss_brightness_gamma_mode2_normal(struct samsun
 	else
 		pcmds->cmds[0].msg.tx_buf[1] = 0x10;
 
-	pcmds->cmds[1].msg.tx_buf[1] = vdd->finger_mask_updated? 0x20 : 0x28;	/* Normal (0x20) / Smooth (0x28) */
+	pcmds->cmds[1].msg.tx_buf[1] = (vdd->finger_mask_updated || finger_exit_cnt) ? 0x20 : 0x28;	/* Normal (0x20) / Smooth (0x28) */
 	pcmds->cmds[2].msg.tx_buf[6] = 0x16;
 	pcmds->cmds[3].msg.tx_buf[1] = get_bit(vdd->br_info.common_br.gm2_wrdisbv, 8, 2);
 	pcmds->cmds[3].msg.tx_buf[2] = get_bit(vdd->br_info.common_br.gm2_wrdisbv, 0, 8);
 
 	/* ELVSS TSET */
 	pcmds->cmds[5].msg.tx_buf[1] = vdd->br_info.temperature > 0 ? vdd->br_info.temperature : (char)(BIT(7) | (-1*vdd->br_info.temperature));
+
+	if (vdd->finger_mask_updated) {
+		finger_exit_cnt = 1;
+	} else {
+		finger_exit_cnt = 0;
+	}
 
 	*level_key = LEVEL1_KEY;
 	return pcmds;

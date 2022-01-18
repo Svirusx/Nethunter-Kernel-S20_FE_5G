@@ -3512,7 +3512,7 @@ static void clear_cover_mode(void *device_data)
 	struct sec_cmd_data *sec = (struct sec_cmd_data *)device_data;
 	struct nvt_ts_data *ts = container_of(sec, struct nvt_ts_data, sec);
 	char buff[SEC_CMD_STR_LEN] = { 0 };
-	u8 wbuf[2] = { 0 };
+	u8 wbuf[3] = { 0 };
 	int ret = 0;
 
 	sec_cmd_set_default_result(sec);
@@ -3549,7 +3549,29 @@ static void clear_cover_mode(void *device_data)
 			nvt_ts_release_all_finger(ts);
 		} else {
 			input_info(true, &ts->client->dev, "%s: reset to normal mode\n", __func__);
+			nvt_ts_sw_reset_idle(ts);
+
+			//---write command to clear fw state before reset---
+			nvt_ts_set_page(ts, I2C_FW_Address, ts->mmap->EVENT_BUF_ADDR);
+
+			wbuf[0] = EVENT_MAP_RESET_COMPLETE;
+			wbuf[1] = 0x00;
+			ret = nvt_ts_i2c_write(ts, I2C_FW_Address, wbuf, 2);
+
 			nvt_ts_bootloader_reset(ts);
+
+			if (ts->power_status == POWER_LPM_STATUS) {
+				nvt_ts_check_fw_reset_state(ts, RESET_STATE_INIT);
+
+				//---write command to enter "wakeup gesture mode"---
+				wbuf[0] = EVENT_MAP_HOST_CMD;
+				wbuf[1] = NVT_CMD_GESTURE_MODE;
+				wbuf[2] = 0x80;
+				ret = nvt_ts_i2c_write(ts, I2C_FW_Address, wbuf, 3);
+
+				input_info(true, &ts->client->dev, "%s: enter lp mode, 0x%02X\n",
+						__func__, ts->lowpower_mode);
+			}
 		}
 	}
 

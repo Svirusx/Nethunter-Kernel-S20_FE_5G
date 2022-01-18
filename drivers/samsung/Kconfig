@@ -68,8 +68,10 @@ config SEC_FACTORY
 	default n
 	select SEC_DEBUG_FORCE_ERROR
 	select SEC_PANIC_PCIE_ERR
+	select SEC_PCIE_KEEP_LINKBW
 	select SEC_GPIO_DVS
 	select EDAC_KRYO_ARM64_PANIC_ON_CE
+	select CNSS2_DEBUG
 	help
 	  It will support a sec factory mode
 endmenu
@@ -80,7 +82,7 @@ source "drivers/samsung/quest/Kconfig"
 
 config SEC_CLASS_TEST
 	bool "KUnit test for sec_class_test"
-	depends on KUNIT
+	depends on SEC_KUNIT
 	help
 	  TODO: Describe config fully.
 

@@ -166,12 +166,6 @@ struct debug_reset_header {
 #define TZ_DIAG_LOG_MAGIC 0x747a6461 /* tzda */
 
 /* copy from drivers/firmware/qcom/tz_log.c */
-#define TZBSP_MAX_CPU_COUNT			0x08
-#define TZBSP_DIAG_NUM_OF_VMID			16
-#define TZBSP_DIAG_VMID_DESC_LEN		7
-#define TZBSP_DIAG_INT_NUM			64
-#define TZBSP_MAX_INT_DESC			16
-
 #define TZBSP_AES_256_ENCRYPTED_KEY_SIZE	256
 #define TZBSP_NONCE_LEN				12
 #define TZBSP_TAG_LEN				16
@@ -183,98 +177,6 @@ enum tz_boot_info_cpu_status_type {
 	WARM_BOOTING,
 	INVALID_WARM_ENTRY_EXIT_COUNT,
 	INVALID_WARM_TERM_ENTRY_EXIT_COUNT,
-};
-
-/*
- * VMID Table
- */
-struct tzdbg_vmid_t {
-	uint8_t vmid; /* Virtual Machine Identifier */
-	uint8_t desc[TZBSP_DIAG_VMID_DESC_LEN];	/* ASCII Text */
-};
-
-/*
- * Boot Info Table
- */
-struct tzdbg_boot_info_t {
-	uint32_t wb_entry_cnt;	/* Warmboot entry CPU Counter */
-	uint32_t wb_exit_cnt;	/* Warmboot exit CPU Counter */
-	uint32_t pc_entry_cnt;	/* Power Collapse entry CPU Counter */
-	uint32_t pc_exit_cnt;	/* Power Collapse exit CPU counter */
-	uint32_t warm_jmp_addr;	/* Last Warmboot Jump Address */
-	uint32_t spare;	/* Reserved for future use. */
-};
-
-/*
- * Boot Info Table for 64-bit
- */
-struct tzdbg_boot_info64_t {
-	uint32_t wb_entry_cnt;  /* Warmboot entry CPU Counter */
-	uint32_t wb_exit_cnt;   /* Warmboot exit CPU Counter */
-	uint32_t pc_entry_cnt;  /* Power Collapse entry CPU Counter */
-	uint32_t pc_exit_cnt;   /* Power Collapse exit CPU counter */
-	uint32_t psci_entry_cnt;/* PSCI syscall entry CPU Counter */
-	uint32_t psci_exit_cnt;   /* PSCI syscall exit CPU Counter */
-	uint64_t warm_jmp_addr; /* Last Warmboot Jump Address */
-	uint32_t warm_jmp_instr; /* Last Warmboot Jump Address Instruction */
-};
-
-/*
- * Reset Info Table
- */
-struct tzdbg_reset_info_t {
-	uint32_t reset_type;	/* Reset Reason */
-	uint32_t reset_cnt;	/* Number of resets occurred/CPU */
-};
-
-/*
- * Interrupt Info Table
- */
-struct tzdbg_int_t {
-	/*
-	 * Type of Interrupt/exception
-	 */
-	uint16_t int_info;
-	/*
-	 * Availability of the slot
-	 */
-	uint8_t avail;
-	/*
-	 * Reserved for future use
-	 */
-	uint8_t spare;
-	/*
-	 * Interrupt # for IRQ and FIQ
-	 */
-	uint32_t int_num;
-	/*
-	 * ASCII text describing type of interrupt e.g:
-	 * Secure Timer, EBI XPU. This string is always null terminated,
-	 * supporting at most TZBSP_MAX_INT_DESC characters.
-	 * Any additional characters are truncated.
-	 */
-	uint8_t int_desc[TZBSP_MAX_INT_DESC];
-	uint32_t int_count[TZBSP_MAX_CPU_COUNT]; /* # of times seen per CPU */
-};
-
-/*
- * Interrupt Info Table used in tz version >=4.X
- */
-struct tzdbg_int_t_tz40 {
-	uint16_t int_info;
-	uint8_t avail;
-	uint8_t spare;
-	uint32_t int_num;
-	uint8_t int_desc[TZBSP_MAX_INT_DESC];
-	uint32_t int_count[TZBSP_MAX_CPU_COUNT]; /* uint32_t in TZ ver >= 4.x*/
-};
-
-/* warm boot reason for cores */
-struct tzbsp_diag_wakeup_info_t {
-	/* Wake source info : APCS_GICC_HPPIR */
-	uint32_t HPPIR;
-	/* Wake source info : APCS_GICC_AHPPIR */
-	uint32_t AHPPIR;
 };
 
 /*
@@ -305,6 +207,34 @@ struct tzdbg_log_v9_2_t {
 	struct tzdbg_log_pos_v9_2_t       log_pos;
 	/* open ended array to the end of the 4K IMEM buffer */
 	uint8_t                                 log_buf[];
+};
+
+struct tzbsp_encr_info_for_log_chunk_t {
+	uint32_t size_to_encr;
+	uint8_t nonce[TZBSP_NONCE_LEN];
+	uint8_t tag[TZBSP_TAG_LEN];
+};
+
+/*
+ * Only `ENTIRE_LOG` will be used unless the
+ * "OEM_tz_num_of_diag_log_chunks_to_encr" devcfg field >= 2.
+ * If this is true, the diag log will be encrypted in two
+ * separate chunks: a smaller chunk containing only error
+ * fatal logs and a bigger "rest of the log" chunk. In this
+ * case, `ERR_FATAL_LOG_CHUNK` and `BIG_LOG_CHUNK` will be
+ * used instead of `ENTIRE_LOG`.
+ */
+enum tzbsp_encr_info_for_log_chunks_idx_t {
+	BIG_LOG_CHUNK = 0,
+	ENTIRE_LOG = 1,
+	ERR_FATAL_LOG_CHUNK = 1,
+	MAX_NUM_OF_CHUNKS,
+};
+
+struct tzbsp_encr_info_t {
+	uint32_t num_of_chunks;
+	struct tzbsp_encr_info_for_log_chunk_t chunks[MAX_NUM_OF_CHUNKS];
+	uint8_t key[TZBSP_AES_256_ENCRYPTED_KEY_SIZE];
 };
 
 /*
@@ -348,29 +278,34 @@ struct tzdbg_t {
 	/* Offset for Wakeup info */
 	uint32_t wakeup_info_off;
 
-	/*
-	 * VMID to EE Mapping
-	 */
-	struct tzdbg_vmid_t vmid_info[TZBSP_DIAG_NUM_OF_VMID];
-	/*
-	 * Boot Info
-	 */
-	struct tzdbg_boot_info64_t  boot_info[TZBSP_MAX_CPU_COUNT];
-	/*
-	 * Reset Info
-	 */
-	struct tzdbg_reset_info_t reset_info[TZBSP_MAX_CPU_COUNT];
-	uint32_t num_interrupts;
-	struct tzdbg_int_t  int_info[TZBSP_DIAG_INT_NUM];
+	union {
+	/* The elements in below structure have to be used for TZ where
+	* diag version = TZBSP_DIAG_MINOR_VERSION_V2
+	*/
+		struct {
+			uint8_t reserve[512];
 
-	/* Wake up info */
-	struct tzbsp_diag_wakeup_info_t  wakeup_info[TZBSP_MAX_CPU_COUNT];
+			uint32_t num_interrupts;
 
-	uint8_t key[TZBSP_AES_256_ENCRYPTED_KEY_SIZE];
+			uint8_t reserve2[3648];
 
-	uint8_t nonce[TZBSP_NONCE_LEN];
+			uint8_t key[TZBSP_AES_256_ENCRYPTED_KEY_SIZE];
 
-	uint8_t tag[TZBSP_TAG_LEN];
+			uint8_t nonce[TZBSP_NONCE_LEN];
+
+			uint8_t tag[TZBSP_TAG_LEN];
+		} v9_2;
+	/* The elements in below structure have to be used for TZ where
+	* diag version = TZBSP_DIAG_MINOR_VERSION_V21
+	*/
+		struct {
+			uint32_t encr_info_for_log_off;
+
+			uint8_t reserve[4172];
+
+			struct tzbsp_encr_info_t encr_info_for_log;
+		} v9_3;
+	};
 
 	/*
 	 * We need at least 2K for the ring buffer

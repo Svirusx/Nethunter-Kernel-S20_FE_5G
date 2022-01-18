@@ -621,6 +621,7 @@ void dump_tasks(struct mem_cgroup *memcg, const nodemask_t *nodemask)
 	if (heaviest_rss_sum)
 		pr_info("heaviest_task:%s(%d) rss_pages:%lu\n", heaviest_comm,
 			heaviest_pid, heaviest_rss_sum);
+	ion_account_print_usage();
 }
 
 static void dump_header(struct oom_control *oc, struct task_struct *p)

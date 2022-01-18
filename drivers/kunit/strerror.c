@@ -151,21 +151,16 @@ static const char * const errmap[] = {
 	MAKE_ERROR(EHWPOISON)
 };
 
-//#pragma GCC diagnostic push
-//#pragma GCC diagnostic ignored "-Wincompatible-library-redeclaration"
-
-const char *strerror(int errno)
+const char *strerror_str(int errno)
 {
 	if (errno < 0 || errno >= ARRAY_SIZE(errmap))
 		return NULL;
 	return errmap[errno];
 }
 
-//#pragma GCC diagnostic pop
-
 const char *strerror_r(int errno, char *buf, size_t buflen)
 {
-	const char *err = strerror(errno);
+	const char *err = strerror_str(errno);
 
 	if (!buflen)
 		return NULL;

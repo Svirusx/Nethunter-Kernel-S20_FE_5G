@@ -1104,7 +1104,9 @@ static int mhi_netdev_probe(struct mhi_device *mhi_dev,
 		init_waitqueue_head(&mhi_netdev->alloc_event);
 		INIT_LIST_HEAD(mhi_netdev->bg_pool);
 		spin_lock_init(&mhi_netdev->bg_lock);
-		mhi_netdev->bg_pool_limit = mhi_netdev->pool_size / 4;
+		
+		/* incread bg_pool_limit size */
+		mhi_netdev->bg_pool_limit = mhi_netdev->pool_size;
 		mhi_netdev->alloc_task = kthread_run(mhi_netdev_alloc_thread,
 						     mhi_netdev,
 						     mhi_netdev->ndev->name);

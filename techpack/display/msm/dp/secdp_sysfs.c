@@ -101,6 +101,8 @@ exit:
 static CLASS_ATTR_WO(dp_sbu_sw_sel);
 #endif
 
+#define SECDP_DEX_ADAPTER_SKIP	"SkipAdapterCheck"
+
 static ssize_t dex_show(struct class *class,
 				struct class_attribute *attr, char *buf)
 {
@@ -114,8 +116,9 @@ static ssize_t dex_show(struct class *class,
 		dex->prev = dex->curr = dex->status = DEX_DISABLED;
 	}
 
-	DP_INFO("prev: %d, curr: %d, status: %d\n",
-			dex->prev, dex->curr, dex->status);
+	DP_INFO("prev:%d, curr:%d, status:%d, %s:%d\n",
+			dex->prev, dex->curr, dex->status,
+			SECDP_DEX_ADAPTER_SKIP, secdp_dex_adapter_skip_show());
 	rc = scnprintf(buf, PAGE_SIZE, "%d\n", dex->status);
 
 	if (dex->status == DEX_DURING_MODE_CHANGE)
@@ -165,27 +168,13 @@ static ssize_t dex_store(struct class *class,
 	DP_DEBUG("tok: %s, len: %d\n", tok, len);
 
 	if (!strncmp(DEX_TAG_HMD, tok, len)) {
-		/* called by HmtManager to inform list of supported HMD devices
-		 *
-		 * Format :
-		 *   HMD,NUM,NAME01,VID01,PID01,NAME02,VID02,PID02,...
-		 *
-		 *   HMD  : tag
-		 *   NUM  : num of HMD dev ..... max 2 bytes to decimal (max 32)
-		 *   NAME : name of HMD ...... max 14 bytes, char string
-		 *   VID  : vendor  id ....... 4 bytes to hexadecimal
-		 *   PID  : product id ....... 4 bytes to hexadecimal
-		 *
-		 * ex) HMD,2,PicoVR,2d40,0000,Nreal light,0486,573c
-		 *
-		 * call hmd store function with tag(HMD),NUM removed
-		 */
 		int num_hmd = 0, sz = 0, ret;
 
 		tok = strsep(&p, ",");
 		sz  = strlen(tok);
 		ret = kstrtouint(tok, 10, &num_hmd);
-		DP_DEBUG("HMD num: %d, sz:%d, ret:%d\n", num_hmd, sz, ret);
+		DP_DEBUG("[%s] num:%d,sz:%d,ret:%d\n", DEX_TAG_HMD,
+			num_hmd, sz, ret);
 		if (!ret) {
 			ret = secdp_store_hmd_dev(str + (len + sz + 2),
 					size - (len + sz + 2), num_hmd);
@@ -197,6 +186,24 @@ static ssize_t dex_store(struct class *class,
 		goto exit;
 	}
 	mutex_unlock(&sec->hmd_lock);
+
+	if (!strncmp(SECDP_DEX_ADAPTER_SKIP, tok, len)) {
+		int param = 0, sz = 0, ret;
+
+		tok = strsep(&p, ",");
+		sz  = strlen(tok);
+		ret = kstrtouint(tok, 2, &param);
+		if (ret) {
+			DP_ERR("error:%d\n", ret);
+			goto exit;
+		}
+
+		DP_DEBUG("[%s] param:%d,sz:%d,ret:%d\n", SECDP_DEX_ADAPTER_SKIP,
+			param, sz, ret);
+
+		secdp_dex_adapter_skip_store((!param) ? false : true);
+		goto exit;
+	}
 
 	get_options(buf, ARRAY_SIZE(val), val);
 	DP_INFO("%d(0x%02x)\n", val[1], val[1]);
@@ -262,7 +269,7 @@ static ssize_t dex_store(struct class *class,
 		secdp_bigdata_save_item(BD_DP_MODE, "MIRROR");
 #endif
 
-	if (sec->dex.res == DEX_RES_NOT_SUPPORT) {
+	if (secdp_get_dex_res() == DEX_RES_NOT_SUPPORT) {
 		DP_DEBUG("this dongle does not support dex\n");
 		goto exit;
 	}
@@ -679,9 +686,12 @@ static ssize_t dp_forced_resolution_show(struct class *class,
 	rc += scnprintf(buf + rc, PAGE_SIZE - rc, "\n< HMD >\n%s\n", tmp);
 
 	memset(tmp, 0, ARRAY_SIZE(tmp));
-
 	secdp_show_phy_param(tmp);
 	rc += scnprintf(buf + rc, PAGE_SIZE - rc, "\n< DP-PHY >\n%s\n", tmp);
+
+	memset(tmp, 0, ARRAY_SIZE(tmp));
+	secdp_show_link_param(tmp);
+	rc += scnprintf(buf + rc, PAGE_SIZE - rc, "\n< link params >\n%s\n", tmp);
 
 	return rc;
 }
@@ -689,7 +699,8 @@ static ssize_t dp_forced_resolution_show(struct class *class,
 static ssize_t dp_forced_resolution_store(struct class *dev,
 		struct class_attribute *attr, const char *buf, size_t size)
 {
-	int val[10] = {0, };
+	char str[MAX_DEX_STORE_LEN] = {0,}, *p, *tok;
+	int len, val[10] = {0, };
 
 	if (secdp_check_store_args(buf, size)) {
 		DP_ERR("args error!\n");
@@ -698,11 +709,16 @@ static ssize_t dp_forced_resolution_store(struct class *dev,
 
 	get_options(buf, ARRAY_SIZE(val), val);
 
+	memcpy(str, buf, size);
+	p   = str;
+	tok = strsep(&p, ",");
+	len = strlen(tok);
+	DP_DEBUG("tok:%s, len:%d\n", tok, len);
+
 	if (val[1] <= 0)
 		forced_resolution = 0;
 	else
 		forced_resolution = val[1];
-
 exit:
 	return size;
 }

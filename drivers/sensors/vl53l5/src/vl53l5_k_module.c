@@ -641,7 +641,7 @@ static ssize_t vl53l5_distance_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
 	struct vl53l5_k_module_t *p_module = dev_get_drvdata(dev);
-	uint32_t i = 0, j = 0, c = 0, idx = 0;
+	uint32_t i = 0, j = 0, idx = 0;
 	int min = 0, max = 0,  avg = 0;
 
 	int status = STATUS_OK;
@@ -684,23 +684,14 @@ static ssize_t vl53l5_distance_show(struct device *dev,
 	}
 out:
 	if (p_module->read_data_valid) {
-		if (!p_module->test_mode) { /*  300 mm test 64 zone. */
-			for (i = 0; i < p_module->print_counter; i++) {
-				for (j = 0; j < p_module->print_counter; j++) {
-					idx = (i * p_module->print_counter + j) * p_module->max_targets_per_zone;
-					p_module->data[idx / p_module->max_targets_per_zone] = (p_module->range_data.core.per_tgt_results.target_status[idx] == 5 ||
-						p_module->range_data.core.per_tgt_results.target_status[idx] == 9) ?
-						p_module->range_data.core.per_tgt_results.median_range_mm[idx] >> 2 : 0;
-				}
-			}
-		} else {
-			for (i = 2; i < p_module->print_counter - 2 ; i++) {
-				for (j = 2; j < p_module->print_counter - 2; j++) {
-					idx = (i * p_module->print_counter + j) * p_module->max_targets_per_zone;
-					p_module->data[c++] = (p_module->range_data.core.per_tgt_results.target_status[idx] == 5 ||
-						p_module->range_data.core.per_tgt_results.target_status[idx] == 9) ?
-						p_module->range_data.core.per_tgt_results.median_range_mm[idx] >> 2 : 0;
-				}
+		for (i = 0; i < p_module->print_counter; i++) {
+			for (j = 0; j < p_module->print_counter; j++) {
+				idx = (i * p_module->print_counter + j) * p_module->max_targets_per_zone;
+				p_module->data[idx / p_module->max_targets_per_zone] =
+					(p_module->range_data.core.per_tgt_results.target_status[idx] == 5 ||
+					p_module->range_data.core.per_tgt_results.target_status[idx] == 9) ?
+					p_module->range_data.core.per_tgt_results.median_range_mm[idx] >> 2 : 0;
+
 			}
 		}
 	} else {
@@ -709,17 +700,10 @@ out:
 		}
 	}
 
-	min = max = avg = p_module->data[0];
-	if (!p_module->test_mode) { /*  300 mm test 64 zone. */
-		for (i = 1; i < p_module->number_of_zones; i++) {
-			if (p_module->data[i] < min)
-				min = p_module->data[i];
-			if (max < p_module->data[i])
-				max = p_module->data[i];
-			avg += p_module->data[i];
-		}
-	} else {
-		for (i = 1; i < TEST_500_MM_MAX_ZONE; i++) {
+	min = max = avg = p_module->data[1];
+
+	for (i = 2; i < p_module->number_of_zones; i++) {
+		if ((i != 7) && (i != 56) && (i != 63)) {
 			if (p_module->data[i] < min)
 				min = p_module->data[i];
 			if (max < p_module->data[i])
@@ -735,32 +719,23 @@ out:
 		p_module->data[i+6], p_module->data[i+7]);
 	}
 
-	if (!p_module->test_mode) /*  300 mm test 64 zone. */
-		avg = avg / p_module->number_of_zones;
-	else
-		avg = avg / (p_module->number_of_zones >> 2);
+	avg = avg / (p_module->number_of_zones - 4);
 
 	i = j = 0;
-	if (!p_module->test_mode) { /*  300 mm test 64 zone. */
-		j += snprintf(buf + j, PAGE_SIZE - j, "Distance,%d,%d,%d,%d,%d,",
-			DISTANCE_300MM_MIN_SPEC, DISTANCE_300MM_MAX_SPEC, min, max, avg);
-		for (; i < TEST_300_MM_MAX_ZONE; i++) {
+
+	j += snprintf(buf + j, PAGE_SIZE - j, "Distance,%d,%d,%d,%d,%d,",
+		DISTANCE_300MM_MIN_SPEC, DISTANCE_300MM_MAX_SPEC, min, max, avg);
+
+	for (; i < TEST_300_MM_MAX_ZONE; i++) {
+		if ((i != 0) &&(i != 7) && (i != 56) && (i != 63))
 			j += snprintf(buf + j, PAGE_SIZE - j, "%d", p_module->data[i]);
-			if(i != p_module->number_of_zones - 1)
-				j += snprintf(buf + j, PAGE_SIZE - j, ",");
-			else
-				j += snprintf(buf + j, PAGE_SIZE - j, "\n");
-		}
-	} else {
-		j += snprintf(buf + j, PAGE_SIZE - j, "Distance,%d,%d,%d,%d,%d,",
-			DISTANCE_500MM_MIN_SPEC, DISTANCE_500MM_MAX_SPEC, min, max, avg);
-		for (; i < TEST_500_MM_MAX_ZONE; i++) {
-			j += snprintf(buf + j, PAGE_SIZE - j, "%d", p_module->data[i]);
-			if(i != TEST_500_MM_MAX_ZONE - 1)
-				j += snprintf(buf + j, PAGE_SIZE - j, ",");
-			else
-				j += snprintf(buf + j, PAGE_SIZE - j, "\n");
-		}
+		else
+			j += snprintf(buf + j, PAGE_SIZE - j, "N");
+
+		if (i != p_module->number_of_zones - 1)
+			j += snprintf(buf + j, PAGE_SIZE - j, ",");
+		else
+			j += snprintf(buf + j, PAGE_SIZE - j, "\n");
 	}
 
 	return j;

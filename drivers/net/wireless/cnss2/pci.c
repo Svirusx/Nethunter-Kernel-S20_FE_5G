@@ -13,6 +13,7 @@
 #include <linux/memblock.h>
 #include <linux/completion.h>
 #include <soc/qcom/ramdump.h>
+#include <linux/of_gpio.h>
 
 #include "main.h"
 #include "bus.h"
@@ -886,6 +887,9 @@ static void cnss_pci_handle_linkdown(struct cnss_pci_data *pci_priv)
 	spin_unlock_irqrestore(&pci_link_down_lock, flags);
 
 	reinit_completion(&pci_priv->wake_event);
+
+	/* Notify MHI about link down */
+	mhi_control_error(pci_priv->mhi_ctrl);
 
 	if (pci_dev->device == QCA6174_DEVICE_ID)
 		disable_irq(pci_dev->irq);
@@ -1809,6 +1813,7 @@ static int cnss_qca6290_powerup(struct cnss_pci_data *pci_priv)
 	struct cnss_plat_data *plat_priv = pci_priv->plat_priv;
 	unsigned int timeout;
 	int retry = 0;
+	int bt_en_gpio = plat_priv->pinctrl_info.bt_en_gpio;
 
 	if (plat_priv->ramdump_info_v2.dump_data_valid) {
 		cnss_pci_clear_dump_info(pci_priv);
@@ -1834,6 +1839,10 @@ retry:
 		if (ret == -EAGAIN && retry++ < POWER_ON_RETRY_MAX_TIMES) {
 			cnss_power_off_device(plat_priv);
 			cnss_pr_dbg("Retry to resume PCI link #%d\n", retry);
+
+			/* Force toggle BT_EN GPIO low */
+			cnss_pr_err("Set bt_en_gpio(%u) low \n",bt_en_gpio);
+			gpio_set_value(bt_en_gpio, false);
 			msleep(POWER_ON_RETRY_DELAY_MS * retry);
 			goto retry;
 		}
@@ -3121,8 +3130,7 @@ int cnss_pci_alloc_fw_mem(struct cnss_pci_data *pci_priv)
 			if (!fw_mem[i].va) {
 				cnss_pr_err("Failed to allocate memory for FW, size: 0x%zx, type: %u\n",
 					    fw_mem[i].size, fw_mem[i].type);
-
-				return -ENOMEM;
+				BUG();
 			}
 		}
 	}

@@ -18,7 +18,11 @@ extern enum sec_debug_upload_cause_t sec_debug_get_upload_cause(void);
 /* <<END]] sec_debug.c */
 
 /* [[BEGIN>> sec_debug_sched_log.c */
+#if defined(CONFIG_SEC_DEBUG_SCHED_LOG_PER_CPU)
+extern struct sec_debug_last_pet_ns *secdbg_last_pet_ns; 
+#else
 extern struct sec_debug_log *secdbg_log;
+#endif
 extern phys_addr_t secdbg_paddr;
 extern size_t secdbg_size;
 /* <<END]] sec_debug_sched_log.c */

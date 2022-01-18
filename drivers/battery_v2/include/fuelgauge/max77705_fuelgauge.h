@@ -68,8 +68,6 @@ struct sec_fg_info {
 	int pr_cnt;
 	/* full charge comp */
 	struct delayed_work	full_comp_work;
-	u32 previous_fullcap;
-	u32 previous_vffullcap;
 
 	/* battery info */
 	u32 soc;
@@ -253,6 +251,7 @@ struct max77705_fuelgauge_data {
 	u32 fg_resistor;
 
 	struct fg_reset_wa *fg_reset_data;
+	u32 err_cnt;
 
 #if defined(CONFIG_BATTERY_CISD)
 	bool valert_count_flag;

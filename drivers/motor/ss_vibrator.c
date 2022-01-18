@@ -443,6 +443,15 @@ static void ss_vibrator_update(struct work_struct *work)
 static void ss_haptic_engine_update(struct work_struct *work)
 {
 	struct ss_vib *vib = container_of(work, struct ss_vib, haptic_engine_work);
+	int power_on;
+
+	power_on = vib->haptic_eng[vib->packet_cnt].intensity ? 1 : 0;
+#if defined(CONFIG_BOOST_POWER_SHARE)
+	boost_power_on(vib, BOOST_REQUESTER_MOTOR, power_on);
+#else
+	if (vib->power_onoff)
+		vib->power_onoff(vib, power_on);
+#endif
 
 	vib->f_overdrive_en = vib->haptic_eng[vib->packet_cnt].overdrive;
 	vibe_set_freq(vib, vib->haptic_eng[vib->packet_cnt].freq);
@@ -457,7 +466,6 @@ static void ss_haptic_engine_update(struct work_struct *work)
 static enum hrtimer_restart vibrator_timer_func(struct hrtimer *timer)
 {
 	struct ss_vib *vib = container_of(timer, struct ss_vib, vib_timer);
-	int power_on;
 
 	if (vib->f_packet_en) {
 		if (++vib->packet_cnt >= vib->packet_size) {
@@ -468,13 +476,6 @@ static enum hrtimer_restart vibrator_timer_func(struct hrtimer *timer)
 			vib->f_overdrive_en = false;
 			queue_work(vib->queue, &vib->work);
 		} else {
-			power_on = vib->haptic_eng[vib->packet_cnt].intensity ? 1 : 0;
-#if defined(CONFIG_BOOST_POWER_SHARE)
-			boost_power_on(vib, BOOST_REQUESTER_MOTOR, power_on);
-#else
-			if (vib->power_onoff)
-				vib->power_onoff(vib, power_on);
-#endif
 			vib->timevalue = vib->haptic_eng[vib->packet_cnt].time;
 			hrtimer_forward_now(timer, ktime_set(vib->timevalue / 1000, (vib->timevalue % 1000) * 1000000));
 

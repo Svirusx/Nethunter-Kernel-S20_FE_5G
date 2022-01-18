@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2016-2020, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2016-2021, The Linux Foundation. All rights reserved.
  */
 
 #define pr_fmt(fmt) "smcinvoke: %s: " fmt, __func__
@@ -477,8 +477,10 @@ static int put_pending_cbobj_locked(uint16_t srvr_id, int16_t obj_id)
 	struct list_head *head = NULL;
 	struct smcinvoke_cbobj *cbobj = NULL;
 
-	if (!srvr_info)
+	if (!srvr_info) {
+		pr_err("%s, server id : %u not found\n", __func__, srvr_id);
 		return ret;
+	}
 
 	head = &srvr_info->pending_cbobjs;
 	list_for_each_entry(cbobj, head, list)
@@ -1070,8 +1072,7 @@ static int marshal_out_invoke_req(const uint8_t *buf, uint32_t buf_size,
 					TZHANDLE_GET_SERVER(tz_args->handle),
 				&temp_fd, NO_LOCK);
 
-		if (temp_fd >= 0)
-			args_buf[i].o.fd = temp_fd;
+		args_buf[i].o.fd = temp_fd;
 
 		if (ret)
 			goto out;
@@ -1151,7 +1152,8 @@ static int prepare_send_scm_msg(const uint8_t *in_buf, phys_addr_t in_paddr,
 		    desc.ret[0] == QSEOS_RESULT_BLOCKED_ON_LISTENER) {
 			ret = qseecom_process_listener_from_smcinvoke(&desc);
 			req->result = (int32_t)desc.ret[1];
-			if (!req->result) {
+			if (!req->result &&
+			  desc.ret[0] != SMCINVOKE_RESULT_INBOUND_REQ_NEEDED) {
 				dmac_inv_range(in_buf, in_buf + in_buf_len);
 				ret = marshal_out_invoke_req(in_buf,
 						in_buf_len, req, args_buf);
@@ -1369,8 +1371,7 @@ static int marshal_in_tzcb_req(const struct smcinvoke_cb_txn *cb_txn,
 		ret = get_uhandle_from_tzhandle(tz_args[i].handle, srvr_id,
 					&temp_fd, TAKE_LOCK);
 
-		if (temp_fd >= 0)
-			tmp_arg.o.fd = temp_fd;
+		tmp_arg.o.fd = temp_fd;
 
 		if (ret) {
 			ret = -EINVAL;
@@ -1541,7 +1542,6 @@ static long process_accept_req(struct file *filp, unsigned int cmd,
 						unsigned long arg)
 {
 	int ret = -1;
-	sigset_t pending_sig;
 	struct smcinvoke_file_data *server_obj = filp->private_data;
 	struct smcinvoke_accept user_args = {0};
 	struct smcinvoke_cb_txn *cb_txn = NULL;
@@ -1552,7 +1552,7 @@ static long process_accept_req(struct file *filp, unsigned int cmd,
 		return -EINVAL;
 	}
 
-	if (copy_from_user(&user_args, (void __user *)arg,
+	if (copy_from_user(&user_args, (void __user *)(uintptr_t)arg,
 					sizeof(struct smcinvoke_accept))) {
 		pr_err("copying accept request from user failed\n");
 		return -EFAULT;
@@ -1640,14 +1640,10 @@ static long process_accept_req(struct file *filp, unsigned int cmd,
 			 * server_info invalid. Other accept/invoke threads are
 			 * using server_info and would crash. So dont do that.
 			 */
-			pending_sig = (&current->pending)->signal;
-			if (sigismember(&pending_sig, SIGKILL)) {
-				mutex_lock(&g_smcinvoke_lock);
-				server_info->state =
-					SMCINVOKE_SERVER_STATE_DEFUNCT;
-				wake_up_interruptible(&server_info->rsp_wait_q);
-				mutex_unlock(&g_smcinvoke_lock);
-			}
+			mutex_lock(&g_smcinvoke_lock);
+			server_info->state = SMCINVOKE_SERVER_STATE_DEFUNCT;
+			mutex_unlock(&g_smcinvoke_lock);
+			wake_up_interruptible(&server_info->rsp_wait_q);
 			goto out;
 		}
 		mutex_lock(&g_smcinvoke_lock);
@@ -1672,8 +1668,8 @@ static long process_accept_req(struct file *filp, unsigned int cmd,
 							cb_txn->txn_id);
 			kref_put(&cb_txn->ref_cnt, delete_cb_txn);
 			mutex_unlock(&g_smcinvoke_lock);
-			ret =  copy_to_user((void __user *)arg, &user_args,
-					sizeof(struct smcinvoke_accept));
+			ret =  copy_to_user((void __user *)(uintptr_t)arg,
+				&user_args, sizeof(struct smcinvoke_accept));
 		}
 	} while (!cb_txn);
 out:
@@ -1718,7 +1714,7 @@ static long process_invoke_req(struct file *filp, unsigned int cmd,
 		return -EPERM;
 	}
 
-	ret = copy_from_user(&req, (void __user *)arg, sizeof(req));
+	ret = copy_from_user(&req, (void __user *)(uintptr_t)arg, sizeof(req));
 	if (ret) {
 		pr_err("copying invoke req failed\n");
 		return -EFAULT;
@@ -1802,7 +1798,7 @@ static long process_invoke_req(struct file *filp, unsigned int cmd,
 					nr_args * req.argsize);
 	}
 	/* copy result of invoke op */
-	ret |=  copy_to_user((void __user *)arg, &req, sizeof(req));
+	ret |=  copy_to_user((void __user *)(uintptr_t)arg, &req, sizeof(req));
 	if (ret)
 		goto out;
 

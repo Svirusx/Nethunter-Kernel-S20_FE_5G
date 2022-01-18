@@ -719,7 +719,7 @@ static int table_parsing_data_S6E3HAB_AMB677TY01(struct samsung_display_driver_d
 	LCD_INFO("input_table_size (%d) = table_hbm_br_info (%d) + table_normal_br_info (%d) + table_hmd_br_info (%d)\n",
 		input_table_size, sizeof(table_hbm_br_info), sizeof(table_normal_br_info), sizeof(table_hmd_br_info));
 
-	if (input_table_size != gamma_tbl->br_data_size) {
+	if (input_table_size > gamma_tbl->br_data_size) {
 		LCD_ERR("input_table_size : %d br_tbl->gamma_tbl->br_data_size : %d\n",
 			input_table_size, br_tbl->gamma_tbl->br_data_size);
 

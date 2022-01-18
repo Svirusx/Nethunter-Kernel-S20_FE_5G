@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0-only
-/* Copyright (c) 2016-2020, The Linux Foundation. All rights reserved. */
+/* Copyright (c) 2016-2021, The Linux Foundation. All rights reserved. */
 
 #include <linux/clk.h>
 #include <linux/delay.h>
@@ -703,9 +703,10 @@ int cnss_get_pinctrl(struct cnss_plat_data *plat_priv)
 		}
 	}
 
-    if (of_find_property(dev->of_node, BT_EN_GPIO, NULL)) {
+	/* Added for QCA6490/QCA6390 PMU delayed WLAN_EN_GPIO */
+	if (of_find_property(dev->of_node, BT_EN_GPIO, NULL)) {
 		pinctrl_info->bt_en_gpio = of_get_named_gpio(dev->of_node,
-														BT_EN_GPIO, 0);
+							     BT_EN_GPIO, 0);
 		cnss_pr_dbg("BT GPIO: %d\n", pinctrl_info->bt_en_gpio);
 	} else {
 		pinctrl_info->bt_en_gpio = -EINVAL;
@@ -771,7 +772,6 @@ out:
 	return ret;
 }
 
-
 /**
  * cnss_select_pinctrl_enable - select WLAN_GPIO for Active pinctrl status
  * @plat_priv: Platform private data structure pointer
@@ -781,25 +781,29 @@ out:
  *
  * Return: Status of pinctrl select operation. 0 - Success.
  */
-
 static int cnss_select_pinctrl_enable(struct cnss_plat_data *plat_priv)
 {
 	int ret = 0, bt_en_gpio = plat_priv->pinctrl_info.bt_en_gpio;
 	u8 wlan_en_state = 0;
 
-	if (bt_en_gpio < 0 || plat_priv->device_id != QCA6490_DEVICE_ID ||
-		plat_priv->device_id != QCA6390_DEVICE_ID)
+	if (bt_en_gpio < 0)
 		goto set_wlan_en;
+
+	switch (plat_priv->device_id) {
+	case QCA6390_DEVICE_ID:
+	case QCA6490_DEVICE_ID:
+		break;
+	default:
+		goto set_wlan_en;
+	}
 
 	if (gpio_get_value(bt_en_gpio)) {
 		cnss_pr_dbg("BT_EN_GPIO State: On\n");
 		ret = cnss_select_pinctrl_state(plat_priv, true);
 		if (!ret)
 			return ret;
-
 		wlan_en_state = 1;
 	}
-
 	if (!gpio_get_value(bt_en_gpio)) {
 		cnss_pr_dbg("BT_EN_GPIO State: Off. Delay WLAN_GPIO enable\n");
 		/* check for BT_EN_GPIO down race during above operation */
@@ -808,11 +812,12 @@ static int cnss_select_pinctrl_enable(struct cnss_plat_data *plat_priv)
 			cnss_select_pinctrl_state(plat_priv, false);
 			wlan_en_state = 0;
 		}
-		/* 100 ms delay for BT_EN and WLAN_EN QCA6490 PMU sequencing */
+		/* 100 ms delay for BT_EN and WLAN_EN QCA6490/QCA6390 PMU
+		 * sequencing.
+		 */
 		msleep(100);
 	}
 set_wlan_en:
-
 	if (!wlan_en_state)
 		ret = cnss_select_pinctrl_state(plat_priv, true);
 	return ret;
