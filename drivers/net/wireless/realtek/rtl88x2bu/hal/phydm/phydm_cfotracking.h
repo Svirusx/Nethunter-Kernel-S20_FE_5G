@@ -54,19 +54,19 @@ struct phydm_cfo_rpt {
 	s32 cfo_rpt_end[PHYDM_MAX_RF_PATH];
 };
 
-void phydm_get_cfo_info(void *dm_void, struct phydm_cfo_rpt *cfo);
+void phydm_get_cfo_infobu(void *dm_void, struct phydm_cfo_rpt *cfo);
 
-boolean phydm_set_crystal_cap_reg(void *dm_void, u8 crystal_cap);
+boolean phydm_set_crystal_capbu_regbu(void *dm_void, u8 crystal_cap);
 
-void phydm_set_crystal_cap(void *dm_void, u8 crystal_cap);
+void phydm_set_crystal_capbu(void *dm_void, u8 crystal_cap);
 
-void phydm_cfo_tracking_init(void *dm_void);
+void phydm_cfo_trackingbu_initbu(void *dm_void);
 
-void phydm_cfo_tracking(void *dm_void);
+void phydm_cfo_trackingbu(void *dm_void);
 
-void phydm_parsing_cfo(void *dm_void, void *pktinfo_void, s8 *pcfotail,
+void phydm_parsing_cfobu(void *dm_void, void *pktinfo_void, s8 *pcfotail,
 		       u8 num_ss);
-void phydm_cfo_tracking_debug(void *dm_void, char input[][16], u32 *_used,
+void phydm_cfo_trackingbu_debug(void *dm_void, char input[][16], u32 *_used,
 			      char *output, u32 *_out_len);
 #if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
 void phy_Init_crystal_capacity(void *dm_void, u8 crystal_cap);

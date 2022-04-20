@@ -19,7 +19,7 @@
 extern void wmt_detect_sdio2(void);
 extern void force_remove_sdio2(void);
 
-int platform_wifi_power_on(void)
+int platform_wifi_power_onbu(void)
 {
 	int err = 0;
 	err = gpio_request(WMT_PIN_GP62_SUSGPIO1, "wifi_chip_en");
@@ -35,7 +35,7 @@ int platform_wifi_power_on(void)
 	return err;
 }
 
-void platform_wifi_power_off(void)
+void platform_wifi_power_offbu(void)
 {
 	force_remove_sdio2();
 

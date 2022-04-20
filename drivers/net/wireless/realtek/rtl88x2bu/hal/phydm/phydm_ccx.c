@@ -55,7 +55,7 @@ u8 phydm_env_mntr_get_802_11_k_rsni(void *dm_void, s8 rcpi, s8 anpi)
 	return rsni;
 }
 
-void phydm_ccx_hw_restart(void *dm_void)
+void phydm_ccx_hw_restartbu(void *dm_void)
 			  /*@Will Restart NHM/CLM/FAHM simultaneously*/
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -72,9 +72,9 @@ void phydm_ccx_hw_restart(void *dm_void)
 
 	PHYDM_DBG(dm, DBG_ENV_MNTR, "[%s]===>\n", __func__);
 	/*@disable NHM,CLM, FAHM*/
-	odm_set_bb_reg(dm, reg1, 0x7, 0x0);
-	odm_set_bb_reg(dm, reg1, BIT(8), 0x0);
-	odm_set_bb_reg(dm, reg1, BIT(8), 0x1);
+	odm_set_bb_regbu(dm, reg1, 0x7, 0x0);
+	odm_set_bb_regbu(dm, reg1, BIT(8), 0x0);
+	odm_set_bb_regbu(dm, reg1, BIT(8), 0x1);
 }
 
 u8 phydm_ccx_get_rpt_ratio(void *dm_void, u16 rpt, u16 denom)
@@ -88,7 +88,7 @@ u8 phydm_ccx_get_rpt_ratio(void *dm_void, u16 rpt, u16 denom)
 
 #ifdef NHM_SUPPORT
 
-void phydm_nhm_racing_release(void *dm_void)
+void phydm_nhm_racing_releasebu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ccx_info *ccx = &dm->dm_ccx_info;
@@ -101,14 +101,14 @@ void phydm_nhm_racing_release(void *dm_void)
 	ccx->nhm_set_lv = NHM_RELEASE;
 
 	if (!(ccx->nhm_app == NHM_BACKGROUND || ccx->nhm_app == NHM_ACS)) {
-		phydm_pause_func(dm, F00_DIG, PHYDM_RESUME,
+		phydm_pause_funcbu(dm, F00_DIG, PHYDM_RESUME,
 				 PHYDM_PAUSE_LEVEL_1, 1, &value32);
 	}
 
 	ccx->nhm_app = NHM_BACKGROUND;
 }
 
-u8 phydm_nhm_racing_ctrl(void *dm_void, enum phydm_nhm_level nhm_lv)
+u8 phydm_nhm_racing_ctrlbu(void *dm_void, enum phydm_nhm_level nhm_lv)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ccx_info *ccx = &dm->dm_ccx_info;
@@ -121,7 +121,7 @@ u8 phydm_nhm_racing_ctrl(void *dm_void, enum phydm_nhm_level nhm_lv)
 		if (nhm_lv <= ccx->nhm_set_lv) {
 			set_result = PHYDM_SET_FAIL;
 		} else {
-			phydm_ccx_hw_restart(dm);
+			phydm_ccx_hw_restartbu(dm);
 			ccx->nhm_ongoing = false;
 		}
 	}
@@ -133,7 +133,7 @@ u8 phydm_nhm_racing_ctrl(void *dm_void, enum phydm_nhm_level nhm_lv)
 	return set_result;
 }
 
-void phydm_nhm_trigger(void *dm_void)
+void phydm_nhm_triggerbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ccx_info *ccx = &dm->dm_ccx_info;
@@ -158,7 +158,7 @@ void phydm_nhm_trigger(void *dm_void)
 }
 
 boolean
-phydm_nhm_check_rdy(void *dm_void)
+phydm_nhm_check_rdybu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	boolean is_ready = false;
@@ -180,7 +180,7 @@ phydm_nhm_check_rdy(void *dm_void)
 		else
 			reg1_bit = 17;
 	}
-	if (odm_get_bb_reg(dm, reg1, BIT(reg1_bit)))
+	if (odm_get_bb_regbu(dm, reg1, BIT(reg1_bit)))
 		is_ready = true;
 
 	PHYDM_DBG(dm, DBG_ENV_MNTR, "NHM rdy=%d\n", is_ready);
@@ -271,7 +271,7 @@ u8 phydm_nhm_cal_nhm_env(void *dm_void)
 	return nhm_env;
 }
 
-void phydm_nhm_get_utility(void *dm_void)
+void phydm_nhm_get_utilitybu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ccx_info *ccx = &dm->dm_ccx_info;
@@ -309,7 +309,7 @@ void phydm_nhm_get_utility(void *dm_void)
 }
 
 boolean
-phydm_nhm_get_result(void *dm_void)
+phydm_nhm_get_resultbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ccx_info *ccx = &dm->dm_ccx_info;
@@ -333,51 +333,51 @@ phydm_nhm_get_result(void *dm_void)
 				     ODM_RTL8197G | ODM_RTL8723F)))
 		pdm_set_reg(dm, nhm_reg1, BIT(1), 0);
 
-	if (!(phydm_nhm_check_rdy(dm))) {
+	if (!(phydm_nhm_check_rdybu(dm))) {
 		PHYDM_DBG(dm, DBG_ENV_MNTR, "Get NHM report Fail\n");
-		phydm_nhm_racing_release(dm);
+		phydm_nhm_racing_releasebu(dm);
 		return false;
 	}
 
 	if (dm->support_ic_type & ODM_IC_11AC_SERIES) {
-		value32 = odm_read_4byte(dm, R_0xfa8);
-		odm_move_memory(dm, &ccx->nhm_result[0], &value32, 4);
+		value32 = odm_read_4bytebu(dm, R_0xfa8);
+		odm_move_memorybu(dm, &ccx->nhm_result[0], &value32, 4);
 
-		value32 = odm_read_4byte(dm, R_0xfac);
-		odm_move_memory(dm, &ccx->nhm_result[4], &value32, 4);
+		value32 = odm_read_4bytebu(dm, R_0xfac);
+		odm_move_memorybu(dm, &ccx->nhm_result[4], &value32, 4);
 
-		value32 = odm_read_4byte(dm, R_0xfb0);
-		odm_move_memory(dm, &ccx->nhm_result[8], &value32, 4);
+		value32 = odm_read_4bytebu(dm, R_0xfb0);
+		odm_move_memorybu(dm, &ccx->nhm_result[8], &value32, 4);
 
 		/*@Get NHM duration*/
-		value32 = odm_read_4byte(dm, R_0xfb4);
+		value32 = odm_read_4bytebu(dm, R_0xfb4);
 		nhm_duration = (u16)(value32 & MASKLWORD);
 	#ifdef PHYDM_IC_JGR3_SERIES_SUPPORT
 	} else if (dm->support_ic_type & ODM_IC_JGR3_SERIES) {
-		value32 = odm_read_4byte(dm, R_0x2d40);
-		odm_move_memory(dm, &ccx->nhm_result[0], &value32, 4);
+		value32 = odm_read_4bytebu(dm, R_0x2d40);
+		odm_move_memorybu(dm, &ccx->nhm_result[0], &value32, 4);
 
-		value32 = odm_read_4byte(dm, R_0x2d44);
-		odm_move_memory(dm, &ccx->nhm_result[4], &value32, 4);
+		value32 = odm_read_4bytebu(dm, R_0x2d44);
+		odm_move_memorybu(dm, &ccx->nhm_result[4], &value32, 4);
 
-		value32 = odm_read_4byte(dm, R_0x2d48);
-		odm_move_memory(dm, &ccx->nhm_result[8], &value32, 4);
+		value32 = odm_read_4bytebu(dm, R_0x2d48);
+		odm_move_memorybu(dm, &ccx->nhm_result[8], &value32, 4);
 
 		/*@Get NHM duration*/
-		value32 = odm_read_4byte(dm, R_0x2d4c);
+		value32 = odm_read_4bytebu(dm, R_0x2d4c);
 		nhm_duration = (u16)(value32 & MASKLWORD);
 	#endif
 	} else {
-		value32 = odm_read_4byte(dm, R_0x8d8);
-		odm_move_memory(dm, &ccx->nhm_result[0], &value32, 4);
+		value32 = odm_read_4bytebu(dm, R_0x8d8);
+		odm_move_memorybu(dm, &ccx->nhm_result[0], &value32, 4);
 
-		value32 = odm_read_4byte(dm, R_0x8dc);
-		odm_move_memory(dm, &ccx->nhm_result[4], &value32, 4);
+		value32 = odm_read_4bytebu(dm, R_0x8dc);
+		odm_move_memorybu(dm, &ccx->nhm_result[4], &value32, 4);
 
-		value32 = odm_get_bb_reg(dm, R_0x8d0, 0xffff0000);
-		odm_move_memory(dm, &ccx->nhm_result[8], &value32, 2);
+		value32 = odm_get_bb_regbu(dm, R_0x8d0, 0xffff0000);
+		odm_move_memorybu(dm, &ccx->nhm_result[8], &value32, 2);
 
-		value32 = odm_read_4byte(dm, R_0x8d4);
+		value32 = odm_read_4bytebu(dm, R_0x8d4);
 
 		ccx->nhm_result[10] = (u8)((value32 & MASKBYTE2) >> 16);
 		ccx->nhm_result[11] = (u8)((value32 & MASKBYTE3) >> 24);
@@ -405,7 +405,7 @@ phydm_nhm_get_result(void *dm_void)
 		  ccx->nhm_result[3], ccx->nhm_result[2], ccx->nhm_result[1],
 		  ccx->nhm_result[0]);
 
-	phydm_nhm_racing_release(dm);
+	phydm_nhm_racing_releasebu(dm);
 
 	if (nhm_rpt_sum_tmp > 255) {
 		PHYDM_DBG(dm, DBG_ENV_MNTR,
@@ -417,7 +417,7 @@ phydm_nhm_get_result(void *dm_void)
 	return true;
 }
 
-void phydm_nhm_set_th_reg(void *dm_void)
+void phydm_nhm_setbu_th_regbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ccx_info *ccx = &dm->dm_ccx_info;
@@ -468,13 +468,13 @@ void phydm_nhm_set_th_reg(void *dm_void)
 }
 
 boolean
-phydm_nhm_th_update_chk(void *dm_void, enum nhm_application nhm_app, u8 *nhm_th,
+phydm_nhm_th_update_chkbu(void *dm_void, enum nhm_application nhm_app, u8 *nhm_th,
 			u32 *igi_new, boolean en_1db_mode, u8 nhm_th0_manual)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ccx_info *ccx = &dm->dm_ccx_info;
 	boolean is_update = false;
-	u8 igi_curr = phydm_get_igi(dm, BB_PATH_A);
+	u8 igi_curr = phydm_get_igibu(dm, BB_PATH_A);
 	u8 nhm_igi_th_11k_low[NHM_TH_NUM] = {0x12, 0x15, 0x18, 0x1b, 0x1e,
 					     0x23, 0x28, 0x2c, 0x78,
 					     0x78, 0x78};
@@ -548,7 +548,7 @@ phydm_nhm_th_update_chk(void *dm_void, enum nhm_application nhm_app, u8 *nhm_th,
 		break;
 
 	case NHM_DBG: /*@Get IGI form register*/
-		igi_curr = phydm_get_igi(dm, BB_PATH_A);
+		igi_curr = phydm_get_igibu(dm, BB_PATH_A);
 		if (ccx->nhm_igi != igi_curr || ccx->nhm_app != nhm_app) {
 			is_update = true;
 			*igi_new = (u32)igi_curr;
@@ -582,7 +582,7 @@ phydm_nhm_th_update_chk(void *dm_void, enum nhm_application nhm_app, u8 *nhm_th,
 	return is_update;
 }
 
-void phydm_nhm_set(void *dm_void, enum nhm_option_txon_all include_tx,
+void phydm_nhm_setbu(void *dm_void, enum nhm_option_txon_all include_tx,
 		   enum nhm_option_cca_all include_cca,
 		   enum nhm_divider_opt_all divi_opt,
 		   enum nhm_application nhm_app, u16 period,
@@ -645,12 +645,12 @@ void phydm_nhm_set(void *dm_void, enum nhm_option_txon_all include_tx,
 	}
 
 	/*Set NHM threshold*/
-	if (phydm_nhm_th_update_chk(dm, nhm_app, &nhm_th[0], &igi,
+	if (phydm_nhm_th_update_chkbu(dm, nhm_app, &nhm_th[0], &igi,
 				    en_1db_mode, nhm_th0_manual)) {
 		/*Pause IGI*/
 		if (nhm_app == NHM_BACKGROUND || nhm_app == NHM_ACS) {
 			PHYDM_DBG(dm, DBG_ENV_MNTR, "DIG Free Run\n");
-		} else if (phydm_pause_func(dm, F00_DIG, PHYDM_PAUSE,
+		} else if (phydm_pause_funcbu(dm, F00_DIG, PHYDM_PAUSE,
 					    PHYDM_PAUSE_LEVEL_1, 1, &igi)
 					    == PAUSE_FAIL) {
 			PHYDM_DBG(dm, DBG_ENV_MNTR, "pause DIG Fail\n");
@@ -660,15 +660,15 @@ void phydm_nhm_set(void *dm_void, enum nhm_option_txon_all include_tx,
 		}
 		ccx->nhm_app = nhm_app;
 		ccx->nhm_igi = (u8)igi;
-		odm_move_memory(dm, &ccx->nhm_th[0], &nhm_th, NHM_TH_NUM);
+		odm_move_memorybu(dm, &ccx->nhm_th[0], &nhm_th, NHM_TH_NUM);
 
 		/*Set NHM th*/
-		phydm_nhm_set_th_reg(dm);
+		phydm_nhm_setbu_th_regbu(dm);
 	}
 }
 
 boolean
-phydm_nhm_mntr_set(void *dm_void, struct nhm_para_info *nhm_para)
+phydm_nhm_mntr_setbu(void *dm_void, struct nhm_para_info *nhm_para)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u16 nhm_time = 0; /*unit: 4us*/
@@ -683,7 +683,7 @@ phydm_nhm_mntr_set(void *dm_void, struct nhm_para_info *nhm_para)
 		return false;
 	}
 
-	if (phydm_nhm_racing_ctrl(dm, nhm_para->nhm_lv) == PHYDM_SET_FAIL)
+	if (phydm_nhm_racing_ctrlbu(dm, nhm_para->nhm_lv) == PHYDM_SET_FAIL)
 		return false;
 
 	if (nhm_para->mntr_time >= 262)
@@ -691,7 +691,7 @@ phydm_nhm_mntr_set(void *dm_void, struct nhm_para_info *nhm_para)
 	else
 		nhm_time = nhm_para->mntr_time * MS_TO_4US_RATIO;
 
-	phydm_nhm_set(dm, nhm_para->incld_txon, nhm_para->incld_cca,
+	phydm_nhm_setbu(dm, nhm_para->incld_txon, nhm_para->incld_cca,
 		      nhm_para->div_opt, nhm_para->nhm_app, nhm_time,
 		      nhm_para->en_1db_mode, nhm_para->nhm_th0_manual);
 
@@ -705,11 +705,11 @@ phydm_nhm_restore_pw_th(void *dm_void)
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ccx_info *ccx = &dm->dm_ccx_info;
 
-	odm_set_bb_reg(dm, R_0x82c, 0x3f, ccx->pw_th_rf20_ori);
+	odm_set_bb_regbu(dm, R_0x82c, 0x3f, ccx->pw_th_rf20_ori);
 }
 
 void
-phydm_nhm_set_pw_th(void *dm_void, u8 noise, boolean chk_succ)
+phydm_nhm_setbu_pw_th(void *dm_void, u8 noise, boolean chk_succ)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ccx_info *ccx = &dm->dm_ccx_info;
@@ -760,7 +760,7 @@ phydm_nhm_set_pw_th(void *dm_void, u8 noise, boolean chk_succ)
 		  ccx->pw_th_rf20_cur, pw_th_rf20_new);
 
 	if (!not_update) {
-		odm_set_bb_reg(dm, R_0x82c, 0x3f, pw_th_rf20_new);
+		odm_set_bb_regbu(dm, R_0x82c, 0x3f, pw_th_rf20_new);
 		ccx->pw_th_rf20_cur = pw_th_rf20_new;
 	}
 }
@@ -791,7 +791,7 @@ phydm_nhm_dym_pw_th(void *dm_void)
 	if (!chk_succ)
 		PHYDM_DBG(dm, DBG_ENV_MNTR, "SL method failed!\n");
 
-	phydm_nhm_set_pw_th(dm, noise, chk_succ);
+	phydm_nhm_setbu_pw_th(dm, noise, chk_succ);
 }
 
 boolean
@@ -848,7 +848,7 @@ phydm_nhm_mntr_racing_chk(void *dm_void)
 }
 
 boolean
-phydm_nhm_mntr_chk(void *dm_void, u16 monitor_time /*unit ms*/)
+phydm_nhm_mntr_chkbu(void *dm_void, u16 monitor_time /*unit ms*/)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ccx_info *ccx = &dm->dm_ccx_info;
@@ -876,7 +876,7 @@ phydm_nhm_mntr_chk(void *dm_void, u16 monitor_time /*unit ms*/)
 	}
 	#endif
 
-	nhm_chk_result = phydm_nhm_mntr_set(dm, &nhm_para);
+	nhm_chk_result = phydm_nhm_mntr_setbu(dm, &nhm_para);
 
 	return nhm_chk_result;
 }
@@ -894,9 +894,9 @@ phydm_nhm_mntr_result(void *dm_void)
 		return nhm_chk_result;
 
 	/*[NHM get result & calculate Utility]---------------------------*/
-	if (phydm_nhm_get_result(dm)) {
+	if (phydm_nhm_get_resultbu(dm)) {
 		PHYDM_DBG(dm, DBG_ENV_MNTR, "Get NHM_rpt success\n");
-		phydm_nhm_get_utility(dm);
+		phydm_nhm_get_utilitybu(dm);
 		nhm_chk_result = true;
 	}
 
@@ -906,14 +906,14 @@ phydm_nhm_mntr_result(void *dm_void)
 		if (nhm_chk_result)
 			phydm_nhm_dym_pw_th(dm);
 		else
-			phydm_nhm_set_pw_th(dm, 0x0, false);
+			phydm_nhm_setbu_pw_th(dm, 0x0, false);
 	}
 	#endif
 
 	return nhm_chk_result;
 }
 
-void phydm_nhm_init(void *dm_void)
+void phydm_nhm_initbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ccx_info *ccx = &dm->dm_ccx_info;
@@ -929,9 +929,9 @@ void phydm_nhm_init(void *dm_void)
 	ccx->nhm_ongoing = false;
 	ccx->nhm_set_lv = NHM_RELEASE;
 
-	if (phydm_nhm_th_update_chk(dm, ccx->nhm_app, &ccx->nhm_th[0],
+	if (phydm_nhm_th_update_chkbu(dm, ccx->nhm_app, &ccx->nhm_th[0],
 				    (u32 *)&ccx->nhm_igi, false, 0))
-		phydm_nhm_set_th_reg(dm);
+		phydm_nhm_setbu_th_regbu(dm);
 
 	ccx->nhm_period = 0;
 
@@ -945,7 +945,7 @@ void phydm_nhm_init(void *dm_void)
 	#ifdef NHM_DYM_PW_TH_SUPPORT
 	if (dm->support_ic_type & ODM_RTL8822C) {
 		ccx->nhm_dym_pw_th_en = false;
-		ccx->pw_th_rf20_ori = (u8)odm_get_bb_reg(dm, R_0x82c, 0x3f);
+		ccx->pw_th_rf20_ori = (u8)odm_get_bb_regbu(dm, R_0x82c, 0x3f);
 		ccx->pw_th_rf20_cur = ccx->pw_th_rf20_ori;
 		ccx->nhm_pw_th_max = 63;
 		ccx->nhm_sl_pw_th = 100; /*39%*/
@@ -955,7 +955,7 @@ void phydm_nhm_init(void *dm_void)
 	#endif
 }
 
-void phydm_nhm_dbg(void *dm_void, char input[][16], u32 *_used, char *output,
+void phydm_nhm_dbgbu(void *dm_void, char input[][16], u32 *_used, char *output,
 		   u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -995,7 +995,7 @@ void phydm_nhm_dbg(void *dm_void, char input[][16], u32 *_used, char *output,
 			 "IGI=0x%x, rpt_stamp=%d\n", ccx->nhm_igi,
 			 ccx->nhm_rpt_stamp);
 
-		if (phydm_nhm_get_result(dm)) {
+		if (phydm_nhm_get_resultbu(dm)) {
 			for (i = 0; i < NHM_RPT_NUM; i++) {
 				result_tmp = ccx->nhm_result[i];
 				PDM_SNPF(out_len, used, output + used,
@@ -1004,7 +1004,7 @@ void phydm_nhm_dbg(void *dm_void, char input[][16], u32 *_used, char *output,
 					 i, result_tmp,
 					 (((result_tmp * 100) + 128) >> 8));
 			}
-			phydm_nhm_get_utility(dm);
+			phydm_nhm_get_utilitybu(dm);
 
 			PDM_SNPF(out_len, used, output + used, out_len - used,
 				 "NHM_noise: valid: %d percent, noise(RSSI) = %d\n",
@@ -1090,8 +1090,8 @@ void phydm_nhm_dbg(void *dm_void, char input[][16], u32 *_used, char *output,
 			 "en_1db_mode=%d, th0(for 1db mode)=%d\n",
 			 nhm_para.en_1db_mode, nhm_para.nhm_th0_manual);
 
-		if (phydm_nhm_mntr_set(dm, &nhm_para))
-			phydm_nhm_trigger(dm);
+		if (phydm_nhm_mntr_setbu(dm, &nhm_para))
+			phydm_nhm_triggerbu(dm);
 
 		PDM_SNPF(out_len, used, output + used, out_len - used,
 			 "IGI=0x%x, rpt_stamp=%d\n", ccx->nhm_igi,
@@ -1112,7 +1112,7 @@ void phydm_nhm_dbg(void *dm_void, char input[][16], u32 *_used, char *output,
 
 #ifdef CLM_SUPPORT
 
-void phydm_clm_racing_release(void *dm_void)
+void phydm_clm_racing_releasebu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ccx_info *ccx = &dm->dm_ccx_info;
@@ -1125,7 +1125,7 @@ void phydm_clm_racing_release(void *dm_void)
 	ccx->clm_app = CLM_BACKGROUND;
 }
 
-u8 phydm_clm_racing_ctrl(void *dm_void, enum phydm_clm_level clm_lv)
+u8 phydm_clm_racing_ctrlbu(void *dm_void, enum phydm_clm_level clm_lv)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ccx_info *ccx = &dm->dm_ccx_info;
@@ -1138,7 +1138,7 @@ u8 phydm_clm_racing_ctrl(void *dm_void, enum phydm_clm_level clm_lv)
 		if (clm_lv <= ccx->clm_set_lv) {
 			set_result = PHYDM_SET_FAIL;
 		} else {
-			phydm_ccx_hw_restart(dm);
+			phydm_ccx_hw_restartbu(dm);
 			ccx->clm_ongoing = false;
 		}
 	}
@@ -1150,7 +1150,7 @@ u8 phydm_clm_racing_ctrl(void *dm_void, enum phydm_clm_level clm_lv)
 	return set_result;
 }
 
-void phydm_clm_c2h_report_handler(void *dm_void, u8 *cmd_buf, u8 cmd_len)
+void phydm_clm_c2h_report_handlerbu(void *dm_void, u8 *cmd_buf, u8 cmd_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ccx_info *ccx_info = &dm->dm_ccx_info;
@@ -1167,7 +1167,7 @@ void phydm_clm_c2h_report_handler(void *dm_void, u8 *cmd_buf, u8 cmd_len)
 		  ccx_info->clm_fw_result_cnt, clm_report);
 }
 
-void phydm_clm_h2c(void *dm_void, u16 obs_time, u8 fw_clm_en)
+void phydm_clm_h2cbu(void *dm_void, u16 obs_time, u8 fw_clm_en)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u8 h2c_val[H2C_MAX_LENGTH] = {0};
@@ -1200,23 +1200,23 @@ void phydm_clm_h2c(void *dm_void, u16 obs_time, u8 fw_clm_en)
 		  h2c_val[6], h2c_val[5], h2c_val[4], h2c_val[3], h2c_val[2],
 		  h2c_val[1], h2c_val[0]);
 
-	odm_fill_h2c_cmd(dm, PHYDM_H2C_FW_CLM_MNTR, H2C_MAX_LENGTH, h2c_val);
+	odm_fill_h2c_cmdbu(dm, PHYDM_H2C_FW_CLM_MNTR, H2C_MAX_LENGTH, h2c_val);
 }
 
-void phydm_clm_setting(void *dm_void, u16 clm_period /*@4us sample 1 time*/)
+void phydm_clm_settingbu(void *dm_void, u16 clm_period /*@4us sample 1 time*/)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ccx_info *ccx = &dm->dm_ccx_info;
 
 	if (ccx->clm_period != clm_period) {
 		if (dm->support_ic_type & ODM_IC_11AC_SERIES)
-			odm_set_bb_reg(dm, R_0x990, MASKLWORD, clm_period);
+			odm_set_bb_regbu(dm, R_0x990, MASKLWORD, clm_period);
 		#ifdef PHYDM_IC_JGR3_SERIES_SUPPORT
 		else if (dm->support_ic_type & ODM_IC_JGR3_SERIES)
-			odm_set_bb_reg(dm, R_0x1e40, MASKLWORD, clm_period);
+			odm_set_bb_regbu(dm, R_0x1e40, MASKLWORD, clm_period);
 		#endif
 		else if (dm->support_ic_type & ODM_IC_11N_SERIES)
-			odm_set_bb_reg(dm, R_0x894, MASKLWORD, clm_period);
+			odm_set_bb_regbu(dm, R_0x894, MASKLWORD, clm_period);
 
 		ccx->clm_period = clm_period;
 		PHYDM_DBG(dm, DBG_ENV_MNTR,
@@ -1228,7 +1228,7 @@ void phydm_clm_setting(void *dm_void, u16 clm_period /*@4us sample 1 time*/)
 		  ccx->clm_period);
 }
 
-void phydm_clm_trigger(void *dm_void)
+void phydm_clm_triggerbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ccx_info *ccx = &dm->dm_ccx_info;
@@ -1244,8 +1244,8 @@ void phydm_clm_trigger(void *dm_void)
 		reg1 = R_0x890;
 	PHYDM_DBG(dm, DBG_ENV_MNTR, "[%s]===>\n", __func__);
 
-	odm_set_bb_reg(dm, reg1, BIT(0), 0x0);
-	odm_set_bb_reg(dm, reg1, BIT(0), 0x1);
+	odm_set_bb_regbu(dm, reg1, BIT(0), 0x0);
+	odm_set_bb_regbu(dm, reg1, BIT(0), 0x1);
 
 	ccx->clm_trigger_time = dm->phydm_sys_up_time;
 	ccx->clm_rpt_stamp++;
@@ -1253,7 +1253,7 @@ void phydm_clm_trigger(void *dm_void)
 }
 
 boolean
-phydm_clm_check_rdy(void *dm_void)
+phydm_clm_check_rdybu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	boolean is_ready = false;
@@ -1277,7 +1277,7 @@ phydm_clm_check_rdy(void *dm_void)
 			reg1_bit = 16;
 		}
 	}
-	if (odm_get_bb_reg(dm, reg1, BIT(reg1_bit)))
+	if (odm_get_bb_regbu(dm, reg1, BIT(reg1_bit)))
 		is_ready = true;
 
 	PHYDM_DBG(dm, DBG_ENV_MNTR, "CLM rdy=%d\n", is_ready);
@@ -1285,7 +1285,7 @@ phydm_clm_check_rdy(void *dm_void)
 	return is_ready;
 }
 
-void phydm_clm_get_utility(void *dm_void)
+void phydm_clm_get_utilitybu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ccx_info *ccx = &dm->dm_ccx_info;
@@ -1300,7 +1300,7 @@ void phydm_clm_get_utility(void *dm_void)
 }
 
 boolean
-phydm_clm_get_result(void *dm_void)
+phydm_clm_get_resultbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ccx_info *ccx_info = &dm->dm_ccx_info;
@@ -1317,34 +1317,34 @@ phydm_clm_get_result(void *dm_void)
 		reg1 = R_0x890;
 	if (!(dm->support_ic_type & (ODM_RTL8822C | ODM_RTL8812F |
 				     ODM_RTL8197G | ODM_RTL8723F)))
-		odm_set_bb_reg(dm, reg1, BIT(0), 0x0);
-	if (!(phydm_clm_check_rdy(dm))) {
+		odm_set_bb_regbu(dm, reg1, BIT(0), 0x0);
+	if (!(phydm_clm_check_rdybu(dm))) {
 		PHYDM_DBG(dm, DBG_ENV_MNTR, "Get CLM report Fail\n");
-		phydm_clm_racing_release(dm);
+		phydm_clm_racing_releasebu(dm);
 		return false;
 	}
 
 	if (dm->support_ic_type & ODM_IC_11AC_SERIES) {
-		val = odm_get_bb_reg(dm, R_0xfa4, MASKLWORD);
+		val = odm_get_bb_regbu(dm, R_0xfa4, MASKLWORD);
 		ccx_info->clm_result = (u16)val;
 	#ifdef PHYDM_IC_JGR3_SERIES_SUPPORT
 	} else if (dm->support_ic_type & ODM_IC_JGR3_SERIES) {
-		val = odm_get_bb_reg(dm, R_0x2d88, MASKLWORD);
+		val = odm_get_bb_regbu(dm, R_0x2d88, MASKLWORD);
 		ccx_info->clm_result = (u16)val;
 	#endif
 	} else if (dm->support_ic_type & ODM_IC_11N_SERIES) {
-		val = odm_get_bb_reg(dm, R_0x8d0, MASKLWORD);
+		val = odm_get_bb_regbu(dm, R_0x8d0, MASKLWORD);
 		ccx_info->clm_result = (u16)val;
 	}
 
 	PHYDM_DBG(dm, DBG_ENV_MNTR, "CLM result = %d *4 us\n",
 		  ccx_info->clm_result);
-	phydm_clm_racing_release(dm);
+	phydm_clm_racing_releasebu(dm);
 	return true;
 }
 
 boolean
-phydm_clm_mntr_set(void *dm_void, struct clm_para_info *clm_para)
+phydm_clm_mntr_setbu(void *dm_void, struct clm_para_info *clm_para)
 {
 	/*@Driver Monitor CLM*/
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -1360,7 +1360,7 @@ phydm_clm_mntr_set(void *dm_void, struct clm_para_info *clm_para)
 		return false;
 	}
 
-	if (phydm_clm_racing_ctrl(dm, clm_para->clm_lv) == PHYDM_SET_FAIL)
+	if (phydm_clm_racing_ctrlbu(dm, clm_para->clm_lv) == PHYDM_SET_FAIL)
 		return false;
 
 	if (clm_para->mntr_time >= 262)
@@ -1369,7 +1369,7 @@ phydm_clm_mntr_set(void *dm_void, struct clm_para_info *clm_para)
 		clm_period = clm_para->mntr_time * MS_TO_4US_RATIO;
 
 	ccx->clm_app = clm_para->clm_app;
-	phydm_clm_setting(dm, clm_period);
+	phydm_clm_settingbu(dm, clm_period);
 
 	return true;
 }
@@ -1402,7 +1402,7 @@ phydm_clm_mntr_racing_chk(void *dm_void)
 }
 
 boolean
-phydm_clm_mntr_chk(void *dm_void, u16 monitor_time /*unit ms*/)
+phydm_clm_mntr_chkbu(void *dm_void, u16 monitor_time /*unit ms*/)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ccx_info *ccx = &dm->dm_ccx_info;
@@ -1418,7 +1418,7 @@ phydm_clm_mntr_chk(void *dm_void, u16 monitor_time /*unit ms*/)
 	clm_para.clm_lv = CLM_LV_1;
 	clm_para.mntr_time = monitor_time;
 	if (ccx->clm_mntr_mode == CLM_DRIVER_MNTR) {
-		if (phydm_clm_mntr_set(dm, &clm_para))
+		if (phydm_clm_mntr_setbu(dm, &clm_para))
 			clm_chk_result = true;
 	} else {
 		if (monitor_time >= 262)
@@ -1426,7 +1426,7 @@ phydm_clm_mntr_chk(void *dm_void, u16 monitor_time /*unit ms*/)
 		else
 			ccx->clm_period = monitor_time * MS_TO_4US_RATIO;
 
-		phydm_clm_h2c(dm, ccx->clm_period, true);
+		phydm_clm_h2cbu(dm, ccx->clm_period, true);
 	}
 
 	return clm_chk_result;
@@ -1446,9 +1446,9 @@ phydm_clm_mntr_result(void *dm_void)
 		return clm_chk_result;
 
 	if (ccx->clm_mntr_mode == CLM_DRIVER_MNTR) {
-		if (phydm_clm_get_result(dm)) {
+		if (phydm_clm_get_resultbu(dm)) {
 			PHYDM_DBG(dm, DBG_ENV_MNTR, "Get CLM_rpt success\n");
-			phydm_clm_get_utility(dm);
+			phydm_clm_get_utilitybu(dm);
 			clm_chk_result = true;
 		}
 	} else {
@@ -1473,21 +1473,21 @@ phydm_clm_mntr_result(void *dm_void)
 	return clm_chk_result;
 }
 
-void phydm_set_clm_mntr_mode(void *dm_void, enum clm_monitor_mode mode)
+void phydm_set_clm_mntr_modebu(void *dm_void, enum clm_monitor_mode mode)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ccx_info *ccx_info = &dm->dm_ccx_info;
 
 	if (ccx_info->clm_mntr_mode != mode) {
 		ccx_info->clm_mntr_mode = mode;
-		phydm_ccx_hw_restart(dm);
+		phydm_ccx_hw_restartbu(dm);
 
 		if (mode == CLM_DRIVER_MNTR)
-			phydm_clm_h2c(dm, CLM_PERIOD_MAX, 0);
+			phydm_clm_h2cbu(dm, CLM_PERIOD_MAX, 0);
 	}
 }
 
-void phydm_clm_init(void *dm_void)
+void phydm_clm_initbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ccx_info *ccx = &dm->dm_ccx_info;
@@ -1498,10 +1498,10 @@ void phydm_clm_init(void *dm_void)
 	ccx->clm_mntr_mode = CLM_DRIVER_MNTR;
 	ccx->clm_period = 0;
 	ccx->clm_rpt_stamp = 0;
-	phydm_clm_setting(dm, 65535);
+	phydm_clm_settingbu(dm, 65535);
 }
 
-void phydm_clm_dbg(void *dm_void, char input[][16], u32 *_used, char *output,
+void phydm_clm_dbgbu(void *dm_void, char input[][16], u32 *_used, char *output,
 		   u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -1528,8 +1528,8 @@ void phydm_clm_dbg(void *dm_void, char input[][16], u32 *_used, char *output,
 			 "CLM Get Result: {100}\n");
 	} else if (var1[0] == 100) { /* @Get CLM results */
 
-		if (phydm_clm_get_result(dm))
-			phydm_clm_get_utility(dm);
+		if (phydm_clm_get_resultbu(dm))
+			phydm_clm_get_utilitybu(dm);
 
 		PDM_SNPF(out_len, used, output + used, out_len - used,
 			 "clm_rpt_stamp=%d\n", ccx->clm_rpt_stamp);
@@ -1541,7 +1541,7 @@ void phydm_clm_dbg(void *dm_void, char input[][16], u32 *_used, char *output,
 
 		ccx->clm_manual_ctrl = 0;
 	} else if (var1[0] == 3) {
-		phydm_set_clm_mntr_mode(dm, (enum clm_monitor_mode)var1[1]);
+		phydm_set_clm_mntr_modebu(dm, (enum clm_monitor_mode)var1[1]);
 		PDM_SNPF(out_len, used, output + used, out_len - used,
 			 "CLM mode: %s mode\n",
 			 ((ccx->clm_mntr_mode == CLM_FW_MNTR) ? "FW" : "Drv"));
@@ -1566,8 +1566,8 @@ void phydm_clm_dbg(void *dm_void, char input[][16], u32 *_used, char *output,
 			 ((ccx->clm_mntr_mode == CLM_FW_MNTR) ? "FW" :
 			 "driver"), clm_para.mntr_time);
 
-		if (phydm_clm_mntr_set(dm, &clm_para))
-			phydm_clm_trigger(dm);
+		if (phydm_clm_mntr_setbu(dm, &clm_para))
+			phydm_clm_triggerbu(dm);
 
 		PDM_SNPF(out_len, used, output + used, out_len - used,
 			 "clm_rpt_stamp=%d\n", ccx->clm_rpt_stamp);
@@ -1579,7 +1579,7 @@ void phydm_clm_dbg(void *dm_void, char input[][16], u32 *_used, char *output,
 
 #endif /*@#ifdef CLM_SUPPORT*/
 
-u8 phydm_env_mntr_trigger(void *dm_void, struct nhm_para_info *nhm_para,
+u8 phydm_env_mntr_triggerbu(void *dm_void, struct nhm_para_info *nhm_para,
 			  struct clm_para_info *clm_para,
 			  struct env_trig_rpt *trig_rpt)
 {
@@ -1593,28 +1593,28 @@ u8 phydm_env_mntr_trigger(void *dm_void, struct nhm_para_info *nhm_para,
 	PHYDM_DBG(dm, DBG_ENV_MNTR, "[%s] ======>\n", __func__);
 
 	/*@[NHM]*/
-	nhm_set_ok = phydm_nhm_mntr_set(dm, nhm_para);
+	nhm_set_ok = phydm_nhm_mntr_setbu(dm, nhm_para);
 
 	/*@[CLM]*/
 	if (ccx->clm_mntr_mode == CLM_DRIVER_MNTR) {
-		clm_set_ok = phydm_clm_mntr_set(dm, clm_para);
+		clm_set_ok = phydm_clm_mntr_setbu(dm, clm_para);
 	} else if (ccx->clm_mntr_mode == CLM_FW_MNTR) {
-		phydm_clm_h2c(dm, CLM_PERIOD_MAX, true);
+		phydm_clm_h2cbu(dm, CLM_PERIOD_MAX, true);
 		trigger_result |= CLM_SUCCESS;
 	}
 
 	if (nhm_set_ok) {
-		phydm_nhm_trigger(dm);
+		phydm_nhm_triggerbu(dm);
 		trigger_result |= NHM_SUCCESS;
 	}
 
 	if (clm_set_ok) {
-		phydm_clm_trigger(dm);
+		phydm_clm_triggerbu(dm);
 		trigger_result |= CLM_SUCCESS;
 	}
 
 	/*@monitor for the test duration*/
-	ccx->start_time = odm_get_current_time(dm);
+	ccx->start_time = odm_get_current_timebu(dm);
 
 	trig_rpt->nhm_rpt_stamp = ccx->nhm_rpt_stamp;
 	trig_rpt->clm_rpt_stamp = ccx->clm_rpt_stamp;
@@ -1625,7 +1625,7 @@ u8 phydm_env_mntr_trigger(void *dm_void, struct nhm_para_info *nhm_para,
 	return trigger_result;
 }
 
-u8 phydm_env_mntr_result(void *dm_void, struct env_mntr_rpt *rpt)
+u8 phydm_env_mntr_resultbu(void *dm_void, struct env_mntr_rpt *rpt)
 {
 	u8 env_mntr_rpt = 0;
 #if (defined(NHM_SUPPORT) && defined(CLM_SUPPORT))
@@ -1635,21 +1635,21 @@ u8 phydm_env_mntr_result(void *dm_void, struct env_mntr_rpt *rpt)
 	u32 val_tmp = 0;
 
 	/*@monitor for the test duration*/
-	progressing_time = odm_get_progressing_time(dm, ccx->start_time);
+	progressing_time = odm_get_progressing_timebu(dm, ccx->start_time);
 	PHYDM_DBG(dm, DBG_ENV_MNTR, "[%s] ======>\n", __func__);
 	PHYDM_DBG(dm, DBG_ENV_MNTR, "env_time=%lld\n", progressing_time);
 
 	/*@Get NHM result*/
-	if (phydm_nhm_get_result(dm)) {
+	if (phydm_nhm_get_resultbu(dm)) {
 		PHYDM_DBG(dm, DBG_ENV_MNTR, "Get NHM_rpt success\n");
-		phydm_nhm_get_utility(dm);
+		phydm_nhm_get_utilitybu(dm);
 		rpt->nhm_ratio = ccx->nhm_ratio;
 		rpt->nhm_env_ratio = ccx->nhm_env_ratio;
 		rpt->nhm_noise_pwr = ccx->nhm_level;
 		rpt->nhm_pwr = ccx->nhm_pwr;
 		env_mntr_rpt |= NHM_SUCCESS;
 
-		odm_move_memory(dm, &rpt->nhm_result[0],
+		odm_move_memorybu(dm, &rpt->nhm_result[0],
 				&ccx->nhm_result[0], NHM_RPT_NUM);
 	} else {
 		rpt->nhm_ratio = ENV_MNTR_FAIL;
@@ -1658,9 +1658,9 @@ u8 phydm_env_mntr_result(void *dm_void, struct env_mntr_rpt *rpt)
 
 	/*@Get CLM result*/
 	if (ccx->clm_mntr_mode == CLM_DRIVER_MNTR) {
-		if (phydm_clm_get_result(dm)) {
+		if (phydm_clm_get_resultbu(dm)) {
 			PHYDM_DBG(dm, DBG_ENV_MNTR, "Get CLM_rpt success\n");
-			phydm_clm_get_utility(dm);
+			phydm_clm_get_utilitybu(dm);
 			env_mntr_rpt |= CLM_SUCCESS;
 			rpt->clm_ratio = ccx->clm_ratio;
 		} else {
@@ -1697,7 +1697,7 @@ u8 phydm_env_mntr_result(void *dm_void, struct env_mntr_rpt *rpt)
 	return env_mntr_rpt;
 }
 
-void phydm_env_mntr_dbg(void *dm_void, char input[][16], u32 *_used,
+void phydm_env_mntr_dbgbu(void *dm_void, char input[][16], u32 *_used,
 			char *output, u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -1721,7 +1721,7 @@ void phydm_env_mntr_dbg(void *dm_void, char input[][16], u32 *_used,
 		PDM_SNPF(out_len, used, output + used, out_len - used,
 			 "Get Result: {100}\n");
 	} else if (var1[0] == 100) { /* Get results */
-		set_result = phydm_env_mntr_result(dm, &rpt);
+		set_result = phydm_env_mntr_resultbu(dm, &rpt);
 
 		PDM_SNPF(out_len, used, output + used, out_len - used,
 			 "Set Result=%d\n nhm_ratio=%d nhm_env_ratio=%d clm_ratio=%d\n nhm_rpt_stamp=%d, clm_rpt_stamp=%d,\n",
@@ -1752,7 +1752,7 @@ void phydm_env_mntr_dbg(void *dm_void, char input[][16], u32 *_used,
 		clm_para.clm_lv = CLM_LV_2;
 		clm_para.mntr_time = 262;
 
-		set_result = phydm_env_mntr_trigger(dm, &nhm_para,
+		set_result = phydm_env_mntr_triggerbu(dm, &nhm_para,
 						    &clm_para, &trig_rpt);
 
 		PDM_SNPF(out_len, used, output + used, out_len - used,
@@ -1780,7 +1780,7 @@ void phydm_fahm_racing_release(void *dm_void)
 	ccx->fahm_set_lv = FAHM_RELEASE;
 
 	if (!(ccx->fahm_app == FAHM_BACKGROUND || ccx->fahm_app == FAHM_ACS))
-		phydm_pause_func(dm, F00_DIG, PHYDM_RESUME,
+		phydm_pause_funcbu(dm, F00_DIG, PHYDM_RESUME,
 				 PHYDM_PAUSE_LEVEL_1, 1, &value32);
 
 	ccx->fahm_app = FAHM_BACKGROUND;
@@ -1799,7 +1799,7 @@ u8 phydm_fahm_racing_ctrl(void *dm_void, enum phydm_fahm_level lv)
 		if (lv <= ccx->fahm_set_lv) {
 			set_result = PHYDM_SET_FAIL;
 		} else {
-			phydm_ccx_hw_restart(dm);
+			phydm_ccx_hw_restartbu(dm);
 			ccx->fahm_ongoing = false;
 		}
 	}
@@ -1833,8 +1833,8 @@ void phydm_fahm_trigger(void *dm_void)
 		break;
 	}
 
-	odm_set_bb_reg(dm, reg, BIT(2), 0);
-	odm_set_bb_reg(dm, reg, BIT(2), 1);
+	odm_set_bb_regbu(dm, reg, BIT(2), 0);
+	odm_set_bb_regbu(dm, reg, BIT(2), 1);
 
 	ccx->fahm_trigger_time = dm->phydm_sys_up_time;
 	ccx->fahm_rpt_stamp++;
@@ -1865,7 +1865,7 @@ phydm_fahm_check_rdy(void *dm_void)
 		break;
 	}
 
-	if (odm_get_bb_reg(dm, reg, BIT(reg_bit)))
+	if (odm_get_bb_regbu(dm, reg, BIT(reg_bit)))
 		is_ready = true;
 
 	PHYDM_DBG(dm, DBG_ENV_MNTR, "FAHM rdy=%d\n", is_ready);
@@ -1980,7 +1980,7 @@ phydm_fahm_get_result(void *dm_void)
 
 	/*Get FAHM numerator and sum all fahm_result*/
 	for (i = 0; i < 6; i++) {
-		value32 = odm_get_bb_reg(dm, reg1 + (i << 2), MASKDWORD);
+		value32 = odm_get_bb_regbu(dm, reg1 + (i << 2), MASKDWORD);
 		ccx->fahm_result[i * 2] = (u16)(value32 & MASKLWORD);
 		ccx->fahm_result[i * 2 + 1] = (u16)((value32 & MASKHWORD) >> 16);
 		fahm_rpt_sum_tmp = (u32)(fahm_rpt_sum_tmp +
@@ -1990,7 +1990,7 @@ phydm_fahm_get_result(void *dm_void)
 	ccx->fahm_result_sum = (u16)fahm_rpt_sum_tmp;
 
 	/*Get FAHM Denominator*/
-	ccx->fahm_denom_result = (u16)odm_get_bb_reg(dm, reg2, MASKLWORD);
+	ccx->fahm_denom_result = (u16)odm_get_bb_regbu(dm, reg2, MASKLWORD);
 
 	if (!(ccx->fahm_inclu_cck))
 		PHYDM_DBG(dm, DBG_ENV_MNTR,
@@ -2032,37 +2032,37 @@ void phydm_fahm_set_th_reg(void *dm_void)
 	case PHYDM_IC_JGR3:
 		val = BYTE_2_DWORD(ccx->fahm_th[3], ccx->fahm_th[2],
 				   ccx->fahm_th[1], ccx->fahm_th[0]);
-		odm_set_bb_reg(dm, R_0x1e50, MASKDWORD, val);
+		odm_set_bb_regbu(dm, R_0x1e50, MASKDWORD, val);
 		val = BYTE_2_DWORD(ccx->fahm_th[7], ccx->fahm_th[6],
 				   ccx->fahm_th[5], ccx->fahm_th[4]);
-		odm_set_bb_reg(dm, R_0x1e54, MASKDWORD, val);
+		odm_set_bb_regbu(dm, R_0x1e54, MASKDWORD, val);
 		val = BYTE_2_DWORD(0, ccx->fahm_th[10], ccx->fahm_th[9],
 				   ccx->fahm_th[8]);
-		odm_set_bb_reg(dm, R_0x1e58, 0xffffff, val);
+		odm_set_bb_regbu(dm, R_0x1e58, 0xffffff, val);
 		break;
 	case PHYDM_IC_AC:
 		val = BYTE_2_DWORD(0, ccx->fahm_th[2], ccx->fahm_th[1],
 				   ccx->fahm_th[0]);
-		odm_set_bb_reg(dm, R_0x1c38, 0xffffff00, val);
+		odm_set_bb_regbu(dm, R_0x1c38, 0xffffff00, val);
 		val = BYTE_2_DWORD(0, ccx->fahm_th[5], ccx->fahm_th[4],
 				   ccx->fahm_th[3]);
-		odm_set_bb_reg(dm, R_0x1c78, 0xffffff00, val);
+		odm_set_bb_regbu(dm, R_0x1c78, 0xffffff00, val);
 		val = BYTE_2_DWORD(0, 0, ccx->fahm_th[7], ccx->fahm_th[6]);
-		odm_set_bb_reg(dm, R_0x1c7c, 0xffff0000, val);
+		odm_set_bb_regbu(dm, R_0x1c7c, 0xffff0000, val);
 		val = BYTE_2_DWORD(0, ccx->fahm_th[10], ccx->fahm_th[9],
 				   ccx->fahm_th[8]);
-		odm_set_bb_reg(dm, R_0x1cb8, 0xffffff00, val);
+		odm_set_bb_regbu(dm, R_0x1cb8, 0xffffff00, val);
 		break;
 	case PHYDM_IC_N:
 		val = BYTE_2_DWORD(ccx->fahm_th[3], ccx->fahm_th[2],
 				   ccx->fahm_th[1], ccx->fahm_th[0]);
-		odm_set_bb_reg(dm, R_0x970, MASKDWORD, val);
+		odm_set_bb_regbu(dm, R_0x970, MASKDWORD, val);
 		val = BYTE_2_DWORD(ccx->fahm_th[7], ccx->fahm_th[6],
 				   ccx->fahm_th[5], ccx->fahm_th[4]);
-		odm_set_bb_reg(dm, R_0x974, MASKDWORD, val);
+		odm_set_bb_regbu(dm, R_0x974, MASKDWORD, val);
 		val = BYTE_2_DWORD(0, ccx->fahm_th[10], ccx->fahm_th[9],
 				   ccx->fahm_th[8]);
-		odm_set_bb_reg(dm, R_0x978, 0xffffff, val);
+		odm_set_bb_regbu(dm, R_0x978, 0xffffff, val);
 		break;
 	default:
 		break;
@@ -2084,7 +2084,7 @@ phydm_fahm_th_update_chk(void *dm_void, enum fahm_application fahm_app,
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ccx_info *ccx = &dm->dm_ccx_info;
 	boolean is_update = false;
-	u8 igi_curr = phydm_get_igi(dm, BB_PATH_A);
+	u8 igi_curr = phydm_get_igibu(dm, BB_PATH_A);
 	u8 i = 0;
 	u8 th_tmp = igi_curr - CCA_CAP;
 	u8 th_step = 2;
@@ -2119,7 +2119,7 @@ phydm_fahm_th_update_chk(void *dm_void, enum fahm_application fahm_app,
 		}
 		break;
 	case FAHM_DBG: /*Get IGI from register*/
-		igi_curr = phydm_get_igi(dm, BB_PATH_A);
+		igi_curr = phydm_get_igibu(dm, BB_PATH_A);
 		if (ccx->fahm_igi != igi_curr || ccx->fahm_app != fahm_app) {
 			is_update = true;
 			*igi_new = (u32)igi_curr;
@@ -2188,8 +2188,8 @@ void phydm_fahm_set(void *dm_void, u8 numer_opt, u8 denom_opt,
 	/*Set enable fa, ignore crc32 ok, ignore crc32 err*/
 	if (numer_opt != ccx->fahm_numer_opt ||
 	    denom_opt != ccx->fahm_denom_opt) {
-		odm_set_bb_reg(dm, reg1, 0xe0, numer_opt);
-		odm_set_bb_reg(dm, reg1, 0x7000, denom_opt);
+		odm_set_bb_regbu(dm, reg1, 0xe0, numer_opt);
+		odm_set_bb_regbu(dm, reg1, 0x7000, denom_opt);
 		ccx->fahm_numer_opt = numer_opt;
 		ccx->fahm_denom_opt = denom_opt;
 
@@ -2201,7 +2201,7 @@ void phydm_fahm_set(void *dm_void, u8 numer_opt, u8 denom_opt,
 		else
 			ccx->fahm_inclu_cck = false;
 
-		odm_set_bb_reg(dm, reg1, BIT(4), ccx->fahm_inclu_cck);
+		odm_set_bb_regbu(dm, reg1, BIT(4), ccx->fahm_inclu_cck);
 		PHYDM_DBG(dm, DBG_ENV_MNTR, "fahm_inclu_cck=%d\n",
 			  ccx->fahm_inclu_cck);
 	}
@@ -2210,12 +2210,12 @@ void phydm_fahm_set(void *dm_void, u8 numer_opt, u8 denom_opt,
 	if (period != ccx->fahm_period) {
 		switch (dm->ic_ip_series) {
 		case PHYDM_IC_AC:
-			odm_set_bb_reg(dm, reg2, 0xffff00, period);
+			odm_set_bb_regbu(dm, reg2, 0xffff00, period);
 			break;
 		case PHYDM_IC_JGR3:
 		case PHYDM_IC_N:
-			odm_set_bb_reg(dm, reg2, 0xff000000, (period & 0xff));
-			odm_set_bb_reg(dm, reg3, 0xff, (period & 0xff00) >> 8);
+			odm_set_bb_regbu(dm, reg2, 0xff000000, (period & 0xff));
+			odm_set_bb_regbu(dm, reg3, 0xff, (period & 0xff00) >> 8);
 			break;
 		default:
 			break;
@@ -2234,7 +2234,7 @@ void phydm_fahm_set(void *dm_void, u8 numer_opt, u8 denom_opt,
 		/*Pause IGI*/
 		if (app == FAHM_BACKGROUND || app == FAHM_ACS) {
 			PHYDM_DBG(dm, DBG_ENV_MNTR, "DIG Free Run\n");
-		} else if (phydm_pause_func(dm, F00_DIG, PHYDM_PAUSE,
+		} else if (phydm_pause_funcbu(dm, F00_DIG, PHYDM_PAUSE,
 					    PHYDM_PAUSE_LEVEL_1, 1, &igi)
 					    == PAUSE_FAIL) {
 			PHYDM_DBG(dm, DBG_ENV_MNTR, "pause DIG Fail\n");
@@ -2244,7 +2244,7 @@ void phydm_fahm_set(void *dm_void, u8 numer_opt, u8 denom_opt,
 		}
 		ccx->fahm_app = app;
 		ccx->fahm_igi = (u8)igi;
-		odm_move_memory(dm, &ccx->fahm_th[0], &fahm_th, FAHM_TH_NUM);
+		odm_move_memorybu(dm, &ccx->fahm_th[0], &fahm_th, FAHM_TH_NUM);
 
 		/*Set FAHM th*/
 		phydm_fahm_set_th_reg(dm);
@@ -2400,7 +2400,7 @@ void phydm_fahm_init(void *dm_void)
 	}
 
 	/*Counting OFDM pkt*/
-	odm_set_bb_reg(dm, reg, BIT(3), 1);
+	odm_set_bb_regbu(dm, reg, BIT(3), 1);
 }
 
 void phydm_fahm_dbg(void *dm_void, char input[][16], u32 *_used, char *output,
@@ -2520,8 +2520,8 @@ void phydm_ifs_clm_restart(void *dm_void)
 	PHYDM_DBG(dm, DBG_ENV_MNTR, "[%s]===>\n", __func__);
 
 	/*restart IFS_CLM*/
-	odm_set_bb_reg(dm, R_0x1ee4, BIT(29), 0x0);
-	odm_set_bb_reg(dm, R_0x1ee4, BIT(29), 0x1);
+	odm_set_bb_regbu(dm, R_0x1ee4, BIT(29), 0x0);
+	odm_set_bb_regbu(dm, R_0x1ee4, BIT(29), 0x1);
 }
 
 void phydm_ifs_clm_racing_release(void *dm_void)
@@ -2626,31 +2626,31 @@ void phydm_ifs_clm_get_result(void *dm_void)
 	PHYDM_DBG(dm, DBG_ENV_MNTR, "[%s]===>\n", __func__);
 
 	/*Enhance CLM result*/
-	value32 = odm_get_bb_reg(dm, R_0x2e60, MASKDWORD);
+	value32 = odm_get_bb_regbu(dm, R_0x2e60, MASKDWORD);
 	ccx->ifs_clm_tx = (u16)(value32 & MASKLWORD);
 	ccx->ifs_clm_edcca_excl_cca = (u16)((value32 & MASKHWORD) >> 16);
-	value32 = odm_get_bb_reg(dm, R_0x2e64, MASKDWORD);
+	value32 = odm_get_bb_regbu(dm, R_0x2e64, MASKDWORD);
 	ccx->ifs_clm_ofdmfa = (u16)(value32 & MASKLWORD);
 	ccx->ifs_clm_ofdmcca_excl_fa = (u16)((value32 & MASKHWORD) >> 16);
-	value32 = odm_get_bb_reg(dm, R_0x2e68, MASKDWORD);
+	value32 = odm_get_bb_regbu(dm, R_0x2e68, MASKDWORD);
 	ccx->ifs_clm_cckfa = (u16)(value32 & MASKLWORD);
 	ccx->ifs_clm_cckcca_excl_fa = (u16)((value32 & MASKHWORD) >> 16);
-	value32 = odm_get_bb_reg(dm, R_0x2e6c, MASKDWORD);
+	value32 = odm_get_bb_regbu(dm, R_0x2e6c, MASKDWORD);
 	ccx->ifs_clm_total_cca = (u16)(value32 & MASKLWORD);
 
 	/* IFS result */
-	value32 = odm_get_bb_reg(dm, R_0x2e70, MASKDWORD);
-	odm_move_memory(dm, &ccx->ifs_clm_his[0], &value32, 4);
-	value32 = odm_get_bb_reg(dm, R_0x2e74, MASKDWORD);
+	value32 = odm_get_bb_regbu(dm, R_0x2e70, MASKDWORD);
+	odm_move_memorybu(dm, &ccx->ifs_clm_his[0], &value32, 4);
+	value32 = odm_get_bb_regbu(dm, R_0x2e74, MASKDWORD);
 	ccx->ifs_clm_avg[0] = (u16)(value32 & MASKLWORD);
 	ccx->ifs_clm_avg[1] = (u16)((value32 & MASKHWORD) >> 16);
-	value32 = odm_get_bb_reg(dm, R_0x2e78, MASKDWORD);
+	value32 = odm_get_bb_regbu(dm, R_0x2e78, MASKDWORD);
 	ccx->ifs_clm_avg[2] = (u16)(value32 & MASKLWORD);
 	ccx->ifs_clm_avg[3] = (u16)((value32 & MASKHWORD) >> 16);
-	value32 = odm_get_bb_reg(dm, R_0x2e7c, MASKDWORD);
+	value32 = odm_get_bb_regbu(dm, R_0x2e7c, MASKDWORD);
 	ccx->ifs_clm_avg_cca[0] = (u16)(value32 & MASKLWORD);
 	ccx->ifs_clm_avg_cca[1] = (u16)((value32 & MASKHWORD) >> 16);
-	value32 = odm_get_bb_reg(dm, R_0x2e80, MASKDWORD);
+	value32 = odm_get_bb_regbu(dm, R_0x2e80, MASKDWORD);
 	ccx->ifs_clm_avg_cca[2] = (u16)(value32 & MASKLWORD);
 	ccx->ifs_clm_avg_cca[3] = (u16)((value32 & MASKHWORD) >> 16);
 
@@ -2687,18 +2687,18 @@ void phydm_ifs_clm_set_th_reg(void *dm_void)
 	PHYDM_DBG(dm, DBG_ENV_MNTR, "[%s]===>\n", __func__);
 
 	/*Set IFS period TH*/
-	odm_set_bb_reg(dm, R_0x1ed4, BIT(31), ccx->ifs_clm_th_en[0]);
-	odm_set_bb_reg(dm, R_0x1ed8, BIT(31), ccx->ifs_clm_th_en[1]);
-	odm_set_bb_reg(dm, R_0x1edc, BIT(31), ccx->ifs_clm_th_en[2]);
-	odm_set_bb_reg(dm, R_0x1ee0, BIT(31), ccx->ifs_clm_th_en[3]);
-	odm_set_bb_reg(dm, R_0x1ed4, 0x7fff0000, ccx->ifs_clm_th_low[0]);
-	odm_set_bb_reg(dm, R_0x1ed8, 0x7fff0000, ccx->ifs_clm_th_low[1]);
-	odm_set_bb_reg(dm, R_0x1edc, 0x7fff0000, ccx->ifs_clm_th_low[2]);
-	odm_set_bb_reg(dm, R_0x1ee0, 0x7fff0000, ccx->ifs_clm_th_low[3]);
-	odm_set_bb_reg(dm, R_0x1ed4, MASKLWORD, ccx->ifs_clm_th_high[0]);
-	odm_set_bb_reg(dm, R_0x1ed8, MASKLWORD, ccx->ifs_clm_th_high[1]);
-	odm_set_bb_reg(dm, R_0x1edc, MASKLWORD, ccx->ifs_clm_th_high[2]);
-	odm_set_bb_reg(dm, R_0x1ee0, MASKLWORD, ccx->ifs_clm_th_high[3]);
+	odm_set_bb_regbu(dm, R_0x1ed4, BIT(31), ccx->ifs_clm_th_en[0]);
+	odm_set_bb_regbu(dm, R_0x1ed8, BIT(31), ccx->ifs_clm_th_en[1]);
+	odm_set_bb_regbu(dm, R_0x1edc, BIT(31), ccx->ifs_clm_th_en[2]);
+	odm_set_bb_regbu(dm, R_0x1ee0, BIT(31), ccx->ifs_clm_th_en[3]);
+	odm_set_bb_regbu(dm, R_0x1ed4, 0x7fff0000, ccx->ifs_clm_th_low[0]);
+	odm_set_bb_regbu(dm, R_0x1ed8, 0x7fff0000, ccx->ifs_clm_th_low[1]);
+	odm_set_bb_regbu(dm, R_0x1edc, 0x7fff0000, ccx->ifs_clm_th_low[2]);
+	odm_set_bb_regbu(dm, R_0x1ee0, 0x7fff0000, ccx->ifs_clm_th_low[3]);
+	odm_set_bb_regbu(dm, R_0x1ed4, MASKLWORD, ccx->ifs_clm_th_high[0]);
+	odm_set_bb_regbu(dm, R_0x1ed8, MASKLWORD, ccx->ifs_clm_th_high[1]);
+	odm_set_bb_regbu(dm, R_0x1edc, MASKLWORD, ccx->ifs_clm_th_high[2]);
+	odm_set_bb_regbu(dm, R_0x1ee0, MASKLWORD, ccx->ifs_clm_th_high[3]);
 
 	for (i = 0; i < IFS_CLM_NUM; i++)
 		PHYDM_DBG(dm, DBG_ENV_MNTR,
@@ -2776,7 +2776,7 @@ void phydm_ifs_clm_set(void *dm_void, enum ifs_clm_application ifs_clm_app,
 
 	/*Set Unit*/
 	if (ctrl_unit != ccx->ifs_clm_ctrl_unit) {	
-		odm_set_bb_reg(dm, R_0x1ee4, 0xc0000000, ctrl_unit);
+		odm_set_bb_regbu(dm, R_0x1ee4, 0xc0000000, ctrl_unit);
 		PHYDM_DBG(dm, DBG_ENV_MNTR,
 			  "Update IFS_CLM unit ((%d)) -> ((%d))\n",
 			  ccx->ifs_clm_ctrl_unit, ctrl_unit);
@@ -2785,12 +2785,12 @@ void phydm_ifs_clm_set(void *dm_void, enum ifs_clm_application ifs_clm_app,
 
 	/*Set Duration*/
 	if (period != ccx->ifs_clm_period) {
-		odm_set_bb_reg(dm, R_0x1eec, 0xc0000000, (period & 0x3));
-		odm_set_bb_reg(dm, R_0x1ef0, 0xfe000000, ((period >> 2) &
+		odm_set_bb_regbu(dm, R_0x1eec, 0xc0000000, (period & 0x3));
+		odm_set_bb_regbu(dm, R_0x1ef0, 0xfe000000, ((period >> 2) &
 			       0x7f));
-		odm_set_bb_reg(dm, R_0x1ef4, 0xc0000000, ((period >> 9) &
+		odm_set_bb_regbu(dm, R_0x1ef4, 0xc0000000, ((period >> 9) &
 			       0x3));
-		odm_set_bb_reg(dm, R_0x1ef8, 0x3e000000, ((period >> 11) &
+		odm_set_bb_regbu(dm, R_0x1ef8, 0x3e000000, ((period >> 11) &
 			       0x1f));
 		PHYDM_DBG(dm, DBG_ENV_MNTR,
 			  "Update IFS_CLM period ((%d)) -> ((%d))\n",
@@ -2804,11 +2804,11 @@ void phydm_ifs_clm_set(void *dm_void, enum ifs_clm_application ifs_clm_app,
 					th_shift)) {
 
 		ccx->ifs_clm_app = ifs_clm_app;
-		odm_move_memory(dm, &ccx->ifs_clm_th_en[0], &ifs_clm_th_en,
+		odm_move_memorybu(dm, &ccx->ifs_clm_th_en[0], &ifs_clm_th_en,
 				IFS_CLM_NUM);
-		odm_move_memory(dm, &ccx->ifs_clm_th_low[0], &ifs_clm_th_low,
+		odm_move_memorybu(dm, &ccx->ifs_clm_th_low[0], &ifs_clm_th_low,
 				IFS_CLM_NUM);
-		odm_move_memory(dm, &ccx->ifs_clm_th_high[0], &ifs_clm_th_high,
+		odm_move_memorybu(dm, &ccx->ifs_clm_th_high[0], &ifs_clm_th_high,
 				IFS_CLM_NUM);
 
 		phydm_ifs_clm_set_th_reg(dm);
@@ -3072,12 +3072,12 @@ u8 phydm_enhance_mntr_trigger(void *dm_void, struct nhm_para_info *nhm_para,
 
 	PHYDM_DBG(dm, DBG_ENV_MNTR, "[%s] ======>\n", __func__);
 
-	nhm_set_ok = phydm_nhm_mntr_set(dm, nhm_para);
+	nhm_set_ok = phydm_nhm_mntr_setbu(dm, nhm_para);
 
 	if (ccx->clm_mntr_mode == CLM_DRIVER_MNTR) {
-		clm_set_ok = phydm_clm_mntr_set(dm, clm_para);
+		clm_set_ok = phydm_clm_mntr_setbu(dm, clm_para);
 	} else if (ccx->clm_mntr_mode == CLM_FW_MNTR) {
-		phydm_clm_h2c(dm, CLM_PERIOD_MAX, true);
+		phydm_clm_h2cbu(dm, CLM_PERIOD_MAX, true);
 		trigger_result |= CLM_SUCCESS;
 	}
 
@@ -3086,12 +3086,12 @@ u8 phydm_enhance_mntr_trigger(void *dm_void, struct nhm_para_info *nhm_para,
 	ifs_clm_set_ok = phydm_ifs_clm_mntr_set(dm, ifs_clm_para);
 
 	if (nhm_set_ok) {
-		phydm_nhm_trigger(dm);
+		phydm_nhm_triggerbu(dm);
 		trigger_result |= NHM_SUCCESS;
 	}
 
 	if (clm_set_ok) {
-		phydm_clm_trigger(dm);
+		phydm_clm_triggerbu(dm);
 		trigger_result |= CLM_SUCCESS;
 	}
 
@@ -3106,7 +3106,7 @@ u8 phydm_enhance_mntr_trigger(void *dm_void, struct nhm_para_info *nhm_para,
 	}
 
 	/*monitor for the test duration*/
-	ccx->start_time = odm_get_current_time(dm);
+	ccx->start_time = odm_get_current_timebu(dm);
 
 	trig_rpt->nhm_rpt_stamp = ccx->nhm_rpt_stamp;
 	trig_rpt->clm_rpt_stamp = ccx->clm_rpt_stamp;
@@ -3136,22 +3136,22 @@ u8 phydm_enhance_mntr_result(void *dm_void, struct enhance_mntr_rpt *rpt)
 		return enhance_mntr_rpt;
 
 	/*monitor for the test duration*/
-	progressing_time = odm_get_progressing_time(dm, ccx->start_time);
+	progressing_time = odm_get_progressing_timebu(dm, ccx->start_time);
 	PHYDM_DBG(dm, DBG_ENV_MNTR, "[%s] ======>\n", __func__);
 	PHYDM_DBG(dm, DBG_ENV_MNTR, "enhance_mntr_time=%lld\n",
 		  progressing_time);
 
 	/*Get NHM result*/
-	if (phydm_nhm_get_result(dm)) {
+	if (phydm_nhm_get_resultbu(dm)) {
 		PHYDM_DBG(dm, DBG_ENV_MNTR, "Get NHM_rpt success\n");
-		phydm_nhm_get_utility(dm);
+		phydm_nhm_get_utilitybu(dm);
 		rpt->nhm_ratio = ccx->nhm_ratio;
 		rpt->nhm_env_ratio = ccx->nhm_env_ratio;
 		rpt->nhm_noise_pwr = ccx->nhm_level;
 		rpt->nhm_pwr = ccx->nhm_pwr;
 		enhance_mntr_rpt |= NHM_SUCCESS;
 
-		odm_move_memory(dm, &rpt->nhm_result[0],
+		odm_move_memorybu(dm, &rpt->nhm_result[0],
 				&ccx->nhm_result[0], NHM_RPT_NUM);
 	} else {
 		rpt->nhm_ratio = ENV_MNTR_FAIL;
@@ -3165,9 +3165,9 @@ u8 phydm_enhance_mntr_result(void *dm_void, struct enhance_mntr_rpt *rpt)
 
 	/*Get CLM result*/
 	if (ccx->clm_mntr_mode == CLM_DRIVER_MNTR) {
-		if (phydm_clm_get_result(dm)) {
+		if (phydm_clm_get_resultbu(dm)) {
 			PHYDM_DBG(dm, DBG_ENV_MNTR, "Get CLM_rpt success\n");
-			phydm_clm_get_utility(dm);
+			phydm_clm_get_utilitybu(dm);
 			enhance_mntr_rpt |= CLM_SUCCESS;
 			rpt->clm_ratio = ccx->clm_ratio;
 		} else {
@@ -3204,7 +3204,7 @@ u8 phydm_enhance_mntr_result(void *dm_void, struct enhance_mntr_rpt *rpt)
 		rpt->fahm_inclu_cck = ccx->fahm_inclu_cck;
 		enhance_mntr_rpt |= FAHM_SUCCESS;
 
-		odm_move_memory(dm, &rpt->fahm_result[0],
+		odm_move_memorybu(dm, &rpt->fahm_result[0],
 				&ccx->fahm_result[0], FAHM_RPT_NUM * 2);
 	} else {
 		rpt->fahm_pwr = 0;
@@ -3374,7 +3374,7 @@ void phydm_enhance_mntr_dbg(void *dm_void, char input[][16], u32 *_used,
 }
 
 /*Environment Monitor*/
-void phydm_env_mntr_result_watchdog(void *dm_void)
+void phydm_env_mntr_resultbu_watchdog(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ccx_info *ccx = &dm->dm_ccx_info;
@@ -3422,11 +3422,11 @@ void phydm_env_mntr_set_watchdog(void *dm_void)
 	PHYDM_DBG(dm, DBG_ENV_MNTR, "[%s]===>\n", __func__);
 
 	#if (defined(NHM_SUPPORT) && defined(CLM_SUPPORT))
-	if (phydm_nhm_mntr_chk(dm, 262))
-		phydm_nhm_trigger(dm);
+	if (phydm_nhm_mntr_chkbu(dm, 262))
+		phydm_nhm_triggerbu(dm);
 
-	if (phydm_clm_mntr_chk(dm, 262))
-		phydm_clm_trigger(dm);
+	if (phydm_clm_mntr_chkbu(dm, 262))
+		phydm_clm_triggerbu(dm);
 	#endif
 
 	#ifdef FAHM_SUPPORT
@@ -3444,13 +3444,13 @@ void phydm_env_mntr_set_watchdog(void *dm_void)
 	#endif
 }
 
-void phydm_env_monitor_init(void *dm_void)
+void phydm_env_monitor_initbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	#if (defined(NHM_SUPPORT) && defined(CLM_SUPPORT))
-	phydm_ccx_hw_restart(dm);
-	phydm_nhm_init(dm);
-	phydm_clm_init(dm);
+	phydm_ccx_hw_restartbu(dm);
+	phydm_nhm_initbu(dm);
+	phydm_clm_initbu(dm);
 	#endif
 
 	#ifdef FAHM_SUPPORT

@@ -33,7 +33,7 @@
 
 void rtw_ft_info_init(struct ft_roam_info *pft)
 {
-	_rtw_memset(pft, 0, sizeof(struct ft_roam_info));
+	_rtw_memsetbu(pft, 0, sizeof(struct ft_roam_info));
 	pft->ft_flags = 0
 		| RTW_FT_EN
 	/*	| RTW_FT_OTD_EN */
@@ -89,13 +89,13 @@ u8 rtw_ft_chk_roaming_candidate(
 	u32 mdie_len = 0;
 	struct ft_roam_info *pft_roam = &(padapter->mlmepriv.ft_roam);
 
-	if (!(pmdie = rtw_get_ie(&competitor->network.IEs[12],
+	if (!(pmdie = rtw_get_iebu(&competitor->network.IEs[12],
 			_MDIE_, &mdie_len, competitor->network.IELength-12))) {
 		RTW_INFO("FT : MDIE not foud in competitor!\n");
 		return _FALSE;
 	}	
 
-	if (!_rtw_memcmp(&pft_roam->mdid, (pmdie+2), 2)) {
+	if (!_rtw_memcmpbu(&pft_roam->mdid, (pmdie+2), 2)) {
 		RTW_INFO("FT : unmatched MDIE!\n");
 		return _FALSE;
 	}
@@ -110,7 +110,7 @@ u8 rtw_ft_chk_roaming_candidate(
 	}
 
 	if (rtw_ft_chk_flags(padapter, RTW_FT_TEST_RSSI_ROAM)) {
-		if (!_rtw_memcmp(padapter->mlmepriv.cur_network.network.MacAddress, 
+		if (!_rtw_memcmpbu(padapter->mlmepriv.cur_network.network.MacAddress, 
 			competitor->network.MacAddress, ETH_ALEN) ) {
 			competitor->network.Rssi +=20;
 			RTW_FT_INFO("%s : update "MAC_FMT" RSSI to %d for RTW_FT_TEST_RSSI_ROAM\n",
@@ -128,9 +128,9 @@ void rtw_ft_update_stainfo(_adapter *padapter, WLAN_BSSID_EX *pnetwork)
 	struct sta_priv		*pstapriv = &padapter->stapriv;
 	struct sta_info		*psta = NULL;
 
-	psta = rtw_get_stainfo(pstapriv, pnetwork->MacAddress);
+	psta = rtw_get_stainfobu(pstapriv, pnetwork->MacAddress);
 	if (psta == NULL)
-		psta = rtw_alloc_stainfo(pstapriv, pnetwork->MacAddress);
+		psta = rtw_alloc_stainfobu(pstapriv, pnetwork->MacAddress);
 
 	if (padapter->securitypriv.dot11AuthAlgrthm == dot11AuthAlgrthm_8021X) {
 
@@ -141,9 +141,9 @@ void rtw_ft_update_stainfo(_adapter *padapter, WLAN_BSSID_EX *pnetwork)
 		psta->ieee8021x_blocked = _TRUE;
 		psta->dot118021XPrivacy = padapter->securitypriv.dot11PrivacyAlgrthm;
 
-		_rtw_memset((u8 *)&psta->dot118021x_UncstKey, 0, sizeof(union Keytype));
-		_rtw_memset((u8 *)&psta->dot11tkiprxmickey, 0, sizeof(union Keytype));
-		_rtw_memset((u8 *)&psta->dot11tkiptxmickey, 0, sizeof(union Keytype));
+		_rtw_memsetbu((u8 *)&psta->dot118021x_UncstKey, 0, sizeof(union Keytype));
+		_rtw_memsetbu((u8 *)&psta->dot11tkiprxmickey, 0, sizeof(union Keytype));
+		_rtw_memsetbu((u8 *)&psta->dot11tkiptxmickey, 0, sizeof(union Keytype));
 	}
 
 }
@@ -159,18 +159,18 @@ void rtw_ft_reassoc_event_callback(_adapter *padapter, u8 *pbuf)
 	struct cfg80211_ft_event_params ft_evt_parms;
 	_irqL irqL;
 
-	_rtw_memset(&ft_evt_parms, 0, sizeof(ft_evt_parms));
+	_rtw_memsetbu(&ft_evt_parms, 0, sizeof(ft_evt_parms));
 	rtw_ft_update_stainfo(padapter, pnetwork);
 	ft_evt_parms.ies_len = pft_roam->ft_event.ies_len;
 	ft_evt_parms.ies =  rtw_zmalloc(ft_evt_parms.ies_len);
 	if (ft_evt_parms.ies)
-		_rtw_memcpy((void *)ft_evt_parms.ies, pft_roam->ft_event.ies, ft_evt_parms.ies_len);
+		_rtw_memcpybu((void *)ft_evt_parms.ies, pft_roam->ft_event.ies, ft_evt_parms.ies_len);
 	 else
 		goto err_2;
 
 	ft_evt_parms.target_ap = rtw_zmalloc(ETH_ALEN);
 	if (ft_evt_parms.target_ap)
-		_rtw_memcpy((void *)ft_evt_parms.target_ap, pstassoc->macaddr, ETH_ALEN);
+		_rtw_memcpybu((void *)ft_evt_parms.target_ap, pstassoc->macaddr, ETH_ALEN);
 	else
 		goto err_1;
 
@@ -212,7 +212,7 @@ void rtw_ft_validate_akm_type(_adapter  *padapter,
 
 	/*IEEE802.11-2012 Std. Table 8-101-AKM suite selectors*/
 	if (rtw_ft_valid_akm(padapter, psecuritypriv->rsn_akm_suite_type)) {
-		ptmp = rtw_get_ie(&pnetwork->network.IEs[12], 
+		ptmp = rtw_get_iebu(&pnetwork->network.IEs[12], 
 				_MDIE_, &tmp_len, (pnetwork->network.IELength-12));
 		if (ptmp) {
 			pft_roam->mdid = *(u16 *)(ptmp+2);
@@ -254,25 +254,25 @@ void rtw_ft_update_bcn(_adapter *padapter, union recv_frame *precv_frame)
 		&& (pmlmepriv->ft_roam.ft_updated_bcn == _FALSE)) {
 		pbss = (WLAN_BSSID_EX*)rtw_malloc(sizeof(WLAN_BSSID_EX));
 		if (pbss) {
-			if (collect_bss_info(padapter, precv_frame, pbss) == _SUCCESS) {
+			if (collect_bss_infobu(padapter, precv_frame, pbss) == _SUCCESS) {
 				struct beacon_keys recv_beacon;
 
-				update_network(&(pmlmepriv->cur_network.network), pbss, padapter, _TRUE);
-				/* Move into rtw_get_bcn_keys */
+				update_networkbu(&(pmlmepriv->cur_network.network), pbss, padapter, _TRUE);
+				/* Move into rtw_get_bcn_keysbu */
 				/* rtw_get_bcn_info(&(pmlmepriv->cur_network)); */
 				
 				/* update bcn keys */
-				if (rtw_get_bcn_keys(padapter, pframe, len, &recv_beacon) == _TRUE) {
+				if (rtw_get_bcn_keysbu(padapter, pframe, len, &recv_beacon) == _TRUE) {
 					RTW_FT_INFO("%s: beacon keys ready\n", __func__);
-					_rtw_memcpy(&pmlmepriv->cur_beacon_keys,
+					_rtw_memcpybu(&pmlmepriv->cur_beacon_keys,
 						&recv_beacon, sizeof(recv_beacon));
 					if (is_hidden_ssid(recv_beacon.ssid, recv_beacon.ssid_len)) {
-						_rtw_memcpy(pmlmepriv->cur_beacon_keys.ssid, pmlmeinfo->network.Ssid.Ssid, IW_ESSID_MAX_SIZE);
+						_rtw_memcpybu(pmlmepriv->cur_beacon_keys.ssid, pmlmeinfo->network.Ssid.Ssid, IW_ESSID_MAX_SIZE);
 						pmlmepriv->cur_beacon_keys.ssid_len = pmlmeinfo->network.Ssid.SsidLength;
 					}
 				} else {
 					RTW_ERR("%s: get beacon keys failed\n", __func__);
-					_rtw_memset(&pmlmepriv->cur_beacon_keys, 0, sizeof(recv_beacon));
+					_rtw_memsetbu(&pmlmepriv->cur_beacon_keys, 0, sizeof(recv_beacon));
 				}
 				#ifdef CONFIG_BCN_CNT_CONFIRM_HDL
 				pmlmepriv->new_beacon_cnts = 0;
@@ -283,18 +283,18 @@ void rtw_ft_update_bcn(_adapter *padapter, union recv_frame *precv_frame)
 
 		/* check the vendor of the assoc AP */
 		pmlmeinfo->assoc_AP_vendor = 	
-			check_assoc_AP(pframe+sizeof(struct rtw_ieee80211_hdr_3addr),
+			check_assoc_APbu(pframe+sizeof(struct rtw_ieee80211_hdr_3addr),
 				(len - sizeof(struct rtw_ieee80211_hdr_3addr)));
 
 		/* update TSF Value */
-		update_TSF(pmlmeext, pframe, len);
+		update_TSFbu(pmlmeext, pframe, len);
 		pmlmeext->bcn_cnt = 0;
 		pmlmeext->last_bcn_cnt = 0;
 		pmlmepriv->ft_roam.ft_updated_bcn = _TRUE;
 	}
 }
 
-void rtw_ft_start_clnt_join(_adapter *padapter)
+void rtw_ft_start_clnt_joinbu(_adapter *padapter)
 {
 	struct mlme_ext_priv *pmlmeext = &(padapter->mlmeextpriv);
 	struct mlme_ext_info *pmlmeinfo = &(pmlmeext->mlmext_info);
@@ -316,7 +316,7 @@ void rtw_ft_start_clnt_join(_adapter *padapter)
 	}
 
 	pmlmeinfo->state = WIFI_FW_AUTH_NULL | WIFI_FW_STATION_STATE;
-	start_clnt_auth(padapter);
+	start_clnt_authbu(padapter);
 }
 
 u8 rtw_ft_update_rsnie(
@@ -327,14 +327,14 @@ u8 rtw_ft_update_rsnie(
 	u8 *pie;
 	u32 len;
 
-	pie = rtw_get_ie(pft_roam->updated_ft_ies, EID_WPA2, &len, 
+	pie = rtw_get_iebu(pft_roam->updated_ft_ies, EID_WPA2, &len, 
 			pft_roam->updated_ft_ies_len);
 
 	if (!bwrite)
 		return (pie)?_SUCCESS:_FAIL;
 	
 	if (pie) {
-		*pframe = rtw_set_ie(((u8 *)*pframe), EID_WPA2, len, 
+		*pframe = rtw_set_iebu(((u8 *)*pframe), EID_WPA2, len, 
 						pie+2, &(pattrib->pktlen));
 	} else
 		return _FAIL;
@@ -350,7 +350,7 @@ static u8 rtw_ft_update_mdie(
 	u32 len = 3;
 
 	if (rtw_ft_roam(padapter)) {
-		if ((pie = rtw_get_ie(pft_roam->updated_ft_ies, _MDIE_, 
+		if ((pie = rtw_get_iebu(pft_roam->updated_ft_ies, _MDIE_, 
 				&len, pft_roam->updated_ft_ies_len))) {
 			pie = (pie + 2); /* ignore md-id & length */
 		} else 
@@ -361,7 +361,7 @@ static u8 rtw_ft_update_mdie(
 		pie = &mdie[0];
 	}
 
-	*pframe = rtw_set_ie(((u8 *)*pframe), _MDIE_, len , pie, &(pattrib->pktlen));
+	*pframe = rtw_set_iebu(((u8 *)*pframe), _MDIE_, len , pie, &(pattrib->pktlen));
 	return _SUCCESS;	
 }
 
@@ -372,9 +372,9 @@ static u8 rtw_ft_update_ftie(
 	u8 *pie;
 	u32 len;
 
-	if ((pie = rtw_get_ie(pft_roam->updated_ft_ies, _FTIE_, &len, 
+	if ((pie = rtw_get_iebu(pft_roam->updated_ft_ies, _FTIE_, &len, 
 				pft_roam->updated_ft_ies_len)) != NULL) {
-		*pframe = rtw_set_ie(*pframe, _FTIE_, len , 
+		*pframe = rtw_set_iebu(*pframe, _FTIE_, len , 
 					(pie+2), &(pattrib->pktlen));
 	} else
 		return _FAIL;
@@ -433,7 +433,7 @@ u8 rtw_ft_update_auth_rsp_ies(_adapter *padapter, u8 *pframe, u32 len)
 	if (!pframe || !len)
 		return _FAIL;
 	
-	rtw_buf_update(&pmlmepriv->auth_rsp, 
+	rtw_buf_updatebu(&pmlmepriv->auth_rsp, 
 		&pmlmepriv->auth_rsp_len, pframe, len);
 	pft_roam->ft_event.ies =
 		(pmlmepriv->auth_rsp + sizeof(struct rtw_ieee80211_hdr_3addr) + 6);
@@ -443,7 +443,7 @@ u8 rtw_ft_update_auth_rsp_ies(_adapter *padapter, u8 *pframe, u32 len)
 	/*Not support RIC*/
 	pft_roam->ft_event.ric_ies =  NULL;
 	pft_roam->ft_event.ric_ies_len =  0;
-	_rtw_memcpy(target_ap_addr, pmlmepriv->assoc_bssid, ETH_ALEN);
+	_rtw_memcpybu(target_ap_addr, pmlmepriv->assoc_bssid, ETH_ALEN);
 	rtw_ft_report_reassoc_evt(padapter, target_ap_addr);
 
 	return ret;	
@@ -485,21 +485,21 @@ void rtw_ft_issue_action_req(_adapter *padapter, u8 *pTargetAddr)
 	u8 category = RTW_WLAN_CATEGORY_FT;
 	u8 action = RTW_WLAN_ACTION_FT_REQ;
 
-	pmgntframe = alloc_mgtxmitframe(pxmitpriv);
+	pmgntframe = alloc_mgtxmitframebu(pxmitpriv);
 	if (pmgntframe == NULL)
 		return;
 
 	pattrib = &pmgntframe->attrib;
-	update_mgntframe_attrib(padapter, pattrib);
-	_rtw_memset(pmgntframe->buf_addr, 0, WLANHDR_OFFSET + TXDESC_OFFSET);
+	update_mgntframe_attribbu(padapter, pattrib);
+	_rtw_memsetbu(pmgntframe->buf_addr, 0, WLANHDR_OFFSET + TXDESC_OFFSET);
 
 	pframe = (u8 *)(pmgntframe->buf_addr) + TXDESC_OFFSET;
 	pwlanhdr = (struct rtw_ieee80211_hdr *)pframe;
 	pwlanhdr->frame_ctl = 0;
 
-	_rtw_memcpy(pwlanhdr->addr1, get_my_bssid(&pmlmeinfo->network), ETH_ALEN);
-	_rtw_memcpy(pwlanhdr->addr2, adapter_mac_addr(padapter), ETH_ALEN);
-	_rtw_memcpy(pwlanhdr->addr3, get_my_bssid(&pmlmeinfo->network), ETH_ALEN);
+	_rtw_memcpybu(pwlanhdr->addr1, get_my_bssidbu(&pmlmeinfo->network), ETH_ALEN);
+	_rtw_memcpybu(pwlanhdr->addr2, adapter_mac_addr(padapter), ETH_ALEN);
+	_rtw_memcpybu(pwlanhdr->addr3, get_my_bssidbu(&pmlmeinfo->network), ETH_ALEN);
 
 	SetSeqNum(pwlanhdr, pmlmeext->mgnt_seq);
 	pmlmeext->mgnt_seq++;
@@ -508,14 +508,14 @@ void rtw_ft_issue_action_req(_adapter *padapter, u8 *pTargetAddr)
 	pframe += sizeof(struct rtw_ieee80211_hdr_3addr);
 	pattrib->pktlen = sizeof(struct rtw_ieee80211_hdr_3addr);
 
-	pframe = rtw_set_fixed_ie(pframe, 1, &(category), &(pattrib->pktlen));
-	pframe = rtw_set_fixed_ie(pframe, 1, &(action), &(pattrib->pktlen));
+	pframe = rtw_set_fixed_iebu(pframe, 1, &(category), &(pattrib->pktlen));
+	pframe = rtw_set_fixed_iebu(pframe, 1, &(action), &(pattrib->pktlen));
 
-	_rtw_memcpy(pframe, adapter_mac_addr(padapter), ETH_ALEN);
+	_rtw_memcpybu(pframe, adapter_mac_addr(padapter), ETH_ALEN);
 	pframe += ETH_ALEN;
 	pattrib->pktlen += ETH_ALEN;
 
-	_rtw_memcpy(pframe, pTargetAddr, ETH_ALEN);
+	_rtw_memcpybu(pframe, pTargetAddr, ETH_ALEN);
 	pframe += ETH_ALEN;
 	pattrib->pktlen += ETH_ALEN;
 
@@ -525,7 +525,7 @@ void rtw_ft_issue_action_req(_adapter *padapter, u8 *pTargetAddr)
 
 	RTW_INFO("FT : issue RTW_WLAN_ACTION_FT_REQ\n");
 	pattrib->last_txcmdsz = pattrib->pktlen;
-	dump_mgntframe(padapter, pmgntframe);
+	dump_mgntframebu(padapter, pmgntframe);
 }
 
 void rtw_ft_report_evt(_adapter *padapter)
@@ -538,7 +538,7 @@ void rtw_ft_report_evt(_adapter *padapter)
 	struct cfg80211_ft_event_params ft_evt_parms;
 	_irqL irqL;
 
-	_rtw_memset(&ft_evt_parms, 0, sizeof(ft_evt_parms));
+	_rtw_memsetbu(&ft_evt_parms, 0, sizeof(ft_evt_parms));
 	rtw_ft_update_stainfo(padapter, pnetwork);
 
 	if (!pnetwork)
@@ -547,13 +547,13 @@ void rtw_ft_report_evt(_adapter *padapter)
 	ft_evt_parms.ies_len = pft_roam->ft_event.ies_len;
 	ft_evt_parms.ies =  rtw_zmalloc(ft_evt_parms.ies_len);
 	if (ft_evt_parms.ies)
-		_rtw_memcpy((void *)ft_evt_parms.ies, pft_roam->ft_event.ies, ft_evt_parms.ies_len);
+		_rtw_memcpybu((void *)ft_evt_parms.ies, pft_roam->ft_event.ies, ft_evt_parms.ies_len);
 	 else
 		goto err_2;
 
 	ft_evt_parms.target_ap = rtw_zmalloc(ETH_ALEN);
 	if (ft_evt_parms.target_ap)
-		_rtw_memcpy((void *)ft_evt_parms.target_ap, pnetwork->MacAddress, ETH_ALEN);
+		_rtw_memcpybu((void *)ft_evt_parms.target_ap, pnetwork->MacAddress, ETH_ALEN);
 	else
 		goto err_1;
 
@@ -603,7 +603,7 @@ void rtw_ft_report_reassoc_evt(_adapter *padapter, u8 *pMacAddr)
 		return;
 	}
 
-	_rtw_init_listhead(&pcmd_obj->list);
+	_rtw_init_listheadbu(&pcmd_obj->list);
 	pcmd_obj->cmdcode = CMD_SET_MLME_EVT;
 	pcmd_obj->cmdsz = cmdsz;
 	pcmd_obj->parmbuf = pevtcmd;
@@ -613,14 +613,14 @@ void rtw_ft_report_reassoc_evt(_adapter *padapter, u8 *pMacAddr)
 	evt_hdr = (struct rtw_evt_header *)(pevtcmd);
 	evt_hdr->len = sizeof(struct stassoc_event);
 	evt_hdr->id = EVT_FT_REASSOC;
-	evt_hdr->seq = ATOMIC_INC_RETURN(&pmlmeext->event_seq);
+	evt_hdr->seq = ATOMIC_INCbu_RETURN(&pmlmeext->event_seq);
 
 	passoc_sta_evt = (struct stassoc_event *)(pevtcmd + sizeof(struct rtw_evt_header));
-	_rtw_memcpy((unsigned char *)(&(passoc_sta_evt->macaddr)), pMacAddr, ETH_ALEN);
-	rtw_enqueue_cmd(pcmdpriv, pcmd_obj);
+	_rtw_memcpybu((unsigned char *)(&(passoc_sta_evt->macaddr)), pMacAddr, ETH_ALEN);
+	rtw_enqueue_cmdbu(pcmdpriv, pcmd_obj);
 }
 
-void rtw_ft_link_timer_hdl(void *ctx)
+void rtw_ft_link_timer_hdlbu(void *ctx)
 {
 	_adapter *padapter = (_adapter *)ctx;
 	struct mlme_ext_priv *pmlmeext = &(padapter->mlmeextpriv);
@@ -649,7 +649,7 @@ void rtw_ft_roam_timer_hdl(void *ctx)
 	struct mlme_priv *pmlmepriv = &(padapter->mlmepriv);
 
 	RTW_FT_INFO("%s : try roaming\n", __func__);
-	receive_disconnect(padapter, pmlmepriv->cur_network.network.MacAddress
+	receive_disconnectbu(padapter, pmlmepriv->cur_network.network.MacAddress
 				, WLAN_REASON_ACTIVE_ROAM, _FALSE);
 }
 
@@ -657,7 +657,7 @@ void rtw_ft_roam_status_reset(_adapter *padapter)
 {
 	struct ft_roam_info *pft_roam = &(padapter->mlmepriv.ft_roam);
 
-	if ((rtw_to_roam(padapter) > 0) && 
+	if ((rtw_to_roambu(padapter) > 0) && 
 		(!rtw_ft_chk_status(padapter, RTW_FT_REQUESTED_STA))) {
 		rtw_ft_reset_status(padapter);
 	}	

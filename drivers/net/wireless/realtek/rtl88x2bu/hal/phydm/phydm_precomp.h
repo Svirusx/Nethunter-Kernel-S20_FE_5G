@@ -56,7 +56,7 @@
 	#if defined(CONFIG_RTL_TRIBAND_SUPPORT) && defined(CONFIG_USB_HCI)
 		#define INIT_TIMER_EVENT_ENTRY(_entry, _func, _data) \
 		do { \
-			_rtw_init_listhead(&(_entry)->list); \
+			_rtw_init_listheadbu(&(_entry)->list); \
 			(_entry)->data = (_data); \
 			(_entry)->function = (_func); \
 		} while (0)
@@ -175,7 +175,7 @@
 #if (DM_ODM_SUPPORT_TYPE & ODM_CE) && \
 	(!defined(DM_ODM_CE_MAC80211) && !defined(DM_ODM_CE_MAC80211_V2))
 
-void phy_set_tx_power_limit(
+void phy_set_tx_power_limitbu(
 	struct dm_struct *dm,
 	u8 *regulation,
 	u8 *band,
@@ -185,12 +185,12 @@ void phy_set_tx_power_limit(
 	u8 *channel,
 	u8 *power_limit);
 
-void phy_set_tx_power_limit_ex(struct dm_struct *dm, u8 regulation, u8 band,
+void phy_set_tx_power_limitbu_ex(struct dm_struct *dm, u8 regulation, u8 band,
 			       u8 bandwidth, u8 rate_section, u8 rf_path,
 			       u8 channel, s8 power_limit);
 
 enum hal_status
-rtw_phydm_fw_iqk(
+rtw_phydm_fw_iqkbu(
 	struct dm_struct *dm,
 	u8 clear,
 	u8 segment);
@@ -200,7 +200,7 @@ rtw_phydm_fw_dpk(
 	struct dm_struct *dm);
 
 enum hal_status
-rtw_phydm_cfg_phy_para(
+rtw_phydm_cfg_phy_parabu(
 	struct dm_struct *dm,
 	enum phydm_halmac_param config_type,
 	u32 offset,

@@ -42,7 +42,7 @@ static void rtw_regd_overide_flags(struct wiphy *wiphy, struct rf_ctl_t *rfctl)
 	/* channels apply by channel plans. */
 	for (i = 0; i < max_chan_nums; i++) {
 		channel = channel_set[i].ChannelNum;
-		freq = rtw_ch2freq(channel);
+		freq = rtw_ch2freqbu(channel);
 		ch = ieee80211_get_channel(wiphy, freq);
 		if (!ch) {
 			rtw_warn_on(1);
@@ -96,7 +96,7 @@ static void rtw_regd_apply_dfs_flags(struct rf_ctl_t *rfctl)
 }
 #endif
 
-void rtw_regd_apply_flags(struct wiphy *wiphy)
+void rtw_regd_apply_flagsbu(struct wiphy *wiphy)
 {
 	struct dvobj_priv *dvobj = wiphy_to_dvobj(wiphy);
 	struct rf_ctl_t *rfctl = dvobj_to_rfctl(dvobj);
@@ -112,8 +112,8 @@ void rtw_regd_apply_flags(struct wiphy *wiphy)
 }
 
 #ifdef CONFIG_REGD_SRC_FROM_OS
-/* init_channel_set_from_wiphy */
-u8 rtw_os_init_channel_set(_adapter *padapter, RT_CHANNEL_INFO *channel_set)
+/* init_channel_setbu_from_wiphy */
+u8 rtw_os_init_channel_setbu(_adapter *padapter, RT_CHANNEL_INFO *channel_set)
 {
 	struct wiphy *wiphy = adapter_to_wiphy(padapter);
 	struct rf_ctl_t *rfctl = adapter_to_rfctl(padapter);
@@ -122,7 +122,7 @@ u8 rtw_os_init_channel_set(_adapter *padapter, RT_CHANNEL_INFO *channel_set)
 	u8 chanset_size = 0;
 	int i, j;
 
-	_rtw_memset(channel_set, 0, sizeof(RT_CHANNEL_INFO) * MAX_CHANNEL_NUM);
+	_rtw_memsetbu(channel_set, 0, sizeof(RT_CHANNEL_INFO) * MAX_CHANNEL_NUM);
 
 	for (i = NL80211_BAND_2GHZ; i <= NL80211_BAND_5GHZ; i++) {
 		if (!wiphy->bands[i])
@@ -131,7 +131,7 @@ u8 rtw_os_init_channel_set(_adapter *padapter, RT_CHANNEL_INFO *channel_set)
 			chan = &wiphy->bands[i]->channels[j];
 			if (chan->flags & IEEE80211_CHAN_DISABLED)
 				continue;
-			if (rtw_regsty_is_excl_chs(regsty, chan->hw_value))
+			if (rtw_regsty_is_excl_chsbu(regsty, chan->hw_value))
 				continue;
 
 			if (chanset_size >= MAX_CHANNEL_NUM) {
@@ -193,11 +193,11 @@ s16 rtw_os_get_total_txpwr_regd_lmt_mbm(_adapter *adapter, u8 cch, enum channel_
 	u32 freq;
 	struct ieee80211_channel *ch;
 
-	if (!rtw_get_op_chs_by_cch_bw(cch, bw, &op_chs, &op_ch_num))
+	if (!rtw_get_op_chs_by_cch_bwbu(cch, bw, &op_chs, &op_ch_num))
 		goto exit;
 
 	for (i = 0; i < op_ch_num; i++) {
-		freq = rtw_ch2freq(op_chs[i]);
+		freq = rtw_ch2freqbu(op_chs[i]);
 		ch = ieee80211_get_channel(wiphy, freq);
 		if (!ch) {
 			rtw_warn_on(1);
@@ -345,7 +345,7 @@ static void rtw_reg_notifier(struct wiphy *wiphy, struct regulatory_request *req
 	struct registry_priv *regsty = dvobj_to_regsty(dvobj);
 
 #ifdef CONFIG_RTW_DEBUG
-	if (rtw_drv_log_level >= _DRV_INFO_) {
+	if (rtw_drv_log_levelbu >= _DRV_INFO_) {
 		RTW_INFO(FUNC_WIPHY_FMT"\n", FUNC_WIPHY_ARG(wiphy));
 		dump_requlatory_request(RTW_DBGDUMP, request);
 	}
@@ -371,13 +371,13 @@ static void rtw_reg_notifier(struct wiphy *wiphy, struct regulatory_request *req
 		case NL80211_REGDOM_SET_BY_CORE:
 			break;
 		case NL80211_REGDOM_SET_BY_USER:
-			rtw_set_country(wiphy_to_adapter(wiphy), request->alpha2);
+			rtw_set_countrybu(wiphy_to_adapter(wiphy), request->alpha2);
 			break;
 		case NL80211_REGDOM_SET_BY_COUNTRY_IE:
 			break;
 		}
 
-		rtw_regd_apply_flags(wiphy);
+		rtw_regd_apply_flagsbu(wiphy);
 	}
 }
 
@@ -389,7 +389,7 @@ static int rtw_reg_notifier_return(struct wiphy *wiphy, struct regulatory_reques
 }
 #endif
 
-int rtw_regd_init(struct wiphy *wiphy)
+int rtw_regd_initbu(struct wiphy *wiphy)
 {
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 9, 0))
 	wiphy->reg_notifier = rtw_reg_notifier_return;

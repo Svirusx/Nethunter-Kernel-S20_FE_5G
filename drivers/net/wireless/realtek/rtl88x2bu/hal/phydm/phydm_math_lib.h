@@ -95,26 +95,26 @@
  * 1 ============================================================
  */
 
-s32 odm_pwdb_conversion(s32 X, u32 total_bit, u32 decimal_bit);
+s32 odm_pwdb_conversionbu(s32 X, u32 total_bit, u32 decimal_bit);
 
-s32 odm_sign_conversion(s32 value, u32 total_bit);
+s32 odm_sign_conversionbu(s32 value, u32 total_bit);
 
-u16 phydm_find_intrvl(void *dm_void, u16 val, u16 *threshold, u16 th_len);
+u16 phydm_find_intrvlbu(void *dm_void, u16 val, u16 *threshold, u16 th_len);
 
-void phydm_seq_sorting(void *dm_void, u32 *value, u32 *rank_idx, u32 *idx_out,
+void phydm_seq_sortingbu(void *dm_void, u32 *value, u32 *rank_idx, u32 *idx_out,
 		       u8 seq_length);
 
-u32 odm_convert_to_db(u64 value);
+u32 odm_convert_to_dbbu(u64 value);
 
-u64 phydm_db_2_linear(u32 value);
+u64 phydm_db_2_linearbu(u32 value);
 
-u16 phydm_show_fraction_num(u32 frac_val, u8 bit_num);
+u16 phydm_show_fraction_numbu(u32 frac_val, u8 bit_num);
 
 u16 phydm_ones_num_in_bitmap(u64 val, u8 size);
 
-u64 phydm_gen_bitmask(u8 mask_num);
+u64 phydm_gen_bitmaskbu(u8 mask_num);
 
-s32 phydm_cnvrt_2_sign(u32 val, u8 bit_num);
+s32 phydm_cnvrt_2_signbu(u32 val, u8 bit_num);
 
-s64 phydm_cnvrt_2_sign_64(u64 val, u8 bit_num);
+s64 phydm_cnvrt_2_signbu_64(u64 val, u8 bit_num);
 #endif

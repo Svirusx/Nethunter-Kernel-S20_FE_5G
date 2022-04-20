@@ -613,9 +613,9 @@ typedef struct {
 
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0)) || defined(RTW_VENDOR_EXT_SUPPORT)
-extern int rtw_cfgvendor_attach(struct wiphy *wiphy);
-extern int rtw_cfgvendor_detach(struct wiphy *wiphy);
-extern int rtw_cfgvendor_send_async_event(struct wiphy *wiphy,
+extern int rtw_cfgvendor_attachbu(struct wiphy *wiphy);
+extern int rtw_cfgvendor_detachbu(struct wiphy *wiphy);
+extern int rtw_cfgvendor_send_async_eventbu(struct wiphy *wiphy,
 	struct net_device *dev, int event_id, const void  *data, int len);
 #if defined(GSCAN_SUPPORT) && 0
 extern int rtw_cfgvendor_send_hotlist_event(struct wiphy *wiphy,

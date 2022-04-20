@@ -128,13 +128,13 @@ void rtl8822bu_initswleds(PADAPTER padapter)
 	u8 enable = 1;
 	u8 mode = 3;
 
-	ledpriv->LedControlHandler = LedControlUSB;
+	ledpriv->LedControlHandler = LedControlUSBbu;
 	ledpriv->SwLedOn = swledon;
 	ledpriv->SwLedOff = swledoff;
 
-	InitLed(padapter, &(ledpriv->SwLed0), LED_PIN_LED0);
-	InitLed(padapter, &(ledpriv->SwLed1), LED_PIN_LED1);
-	InitLed(padapter, &(ledpriv->SwLed2), LED_PIN_LED2);
+	InitLedbu(padapter, &(ledpriv->SwLed0), LED_PIN_LED0);
+	InitLedbu(padapter, &(ledpriv->SwLed1), LED_PIN_LED1);
+	InitLedbu(padapter, &(ledpriv->SwLed2), LED_PIN_LED2);
 }
 
 /*
@@ -147,8 +147,8 @@ void rtl8822bu_deinitswleds(PADAPTER padapter)
 	u8 enable = 0;
 	u8 mode = 3;
 
-	DeInitLed(&(ledpriv->SwLed0));
-	DeInitLed(&(ledpriv->SwLed1));
-	DeInitLed(&(ledpriv->SwLed2));
+	DeInitLedbubu(&(ledpriv->SwLed0));
+	DeInitLedbubu(&(ledpriv->SwLed1));
+	DeInitLedbubu(&(ledpriv->SwLed2));
 }
 #endif

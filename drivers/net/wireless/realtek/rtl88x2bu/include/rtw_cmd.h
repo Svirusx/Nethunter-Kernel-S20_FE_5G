@@ -114,7 +114,7 @@ struct	evt_priv {
 
 #define init_h2fwcmd_w_parm_no_rsp(pcmd, pparm, code) \
 	do {\
-		_rtw_init_listhead(&pcmd->list);\
+		_rtw_init_listheadbu(&pcmd->list);\
 		pcmd->cmdcode = code;\
 		pcmd->parmbuf = (u8 *)(pparm);\
 		pcmd->cmdsz = sizeof (*pparm);\
@@ -124,7 +124,7 @@ struct	evt_priv {
 
 #define init_h2fwcmd_w_parm_no_parm_rsp(pcmd, code) \
 	do {\
-		_rtw_init_listhead(&pcmd->list);\
+		_rtw_init_listheadbu(&pcmd->list);\
 		pcmd->cmdcode = code;\
 		pcmd->parmbuf = NULL;\
 		pcmd->cmdsz = 0;\
@@ -161,9 +161,9 @@ struct P2P_WoWlan_Offload_t {
 
 #endif /* CONFIG_P2P_WOWLAN */
 
-extern u32 rtw_enqueue_cmd(struct cmd_priv *pcmdpriv, struct cmd_obj *obj);
-extern struct cmd_obj *rtw_dequeue_cmd(struct cmd_priv *pcmdpriv);
-extern void rtw_free_cmd_obj(struct cmd_obj *pcmd);
+extern u32 rtw_enqueue_cmdbu(struct cmd_priv *pcmdpriv, struct cmd_obj *obj);
+extern struct cmd_obj *rtw_dequeue_cmdbu(struct cmd_priv *pcmdpriv);
+extern void rtw_free_cmd_objbu(struct cmd_obj *pcmd);
 
 #ifdef CONFIG_EVENT_THREAD_MODE
 extern u32 rtw_enqueue_evt(struct evt_priv *pevtpriv, struct evt_obj *obj);
@@ -171,18 +171,18 @@ extern struct evt_obj *rtw_dequeue_evt(_queue *queue);
 extern void rtw_free_evt_obj(struct evt_obj *pcmd);
 #endif
 
-void rtw_stop_cmd_thread(_adapter *adapter);
-thread_return rtw_cmd_thread(thread_context context);
+void rtw_stop_cmd_threadbu(_adapter *adapter);
+thread_return rtw_cmd_threadbu(thread_context context);
 
-extern u32 rtw_init_cmd_priv(struct cmd_priv *pcmdpriv);
-extern void rtw_free_cmd_priv(struct cmd_priv *pcmdpriv);
+extern u32 rtw_init_cmd_privbu(struct cmd_priv *pcmdpriv);
+extern void rtw_free_cmd_privbu(struct cmd_priv *pcmdpriv);
 
-extern u32 rtw_init_evt_priv(struct evt_priv *pevtpriv);
-extern void rtw_free_evt_priv(struct evt_priv *pevtpriv);
-extern void rtw_cmd_clr_isr(struct cmd_priv *pcmdpriv);
+extern u32 rtw_init_evt_privbu(struct evt_priv *pevtpriv);
+extern void rtw_free_evt_privbu(struct evt_priv *pevtpriv);
+extern void rtw_cmd_clr_isrbu(struct cmd_priv *pcmdpriv);
 extern void rtw_evt_notify_isr(struct evt_priv *pevtpriv);
 #ifdef CONFIG_P2P
-u8 p2p_protocol_wk_cmd(_adapter *padapter, int intCmdType);
+u8 p2p_protocol_wk_cmdbu(_adapter *padapter, int intCmdType);
 #endif /* CONFIG_P2P */
 
 #ifdef CONFIG_IOCTL_CFG80211
@@ -203,7 +203,7 @@ u8 rtw_roch_cmd(_adapter *adapter
 
 u8 rtw_cancel_roch_cmd(_adapter *adapter, u64 cookie, struct wireless_dev *wdev, u8 flags);
 
-u8 rtw_mgnt_tx_cmd(_adapter *adapter, u8 tx_ch, u8 no_cck, const u8 *buf, size_t len, int wait_ack, u8 flags);
+u8 rtw_mgnt_tx_cmdbu(_adapter *adapter, u8 tx_ch, u8 no_cck, const u8 *buf, size_t len, int wait_ack, u8 flags);
 struct mgnt_tx_parm {
 	u8 tx_ch;
 	u8 no_cck;
@@ -597,11 +597,11 @@ Result:
 #define H2C_ENQ_HEAD_FAIL		0x09
 #define H2C_CMD_FAIL			0x0A
 
-void rtw_init_sitesurvey_parm(_adapter *padapter, struct sitesurvey_parm *pparm);
-u8 rtw_sitesurvey_cmd(_adapter *padapter, struct sitesurvey_parm *pparm);
+void rtw_init_sitesurvey_parmbu(_adapter *padapter, struct sitesurvey_parm *pparm);
+u8 rtw_sitesurvey_cmdbu(_adapter *padapter, struct sitesurvey_parm *pparm);
 #ifdef CONFIG_AP_MODE
-u8 rtw_create_ibss_cmd(_adapter *adapter, int flags);
-u8 rtw_startbss_cmd(_adapter *adapter, int flags);
+u8 rtw_create_ibss_cmdbu(_adapter *adapter, int flags);
+u8 rtw_startbss_cmdbu(_adapter *adapter, int flags);
 #endif
 
 #define REQ_CH_NONE		-1
@@ -611,27 +611,27 @@ u8 rtw_startbss_cmd(_adapter *adapter, int flags);
 #define REQ_OFFSET_NONE	-1
 
 struct sta_info;
-extern u8 rtw_setstakey_cmd(_adapter  *padapter, struct sta_info *sta, u8 key_type, bool enqueue);
-extern u8 rtw_clearstakey_cmd(_adapter *padapter, struct sta_info *sta, u8 enqueue);
+extern u8 rtw_setstakey_cmdbu(_adapter  *padapter, struct sta_info *sta, u8 key_type, bool enqueue);
+extern u8 rtw_clearstakey_cmdbu(_adapter *padapter, struct sta_info *sta, u8 enqueue);
 
-extern u8 rtw_joinbss_cmd(_adapter  *padapter, struct wlan_network *pnetwork);
-u8 rtw_disassoc_cmd(_adapter *padapter, u32 deauth_timeout_ms, int flags);
+extern u8 rtw_joinbss_cmdbu(_adapter  *padapter, struct wlan_network *pnetwork);
+u8 rtw_disassoc_cmdbu(_adapter *padapter, u32 deauth_timeout_ms, int flags);
 #ifdef CONFIG_AP_MODE
-u8 rtw_change_bss_chbw_cmd(_adapter *adapter, int flags
+u8 rtw_change_bss_chbw_cmdbu(_adapter *adapter, int flags
 	, u8 ifbmp, u8 excl_ifbmp, s16 req_ch, s8 req_bw, s8 req_offset);
-u8 rtw_stop_ap_cmd(_adapter *adapter, u8 flags);
+u8 rtw_stop_ap_cmdbu(_adapter *adapter, u8 flags);
 #endif
 #ifdef CONFIG_RTW_TOKEN_BASED_XMIT
 u8 rtw_tx_control_cmd(_adapter *adapter);
 #endif
-extern u8 rtw_setopmode_cmd(_adapter  *padapter, NDIS_802_11_NETWORK_INFRASTRUCTURE networktype, u8 flags);
+extern u8 rtw_setopmode_cmdbu(_adapter  *padapter, NDIS_802_11_NETWORK_INFRASTRUCTURE networktype, u8 flags);
 
-extern u8 rtw_addbareq_cmd(_adapter *padapter, u8 tid, u8 *addr);
-extern u8 rtw_addbarsp_cmd(_adapter *padapter, u8 *addr, u16 tid, u8 status, u8 size, u16 start_seq);
+extern u8 rtw_addbareq_cmdbu(_adapter *padapter, u8 tid, u8 *addr);
+extern u8 rtw_addbarsp_cmdbu(_adapter *padapter, u8 *addr, u16 tid, u8 status, u8 size, u16 start_seq);
 /* add for CONFIG_IEEE80211W, none 11w also can use */
-extern u8 rtw_reset_securitypriv_cmd(_adapter *padapter);
-extern u8 rtw_free_assoc_resources_cmd(_adapter *padapter, u8 lock_scanned_queue, int flags);
-extern u8 rtw_dynamic_chk_wk_cmd(_adapter *adapter);
+extern u8 rtw_reset_securityprivbu_cmdbu(_adapter *padapter);
+extern u8 rtw_free_assoc_resourcesbu_cmdbu(_adapter *padapter, u8 lock_scanned_queue, int flags);
+extern u8 rtw_dynamic_chk_wk_cmdbu(_adapter *adapter);
 
 u8 rtw_lps_ctrl_wk_cmd(_adapter *padapter, u8 lps_ctrl_type, u8 flags);
 u8 rtw_lps_ctrl_leave_set_level_cmd(_adapter *adapter, u8 lps_level, u8 flags);
@@ -639,7 +639,7 @@ u8 rtw_lps_ctrl_leave_set_level_cmd(_adapter *adapter, u8 lps_level, u8 flags);
 u8 rtw_lps_ctrl_leave_set_1t1r_cmd(_adapter *adapter, u8 lps_1t1r, u8 flags);
 #endif
 u8 rtw_dm_in_lps_wk_cmd(_adapter *padapter);
-u8 rtw_lps_change_dtim_cmd(_adapter *padapter, u8 dtim);
+u8 rtw_lps_change_dtim_cmdbu(_adapter *padapter, u8 dtim);
 
 #if (RATE_ADAPTIVE_SUPPORT == 1)
 u8 rtw_rpt_timer_cfg_cmd(_adapter *padapter, u16 minRptTime);
@@ -649,16 +649,16 @@ u8 rtw_rpt_timer_cfg_cmd(_adapter *padapter, u16 minRptTime);
 extern  u8 rtw_antenna_select_cmd(_adapter *padapter, u8 antenna, u8 enqueue);
 #endif
 
-u8 rtw_dm_ra_mask_wk_cmd(_adapter *padapter, u8 *psta);
+u8 rtw_dm_ra_mask_wk_cmdbu(_adapter *padapter, u8 *psta);
 
-extern u8 rtw_ps_cmd(_adapter *padapter);
+extern u8 rtw_ps_cmdbu(_adapter *padapter);
 
 #if CONFIG_DFS
-void rtw_dfs_ch_switch_hdl(struct dvobj_priv *dvobj);
+void rtw_dfs_ch_switch_hdlbu(struct dvobj_priv *dvobj);
 #endif
 
 #ifdef CONFIG_AP_MODE
-u8 rtw_chk_hi_queue_cmd(_adapter *padapter);
+u8 rtw_chk_hi_queue_cmdbu(_adapter *padapter);
 #ifdef CONFIG_DFS_MASTER
 u8 rtw_dfs_rd_cmd(_adapter *adapter, bool enqueue);
 void rtw_dfs_rd_timer_hdl(void *ctx);
@@ -672,24 +672,24 @@ u8 rtw_btinfo_cmd(PADAPTER padapter, u8 *pbuf, u16 length);
 u8 rtw_btc_reduce_wl_txpwr_cmd(_adapter *adapter, u32 val);
 #endif
 
-u8 rtw_test_h2c_cmd(_adapter *adapter, u8 *buf, u8 len);
+u8 rtw_test_h2c_cmdbu(_adapter *adapter, u8 *buf, u8 len);
 
-u8 rtw_enable_hw_update_tsf_cmd(_adapter *padapter);
-u8 rtw_periodic_tsf_update_end_cmd(_adapter *adapter);
+u8 rtw_enable_hw_update_tsf_cmdbu(_adapter *padapter);
+u8 rtw_periodic_tsf_update_end_cmdbu(_adapter *adapter);
 
-u8 rtw_set_chbw_cmd(_adapter *padapter, u8 ch, u8 bw, u8 ch_offset, u8 flags);
+u8 rtw_set_chbw_cmdbu(_adapter *padapter, u8 ch, u8 bw, u8 ch_offset, u8 flags);
 u8 rtw_iqk_cmd(_adapter *padapter, u8 flags);
 
-u8 rtw_set_chplan_cmd(_adapter *adapter, int flags, u8 chplan, u8 swconfig);
-u8 rtw_set_country_cmd(_adapter *adapter, int flags, const char *country_code, u8 swconfig);
+u8 rtw_set_chplan_cmdbu(_adapter *adapter, int flags, u8 chplan, u8 swconfig);
+u8 rtw_set_countrybu_cmdbu(_adapter *adapter, int flags, const char *country_code, u8 swconfig);
 #ifdef CONFIG_REGD_SRC_FROM_OS
 u8 rtw_sync_os_regd_cmd(_adapter *adapter, int flags, const char *country_code, u8 dfs_region);
 #endif
 u8 rtw_get_chplan_cmd(_adapter *adapter, int flags, struct get_chplan_resp **resp);
 
-extern u8 rtw_led_blink_cmd(_adapter *padapter, void *pLed);
-extern u8 rtw_set_csa_cmd(_adapter *adapter);
-extern u8 rtw_tdls_cmd(_adapter *padapter, u8 *addr, u8 option);
+extern u8 rtw_led_blink_cmdbu(_adapter *padapter, void *pLed);
+extern u8 rtw_set_csa_cmdbu(_adapter *adapter);
+extern u8 rtw_tdls_cmdbu(_adapter *padapter, u8 *addr, u8 option);
 
 u8 rtw_mp_cmd(_adapter *adapter, u8 mp_cmd_id, u8 flags);
 
@@ -702,7 +702,7 @@ u8 rtw_customer_str_write_cmd(_adapter *adapter, const u8 *cstr);
 u8 rtw_c2h_reg_wk_cmd(_adapter *adapter, u8 *c2h_evt);
 #endif
 #ifdef CONFIG_FW_C2H_PKT
-u8 rtw_c2h_packet_wk_cmd(_adapter *adapter, u8 *c2h_evt, u16 length);
+u8 rtw_c2h_packet_wk_cmdbu(_adapter *adapter, u8 *c2h_evt, u16 length);
 #endif
 
 #ifdef CONFIG_RTW_REPEATER_SON
@@ -711,18 +711,18 @@ u8 rtw_c2h_packet_wk_cmd(_adapter *adapter, u8 *c2h_evt, u16 length);
 u8 rtw_rson_scan_wk_cmd(_adapter *adapter, int op);
 #endif
 
-u8 rtw_run_in_thread_cmd(_adapter *adapter, void (*func)(void *), void *context);
-u8 rtw_run_in_thread_cmd_wait(_adapter *adapter, void (*func)(void *), void *context, s32 timeout_ms);
+u8 rtw_run_in_thread_cmdbu(_adapter *adapter, void (*func)(void *), void *context);
+u8 rtw_run_in_thread_cmdbu_wait(_adapter *adapter, void (*func)(void *), void *context, s32 timeout_ms);
 
 struct ssmps_cmd_parm {
 	struct sta_info *sta;
 	u8 smps;
 };
-u8 rtw_ssmps_wk_cmd(_adapter *adapter, struct sta_info *sta, u8 smps, u8 enqueue);
+u8 rtw_ssmps_wk_cmdbu(_adapter *adapter, struct sta_info *sta, u8 smps, u8 enqueue);
 
-u8 session_tracker_chk_cmd(_adapter *adapter, struct sta_info *sta);
-u8 session_tracker_add_cmd(_adapter *adapter, struct sta_info *sta, u8 *local_naddr, u8 *local_port, u8 *remote_naddr, u8 *remote_port);
-u8 session_tracker_del_cmd(_adapter *adapter, struct sta_info *sta, u8 *local_naddr, u8 *local_port, u8 *remote_naddr, u8 *remote_port);
+u8 session_tracker_chk_cmdbu(_adapter *adapter, struct sta_info *sta);
+u8 session_tracker_add_cmdbu(_adapter *adapter, struct sta_info *sta, u8 *local_naddr, u8 *local_port, u8 *remote_naddr, u8 *remote_port);
+u8 session_tracker_del_cmdbu(_adapter *adapter, struct sta_info *sta, u8 *local_naddr, u8 *local_port, u8 *remote_naddr, u8 *remote_port);
 
 u8 set_txq_params_cmd(_adapter *adapter, u32 ac_parm, u8 ac_type);
 
@@ -753,15 +753,15 @@ void dbg_ctrl_txss(_adapter *adapter, bool tx_1ss);
 #endif
 #endif
 
-u8 rtw_drvextra_cmd_hdl(_adapter *padapter, unsigned char *pbuf);
+u8 rtw_drvextra_cmd_hdlbu(_adapter *padapter, unsigned char *pbuf);
 
-extern void rtw_survey_cmd_callback(_adapter  *padapter, struct cmd_obj *pcmd);
-extern void rtw_disassoc_cmd_callback(_adapter  *padapter, struct cmd_obj *pcmd);
-extern void rtw_joinbss_cmd_callback(_adapter  *padapter, struct cmd_obj *pcmd);
-void rtw_create_ibss_post_hdl(_adapter *padapter, int status);
-extern void rtw_readtssi_cmdrsp_callback(_adapter	*padapter,  struct cmd_obj *pcmd);
+extern void rtw_survey_cmd_callbackbu(_adapter  *padapter, struct cmd_obj *pcmd);
+extern void rtw_disassoc_cmdbu_callbackbu(_adapter  *padapter, struct cmd_obj *pcmd);
+extern void rtw_joinbss_cmdbu_callbackbu(_adapter  *padapter, struct cmd_obj *pcmd);
+void rtw_create_ibss_post_hdlbu(_adapter *padapter, int status);
+extern void rtw_readtssi_cmdrsp_callbackbu(_adapter	*padapter,  struct cmd_obj *pcmd);
 
-extern void rtw_setstaKey_cmdrsp_callback(_adapter  *padapter,  struct cmd_obj *pcmd);
+extern void rtw_setstaKey_cmdrsp_callbackbu(_adapter  *padapter,  struct cmd_obj *pcmd);
 extern void rtw_getrttbl_cmdrsp_callback(_adapter  *padapter,  struct cmd_obj *pcmd);
 
 enum rtw_cmd_id {

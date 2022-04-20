@@ -290,16 +290,16 @@ void hal_ReadRFType_8192E(PADAPTER	Adapter);
 /* RTL8192E-MAC Setting
  ***********************************************************/
 
-u8 SetHwReg8192E(PADAPTER Adapter, u8 variable, u8 *val);
-void GetHwReg8192E(PADAPTER Adapter, u8 variable, u8 *val);
+u8 SetHwRegbu8192E(PADAPTER Adapter, u8 variable, u8 *val);
+void GetHwRegbu8192E(PADAPTER Adapter, u8 variable, u8 *val);
 u8
-SetHalDefVar8192E(
+SetHalDefVarbu8192E(
 		PADAPTER				Adapter,
 		HAL_DEF_VARIABLE		eVariable,
 		void						*pValue
 );
 u8
-GetHalDefVar8192E(
+GetHalDefVarbu8192E(
 		PADAPTER				Adapter,
 		HAL_DEF_VARIABLE		eVariable,
 		void						*pValue

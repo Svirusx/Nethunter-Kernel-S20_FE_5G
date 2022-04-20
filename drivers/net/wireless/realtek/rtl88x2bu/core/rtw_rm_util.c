@@ -150,7 +150,7 @@ u8 rm_get_frame_rsni(struct rm_obj *prm, union recv_frame *pframe)
 	u8 val8, snr, rx_num;
 	struct hal_spec_t *hal_spec = GET_HAL_SPEC(prm->psta->padapter);
 
-	if (IS_CCK_RATE((hw_rate_to_m_rate(pframe->u.hdr.attrib.data_rate))))
+	if (IS_CCK_RATE((hw_rate_to_m_ratebu(pframe->u.hdr.attrib.data_rate))))
 		val8 = 255;
 	else {
 		snr = rx_num = 0;
@@ -210,7 +210,7 @@ int rm_get_tx_power(PADAPTER adapter, enum rf_path path, enum MGN_RATE rate, s8 
 	if (!HAL_SPEC_CHK_RF_PATH(hal_spec, band, path))
 		return -1;
 
-	if (HAL_IsLegalChannel(adapter, ch) == _FALSE) {
+	if (HAL_IsLegalChannelbu(adapter, ch) == _FALSE) {
 		RTW_INFO("Illegal channel!!\n");
 		return -2;
 	}
@@ -438,11 +438,11 @@ int rm_get_path_a_max_tx_power(_adapter *adapter, s8 *path_a)
 
 			/* get power by rate in db */
 			for (n = rate_num - 1; n >= 0; n--) {
-				pwr = phy_get_tx_power_final_absolute_value(adapter, path, rates_by_sections[rs].rates[n], bw, ch);
+				pwr = phy_get_tx_power_final_absolute_value(adapter, path, rates_by_sectionsbu[rs].rates[n], bw, ch);
 				max_pwr[path] = MAX(max_pwr[path], pwr);
 #if (RM_MORE_DBG_MSG)
 				RTW_INFO("RM: %9s = %2d\n",
-					MGN_RATE_STR(rates_by_sections[rs].rates[n]), pwr);
+					MGN_RATE_STR(rates_by_sectionsbu[rs].rates[n]), pwr);
 #endif
 			}
 		}

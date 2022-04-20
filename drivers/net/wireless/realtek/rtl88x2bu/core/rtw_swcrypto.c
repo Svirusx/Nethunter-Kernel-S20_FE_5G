@@ -54,7 +54,7 @@ int _rtw_ccmp_encrypt(_adapter *padapter, u8 *key, u32 key_len, uint hdrlen, u8 
 	}
 
 	/* Copy @enc back to @frame and free @enc */
-	_rtw_memcpy(frame, enc, enc_len);
+	_rtw_memcpybu(frame, enc, enc_len);
 	rtw_mfree(enc, enc_len + AES_BLOCK_SIZE);
 
 	return _SUCCESS;
@@ -97,7 +97,7 @@ int _rtw_ccmp_decrypt(_adapter * padapter, u8 *key, u32 key_len, uint hdrlen, u8
 	}
 
 	/* Copy @plain back to @frame and free @plain */
-	_rtw_memcpy(frame + hdrlen + 8, plain, plain_len);
+	_rtw_memcpybu(frame + hdrlen + 8, plain, plain_len);
 	rtw_mfree(plain, plen - hdrlen + AES_BLOCK_SIZE);
 
 	RTW_DBG_DUMP("ccmp_decrypt(): decrypted frame\n",
@@ -148,7 +148,7 @@ int _rtw_gcmp_encrypt(_adapter * padapter, u8 *key, u32 key_len, uint hdrlen, u8
 	}
 
 	/* Copy @enc back to @frame and free @enc */
-	_rtw_memcpy(frame, enc, enc_len);
+	_rtw_memcpybu(frame, enc, enc_len);
 	rtw_mfree(enc, enc_len + AES_BLOCK_SIZE);
 
 	return _SUCCESS;
@@ -182,7 +182,7 @@ int _rtw_gcmp_decrypt(_adapter *padapter, u8 *key, u32 key_len, uint hdrlen, u8 
 	}
 
 	/* Copy @plain back to @frame and free @plain */
-	_rtw_memcpy(frame + hdrlen + 8, plain, plain_len);
+	_rtw_memcpybu(frame + hdrlen + 8, plain, plain_len);
 	rtw_mfree(plain, plen - hdrlen + AES_BLOCK_SIZE);
 
 	RTW_DBG_DUMP("gcmp_decipher(): decrypted frame\n",
@@ -199,9 +199,9 @@ u8 _bip_ccmp_protect(const u8 *key, size_t key_len,
 	u8 res = _SUCCESS;
 
 	if (key_len == 16) {
-		if (omac1_aes_128(key, data, data_len, mic)) {
+		if (omac1_aes_128bu(key, data, data_len, mic)) {
 			res = _FAIL;
-			RTW_ERR("%s : omac1_aes_128 fail!", __func__);
+			RTW_ERR("%s : omac1_aes_128bu fail!", __func__);
 		}
 	} else if (key_len == 32) {
 		if (omac1_aes_256(key, data, data_len, mic)) {
@@ -229,7 +229,7 @@ u8 _bip_gcmp_protect(u8 *whdr_pos, size_t len,
 	gcmp_ipn = whdr_pos + len - mic_len - 6;
 
 	/* Nonce: A2 | IPN */
-	_rtw_memcpy(nonce, get_addr2_ptr(whdr_pos), ETH_ALEN);
+	_rtw_memcpybu(nonce, get_addr2_ptr(whdr_pos), ETH_ALEN);
 	npos = nonce + ETH_ALEN;
 	*npos++ = gcmp_ipn[5];
 	*npos++ = gcmp_ipn[4];
@@ -266,7 +266,7 @@ void _tdls_generate_tpk(void *sta, const u8 *own_addr, const u8 *bssid)
 	 */
 	len[0] = 32;
 	len[1] = 32;
-	if (_rtw_memcmp2(SNonce, ANonce, 32) < 0) {
+	if (_rtw_memcmpbu2(SNonce, ANonce, 32) < 0) {
 		nonce[0] = SNonce;
 		nonce[1] = ANonce;
 	} else {
@@ -281,15 +281,15 @@ void _tdls_generate_tpk(void *sta, const u8 *own_addr, const u8 *bssid)
 	 *	min(MAC_I, MAC_R) || max(MAC_I, MAC_R) || BSSID)
 	 */
 
-	if (_rtw_memcmp2(own_addr, psta->cmn.mac_addr, ETH_ALEN) < 0) {
-		_rtw_memcpy(data, own_addr, ETH_ALEN);
-		_rtw_memcpy(data + ETH_ALEN, psta->cmn.mac_addr, ETH_ALEN);
+	if (_rtw_memcmpbu2(own_addr, psta->cmn.mac_addr, ETH_ALEN) < 0) {
+		_rtw_memcpybu(data, own_addr, ETH_ALEN);
+		_rtw_memcpybu(data + ETH_ALEN, psta->cmn.mac_addr, ETH_ALEN);
 	} else {
-		_rtw_memcpy(data, psta->cmn.mac_addr, ETH_ALEN);
-		_rtw_memcpy(data + ETH_ALEN, own_addr, ETH_ALEN);
+		_rtw_memcpybu(data, psta->cmn.mac_addr, ETH_ALEN);
+		_rtw_memcpybu(data + ETH_ALEN, own_addr, ETH_ALEN);
 	}
 
-	_rtw_memcpy(data + 2 * ETH_ALEN, bssid, ETH_ALEN);
+	_rtw_memcpybu(data + 2 * ETH_ALEN, bssid, ETH_ALEN);
 
 	sha256_prf(key_input, SHA256_MAC_LEN, "TDLS PMK", data, sizeof(data), (u8 *)&psta->tpk, sizeof(psta->tpk));
 }

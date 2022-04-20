@@ -17,7 +17,7 @@
 #include <drv_types.h>
 #include <hal_data.h>
 
-int	usb_init_recv_priv(_adapter *padapter, u16 ini_in_buf_sz)
+int	usb_init_recv_privbu(_adapter *padapter, u16 ini_in_buf_sz)
 {
 	struct registry_priv *regsty = adapter_to_regsty(padapter);
 	struct recv_priv	*precvpriv = &padapter->recvpriv;
@@ -26,7 +26,7 @@ int	usb_init_recv_priv(_adapter *padapter, u16 ini_in_buf_sz)
 
 #ifdef PLATFORM_LINUX
 	tasklet_init(&precvpriv->recv_tasklet,
-		     (void(*)(unsigned long))usb_recv_tasklet,
+		     (void(*)(unsigned long))usb_recv_taskletbu,
 		     (unsigned long)padapter);
 #endif /* PLATFORM_LINUX */
 
@@ -54,8 +54,8 @@ int	usb_init_recv_priv(_adapter *padapter, u16 ini_in_buf_sz)
 #endif /* CONFIG_USB_INTERRUPT_IN_PIPE */
 
 	/* init recv_buf */
-	_rtw_init_queue(&precvpriv->free_recv_buf_queue);
-	_rtw_init_queue(&precvpriv->recv_buf_pending_queue);
+	_rtw_init_queuebu(&precvpriv->free_recv_buf_queue);
+	_rtw_init_queuebu(&precvpriv->recv_buf_pending_queue);
 #ifndef CONFIG_USE_USB_BUFFER_ALLOC_RX
 	/* this is used only when RX_IOBUF is sk_buff */
 	skb_queue_head_init(&precvpriv->free_recv_skb_queue);
@@ -74,22 +74,22 @@ int	usb_init_recv_priv(_adapter *padapter, u16 ini_in_buf_sz)
 	precvbuf = (struct recv_buf *)precvpriv->precv_buf;
 
 	for (i = 0; i < regsty->recvbuf_nr ; i++) {
-		_rtw_init_listhead(&precvbuf->list);
+		_rtw_init_listheadbu(&precvbuf->list);
 
 #ifdef PLATFORM_WINDOWS
-		_rtw_spinlock_init(&precvbuf->recvbuf_lock);
+		_rtw_spinlockbu_initbu(&precvbuf->recvbuf_lock);
 #endif
 
 		precvbuf->alloc_sz = MAX_RECVBUF_SZ;
 
-		res = rtw_os_recvbuf_resource_alloc(padapter, precvbuf, precvbuf->alloc_sz);
+		res = rtw_os_recvbuf_resource_allocbu(padapter, precvbuf, precvbuf->alloc_sz);
 		if (res == _FAIL)
 			break;
 
 		precvbuf->ref_cnt = 0;
 		precvbuf->adapter = padapter;
 
-		/* rtw_list_insert_tail(&precvbuf->list, &(precvpriv->free_recv_buf_queue.queue)); */
+		/* rtw_list_insert_tailbu(&precvbuf->list, &(precvpriv->free_recv_buf_queue.queue)); */
 
 		precvbuf++;
 	}
@@ -149,7 +149,7 @@ exit:
 	return res;
 }
 
-void usb_free_recv_priv(_adapter *padapter, u16 ini_in_buf_sz)
+void usb_free_recv_privbu(_adapter *padapter, u16 ini_in_buf_sz)
 {
 	int i;
 	struct registry_priv *regsty = &padapter->registrypriv;
@@ -159,7 +159,7 @@ void usb_free_recv_priv(_adapter *padapter, u16 ini_in_buf_sz)
 	precvbuf = (struct recv_buf *)precvpriv->precv_buf;
 
 	for (i = 0; i < regsty->recvbuf_nr ; i++) {
-		rtw_os_recvbuf_resource_free(padapter, precvbuf);
+		rtw_os_recvbuf_resource_freebu(padapter, precvbuf);
 		precvbuf++;
 	}
 
@@ -217,7 +217,7 @@ void usb_free_recv_priv(_adapter *padapter, u16 ini_in_buf_sz)
 		IF_DEQUEUE(&precvpriv->rx_indicate_queue, m);
 		if (m == NULL)
 			break;
-		rtw_os_pkt_free(m);
+		rtw_os_pkt_freebu(m);
 	}
 	mtx_destroy(&precvpriv->rx_indicate_queue.ifq_mtx);
 #endif /* CONFIG_RX_INDICATE_QUEUE */
@@ -240,21 +240,21 @@ void usb_c2h_hisr_hdl(_adapter *adapter, u8 *buf)
 
 	if (rtw_hal_c2h_id_handle_directly(adapter, id, seq, plen, payload)) {
 		/* Handle directly */
-		rtw_hal_c2h_handler(adapter, id, seq, plen, payload);
+		rtw_hal_c2h_handlerbu(adapter, id, seq, plen, payload);
 
 		/* Replace with special pointer to trigger c2h_evt_clear only */
-		if (rtw_cbuf_push(adapter->evtpriv.c2h_queue, (void*)&adapter->evtpriv) != _SUCCESS)
-			RTW_ERR("%s rtw_cbuf_push fail\n", __func__);
+		if (rtw_cbuf_pushbu(adapter->evtpriv.c2h_queue, (void*)&adapter->evtpriv) != _SUCCESS)
+			RTW_ERR("%s rtw_cbuf_pushbu fail\n", __func__);
 	} else {
 		c2h_evt = rtw_malloc(C2H_REG_LEN);
 		if (c2h_evt != NULL) {
-			_rtw_memcpy(c2h_evt, buf, C2H_REG_LEN);
-			if (rtw_cbuf_push(adapter->evtpriv.c2h_queue, (void*)c2h_evt) != _SUCCESS)
-				RTW_ERR("%s rtw_cbuf_push fail\n", __func__);
+			_rtw_memcpybu(c2h_evt, buf, C2H_REG_LEN);
+			if (rtw_cbuf_pushbu(adapter->evtpriv.c2h_queue, (void*)c2h_evt) != _SUCCESS)
+				RTW_ERR("%s rtw_cbuf_pushbu fail\n", __func__);
 		} else {
 			/* Error handling for malloc fail */
-			if (rtw_cbuf_push(adapter->evtpriv.c2h_queue, (void*)NULL) != _SUCCESS)
-				RTW_ERR("%s rtw_cbuf_push fail\n", __func__);
+			if (rtw_cbuf_pushbu(adapter->evtpriv.c2h_queue, (void*)NULL) != _SUCCESS)
+				RTW_ERR("%s rtw_cbuf_pushbu fail\n", __func__);
 		}
 	}
 	_set_workitem(&adapter->evtpriv.c2h_wk);
@@ -276,7 +276,7 @@ int usb_write_async(struct usb_device *udev, u32 addr, void *pdata, u16 len)
 
 	wvalue = (u16)(addr & 0x0000ffff);
 
-	ret = _usbctrl_vendorreq_async_write(udev, request, wvalue, index, pdata, len, requesttype);
+	ret = _usbctrl_vendorreqbu_async_write(udev, request, wvalue, index, pdata, len, requesttype);
 
 	return ret;
 }
@@ -321,7 +321,7 @@ int usb_async_write32(struct intf_hdl *pintfhdl, u32 addr, u32 val)
 }
 #endif /* CONFIG_USB_SUPPORT_ASYNC_VDN_REQ */
 
-u8 usb_read8(struct intf_hdl *pintfhdl, u32 addr)
+u8 usb_read8bu(struct intf_hdl *pintfhdl, u32 addr)
 {
 	u8 request;
 	u8 requesttype;
@@ -344,14 +344,14 @@ u8 usb_read8(struct intf_hdl *pintfhdl, u32 addr)
 		wvalue |= 0x8000;
 #endif
 
-	usbctrl_vendorreq(pintfhdl, request, wvalue, index,
+	usbctrl_vendorreqbu(pintfhdl, request, wvalue, index,
 			  &data, len, requesttype);
 
 
 	return data;
 }
 
-u16 usb_read16(struct intf_hdl *pintfhdl, u32 addr)
+u16 usb_read16bu(struct intf_hdl *pintfhdl, u32 addr)
 {
 	u8 request;
 	u8 requesttype;
@@ -374,7 +374,7 @@ u16 usb_read16(struct intf_hdl *pintfhdl, u32 addr)
 		wvalue |= 0x8000;
 #endif
 
-	usbctrl_vendorreq(pintfhdl, request, wvalue, index,
+	usbctrl_vendorreqbu(pintfhdl, request, wvalue, index,
 			  &data, len, requesttype);
 
 
@@ -382,7 +382,7 @@ u16 usb_read16(struct intf_hdl *pintfhdl, u32 addr)
 
 }
 
-u32 usb_read32(struct intf_hdl *pintfhdl, u32 addr)
+u32 usb_read32bu(struct intf_hdl *pintfhdl, u32 addr)
 {
 	u8 request;
 	u8 requesttype;
@@ -405,14 +405,14 @@ u32 usb_read32(struct intf_hdl *pintfhdl, u32 addr)
 		wvalue |= 0x8000;
 #endif
 
-	usbctrl_vendorreq(pintfhdl, request, wvalue, index,
+	usbctrl_vendorreqbu(pintfhdl, request, wvalue, index,
 			  &data, len, requesttype);
 
 
 	return data;
 }
 
-int usb_write8(struct intf_hdl *pintfhdl, u32 addr, u8 val)
+int usb_write8bu(struct intf_hdl *pintfhdl, u32 addr, u8 val)
 {
 	u8 request;
 	u8 requesttype;
@@ -437,14 +437,14 @@ int usb_write8(struct intf_hdl *pintfhdl, u32 addr, u8 val)
 		wvalue |= 0x8000;
 #endif
 
-	ret = usbctrl_vendorreq(pintfhdl, request, wvalue, index,
+	ret = usbctrl_vendorreqbu(pintfhdl, request, wvalue, index,
 				&data, len, requesttype);
 
 
 	return ret;
 }
 
-int usb_write16(struct intf_hdl *pintfhdl, u32 addr, u16 val)
+int usb_write16bu(struct intf_hdl *pintfhdl, u32 addr, u16 val)
 {
 	u8 request;
 	u8 requesttype;
@@ -469,7 +469,7 @@ int usb_write16(struct intf_hdl *pintfhdl, u32 addr, u16 val)
 		wvalue |= 0x8000;
 #endif
 
-	ret = usbctrl_vendorreq(pintfhdl, request, wvalue, index,
+	ret = usbctrl_vendorreqbu(pintfhdl, request, wvalue, index,
 				&data, len, requesttype);
 
 
@@ -477,7 +477,7 @@ int usb_write16(struct intf_hdl *pintfhdl, u32 addr, u16 val)
 
 }
 
-int usb_write32(struct intf_hdl *pintfhdl, u32 addr, u32 val)
+int usb_write32bu(struct intf_hdl *pintfhdl, u32 addr, u32 val)
 {
 	u8 request;
 	u8 requesttype;
@@ -502,7 +502,7 @@ int usb_write32(struct intf_hdl *pintfhdl, u32 addr, u32 val)
 		wvalue |= 0x8000;
 #endif
 
-	ret = usbctrl_vendorreq(pintfhdl, request, wvalue, index,
+	ret = usbctrl_vendorreqbu(pintfhdl, request, wvalue, index,
 				&data, len, requesttype);
 
 
@@ -510,7 +510,7 @@ int usb_write32(struct intf_hdl *pintfhdl, u32 addr, u32 val)
 
 }
 
-int usb_writeN(struct intf_hdl *pintfhdl, u32 addr, u32 length, u8 *pdata)
+int usb_writeNbu(struct intf_hdl *pintfhdl, u32 addr, u32 length, u8 *pdata)
 {
 	u8 request;
 	u8 requesttype;
@@ -527,39 +527,39 @@ int usb_writeN(struct intf_hdl *pintfhdl, u32 addr, u32 length, u8 *pdata)
 
 	wvalue = (u16)(addr & 0x0000ffff);
 	len = length;
-	_rtw_memcpy(buf, pdata, len);
-	ret = usbctrl_vendorreq(pintfhdl, request, wvalue, index,
+	_rtw_memcpybu(buf, pdata, len);
+	ret = usbctrl_vendorreqbu(pintfhdl, request, wvalue, index,
 				buf, len, requesttype);
 
 
 	return ret;
 }
 
-void usb_set_intf_ops(_adapter *padapter, struct _io_ops *pops)
+void usb_set_intf_opsbu(_adapter *padapter, struct _io_ops *pops)
 {
-	_rtw_memset((u8 *)pops, 0, sizeof(struct _io_ops));
+	_rtw_memsetbu((u8 *)pops, 0, sizeof(struct _io_ops));
 
-	pops->_read8 = &usb_read8;
-	pops->_read16 = &usb_read16;
-	pops->_read32 = &usb_read32;
-	pops->_read_mem = &usb_read_mem;
-	pops->_read_port = &usb_read_port;
+	pops->_read8 = &usb_read8bu;
+	pops->_read16 = &usb_read16bu;
+	pops->_read32 = &usb_read32bu;
+	pops->_read_mem = &usb_read_membu;
+	pops->_read_port = &usb_read_portbu;
 
-	pops->_write8 = &usb_write8;
-	pops->_write16 = &usb_write16;
-	pops->_write32 = &usb_write32;
-	pops->_writeN = &usb_writeN;
+	pops->_write8 = &usb_write8bu;
+	pops->_write16 = &usb_write16bu;
+	pops->_write32 = &usb_write32bu;
+	pops->_writeN = &usb_writeNbu;
 
 #ifdef CONFIG_USB_SUPPORT_ASYNC_VDN_REQ
 	pops->_write8_async = &usb_async_write8;
 	pops->_write16_async = &usb_async_write16;
 	pops->_write32_async = &usb_async_write32;
 #endif
-	pops->_write_mem = &usb_write_mem;
-	pops->_write_port = &usb_write_port;
+	pops->_write_mem = &usb_write_membu;
+	pops->_write_port = &usb_write_portbu;
 
-	pops->_read_port_cancel = &usb_read_port_cancel;
-	pops->_write_port_cancel = &usb_write_port_cancel;
+	pops->_read_port_cancel = &usb_read_portbu_cancelbu;
+	pops->_write_port_cancel = &usb_write_portbu_cancel;
 
 #ifdef CONFIG_USB_INTERRUPT_IN_PIPE
 	pops->_read_interrupt = &usb_read_interrupt;

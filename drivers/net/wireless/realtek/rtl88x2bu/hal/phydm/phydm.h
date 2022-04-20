@@ -116,7 +116,7 @@
 	#include "halrf/halphyrf_iot.h"
 #endif
 
-extern const u16	phy_rate_table[84];
+extern const u16	phy_rate_tablebu[84];
 
 /*@============================================================*/
 /*@Definition */
@@ -929,7 +929,7 @@ struct dm_struct {
 /*@====[ CALL BY VALUE ]===========================================*/
 /*@===========================================================*/
 
-	u8			disable_phydm_watchdog;
+	u8			disable_phydm_watchdogbu;
 	boolean			is_link_in_process;
 	boolean			is_wifi_direct;
 	boolean			is_wifi_display;
@@ -1442,54 +1442,54 @@ enum rt_status {
 #endif	/*@end of enum rt_status definition*/
 
 void
-phydm_watchdog_lps(struct dm_struct *dm);
+phydm_watchdogbu_lpsbu(struct dm_struct *dm);
 
 void
-phydm_watchdog_lps_32k(struct dm_struct *dm);
+phydm_watchdogbu_lpsbu_32kbu(struct dm_struct *dm);
 
 void
 phydm_txcurrentcalibration(struct dm_struct *dm);
 
 void
-phydm_dm_early_init(struct dm_struct *dm);
+phydm_dm_early_initbu(struct dm_struct *dm);
 
 enum phydm_init_result
-odm_dm_init(struct dm_struct *dm);
+odm_dm_initbu(struct dm_struct *dm);
 
 void
-odm_dm_reset(struct dm_struct *dm);
+odm_dm_resetbu(struct dm_struct *dm);
 
 void
-phydm_fwoffload_ability_init(struct dm_struct *dm,
+phydm_fwoffload_ability_initbu(struct dm_struct *dm,
 			     enum phydm_offload_ability offload_ability);
 
 void
-phydm_fwoffload_ability_clear(struct dm_struct *dm,
+phydm_fwoffload_ability_clearbu(struct dm_struct *dm,
 			      enum phydm_offload_ability offload_ability);
 
 void
-phydm_supportability_en(void *dm_void, char input[][16], u32 *_used,
+phydm_supportability_enbu(void *dm_void, char input[][16], u32 *_used,
 			char *output, u32 *_out_len);
 
 void
-phydm_pause_dm_watchdog(void *dm_void, enum phydm_pause_type pause_type);
+phydm_pause_dm_watchdogbu(void *dm_void, enum phydm_pause_type pause_type);
 
 void
-phydm_watchdog(struct dm_struct *dm);
+phydm_watchdogbu(struct dm_struct *dm);
 
 void
-phydm_watchdog_mp(struct dm_struct *dm);
+phydm_watchdogbu_mpbu(struct dm_struct *dm);
 
 void
-phydm_pause_func_init(void *dm_void);
+phydm_pause_funcbu_init(void *dm_void);
 
 u8
-phydm_pause_func(void *dm_void, enum phydm_func_idx pause_func,
+phydm_pause_funcbu(void *dm_void, enum phydm_func_idx pause_func,
 		 enum phydm_pause_type pause_type,
 		 enum phydm_pause_level pause_lv, u8 val_lehgth, u32 *val_buf);
 
 void
-phydm_pause_func_console(void *dm_void, char input[][16], u32 *_used,
+phydm_pause_funcbu_console(void *dm_void, char input[][16], u32 *_used,
 			 char *output, u32 *_out_len);
 
 void phydm_pause_dm_by_asso_pkt(struct dm_struct *dm,
@@ -1499,34 +1499,34 @@ void phydm_fw_dm_ctrl_en(void *dm_void, enum phydm_func_idx fun_idx,
 			 boolean enable);
 
 void
-odm_cmn_info_init(struct dm_struct *dm, enum odm_cmninfo cmn_info, u64 value);
+odm_cmn_info_initbu(struct dm_struct *dm, enum odm_cmninfo cmn_info, u64 value);
 
 void
-odm_cmn_info_hook(struct dm_struct *dm, enum odm_cmninfo cmn_info, void *value);
+odm_cmn_info_hookbu(struct dm_struct *dm, enum odm_cmninfo cmn_info, void *value);
 
 void
-odm_cmn_info_update(struct dm_struct *dm, u32 cmn_info, u64 value);
+odm_cmn_info_updatebu(struct dm_struct *dm, u32 cmn_info, u64 value);
 
 u32
-phydm_cmn_info_query(struct dm_struct *dm, enum phydm_info_query info_type);
+phydm_cmn_info_querybu(struct dm_struct *dm, enum phydm_info_query info_type);
 
 void
-odm_init_all_timers(struct dm_struct *dm);
+odm_init_all_timersbu(struct dm_struct *dm);
 
 void
-odm_cancel_all_timers(struct dm_struct *dm);
+odm_cancel_all_timersbu(struct dm_struct *dm);
 
 void
-odm_release_all_timers(struct dm_struct *dm);
+odm_release_all_timersbu(struct dm_struct *dm);
 
 void *
-phydm_get_structure(struct dm_struct *dm, u8 structure_type);
+phydm_get_structurebu(struct dm_struct *dm, u8 structure_type);
 
 void
-phydm_dc_cancellation(struct dm_struct *dm);
+phydm_dc_cancellationbu(struct dm_struct *dm);
 
 void
-phydm_receiver_blocking(void *dm_void);
+phydm_receiver_blockingbu(void *dm_void);
 
 void
 phydm_dyn_bw_indication(void *dm_void);
@@ -1556,7 +1556,7 @@ odm_free_all_work_items(
 
 #if (DM_ODM_SUPPORT_TYPE == ODM_CE)
 void
-odm_dtc(struct dm_struct *dm);
+odm_dtcbu(struct dm_struct *dm);
 #endif
 
 #if (DM_ODM_SUPPORT_TYPE == ODM_AP)

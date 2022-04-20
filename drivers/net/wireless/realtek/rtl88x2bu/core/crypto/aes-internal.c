@@ -46,20 +46,20 @@
 
 
 /*
-Te0[x] = S [x].[02, 01, 01, 03];
+Te0bu[x] = S [x].[02, 01, 01, 03];
 Te1[x] = S [x].[03, 02, 01, 01];
 Te2[x] = S [x].[01, 03, 02, 01];
 Te3[x] = S [x].[01, 01, 03, 02];
 Te4[x] = S [x].[01, 01, 01, 01];
 
-Td0[x] = Si[x].[0e, 09, 0d, 0b];
+Td0bu[x] = Si[x].[0e, 09, 0d, 0b];
 Td1[x] = Si[x].[0b, 0e, 09, 0d];
 Td2[x] = Si[x].[0d, 0b, 0e, 09];
 Td3[x] = Si[x].[09, 0d, 0b, 0e];
 Td4[x] = Si[x].[01, 01, 01, 01];
 */
 
-const u32 Te0[256] = {
+const u32 Te0bu[256] = {
     0xc66363a5U, 0xf87c7c84U, 0xee777799U, 0xf67b7b8dU,
     0xfff2f20dU, 0xd66b6bbdU, 0xde6f6fb1U, 0x91c5c554U,
     0x60303050U, 0x02010103U, 0xce6767a9U, 0x562b2b7dU,
@@ -392,7 +392,7 @@ const u32 Te4[256] = {
     0xb0b0b0b0U, 0x54545454U, 0xbbbbbbbbU, 0x16161616U,
 };
 #endif /* AES_SMALL_TABLES */
-const u32 Td0[256] = {
+const u32 Td0bu[256] = {
     0x51f4a750U, 0x7e416553U, 0x1a17a4c3U, 0x3a275e96U,
     0x3bab6bcbU, 0x1f9d45f1U, 0xacfa58abU, 0x4be30393U,
     0x2030fa55U, 0xad766df6U, 0x88cc7691U, 0xf5024c25U,
@@ -730,7 +730,7 @@ const u32 rcon[] = {
 	0x1B000000, 0x36000000, /* for 128-bit blocks, Rijndael never uses more than 10 rcon values */
 };
 #else /* AES_SMALL_TABLES */
-const u8 Td4s[256] = {
+const u8 Td4sbu[256] = {
     0x52U, 0x09U, 0x6aU, 0xd5U, 0x30U, 0x36U, 0xa5U, 0x38U,
     0xbfU, 0x40U, 0xa3U, 0x9eU, 0x81U, 0xf3U, 0xd7U, 0xfbU,
     0x7cU, 0xe3U, 0x39U, 0x82U, 0x9bU, 0x2fU, 0xffU, 0x87U,
@@ -764,7 +764,7 @@ const u8 Td4s[256] = {
     0x17U, 0x2bU, 0x04U, 0x7eU, 0xbaU, 0x77U, 0xd6U, 0x26U,
     0xe1U, 0x69U, 0x14U, 0x63U, 0x55U, 0x21U, 0x0cU, 0x7dU,
 };
-const u8 rcons[] = {
+const u8 rconsbu[] = {
 	0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36
 	/* for 128-bit blocks, Rijndael never uses more than 10 rcon values */
 };

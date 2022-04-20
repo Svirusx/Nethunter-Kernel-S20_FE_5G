@@ -216,7 +216,7 @@ struct kfree_data_t {
 	s8 thermal;
 };
 
-bool kfree_data_is_bb_gain_empty(struct kfree_data_t *data);
+bool kfree_data_is_bb_gain_emptybu(struct kfree_data_t *data);
 
 struct hal_spec_t {
 	char *ic_name;
@@ -324,8 +324,8 @@ typedef struct hal_p2p_ps_para {
 #define TXPWR_LMT_RS_NUM_5G	3 /* OFDM, HT, VHT */
 
 #if CONFIG_TXPWR_LIMIT
-extern const char *const _txpwr_lmt_rs_str[];
-#define txpwr_lmt_rs_str(rs) (((rs) >= TXPWR_LMT_RS_NUM) ? _txpwr_lmt_rs_str[TXPWR_LMT_RS_NUM] : _txpwr_lmt_rs_str[(rs)])
+extern const char *const _txpwr_lmt_rs_strbu[];
+#define txpwr_lmt_rs_str(rs) (((rs) >= TXPWR_LMT_RS_NUM) ? _txpwr_lmt_rs_strbu[TXPWR_LMT_RS_NUM] : _txpwr_lmt_rs_strbu[(rs)])
 
 struct txpwr_lmt_ent {
 	_list list;

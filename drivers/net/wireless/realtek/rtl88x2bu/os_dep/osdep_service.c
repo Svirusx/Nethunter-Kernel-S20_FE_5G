@@ -30,10 +30,10 @@ atomic_t _malloc_size = ATOMIC_INIT(0);
 
 #if defined(PLATFORM_LINUX)
 /*
-* Translate the OS dependent @param error_code to OS independent RTW_STATUS_CODE
-* @return: one of RTW_STATUS_CODE
+* Translate the OS dependent @param error_code to OS independent RTW_STATUS_CODEbu
+* @return: one of RTW_STATUS_CODEbu
 */
-inline int RTW_STATUS_CODE(int error_code)
+inline int RTW_STATUS_CODEbu(int error_code)
 {
 	if (error_code >= 0)
 		return _SUCCESS;
@@ -46,13 +46,13 @@ inline int RTW_STATUS_CODE(int error_code)
 	}
 }
 #else
-inline int RTW_STATUS_CODE(int error_code)
+inline int RTW_STATUS_CODEbu(int error_code)
 {
 	return error_code;
 }
 #endif
 
-u32 rtw_atoi(u8 *s)
+u32 rtw_atoibu(u8 *s)
 {
 
 	int num = 0, flag = 0;
@@ -73,7 +73,7 @@ u32 rtw_atoi(u8 *s)
 
 }
 
-inline void *_rtw_vmalloc(u32 sz)
+inline void *_rtw_vmallocbu(u32 sz)
 {
 	void *pbuf;
 #ifdef PLATFORM_LINUX
@@ -99,11 +99,11 @@ inline void *_rtw_vmalloc(u32 sz)
 	return pbuf;
 }
 
-inline void *_rtw_zvmalloc(u32 sz)
+inline void *_rtw_zvmallocbu(u32 sz)
 {
 	void *pbuf;
 #ifdef PLATFORM_LINUX
-	pbuf = _rtw_vmalloc(sz);
+	pbuf = _rtw_vmallocbu(sz);
 	if (pbuf != NULL)
 		memset(pbuf, 0, sz);
 #endif
@@ -119,7 +119,7 @@ inline void *_rtw_zvmalloc(u32 sz)
 	return pbuf;
 }
 
-inline void _rtw_vmfree(void *pbuf, u32 sz)
+inline void _rtw_vmfreebu(void *pbuf, u32 sz)
 {
 #ifdef PLATFORM_LINUX
 	vfree(pbuf);
@@ -139,7 +139,7 @@ inline void _rtw_vmfree(void *pbuf, u32 sz)
 #endif /* DBG_MEMORY_LEAK */
 }
 
-void *_rtw_malloc(u32 sz)
+void *_rtw_mallocbu(u32 sz)
 {
 	void *pbuf = NULL;
 
@@ -175,12 +175,12 @@ void *_rtw_malloc(u32 sz)
 }
 
 
-void *_rtw_zmalloc(u32 sz)
+void *_rtw_zmallocbu(u32 sz)
 {
 #ifdef PLATFORM_FREEBSD
 	return malloc(sz, M_DEVBUF, M_ZERO | M_NOWAIT);
 #else /* PLATFORM_FREEBSD */
-	void *pbuf = _rtw_malloc(sz);
+	void *pbuf = _rtw_mallocbu(sz);
 
 	if (pbuf != NULL) {
 
@@ -198,7 +198,7 @@ void *_rtw_zmalloc(u32 sz)
 #endif /* PLATFORM_FREEBSD */
 }
 
-void _rtw_mfree(void *pbuf, u32 sz)
+void _rtw_mfreebu(void *pbuf, u32 sz)
 {
 
 #ifdef PLATFORM_LINUX
@@ -235,11 +235,11 @@ struct sk_buff *dev_alloc_skb(unsigned int size)
 	struct sk_buff *skb = NULL;
 	u8 *data = NULL;
 
-	/* skb = _rtw_zmalloc(sizeof(struct sk_buff)); */ /* for skb->len, etc. */
-	skb = _rtw_malloc(sizeof(struct sk_buff));
+	/* skb = _rtw_zmallocbu(sizeof(struct sk_buff)); */ /* for skb->len, etc. */
+	skb = _rtw_mallocbu(sizeof(struct sk_buff));
 	if (!skb)
 		goto out;
-	data = _rtw_malloc(size);
+	data = _rtw_mallocbu(size);
 	if (!data)
 		goto nodata;
 
@@ -253,7 +253,7 @@ struct sk_buff *dev_alloc_skb(unsigned int size)
 out:
 	return skb;
 nodata:
-	_rtw_mfree(skb, sizeof(struct sk_buff));
+	_rtw_mfreebu(skb, sizeof(struct sk_buff));
 	skb = NULL;
 	goto out;
 
@@ -263,10 +263,10 @@ void dev_kfree_skb_any(struct sk_buff *skb)
 {
 	/* printf("%s()-%d: skb->head = %p\n", __FUNCTION__, __LINE__, skb->head); */
 	if (skb->head)
-		_rtw_mfree(skb->head, 0);
+		_rtw_mfreebu(skb->head, 0);
 	/* printf("%s()-%d: skb = %p\n", __FUNCTION__, __LINE__, skb); */
 	if (skb)
-		_rtw_mfree(skb, 0);
+		_rtw_mfreebu(skb, 0);
 }
 struct sk_buff *skb_clone(const struct sk_buff *skb)
 {
@@ -275,7 +275,7 @@ struct sk_buff *skb_clone(const struct sk_buff *skb)
 
 #endif /* PLATFORM_FREEBSD */
 
-inline struct sk_buff *_rtw_skb_alloc(u32 sz)
+inline struct sk_buff *_rtw_skb_allocbu(u32 sz)
 {
 #ifdef PLATFORM_LINUX
 	return __dev_alloc_skb(sz, in_interrupt() ? GFP_ATOMIC : GFP_KERNEL);
@@ -286,12 +286,12 @@ inline struct sk_buff *_rtw_skb_alloc(u32 sz)
 #endif /* PLATFORM_FREEBSD */
 }
 
-inline void _rtw_skb_free(struct sk_buff *skb)
+inline void _rtw_skb_freebu(struct sk_buff *skb)
 {
 	dev_kfree_skb_any(skb);
 }
 
-inline struct sk_buff *_rtw_skb_copy(const struct sk_buff *skb)
+inline struct sk_buff *_rtw_skb_copybu(const struct sk_buff *skb)
 {
 #ifdef PLATFORM_LINUX
 	return skb_copy(skb, in_interrupt() ? GFP_ATOMIC : GFP_KERNEL);
@@ -302,7 +302,7 @@ inline struct sk_buff *_rtw_skb_copy(const struct sk_buff *skb)
 #endif /* PLATFORM_FREEBSD */
 }
 
-inline struct sk_buff *_rtw_skb_clone(struct sk_buff *skb)
+inline struct sk_buff *_rtw_skb_clonebu(struct sk_buff *skb)
 {
 #ifdef PLATFORM_LINUX
 	return skb_clone(skb, in_interrupt() ? GFP_ATOMIC : GFP_KERNEL);
@@ -312,7 +312,7 @@ inline struct sk_buff *_rtw_skb_clone(struct sk_buff *skb)
 	return skb_clone(skb);
 #endif /* PLATFORM_FREEBSD */
 }
-inline struct sk_buff *_rtw_pskb_copy(struct sk_buff *skb)
+inline struct sk_buff *_rtw_pskb_copybu(struct sk_buff *skb)
 {
 #ifdef PLATFORM_LINUX
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 36))
@@ -327,7 +327,7 @@ inline struct sk_buff *_rtw_pskb_copy(struct sk_buff *skb)
 #endif /* PLATFORM_FREEBSD */
 }
 
-inline int _rtw_netif_rx(_nic_hdl ndev, struct sk_buff *skb)
+inline int _rtw_netif_rxbu(_nic_hdl ndev, struct sk_buff *skb)
 {
 #if defined(PLATFORM_LINUX)
 	skb->dev = ndev;
@@ -341,7 +341,7 @@ inline int _rtw_netif_rx(_nic_hdl ndev, struct sk_buff *skb)
 }
 
 #ifdef CONFIG_RTW_NAPI
-inline int _rtw_netif_receive_skb(_nic_hdl ndev, struct sk_buff *skb)
+inline int _rtw_netif_receive_skbbu(_nic_hdl ndev, struct sk_buff *skb)
 {
 #if defined(PLATFORM_LINUX)
 	skb->dev = ndev;
@@ -353,7 +353,7 @@ inline int _rtw_netif_receive_skb(_nic_hdl ndev, struct sk_buff *skb)
 }
 
 #ifdef CONFIG_RTW_GRO
-inline gro_result_t _rtw_napi_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
+inline gro_result_t _rtw_napi_gro_receivebu(struct napi_struct *napi, struct sk_buff *skb)
 {
 #if defined(PLATFORM_LINUX)
 	return napi_gro_receive(napi, skb);
@@ -365,16 +365,16 @@ inline gro_result_t _rtw_napi_gro_receive(struct napi_struct *napi, struct sk_bu
 #endif /* CONFIG_RTW_GRO */
 #endif /* CONFIG_RTW_NAPI */
 
-void _rtw_skb_queue_purge(struct sk_buff_head *list)
+void _rtw_skb_queue_purgebu(struct sk_buff_head *list)
 {
 	struct sk_buff *skb;
 
 	while ((skb = skb_dequeue(list)) != NULL)
-		_rtw_skb_free(skb);
+		_rtw_skb_freebu(skb);
 }
 
 #ifdef CONFIG_USB_HCI
-inline void *_rtw_usb_buffer_alloc(struct usb_device *dev, size_t size, dma_addr_t *dma)
+inline void *_rtw_usb_buffer_allocbu(struct usb_device *dev, size_t size, dma_addr_t *dma)
 {
 #ifdef PLATFORM_LINUX
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 35))
@@ -388,7 +388,7 @@ inline void *_rtw_usb_buffer_alloc(struct usb_device *dev, size_t size, dma_addr
 	return malloc(size, M_USBDEV, M_NOWAIT | M_ZERO);
 #endif /* PLATFORM_FREEBSD */
 }
-inline void _rtw_usb_buffer_free(struct usb_device *dev, size_t size, void *addr, dma_addr_t dma)
+inline void _rtw_usb_buffer_freebu(struct usb_device *dev, size_t size, void *addr, dma_addr_t dma)
 {
 #ifdef PLATFORM_LINUX
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 35))
@@ -445,18 +445,18 @@ void rtw_mstat_dump(void *sel)
 #endif
 
 	for (i = 0; i < mstat_tf_idx(MSTAT_TYPE_MAX); i++) {
-		value_t[0][i] = ATOMIC_READ(&(rtw_mem_type_stat[i].alloc));
-		value_t[1][i] = ATOMIC_READ(&(rtw_mem_type_stat[i].peak));
-		value_t[2][i] = ATOMIC_READ(&(rtw_mem_type_stat[i].alloc_cnt));
-		value_t[3][i] = ATOMIC_READ(&(rtw_mem_type_stat[i].alloc_err_cnt));
+		value_t[0][i] = ATOMIC_READbu(&(rtw_mem_type_stat[i].alloc));
+		value_t[1][i] = ATOMIC_READbu(&(rtw_mem_type_stat[i].peak));
+		value_t[2][i] = ATOMIC_READbu(&(rtw_mem_type_stat[i].alloc_cnt));
+		value_t[3][i] = ATOMIC_READbu(&(rtw_mem_type_stat[i].alloc_err_cnt));
 	}
 
 #ifdef RTW_MEM_FUNC_STAT
 	for (i = 0; i < mstat_ff_idx(MSTAT_FUNC_MAX); i++) {
-		value_f[0][i] = ATOMIC_READ(&(rtw_mem_func_stat[i].alloc));
-		value_f[1][i] = ATOMIC_READ(&(rtw_mem_func_stat[i].peak));
-		value_f[2][i] = ATOMIC_READ(&(rtw_mem_func_stat[i].alloc_cnt));
-		value_f[3][i] = ATOMIC_READ(&(rtw_mem_func_stat[i].alloc_err_cnt));
+		value_f[0][i] = ATOMIC_READbu(&(rtw_mem_func_stat[i].alloc));
+		value_f[1][i] = ATOMIC_READbu(&(rtw_mem_func_stat[i].peak));
+		value_f[2][i] = ATOMIC_READbu(&(rtw_mem_func_stat[i].alloc_cnt));
+		value_f[3][i] = ATOMIC_READbu(&(rtw_mem_func_stat[i].alloc_err_cnt));
 	}
 #endif
 
@@ -481,51 +481,51 @@ void rtw_mstat_update(const enum mstat_f flags, const MSTAT_STATUS status, u32 s
 	/* initialization */
 	if (!update_time) {
 		for (i = 0; i < mstat_tf_idx(MSTAT_TYPE_MAX); i++) {
-			ATOMIC_SET(&(rtw_mem_type_stat[i].alloc), 0);
-			ATOMIC_SET(&(rtw_mem_type_stat[i].peak), 0);
-			ATOMIC_SET(&(rtw_mem_type_stat[i].alloc_cnt), 0);
-			ATOMIC_SET(&(rtw_mem_type_stat[i].alloc_err_cnt), 0);
+			ATOMIC_SETbu(&(rtw_mem_type_stat[i].alloc), 0);
+			ATOMIC_SETbu(&(rtw_mem_type_stat[i].peak), 0);
+			ATOMIC_SETbu(&(rtw_mem_type_stat[i].alloc_cnt), 0);
+			ATOMIC_SETbu(&(rtw_mem_type_stat[i].alloc_err_cnt), 0);
 		}
 		#ifdef RTW_MEM_FUNC_STAT
 		for (i = 0; i < mstat_ff_idx(MSTAT_FUNC_MAX); i++) {
-			ATOMIC_SET(&(rtw_mem_func_stat[i].alloc), 0);
-			ATOMIC_SET(&(rtw_mem_func_stat[i].peak), 0);
-			ATOMIC_SET(&(rtw_mem_func_stat[i].alloc_cnt), 0);
-			ATOMIC_SET(&(rtw_mem_func_stat[i].alloc_err_cnt), 0);
+			ATOMIC_SETbu(&(rtw_mem_func_stat[i].alloc), 0);
+			ATOMIC_SETbu(&(rtw_mem_func_stat[i].peak), 0);
+			ATOMIC_SETbu(&(rtw_mem_func_stat[i].alloc_cnt), 0);
+			ATOMIC_SETbu(&(rtw_mem_func_stat[i].alloc_err_cnt), 0);
 		}
 		#endif
 	}
 
 	switch (status) {
 	case MSTAT_ALLOC_SUCCESS:
-		ATOMIC_INC(&(rtw_mem_type_stat[mstat_tf_idx(flags)].alloc_cnt));
-		alloc = ATOMIC_ADD_RETURN(&(rtw_mem_type_stat[mstat_tf_idx(flags)].alloc), sz);
-		peak = ATOMIC_READ(&(rtw_mem_type_stat[mstat_tf_idx(flags)].peak));
+		ATOMIC_INCbu(&(rtw_mem_type_stat[mstat_tf_idx(flags)].alloc_cnt));
+		alloc = ATOMIC_ADDbu_RETURN(&(rtw_mem_type_stat[mstat_tf_idx(flags)].alloc), sz);
+		peak = ATOMIC_READbu(&(rtw_mem_type_stat[mstat_tf_idx(flags)].peak));
 		if (peak < alloc)
-			ATOMIC_SET(&(rtw_mem_type_stat[mstat_tf_idx(flags)].peak), alloc);
+			ATOMIC_SETbu(&(rtw_mem_type_stat[mstat_tf_idx(flags)].peak), alloc);
 
 		#ifdef RTW_MEM_FUNC_STAT
-		ATOMIC_INC(&(rtw_mem_func_stat[mstat_ff_idx(flags)].alloc_cnt));
-		alloc = ATOMIC_ADD_RETURN(&(rtw_mem_func_stat[mstat_ff_idx(flags)].alloc), sz);
-		peak = ATOMIC_READ(&(rtw_mem_func_stat[mstat_ff_idx(flags)].peak));
+		ATOMIC_INCbu(&(rtw_mem_func_stat[mstat_ff_idx(flags)].alloc_cnt));
+		alloc = ATOMIC_ADDbu_RETURN(&(rtw_mem_func_stat[mstat_ff_idx(flags)].alloc), sz);
+		peak = ATOMIC_READbu(&(rtw_mem_func_stat[mstat_ff_idx(flags)].peak));
 		if (peak < alloc)
-			ATOMIC_SET(&(rtw_mem_func_stat[mstat_ff_idx(flags)].peak), alloc);
+			ATOMIC_SETbu(&(rtw_mem_func_stat[mstat_ff_idx(flags)].peak), alloc);
 		#endif
 		break;
 
 	case MSTAT_ALLOC_FAIL:
-		ATOMIC_INC(&(rtw_mem_type_stat[mstat_tf_idx(flags)].alloc_err_cnt));
+		ATOMIC_INCbu(&(rtw_mem_type_stat[mstat_tf_idx(flags)].alloc_err_cnt));
 		#ifdef RTW_MEM_FUNC_STAT
-		ATOMIC_INC(&(rtw_mem_func_stat[mstat_ff_idx(flags)].alloc_err_cnt));
+		ATOMIC_INCbu(&(rtw_mem_func_stat[mstat_ff_idx(flags)].alloc_err_cnt));
 		#endif
 		break;
 
 	case MSTAT_FREE:
-		ATOMIC_DEC(&(rtw_mem_type_stat[mstat_tf_idx(flags)].alloc_cnt));
-		ATOMIC_SUB(&(rtw_mem_type_stat[mstat_tf_idx(flags)].alloc), sz);
+		ATOMIC_DECbu(&(rtw_mem_type_stat[mstat_tf_idx(flags)].alloc_cnt));
+		ATOMIC_SUBbu(&(rtw_mem_type_stat[mstat_tf_idx(flags)].alloc), sz);
 		#ifdef RTW_MEM_FUNC_STAT
-		ATOMIC_DEC(&(rtw_mem_func_stat[mstat_ff_idx(flags)].alloc_cnt));
-		ATOMIC_SUB(&(rtw_mem_func_stat[mstat_ff_idx(flags)].alloc), sz);
+		ATOMIC_DECbu(&(rtw_mem_func_stat[mstat_ff_idx(flags)].alloc_cnt));
+		ATOMIC_SUBbu(&(rtw_mem_func_stat[mstat_ff_idx(flags)].alloc), sz);
 		#endif
 		break;
 	};
@@ -565,14 +565,14 @@ bool match_mstat_sniff_rules(const enum mstat_f flags, const size_t size)
 	return _FALSE;
 }
 
-inline void *dbg_rtw_vmalloc(u32 sz, const enum mstat_f flags, const char *func, const int line)
+inline void *dbg_rtw_vmallocbu(u32 sz, const enum mstat_f flags, const char *func, const int line)
 {
 	void *p;
 
 	if (match_mstat_sniff_rules(flags, sz))
 		RTW_INFO("DBG_MEM_ALLOC %s:%d %s(%d)\n", func, line, __FUNCTION__, (sz));
 
-	p = _rtw_vmalloc((sz));
+	p = _rtw_vmallocbu((sz));
 
 	rtw_mstat_update(
 		flags
@@ -583,14 +583,14 @@ inline void *dbg_rtw_vmalloc(u32 sz, const enum mstat_f flags, const char *func,
 	return p;
 }
 
-inline void *dbg_rtw_zvmalloc(u32 sz, const enum mstat_f flags, const char *func, const int line)
+inline void *dbg_rtw_zvmallocbu(u32 sz, const enum mstat_f flags, const char *func, const int line)
 {
 	void *p;
 
 	if (match_mstat_sniff_rules(flags, sz))
 		RTW_INFO("DBG_MEM_ALLOC %s:%d %s(%d)\n", func, line, __FUNCTION__, (sz));
 
-	p = _rtw_zvmalloc((sz));
+	p = _rtw_zvmallocbu((sz));
 
 	rtw_mstat_update(
 		flags
@@ -601,13 +601,13 @@ inline void *dbg_rtw_zvmalloc(u32 sz, const enum mstat_f flags, const char *func
 	return p;
 }
 
-inline void dbg_rtw_vmfree(void *pbuf, u32 sz, const enum mstat_f flags, const char *func, const int line)
+inline void dbg_rtw_vmfreebu(void *pbuf, u32 sz, const enum mstat_f flags, const char *func, const int line)
 {
 
 	if (match_mstat_sniff_rules(flags, sz))
 		RTW_INFO("DBG_MEM_ALLOC %s:%d %s(%d)\n", func, line, __FUNCTION__, (sz));
 
-	_rtw_vmfree((pbuf), (sz));
+	_rtw_vmfreebu((pbuf), (sz));
 
 	rtw_mstat_update(
 		flags
@@ -616,14 +616,14 @@ inline void dbg_rtw_vmfree(void *pbuf, u32 sz, const enum mstat_f flags, const c
 	);
 }
 
-inline void *dbg_rtw_malloc(u32 sz, const enum mstat_f flags, const char *func, const int line)
+inline void *dbg_rtw_mallocbu(u32 sz, const enum mstat_f flags, const char *func, const int line)
 {
 	void *p;
 
 	if (match_mstat_sniff_rules(flags, sz))
 		RTW_INFO("DBG_MEM_ALLOC %s:%d %s(%d)\n", func, line, __FUNCTION__, (sz));
 
-	p = _rtw_malloc((sz));
+	p = _rtw_mallocbu((sz));
 
 	rtw_mstat_update(
 		flags
@@ -634,14 +634,14 @@ inline void *dbg_rtw_malloc(u32 sz, const enum mstat_f flags, const char *func, 
 	return p;
 }
 
-inline void *dbg_rtw_zmalloc(u32 sz, const enum mstat_f flags, const char *func, const int line)
+inline void *dbg_rtw_zmallocbu(u32 sz, const enum mstat_f flags, const char *func, const int line)
 {
 	void *p;
 
 	if (match_mstat_sniff_rules(flags, sz))
 		RTW_INFO("DBG_MEM_ALLOC %s:%d %s(%d)\n", func, line, __FUNCTION__, (sz));
 
-	p = _rtw_zmalloc((sz));
+	p = _rtw_zmallocbu((sz));
 
 	rtw_mstat_update(
 		flags
@@ -652,12 +652,12 @@ inline void *dbg_rtw_zmalloc(u32 sz, const enum mstat_f flags, const char *func,
 	return p;
 }
 
-inline void dbg_rtw_mfree(void *pbuf, u32 sz, const enum mstat_f flags, const char *func, const int line)
+inline void dbg_rtw_mfreebu(void *pbuf, u32 sz, const enum mstat_f flags, const char *func, const int line)
 {
 	if (match_mstat_sniff_rules(flags, sz))
 		RTW_INFO("DBG_MEM_ALLOC %s:%d %s(%d)\n", func, line, __FUNCTION__, (sz));
 
-	_rtw_mfree((pbuf), (sz));
+	_rtw_mfreebu((pbuf), (sz));
 
 	rtw_mstat_update(
 		flags
@@ -666,12 +666,12 @@ inline void dbg_rtw_mfree(void *pbuf, u32 sz, const enum mstat_f flags, const ch
 	);
 }
 
-inline struct sk_buff *dbg_rtw_skb_alloc(unsigned int size, const enum mstat_f flags, const char *func, int line)
+inline struct sk_buff *dbg_rtw_skb_allocbu(unsigned int size, const enum mstat_f flags, const char *func, int line)
 {
 	struct sk_buff *skb;
 	unsigned int truesize = 0;
 
-	skb = _rtw_skb_alloc(size);
+	skb = _rtw_skb_allocbu(size);
 
 	if (skb)
 		truesize = skb->truesize;
@@ -688,14 +688,14 @@ inline struct sk_buff *dbg_rtw_skb_alloc(unsigned int size, const enum mstat_f f
 	return skb;
 }
 
-inline void dbg_rtw_skb_free(struct sk_buff *skb, const enum mstat_f flags, const char *func, int line)
+inline void dbg_rtw_skb_freebu(struct sk_buff *skb, const enum mstat_f flags, const char *func, int line)
 {
 	unsigned int truesize = skb->truesize;
 
 	if (match_mstat_sniff_rules(flags, truesize))
 		RTW_INFO("DBG_MEM_ALLOC %s:%d %s, truesize=%u\n", func, line, __FUNCTION__, truesize);
 
-	_rtw_skb_free(skb);
+	_rtw_skb_freebu(skb);
 
 	rtw_mstat_update(
 		flags
@@ -704,13 +704,13 @@ inline void dbg_rtw_skb_free(struct sk_buff *skb, const enum mstat_f flags, cons
 	);
 }
 
-inline struct sk_buff *dbg_rtw_skb_copy(const struct sk_buff *skb, const enum mstat_f flags, const char *func, const int line)
+inline struct sk_buff *dbg_rtw_skb_copybu(const struct sk_buff *skb, const enum mstat_f flags, const char *func, const int line)
 {
 	struct sk_buff *skb_cp;
 	unsigned int truesize = skb->truesize;
 	unsigned int cp_truesize = 0;
 
-	skb_cp = _rtw_skb_copy(skb);
+	skb_cp = _rtw_skb_copybu(skb);
 	if (skb_cp)
 		cp_truesize = skb_cp->truesize;
 
@@ -726,13 +726,13 @@ inline struct sk_buff *dbg_rtw_skb_copy(const struct sk_buff *skb, const enum ms
 	return skb_cp;
 }
 
-inline struct sk_buff *dbg_rtw_skb_clone(struct sk_buff *skb, const enum mstat_f flags, const char *func, const int line)
+inline struct sk_buff *dbg_rtw_skb_clonebu(struct sk_buff *skb, const enum mstat_f flags, const char *func, const int line)
 {
 	struct sk_buff *skb_cl;
 	unsigned int truesize = skb->truesize;
 	unsigned int cl_truesize = 0;
 
-	skb_cl = _rtw_skb_clone(skb);
+	skb_cl = _rtw_skb_clonebu(skb);
 	if (skb_cl)
 		cl_truesize = skb_cl->truesize;
 
@@ -748,7 +748,7 @@ inline struct sk_buff *dbg_rtw_skb_clone(struct sk_buff *skb, const enum mstat_f
 	return skb_cl;
 }
 
-inline int dbg_rtw_netif_rx(_nic_hdl ndev, struct sk_buff *skb, const enum mstat_f flags, const char *func, int line)
+inline int dbg_rtw_netif_rxbu(_nic_hdl ndev, struct sk_buff *skb, const enum mstat_f flags, const char *func, int line)
 {
 	int ret;
 	unsigned int truesize = skb->truesize;
@@ -756,7 +756,7 @@ inline int dbg_rtw_netif_rx(_nic_hdl ndev, struct sk_buff *skb, const enum mstat
 	if (match_mstat_sniff_rules(flags, truesize))
 		RTW_INFO("DBG_MEM_ALLOC %s:%d %s, truesize=%u\n", func, line, __FUNCTION__, truesize);
 
-	ret = _rtw_netif_rx(ndev, skb);
+	ret = _rtw_netif_rxbu(ndev, skb);
 
 	rtw_mstat_update(
 		flags
@@ -768,7 +768,7 @@ inline int dbg_rtw_netif_rx(_nic_hdl ndev, struct sk_buff *skb, const enum mstat
 }
 
 #ifdef CONFIG_RTW_NAPI
-inline int dbg_rtw_netif_receive_skb(_nic_hdl ndev, struct sk_buff *skb, const enum mstat_f flags, const char *func, int line)
+inline int dbg_rtw_netif_receive_skbbu(_nic_hdl ndev, struct sk_buff *skb, const enum mstat_f flags, const char *func, int line)
 {
 	int ret;
 	unsigned int truesize = skb->truesize;
@@ -776,7 +776,7 @@ inline int dbg_rtw_netif_receive_skb(_nic_hdl ndev, struct sk_buff *skb, const e
 	if (match_mstat_sniff_rules(flags, truesize))
 		RTW_INFO("DBG_MEM_ALLOC %s:%d %s, truesize=%u\n", func, line, __FUNCTION__, truesize);
 
-	ret = _rtw_netif_receive_skb(ndev, skb);
+	ret = _rtw_netif_receive_skbbu(ndev, skb);
 
 	rtw_mstat_update(
 		flags
@@ -788,7 +788,7 @@ inline int dbg_rtw_netif_receive_skb(_nic_hdl ndev, struct sk_buff *skb, const e
 }
 
 #ifdef CONFIG_RTW_GRO
-inline gro_result_t dbg_rtw_napi_gro_receive(struct napi_struct *napi, struct sk_buff *skb, const enum mstat_f flags, const char *func, int line)
+inline gro_result_t dbg_rtw_napi_gro_receivebu(struct napi_struct *napi, struct sk_buff *skb, const enum mstat_f flags, const char *func, int line)
 {
 	int ret;
 	unsigned int truesize = skb->truesize;
@@ -796,7 +796,7 @@ inline gro_result_t dbg_rtw_napi_gro_receive(struct napi_struct *napi, struct sk
 	if (match_mstat_sniff_rules(flags, truesize))
 		RTW_INFO("DBG_MEM_ALLOC %s:%d %s, truesize=%u\n", func, line, __FUNCTION__, truesize);
 
-	ret = _rtw_napi_gro_receive(napi, skb);
+	ret = _rtw_napi_gro_receivebu(napi, skb);
 
 	rtw_mstat_update(
 		flags
@@ -809,23 +809,23 @@ inline gro_result_t dbg_rtw_napi_gro_receive(struct napi_struct *napi, struct sk
 #endif /* CONFIG_RTW_GRO */
 #endif /* CONFIG_RTW_NAPI */
 
-inline void dbg_rtw_skb_queue_purge(struct sk_buff_head *list, enum mstat_f flags, const char *func, int line)
+inline void dbg_rtw_skb_queue_purgebu(struct sk_buff_head *list, enum mstat_f flags, const char *func, int line)
 {
 	struct sk_buff *skb;
 
 	while ((skb = skb_dequeue(list)) != NULL)
-		dbg_rtw_skb_free(skb, flags, func, line);
+		dbg_rtw_skb_freebu(skb, flags, func, line);
 }
 
 #ifdef CONFIG_USB_HCI
-inline void *dbg_rtw_usb_buffer_alloc(struct usb_device *dev, size_t size, dma_addr_t *dma, const enum mstat_f flags, const char *func, int line)
+inline void *dbg_rtw_usb_buffer_allocbu(struct usb_device *dev, size_t size, dma_addr_t *dma, const enum mstat_f flags, const char *func, int line)
 {
 	void *p;
 
 	if (match_mstat_sniff_rules(flags, size))
 		RTW_INFO("DBG_MEM_ALLOC %s:%d %s(%zu)\n", func, line, __FUNCTION__, size);
 
-	p = _rtw_usb_buffer_alloc(dev, size, dma);
+	p = _rtw_usb_buffer_allocbu(dev, size, dma);
 
 	rtw_mstat_update(
 		flags
@@ -836,13 +836,13 @@ inline void *dbg_rtw_usb_buffer_alloc(struct usb_device *dev, size_t size, dma_a
 	return p;
 }
 
-inline void dbg_rtw_usb_buffer_free(struct usb_device *dev, size_t size, void *addr, dma_addr_t dma, const enum mstat_f flags, const char *func, int line)
+inline void dbg_rtw_usb_buffer_freebu(struct usb_device *dev, size_t size, void *addr, dma_addr_t dma, const enum mstat_f flags, const char *func, int line)
 {
 
 	if (match_mstat_sniff_rules(flags, size))
 		RTW_INFO("DBG_MEM_ALLOC %s:%d %s(%zu)\n", func, line, __FUNCTION__, size);
 
-	_rtw_usb_buffer_free(dev, size, addr, dma);
+	_rtw_usb_buffer_freebu(dev, size, addr, dma);
 
 	rtw_mstat_update(
 		flags
@@ -854,7 +854,7 @@ inline void dbg_rtw_usb_buffer_free(struct usb_device *dev, size_t size, void *a
 
 #endif /* defined(DBG_MEM_ALLOC) */
 
-void *rtw_malloc2d(int h, int w, size_t size)
+void *rtw_malloc2dbu(int h, int w, size_t size)
 {
 	int j;
 
@@ -870,12 +870,12 @@ void *rtw_malloc2d(int h, int w, size_t size)
 	return a;
 }
 
-void rtw_mfree2d(void *pbuf, int h, int w, int size)
+void rtw_mfree2dbu(void *pbuf, int h, int w, int size)
 {
 	rtw_mfree((u8 *)pbuf, h * sizeof(void *) + w * h * size);
 }
 
-inline void rtw_os_pkt_free(_pkt *pkt)
+inline void rtw_os_pkt_freebu(_pkt *pkt)
 {
 #if defined(PLATFORM_LINUX)
 	rtw_skb_free(pkt);
@@ -886,7 +886,7 @@ inline void rtw_os_pkt_free(_pkt *pkt)
 #endif
 }
 
-inline _pkt *rtw_os_pkt_copy(_pkt *pkt)
+inline _pkt *rtw_os_pkt_copybu(_pkt *pkt)
 {
 #if defined(PLATFORM_LINUX)
 	return rtw_skb_copy(pkt);
@@ -897,7 +897,7 @@ inline _pkt *rtw_os_pkt_copy(_pkt *pkt)
 #endif
 }
 
-inline void *rtw_os_pkt_data(_pkt *pkt)
+inline void *rtw_os_pkt_databu(_pkt *pkt)
 {
 #if defined(PLATFORM_LINUX)
 	return pkt->data;
@@ -908,7 +908,7 @@ inline void *rtw_os_pkt_data(_pkt *pkt)
 #endif
 }
 
-inline u32 rtw_os_pkt_len(_pkt *pkt)
+inline u32 rtw_os_pkt_lenbu(_pkt *pkt)
 {
 #if defined(PLATFORM_LINUX)
 	return pkt->len;
@@ -919,7 +919,7 @@ inline u32 rtw_os_pkt_len(_pkt *pkt)
 #endif
 }
 
-void _rtw_memcpy(void *dst, const void *src, u32 sz)
+void _rtw_memcpybu(void *dst, const void *src, u32 sz)
 {
 
 #if defined(PLATFORM_LINUX) || defined (PLATFORM_FREEBSD)
@@ -936,7 +936,7 @@ void _rtw_memcpy(void *dst, const void *src, u32 sz)
 
 }
 
-inline void _rtw_memmove(void *dst, const void *src, u32 sz)
+inline void _rtw_memmovebu(void *dst, const void *src, u32 sz)
 {
 #if defined(PLATFORM_LINUX)
 	memmove(dst, src, sz);
@@ -945,7 +945,7 @@ inline void _rtw_memmove(void *dst, const void *src, u32 sz)
 #endif
 }
 
-int	_rtw_memcmp(const void *dst, const void *src, u32 sz)
+int	_rtw_memcmpbu(const void *dst, const void *src, u32 sz)
 {
 
 #if defined(PLATFORM_LINUX) || defined (PLATFORM_FREEBSD)
@@ -972,7 +972,7 @@ int	_rtw_memcmp(const void *dst, const void *src, u32 sz)
 
 }
 
-int _rtw_memcmp2(const void *dst, const void *src, u32 sz)
+int _rtw_memcmpbu2(const void *dst, const void *src, u32 sz)
 {
 	const unsigned char *p1 = dst, *p2 = src;
 
@@ -990,7 +990,7 @@ int _rtw_memcmp2(const void *dst, const void *src, u32 sz)
 	return *p1 - *p2;
 }
 
-void _rtw_memset(void *pbuf, int c, u32 sz)
+void _rtw_memsetbu(void *pbuf, int c, u32 sz)
 {
 
 #if defined(PLATFORM_LINUX) || defined (PLATFORM_FREEBSD)
@@ -1022,7 +1022,7 @@ static inline void __list_add(_list *pnew, _list *pprev, _list *pnext)
 #endif /* PLATFORM_FREEBSD */
 
 
-void _rtw_init_listhead(_list *list)
+void _rtw_init_listheadbu(_list *list)
 {
 
 #ifdef PLATFORM_LINUX
@@ -1049,7 +1049,7 @@ For the following list_xxx operations,
 caller must guarantee the atomic context.
 Otherwise, there will be racing condition.
 */
-u32	rtw_is_list_empty(_list *phead)
+u32	rtw_is_list_emptybu(_list *phead)
 {
 
 #ifdef PLATFORM_LINUX
@@ -1082,7 +1082,7 @@ u32	rtw_is_list_empty(_list *phead)
 
 }
 
-void rtw_list_insert_head(_list *plist, _list *phead)
+void rtw_list_insert_headbu(_list *plist, _list *phead)
 {
 
 #ifdef PLATFORM_LINUX
@@ -1098,7 +1098,7 @@ void rtw_list_insert_head(_list *plist, _list *phead)
 #endif
 }
 
-void rtw_list_insert_tail(_list *plist, _list *phead)
+void rtw_list_insert_tailbu(_list *plist, _list *phead)
 {
 
 #ifdef PLATFORM_LINUX
@@ -1119,7 +1119,7 @@ void rtw_list_insert_tail(_list *plist, _list *phead)
 
 }
 
-inline void rtw_list_splice(_list *list, _list *head)
+inline void rtw_list_splicebu(_list *list, _list *head)
 {
 #ifdef PLATFORM_LINUX
 	list_splice(list, head);
@@ -1128,7 +1128,7 @@ inline void rtw_list_splice(_list *list, _list *head)
 #endif
 }
 
-inline void rtw_list_splice_init(_list *list, _list *head)
+inline void rtw_list_splicebu_init(_list *list, _list *head)
 {
 #ifdef PLATFORM_LINUX
 	list_splice_init(list, head);
@@ -1137,7 +1137,7 @@ inline void rtw_list_splice_init(_list *list, _list *head)
 #endif
 }
 
-inline void rtw_list_splice_tail(_list *list, _list *head)
+inline void rtw_list_splicebu_tail(_list *list, _list *head)
 {
 #ifdef PLATFORM_LINUX
 	#if (LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 27))
@@ -1151,7 +1151,7 @@ inline void rtw_list_splice_tail(_list *list, _list *head)
 #endif
 }
 
-inline void rtw_hlist_head_init(rtw_hlist_head *h)
+inline void rtw_hlist_head_initbu(rtw_hlist_head *h)
 {
 #ifdef PLATFORM_LINUX
 	INIT_HLIST_HEAD(h);
@@ -1160,7 +1160,7 @@ inline void rtw_hlist_head_init(rtw_hlist_head *h)
 #endif
 }
 
-inline void rtw_hlist_add_head(rtw_hlist_node *n, rtw_hlist_head *h)
+inline void rtw_hlist_add_headbu(rtw_hlist_node *n, rtw_hlist_head *h)
 {
 #ifdef PLATFORM_LINUX
 	hlist_add_head(n, h);
@@ -1169,7 +1169,7 @@ inline void rtw_hlist_add_head(rtw_hlist_node *n, rtw_hlist_head *h)
 #endif
 }
 
-inline void rtw_hlist_del(rtw_hlist_node *n)
+inline void rtw_hlist_delbu(rtw_hlist_node *n)
 {
 #ifdef PLATFORM_LINUX
 	hlist_del(n);
@@ -1178,7 +1178,7 @@ inline void rtw_hlist_del(rtw_hlist_node *n)
 #endif
 }
 
-inline void rtw_hlist_add_head_rcu(rtw_hlist_node *n, rtw_hlist_head *h)
+inline void rtw_hlist_add_headbu_rcu(rtw_hlist_node *n, rtw_hlist_head *h)
 {
 #ifdef PLATFORM_LINUX
 	hlist_add_head_rcu(n, h);
@@ -1187,7 +1187,7 @@ inline void rtw_hlist_add_head_rcu(rtw_hlist_node *n, rtw_hlist_head *h)
 #endif
 }
 
-inline void rtw_hlist_del_rcu(rtw_hlist_node *n)
+inline void rtw_hlist_delbu_rcu(rtw_hlist_node *n)
 {
 #ifdef PLATFORM_LINUX
 	hlist_del_rcu(n);
@@ -1196,7 +1196,7 @@ inline void rtw_hlist_del_rcu(rtw_hlist_node *n)
 #endif
 }
 
-void rtw_init_timer(_timer *ptimer, void *padapter, void *pfunc, void *ctx)
+void rtw_init_timerbu(_timer *ptimer, void *padapter, void *pfunc, void *ctx)
 {
 	_adapter *adapter = (_adapter *)padapter;
 
@@ -1218,7 +1218,7 @@ Caller must check if the list is empty before calling rtw_list_delete
 */
 
 
-void _rtw_init_sema(_sema	*sema, int init_val)
+void _rtw_init_semabu(_sema	*sema, int init_val)
 {
 
 #ifdef PLATFORM_LINUX
@@ -1242,7 +1242,7 @@ void _rtw_init_sema(_sema	*sema, int init_val)
 
 }
 
-void _rtw_free_sema(_sema	*sema)
+void _rtw_free_semabu(_sema	*sema)
 {
 #ifdef PLATFORM_FREEBSD
 	sema_destroy(sema);
@@ -1253,7 +1253,7 @@ void _rtw_free_sema(_sema	*sema)
 
 }
 
-void _rtw_up_sema(_sema	*sema)
+void _rtw_up_semabu(_sema	*sema)
 {
 
 #ifdef PLATFORM_LINUX
@@ -1275,7 +1275,7 @@ void _rtw_up_sema(_sema	*sema)
 #endif
 }
 
-u32 _rtw_down_sema(_sema *sema)
+u32 _rtw_down_semabu(_sema *sema)
 {
 
 #ifdef PLATFORM_LINUX
@@ -1306,7 +1306,7 @@ u32 _rtw_down_sema(_sema *sema)
 #endif
 }
 
-inline void thread_exit(_completion *comp)
+inline void thread_exitbu(_completion *comp)
 {
 #ifdef PLATFORM_LINUX
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 17, 0))
@@ -1329,26 +1329,26 @@ inline void thread_exit(_completion *comp)
 #endif
 }
 
-inline void _rtw_init_completion(_completion *comp)
+inline void _rtw_init_completionbu(_completion *comp)
 {
 #ifdef PLATFORM_LINUX
 	init_completion(comp);
 #endif
 }
-inline void _rtw_wait_for_comp_timeout(_completion *comp)
+inline void _rtw_wait_for_compbu_timeoutbu(_completion *comp)
 {
 #ifdef PLATFORM_LINUX
 	wait_for_completion_timeout(comp, msecs_to_jiffies(3000));
 #endif
 }
-inline void _rtw_wait_for_comp(_completion *comp)
+inline void _rtw_wait_for_compbu(_completion *comp)
 {
 #ifdef PLATFORM_LINUX
 	wait_for_completion(comp);
 #endif
 }
 
-void	_rtw_mutex_init(_mutex *pmutex)
+void	_rtw_mutex_initbu(_mutex *pmutex)
 {
 #ifdef PLATFORM_LINUX
 
@@ -1373,8 +1373,8 @@ void	_rtw_mutex_init(_mutex *pmutex)
 #endif
 }
 
-void	_rtw_mutex_free(_mutex *pmutex);
-void	_rtw_mutex_free(_mutex *pmutex)
+void	_rtw_mutex_freebu(_mutex *pmutex);
+void	_rtw_mutex_freebu(_mutex *pmutex)
 {
 #ifdef PLATFORM_LINUX
 
@@ -1398,7 +1398,7 @@ void	_rtw_mutex_free(_mutex *pmutex)
 #endif
 }
 
-void	_rtw_spinlock_init(_lock *plock)
+void	_rtw_spinlockbu_initbu(_lock *plock)
 {
 
 #ifdef PLATFORM_LINUX
@@ -1417,7 +1417,7 @@ void	_rtw_spinlock_init(_lock *plock)
 
 }
 
-void	_rtw_spinlock_free(_lock *plock)
+void	_rtw_spinlockbu_freebu(_lock *plock)
 {
 #ifdef PLATFORM_FREEBSD
 	mtx_destroy(plock);
@@ -1451,7 +1451,7 @@ void rtw_mtx_unlock(_lock *plock)
 #endif /* PLATFORM_FREEBSD */
 
 
-void	_rtw_spinlock(_lock	*plock)
+void	_rtw_spinlockbu(_lock	*plock)
 {
 
 #ifdef PLATFORM_LINUX
@@ -1470,7 +1470,7 @@ void	_rtw_spinlock(_lock	*plock)
 
 }
 
-void	_rtw_spinunlock(_lock *plock)
+void	_rtw_spinunlockbu(_lock *plock)
 {
 
 #ifdef PLATFORM_LINUX
@@ -1489,7 +1489,7 @@ void	_rtw_spinunlock(_lock *plock)
 }
 
 
-void	_rtw_spinlock_ex(_lock	*plock)
+void	_rtw_spinlockbu_ex(_lock	*plock)
 {
 
 #ifdef PLATFORM_LINUX
@@ -1508,7 +1508,7 @@ void	_rtw_spinlock_ex(_lock	*plock)
 
 }
 
-void	_rtw_spinunlock_ex(_lock *plock)
+void	_rtw_spinunlockbu_ex(_lock *plock)
 {
 
 #ifdef PLATFORM_LINUX
@@ -1528,24 +1528,24 @@ void	_rtw_spinunlock_ex(_lock *plock)
 
 
 
-void _rtw_init_queue(_queue *pqueue)
+void _rtw_init_queuebu(_queue *pqueue)
 {
-	_rtw_init_listhead(&(pqueue->queue));
-	_rtw_spinlock_init(&(pqueue->lock));
+	_rtw_init_listheadbu(&(pqueue->queue));
+	_rtw_spinlockbu_initbu(&(pqueue->lock));
 }
 
-void _rtw_deinit_queue(_queue *pqueue)
+void _rtw_deinit_queuebu(_queue *pqueue)
 {
-	_rtw_spinlock_free(&(pqueue->lock));
+	_rtw_spinlockbu_freebu(&(pqueue->lock));
 }
 
-u32	  _rtw_queue_empty(_queue	*pqueue)
+u32	  _rtw_queue_emptybu(_queue	*pqueue)
 {
-	return rtw_is_list_empty(&(pqueue->queue));
+	return rtw_is_list_emptybu(&(pqueue->queue));
 }
 
 
-u32 rtw_end_of_queue_search(_list *head, _list *plist)
+u32 rtw_end_of_queue_searchbu(_list *head, _list *plist)
 {
 	if (head == plist)
 		return _TRUE;
@@ -1554,7 +1554,7 @@ u32 rtw_end_of_queue_search(_list *head, _list *plist)
 }
 
 
-systime _rtw_get_current_time(void)
+systime _rtw_get_current_timebu(void)
 {
 
 #ifdef PLATFORM_LINUX
@@ -1572,7 +1572,7 @@ systime _rtw_get_current_time(void)
 #endif
 }
 
-inline u32 _rtw_systime_to_ms(systime stime)
+inline u32 _rtw_systime_to_msbu(systime stime)
 {
 #ifdef PLATFORM_LINUX
 	return jiffies_to_msecs(stime);
@@ -1585,7 +1585,7 @@ inline u32 _rtw_systime_to_ms(systime stime)
 #endif
 }
 
-inline systime _rtw_ms_to_systime(u32 ms)
+inline systime _rtw_ms_to_systimebu(u32 ms)
 {
 #ifdef PLATFORM_LINUX
 	return msecs_to_jiffies(ms);
@@ -1598,7 +1598,7 @@ inline systime _rtw_ms_to_systime(u32 ms)
 #endif
 }
 
-inline systime _rtw_us_to_systime(u32 us)
+inline systime _rtw_us_to_systimebu(u32 us)
 {
 #ifdef PLATFORM_LINUX
 	return usecs_to_jiffies(us);
@@ -1608,22 +1608,22 @@ inline systime _rtw_us_to_systime(u32 us)
 }
 
 /* the input parameter start use the same unit as returned by rtw_get_current_time */
-inline s32 _rtw_get_passing_time_ms(systime start)
+inline s32 _rtw_get_passing_time_msbu(systime start)
 {
-	return _rtw_systime_to_ms(_rtw_get_current_time() - start);
+	return _rtw_systime_to_msbu(_rtw_get_current_timebu() - start);
 }
 
-inline s32 _rtw_get_remaining_time_ms(systime end)
+inline s32 _rtw_get_remaining_time_msbu(systime end)
 {
-	return _rtw_systime_to_ms(end - _rtw_get_current_time());
+	return _rtw_systime_to_msbu(end - _rtw_get_current_timebu());
 }
 
-inline s32 _rtw_get_time_interval_ms(systime start, systime end)
+inline s32 _rtw_get_time_interval_msbu(systime start, systime end)
 {
-	return _rtw_systime_to_ms(end - start);
+	return _rtw_systime_to_msbu(end - start);
 }
 
-inline bool _rtw_time_after(systime a, systime b)
+inline bool _rtw_time_afterbu(systime a, systime b)
 {
 #ifdef PLATFORM_LINUX
 	return time_after(a, b);
@@ -1857,7 +1857,7 @@ s64 rtw_sptime_pass_ns(const sysptime start)
 	return rtw_sptime_to_ns(diff);
 }
 
-void rtw_sleep_schedulable(int ms)
+void rtw_sleep_schedulablebu(int ms)
 {
 
 #ifdef PLATFORM_LINUX
@@ -1887,7 +1887,7 @@ void rtw_sleep_schedulable(int ms)
 }
 
 
-void rtw_msleep_os(int ms)
+void rtw_msleep_osbu(int ms)
 {
 
 #ifdef PLATFORM_LINUX
@@ -1913,7 +1913,7 @@ void rtw_msleep_os(int ms)
 
 
 }
-void rtw_usleep_os(int us)
+void rtw_usleep_osbu(int us)
 {
 #ifdef PLATFORM_LINUX
 
@@ -1945,12 +1945,12 @@ void rtw_usleep_os(int us)
 
 
 #ifdef DBG_DELAY_OS
-void _rtw_mdelay_os(int ms, const char *func, const int line)
+void _rtw_mdelay_osbu(int ms, const char *func, const int line)
 {
 #if 0
 	if (ms > 10)
 		RTW_INFO("%s:%d %s(%d)\n", func, line, __FUNCTION__, ms);
-	rtw_msleep_os(ms);
+	rtw_msleep_osbu(ms);
 	return;
 #endif
 
@@ -1969,13 +1969,13 @@ void _rtw_mdelay_os(int ms, const char *func, const int line)
 
 
 }
-void _rtw_udelay_os(int us, const char *func, const int line)
+void _rtw_udelay_osbu(int us, const char *func, const int line)
 {
 
 #if 0
 	if (us > 1000) {
 		RTW_INFO("%s:%d %s(%d)\n", func, line, __FUNCTION__, us);
-		rtw_usleep_os(us);
+		rtw_usleep_osbu(us);
 		return;
 	}
 #endif
@@ -1996,7 +1996,7 @@ void _rtw_udelay_os(int us, const char *func, const int line)
 
 }
 #else
-void rtw_mdelay_os(int ms)
+void rtw_mdelay_osbu(int ms)
 {
 
 #ifdef PLATFORM_LINUX
@@ -2016,7 +2016,7 @@ void rtw_mdelay_os(int ms)
 
 
 }
-void rtw_udelay_os(int us)
+void rtw_udelay_osbu(int us)
 {
 
 #ifdef PLATFORM_LINUX
@@ -2038,7 +2038,7 @@ void rtw_udelay_os(int us)
 }
 #endif
 
-void rtw_yield_os(void)
+void rtw_yield_osbu(void)
 {
 #ifdef PLATFORM_LINUX
 	yield();
@@ -2062,15 +2062,15 @@ const char *_rtw_pwait_type_str[] = {
 
 static void rtw_pwctx_yield(int us)
 {
-	rtw_yield_os();
+	rtw_yield_osbu();
 }
 
 static void (*const rtw_pwait_hdl[])(int)= {
-	[RTW_PWAIT_TYPE_MSLEEP] = rtw_msleep_os,
-	[RTW_PWAIT_TYPE_USLEEP] = rtw_usleep_os,
+	[RTW_PWAIT_TYPE_MSLEEP] = rtw_msleep_osbu,
+	[RTW_PWAIT_TYPE_USLEEP] = rtw_usleep_osbu,
 	[RTW_PWAIT_TYPE_YIELD] = rtw_pwctx_yield,
-	[RTW_PWAIT_TYPE_MDELAY] = rtw_mdelay_os,
-	[RTW_PWAIT_TYPE_UDELAY] = rtw_udelay_os,
+	[RTW_PWAIT_TYPE_MDELAY] = rtw_mdelay_osbu,
+	[RTW_PWAIT_TYPE_UDELAY] = rtw_udelay_osbu,
 };
 
 int rtw_pwctx_config(struct rtw_pwait_ctx *pwctx, enum rtw_pwait_type type, s32 time, s32 cnt_lmt)
@@ -2091,7 +2091,7 @@ exit:
 	return ret;
 }
 
-bool rtw_macaddr_is_larger(const u8 *a, const u8 *b)
+bool rtw_macaddr_is_largerbu(const u8 *a, const u8 *b)
 {
 	u32 va, vb;
 
@@ -2124,7 +2124,7 @@ static android_suspend_lock_t rtw_suspend_resume_lock = {
 };
 #endif
 
-inline void rtw_suspend_lock_init(void)
+inline void rtw_suspend_lock_initbu(void)
 {
 #ifdef CONFIG_WAKELOCK
 	wake_lock_init(&rtw_suspend_lock, WAKE_LOCK_SUSPEND, RTW_SUSPEND_LOCK_NAME);
@@ -2137,7 +2137,7 @@ inline void rtw_suspend_lock_init(void)
 #endif
 }
 
-inline void rtw_suspend_lock_uninit(void)
+inline void rtw_suspend_lock_uninitbu(void)
 {
 #ifdef CONFIG_WAKELOCK
 	wake_lock_destroy(&rtw_suspend_lock);
@@ -2150,7 +2150,7 @@ inline void rtw_suspend_lock_uninit(void)
 #endif
 }
 
-inline void rtw_lock_suspend(void)
+inline void rtw_lock_suspendbu(void)
 {
 #ifdef CONFIG_WAKELOCK
 	wake_lock(&rtw_suspend_lock);
@@ -2163,7 +2163,7 @@ inline void rtw_lock_suspend(void)
 #endif
 }
 
-inline void rtw_unlock_suspend(void)
+inline void rtw_unlock_suspendbu(void)
 {
 #ifdef CONFIG_WAKELOCK
 	wake_unlock(&rtw_suspend_lock);
@@ -2176,7 +2176,7 @@ inline void rtw_unlock_suspend(void)
 #endif
 }
 
-inline void rtw_resume_lock_suspend(void)
+inline void rtw_resume_lock_suspendbu(void)
 {
 #ifdef CONFIG_WAKELOCK
 	wake_lock(&rtw_suspend_resume_lock);
@@ -2189,7 +2189,7 @@ inline void rtw_resume_lock_suspend(void)
 #endif
 }
 
-inline void rtw_resume_unlock_suspend(void)
+inline void rtw_resume_unlock_suspendbu(void)
 {
 #ifdef CONFIG_WAKELOCK
 	wake_unlock(&rtw_suspend_resume_lock);
@@ -2202,7 +2202,7 @@ inline void rtw_resume_unlock_suspend(void)
 #endif
 }
 
-inline void rtw_lock_suspend_timeout(u32 timeout_ms)
+inline void rtw_lock_suspendbu_timeout(u32 timeout_ms)
 {
 #ifdef CONFIG_WAKELOCK
 	wake_lock_timeout(&rtw_suspend_lock, rtw_ms_to_systime(timeout_ms));
@@ -2212,7 +2212,7 @@ inline void rtw_lock_suspend_timeout(u32 timeout_ms)
 }
 
 
-inline void rtw_lock_traffic_suspend_timeout(u32 timeout_ms)
+inline void rtw_lock_traffic_suspend_timeoutbu(u32 timeout_ms)
 {
 #ifdef CONFIG_WAKELOCK
 	wake_lock_timeout(&rtw_suspend_traffic_lock, rtw_ms_to_systime(timeout_ms));
@@ -2222,7 +2222,7 @@ inline void rtw_lock_traffic_suspend_timeout(u32 timeout_ms)
 	/* RTW_INFO("traffic lock timeout:%d\n", timeout_ms); */
 }
 
-inline void rtw_set_bit(int nr, unsigned long *addr)
+inline void rtw_set_bitbu(int nr, unsigned long *addr)
 {
 #ifdef PLATFORM_LINUX
 	set_bit(nr, addr);
@@ -2231,7 +2231,7 @@ inline void rtw_set_bit(int nr, unsigned long *addr)
 #endif
 }
 
-inline void rtw_clear_bit(int nr, unsigned long *addr)
+inline void rtw_clear_bitbu(int nr, unsigned long *addr)
 {
 #ifdef PLATFORM_LINUX
 	clear_bit(nr, addr);
@@ -2240,7 +2240,7 @@ inline void rtw_clear_bit(int nr, unsigned long *addr)
 #endif
 }
 
-inline int rtw_test_and_clear_bit(int nr, unsigned long *addr)
+inline int rtw_test_and_clear_bitbu(int nr, unsigned long *addr)
 {
 #ifdef PLATFORM_LINUX
 	return test_and_clear_bit(nr, addr);
@@ -2249,7 +2249,7 @@ inline int rtw_test_and_clear_bit(int nr, unsigned long *addr)
 #endif
 }
 
-inline void ATOMIC_SET(ATOMIC_T *v, int i)
+inline void ATOMIC_SETbu(ATOMIC_T *v, int i)
 {
 #ifdef PLATFORM_LINUX
 	atomic_set(v, i);
@@ -2260,7 +2260,7 @@ inline void ATOMIC_SET(ATOMIC_T *v, int i)
 #endif
 }
 
-inline int ATOMIC_READ(ATOMIC_T *v)
+inline int ATOMIC_READbu(ATOMIC_T *v)
 {
 #ifdef PLATFORM_LINUX
 	return atomic_read(v);
@@ -2271,7 +2271,7 @@ inline int ATOMIC_READ(ATOMIC_T *v)
 #endif
 }
 
-inline void ATOMIC_ADD(ATOMIC_T *v, int i)
+inline void ATOMIC_ADDbu(ATOMIC_T *v, int i)
 {
 #ifdef PLATFORM_LINUX
 	atomic_add(i, v);
@@ -2281,7 +2281,7 @@ inline void ATOMIC_ADD(ATOMIC_T *v, int i)
 	atomic_add_int(v, i);
 #endif
 }
-inline void ATOMIC_SUB(ATOMIC_T *v, int i)
+inline void ATOMIC_SUBbu(ATOMIC_T *v, int i)
 {
 #ifdef PLATFORM_LINUX
 	atomic_sub(i, v);
@@ -2292,7 +2292,7 @@ inline void ATOMIC_SUB(ATOMIC_T *v, int i)
 #endif
 }
 
-inline void ATOMIC_INC(ATOMIC_T *v)
+inline void ATOMIC_INCbu(ATOMIC_T *v)
 {
 #ifdef PLATFORM_LINUX
 	atomic_inc(v);
@@ -2303,7 +2303,7 @@ inline void ATOMIC_INC(ATOMIC_T *v)
 #endif
 }
 
-inline void ATOMIC_DEC(ATOMIC_T *v)
+inline void ATOMIC_DECbu(ATOMIC_T *v)
 {
 #ifdef PLATFORM_LINUX
 	atomic_dec(v);
@@ -2314,7 +2314,7 @@ inline void ATOMIC_DEC(ATOMIC_T *v)
 #endif
 }
 
-inline int ATOMIC_ADD_RETURN(ATOMIC_T *v, int i)
+inline int ATOMIC_ADDbu_RETURN(ATOMIC_T *v, int i)
 {
 #ifdef PLATFORM_LINUX
 	return atomic_add_return(i, v);
@@ -2326,7 +2326,7 @@ inline int ATOMIC_ADD_RETURN(ATOMIC_T *v, int i)
 #endif
 }
 
-inline int ATOMIC_SUB_RETURN(ATOMIC_T *v, int i)
+inline int ATOMIC_SUBbu_RETURN(ATOMIC_T *v, int i)
 {
 #ifdef PLATFORM_LINUX
 	return atomic_sub_return(i, v);
@@ -2338,7 +2338,7 @@ inline int ATOMIC_SUB_RETURN(ATOMIC_T *v, int i)
 #endif
 }
 
-inline int ATOMIC_INC_RETURN(ATOMIC_T *v)
+inline int ATOMIC_INCbu_RETURN(ATOMIC_T *v)
 {
 #ifdef PLATFORM_LINUX
 	return atomic_inc_return(v);
@@ -2350,7 +2350,7 @@ inline int ATOMIC_INC_RETURN(ATOMIC_T *v)
 #endif
 }
 
-inline int ATOMIC_DEC_RETURN(ATOMIC_T *v)
+inline int ATOMIC_DECbu_RETURN(ATOMIC_T *v)
 {
 #ifdef PLATFORM_LINUX
 	return atomic_dec_return(v);
@@ -2362,15 +2362,15 @@ inline int ATOMIC_DEC_RETURN(ATOMIC_T *v)
 #endif
 }
 
-inline bool ATOMIC_INC_UNLESS(ATOMIC_T *v, int u)
+inline bool ATOMIC_INCbu_UNLESS(ATOMIC_T *v, int u)
 {
 #ifdef PLATFORM_LINUX
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 15))
 	return atomic_add_unless(v, 1, u);
 #else
 	/* only make sure not exceed after this function */
-	if (ATOMIC_INC_RETURN(v) > u) {
-		ATOMIC_DEC(v);
+	if (ATOMIC_INCbu_RETURN(v) > u) {
+		ATOMIC_DECbu(v);
 		return 0;
 	}
 	return 1;
@@ -2655,7 +2655,7 @@ int rtw_is_dir_readable(const char *path)
 * @param path the path of the file to test
 * @return _TRUE or _FALSE
 */
-int rtw_is_file_readable(const char *path)
+int rtw_is_file_readablebu(const char *path)
 {
 #ifdef PLATFORM_LINUX
 	if (isFileReadable(path, NULL) == 0)
@@ -2674,7 +2674,7 @@ int rtw_is_file_readable(const char *path)
 * @param path the path of the file to test
 * @return _TRUE or _FALSE
 */
-int rtw_is_file_readable_with_size(const char *path, u32 *sz)
+int rtw_is_file_readablebu_with_size(const char *path, u32 *sz)
 {
 #ifdef PLATFORM_LINUX
 	if (isFileReadable(path, sz) == 0)
@@ -2693,11 +2693,11 @@ int rtw_is_file_readable_with_size(const char *path, u32 *sz)
 * @param path the path of the file to test
 * @return _TRUE or _FALSE
 */
-int rtw_readable_file_sz_chk(const char *path, u32 sz)
+int rtw_readable_file_sz_chkbu(const char *path, u32 sz)
 {
 	u32 fsz;
 
-	if (rtw_is_file_readable_with_size(path, &fsz) == _FALSE)
+	if (rtw_is_file_readablebu_with_size(path, &fsz) == _FALSE)
 		return _FALSE;
 
 	if (fsz > sz)
@@ -2713,7 +2713,7 @@ int rtw_readable_file_sz_chk(const char *path, u32 sz)
 * @param sz how many bytes to read at most
 * @return the byte we've read
 */
-int rtw_retrieve_from_file(const char *path, u8 *buf, u32 sz)
+int rtw_retrieve_from_filebu(const char *path, u8 *buf, u32 sz)
 {
 #ifdef PLATFORM_LINUX
 	int ret = retriveFromFile(path, buf, sz);
@@ -2731,7 +2731,7 @@ int rtw_retrieve_from_file(const char *path, u8 *buf, u32 sz)
 * @param sz how many bytes to write at most
 * @return the byte we've written
 */
-int rtw_store_to_file(const char *path, u8 *buf, u32 sz)
+int rtw_store_to_filebu(const char *path, u8 *buf, u32 sz)
 {
 #ifdef PLATFORM_LINUX
 	int ret = storeToFile(path, buf, sz);
@@ -2743,7 +2743,7 @@ int rtw_store_to_file(const char *path, u8 *buf, u32 sz)
 }
 
 #ifdef PLATFORM_LINUX
-struct net_device *rtw_alloc_etherdev_with_old_priv(int sizeof_priv, void *old_priv)
+struct net_device *rtw_alloc_etherdevbu_with_old_privbu(int sizeof_priv, void *old_priv)
 {
 	struct net_device *pnetdev;
 	struct rtw_netdev_priv_indicator *pnpi;
@@ -2764,7 +2764,7 @@ RETURN:
 	return pnetdev;
 }
 
-struct net_device *rtw_alloc_etherdev(int sizeof_priv)
+struct net_device *rtw_alloc_etherdevbu(int sizeof_priv)
 {
 	struct net_device *pnetdev;
 	struct rtw_netdev_priv_indicator *pnpi;
@@ -2791,7 +2791,7 @@ RETURN:
 	return pnetdev;
 }
 
-void rtw_free_netdev(struct net_device *netdev)
+void rtw_free_netdevbu(struct net_device *netdev)
 {
 	struct rtw_netdev_priv_indicator *pnpi;
 
@@ -2888,7 +2888,7 @@ void module_init_exit_wrapper(void *arg)
 	#include <asm-generic/div64.h>
 #endif
 
-u64 rtw_modular64(u64 x, u64 y)
+u64 rtw_modular64bu(u64 x, u64 y)
 {
 #ifdef PLATFORM_LINUX
 	return do_div(x, y);
@@ -2899,7 +2899,7 @@ u64 rtw_modular64(u64 x, u64 y)
 #endif
 }
 
-u64 rtw_division64(u64 x, u64 y)
+u64 rtw_division64bu(u64 x, u64 y)
 {
 #ifdef PLATFORM_LINUX
 	do_div(x, y);
@@ -2911,7 +2911,7 @@ u64 rtw_division64(u64 x, u64 y)
 #endif
 }
 
-inline u32 rtw_random32(void)
+inline u32 rtw_random32bu(void)
 {
 #ifdef PLATFORM_LINUX
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
@@ -2930,7 +2930,7 @@ inline u32 rtw_random32(void)
 #endif
 }
 
-void rtw_buf_free(u8 **buf, u32 *buf_len)
+void rtw_buf_freebu(u8 **buf, u32 *buf_len)
 {
 	u32 ori_len;
 
@@ -2947,7 +2947,7 @@ void rtw_buf_free(u8 **buf, u32 *buf_len)
 	}
 }
 
-void rtw_buf_update(u8 **buf, u32 *buf_len, u8 *src, u32 src_len)
+void rtw_buf_updatebu(u8 **buf, u32 *buf_len, u8 *src, u32 src_len)
 {
 	u32 ori_len = 0, dup_len = 0;
 	u8 *ori = NULL;
@@ -2963,7 +2963,7 @@ void rtw_buf_update(u8 **buf, u32 *buf_len, u8 *src, u32 src_len)
 	dup = rtw_malloc(src_len);
 	if (dup) {
 		dup_len = src_len;
-		_rtw_memcpy(dup, src, dup_len);
+		_rtw_memcpybu(dup, src, dup_len);
 	}
 
 keep_ori:
@@ -2982,38 +2982,38 @@ keep_ori:
 
 
 /**
- * rtw_cbuf_full - test if cbuf is full
+ * rtw_cbuf_fullbu - test if cbuf is full
  * @cbuf: pointer of struct rtw_cbuf
  *
  * Returns: _TRUE if cbuf is full
  */
-inline bool rtw_cbuf_full(struct rtw_cbuf *cbuf)
+inline bool rtw_cbuf_fullbu(struct rtw_cbuf *cbuf)
 {
 	return (cbuf->write == cbuf->read - 1) ? _TRUE : _FALSE;
 }
 
 /**
- * rtw_cbuf_empty - test if cbuf is empty
+ * rtw_cbuf_emptybu - test if cbuf is empty
  * @cbuf: pointer of struct rtw_cbuf
  *
  * Returns: _TRUE if cbuf is empty
  */
-inline bool rtw_cbuf_empty(struct rtw_cbuf *cbuf)
+inline bool rtw_cbuf_emptybu(struct rtw_cbuf *cbuf)
 {
 	return (cbuf->write == cbuf->read) ? _TRUE : _FALSE;
 }
 
 /**
- * rtw_cbuf_push - push a pointer into cbuf
+ * rtw_cbuf_pushbu - push a pointer into cbuf
  * @cbuf: pointer of struct rtw_cbuf
  * @buf: pointer to push in
  *
  * Lock free operation, be careful of the use scheme
  * Returns: _TRUE push success
  */
-bool rtw_cbuf_push(struct rtw_cbuf *cbuf, void *buf)
+bool rtw_cbuf_pushbu(struct rtw_cbuf *cbuf, void *buf)
 {
-	if (rtw_cbuf_full(cbuf))
+	if (rtw_cbuf_fullbu(cbuf))
 		return _FAIL;
 
 	if (0)
@@ -3025,16 +3025,16 @@ bool rtw_cbuf_push(struct rtw_cbuf *cbuf, void *buf)
 }
 
 /**
- * rtw_cbuf_pop - pop a pointer from cbuf
+ * rtw_cbuf_popbu - pop a pointer from cbuf
  * @cbuf: pointer of struct rtw_cbuf
  *
  * Lock free operation, be careful of the use scheme
  * Returns: pointer popped out
  */
-void *rtw_cbuf_pop(struct rtw_cbuf *cbuf)
+void *rtw_cbuf_popbu(struct rtw_cbuf *cbuf)
 {
 	void *buf;
-	if (rtw_cbuf_empty(cbuf))
+	if (rtw_cbuf_emptybu(cbuf))
 		return NULL;
 
 	if (0)
@@ -3046,12 +3046,12 @@ void *rtw_cbuf_pop(struct rtw_cbuf *cbuf)
 }
 
 /**
- * rtw_cbuf_alloc - allocte a rtw_cbuf with given size and do initialization
+ * rtw_cbuf_allocbu - allocte a rtw_cbuf with given size and do initialization
  * @size: size of pointer
  *
  * Returns: pointer of srtuct rtw_cbuf, NULL for allocation failure
  */
-struct rtw_cbuf *rtw_cbuf_alloc(u32 size)
+struct rtw_cbuf *rtw_cbuf_allocbu(u32 size)
 {
 	struct rtw_cbuf *cbuf;
 
@@ -3066,16 +3066,16 @@ struct rtw_cbuf *rtw_cbuf_alloc(u32 size)
 }
 
 /**
- * rtw_cbuf_free - free the given rtw_cbuf
+ * rtw_cbuf_freebu - free the given rtw_cbuf
  * @cbuf: pointer of struct rtw_cbuf to free
  */
-void rtw_cbuf_free(struct rtw_cbuf *cbuf)
+void rtw_cbuf_freebu(struct rtw_cbuf *cbuf)
 {
 	rtw_mfree((u8 *)cbuf, sizeof(*cbuf) + sizeof(void *) * cbuf->size);
 }
 
 /**
- * map_readN - read a range of map data
+ * map_readNbu - read a range of map data
  * @map: map to read
  * @offset: start address to read
  * @len: length to read
@@ -3083,7 +3083,7 @@ void rtw_cbuf_free(struct rtw_cbuf *cbuf)
  *
  * Returns: _SUCCESS or _FAIL
  */
-int map_readN(const struct map_t *map, u16 offset, u16 len, u8 *buf)
+int map_readNbu(const struct map_t *map, u16 offset, u16 len, u8 *buf)
 {
 	const struct map_seg_t *seg;
 	int ret = _FAIL;
@@ -3099,7 +3099,7 @@ int map_readN(const struct map_t *map, u16 offset, u16 len, u8 *buf)
 		goto exit;
 	}
 
-	_rtw_memset(buf, map->init_value, len);
+	_rtw_memsetbu(buf, map->init_value, len);
 
 	for (i = 0; i < map->seg_num; i++) {
 		u8 *c_dst, *c_src;
@@ -3125,7 +3125,7 @@ int map_readN(const struct map_t *map, u16 offset, u16 len, u8 *buf)
 				c_len = seg->sa + seg->len - offset;
 		}
 			
-		_rtw_memcpy(c_dst, c_src, c_len);
+		_rtw_memcpybu(c_dst, c_src, c_len);
 	}
 
 exit:
@@ -3133,13 +3133,13 @@ exit:
 }
 
 /**
- * map_read8 - read 1 byte of map data
+ * map_read8bu - read 1 byte of map data
  * @map: map to read
  * @offset: address to read
  *
  * Returns: value of data of specified offset. map.init_value if offset is out of range
  */
-u8 map_read8(const struct map_t *map, u16 offset)
+u8 map_read8bu(const struct map_t *map, u16 offset)
 {
 	const struct map_seg_t *seg;
 	u8 val = map->init_value;
@@ -3174,11 +3174,11 @@ int rtw_blacklist_add(_queue *blist, const u8 *addr, u32 timeout_ms)
 
 	head = &blist->queue;
 	list = get_next(head);
-	while (rtw_end_of_queue_search(head, list) == _FALSE) {
+	while (rtw_end_of_queue_searchbu(head, list) == _FALSE) {
 		ent = LIST_CONTAINOR(list, struct blacklist_ent, list);
 		list = get_next(list);
 
-		if (_rtw_memcmp(ent->addr, addr, ETH_ALEN) == _TRUE) {
+		if (_rtw_memcmpbu(ent->addr, addr, ETH_ALEN) == _TRUE) {
 			exist = _TRUE;
 			if (rtw_time_after(rtw_get_current_time(), ent->exp_time))
 				timeout = _TRUE;
@@ -3196,10 +3196,10 @@ int rtw_blacklist_add(_queue *blist, const u8 *addr, u32 timeout_ms)
 	if (exist == _FALSE) {
 		ent = rtw_malloc(sizeof(struct blacklist_ent));
 		if (ent) {
-			_rtw_memcpy(ent->addr, addr, ETH_ALEN);
+			_rtw_memcpybu(ent->addr, addr, ETH_ALEN);
 			ent->exp_time = rtw_get_current_time()
 				+ rtw_ms_to_systime(timeout_ms);
-			rtw_list_insert_tail(&ent->list, head);
+			rtw_list_insert_tailbu(&ent->list, head);
 		}
 	}
 
@@ -3217,11 +3217,11 @@ int rtw_blacklist_del(_queue *blist, const u8 *addr)
 	enter_critical_bh(&blist->lock);
 	head = &blist->queue;
 	list = get_next(head);
-	while (rtw_end_of_queue_search(head, list) == _FALSE) {
+	while (rtw_end_of_queue_searchbu(head, list) == _FALSE) {
 		ent = LIST_CONTAINOR(list, struct blacklist_ent, list);
 		list = get_next(list);
 
-		if (_rtw_memcmp(ent->addr, addr, ETH_ALEN) == _TRUE) {
+		if (_rtw_memcmpbu(ent->addr, addr, ETH_ALEN) == _TRUE) {
 			rtw_list_delete(&ent->list);
 			rtw_mfree(ent, sizeof(struct blacklist_ent));
 			exist = _TRUE;
@@ -3248,11 +3248,11 @@ int rtw_blacklist_search(_queue *blist, const u8 *addr)
 	enter_critical_bh(&blist->lock);
 	head = &blist->queue;
 	list = get_next(head);
-	while (rtw_end_of_queue_search(head, list) == _FALSE) {
+	while (rtw_end_of_queue_searchbu(head, list) == _FALSE) {
 		ent = LIST_CONTAINOR(list, struct blacklist_ent, list);
 		list = get_next(list);
 
-		if (_rtw_memcmp(ent->addr, addr, ETH_ALEN) == _TRUE) {
+		if (_rtw_memcmpbu(ent->addr, addr, ETH_ALEN) == _TRUE) {
 			if (rtw_time_after(rtw_get_current_time(), ent->exp_time)) {
 				rtw_list_delete(&ent->list);
 				rtw_mfree(ent, sizeof(struct blacklist_ent));
@@ -3278,15 +3278,15 @@ void rtw_blacklist_flush(_queue *blist)
 	_list *list, *head;
 	_list tmp;
 
-	_rtw_init_listhead(&tmp);
+	_rtw_init_listheadbu(&tmp);
 
 	enter_critical_bh(&blist->lock);
-	rtw_list_splice_init(&blist->queue, &tmp);
+	rtw_list_splicebu_init(&blist->queue, &tmp);
 	exit_critical_bh(&blist->lock);
 
 	head = &tmp;
 	list = get_next(head);
-	while (rtw_end_of_queue_search(head, list) == _FALSE) {
+	while (rtw_end_of_queue_searchbu(head, list) == _FALSE) {
 		ent = LIST_CONTAINOR(list, struct blacklist_ent, list);
 		list = get_next(list);
 		rtw_list_delete(&ent->list);
@@ -3303,11 +3303,11 @@ void dump_blacklist(void *sel, _queue *blist, const char *title)
 	head = &blist->queue;
 	list = get_next(head);
 
-	if (rtw_end_of_queue_search(head, list) == _FALSE) {
+	if (rtw_end_of_queue_searchbu(head, list) == _FALSE) {
 		if (title)
 			RTW_PRINT_SEL(sel, "%s:\n", title);
 	
-		while (rtw_end_of_queue_search(head, list) == _FALSE) {
+		while (rtw_end_of_queue_searchbu(head, list) == _FALSE) {
 			ent = LIST_CONTAINOR(list, struct blacklist_ent, list);
 			list = get_next(list);
 
@@ -3324,12 +3324,12 @@ void dump_blacklist(void *sel, _queue *blist, const char *title)
 #endif
 
 /**
-* is_null -
+* is_nullbu -
 *
 * Return	TRUE if c is null character
 *		FALSE otherwise.
 */
-inline BOOLEAN is_null(char c)
+inline BOOLEAN is_nullbu(char c)
 {
 	if (c == '\0')
 		return _TRUE;
@@ -3337,7 +3337,7 @@ inline BOOLEAN is_null(char c)
 		return _FALSE;
 }
 
-inline BOOLEAN is_all_null(char *c, int len)
+inline BOOLEAN is_all_nullbu(char *c, int len)
 {
 	for (; len > 0; len--)
 		if (c[len - 1] != '\0')
@@ -3347,12 +3347,12 @@ inline BOOLEAN is_all_null(char *c, int len)
 }
 
 /**
-* is_eol -
+* is_eolbu -
 *
 * Return	TRUE if c is represent for EOL (end of line)
 *		FALSE otherwise.
 */
-inline BOOLEAN is_eol(char c)
+inline BOOLEAN is_eolbu(char c)
 {
 	if (c == '\r' || c == '\n')
 		return _TRUE;
@@ -3361,12 +3361,12 @@ inline BOOLEAN is_eol(char c)
 }
 
 /**
-* is_space -
+* is_spacebu -
 *
 * Return	TRUE if c is represent for space
 *		FALSE otherwise.
 */
-inline BOOLEAN is_space(char c)
+inline BOOLEAN is_spacebu(char c)
 {
 	if (c == ' ' || c == '\t')
 		return _TRUE;
@@ -3375,12 +3375,12 @@ inline BOOLEAN is_space(char c)
 }
 
 /**
-* IsHexDigit -
+* IsHexDigitbu -
 *
 * Return	TRUE if chTmp is represent for hex digit
 *		FALSE otherwise.
 */
-inline BOOLEAN IsHexDigit(char chTmp)
+inline BOOLEAN IsHexDigitbu(char chTmp)
 {
 	if ((chTmp >= '0' && chTmp <= '9') ||
 		(chTmp >= 'a' && chTmp <= 'f') ||
@@ -3391,12 +3391,12 @@ inline BOOLEAN IsHexDigit(char chTmp)
 }
 
 /**
-* is_alpha -
+* is_alphabu -
 *
 * Return	TRUE if chTmp is represent for alphabet
 *		FALSE otherwise.
 */
-inline BOOLEAN is_alpha(char chTmp)
+inline BOOLEAN is_alphabu(char chTmp)
 {
 	if ((chTmp >= 'a' && chTmp <= 'z') ||
 		(chTmp >= 'A' && chTmp <= 'Z'))
@@ -3405,14 +3405,14 @@ inline BOOLEAN is_alpha(char chTmp)
 		return _FALSE;
 }
 
-inline char alpha_to_upper(char c)
+inline char alpha_to_upperbu(char c)
 {
 	if ((c >= 'a' && c <= 'z'))
 		c = 'A' + (c - 'a');
 	return c;
 }
 
-int hex2num_i(char c)
+int hex2num_ibu(char c)
 {
 	if (c >= '0' && c <= '9')
 		return c - '0';
@@ -3423,19 +3423,19 @@ int hex2num_i(char c)
 	return -1;
 }
 
-int hex2byte_i(const char *hex)
+int hex2byte_ibu(const char *hex)
 {
 	int a, b;
-	a = hex2num_i(*hex++);
+	a = hex2num_ibu(*hex++);
 	if (a < 0)
 		return -1;
-	b = hex2num_i(*hex++);
+	b = hex2num_ibu(*hex++);
 	if (b < 0)
 		return -1;
 	return (a << 4) | b;
 }
 
-int hexstr2bin(const char *hex, u8 *buf, size_t len)
+int hexstr2binbu(const char *hex, u8 *buf, size_t len)
 {
 	size_t i;
 	int a;
@@ -3443,7 +3443,7 @@ int hexstr2bin(const char *hex, u8 *buf, size_t len)
 	u8 *opos = buf;
 
 	for (i = 0; i < len; i++) {
-		a = hex2byte_i(ipos);
+		a = hex2byte_ibu(ipos);
 		if (a < 0)
 			return -1;
 		*opos++ = a;
@@ -3465,10 +3465,10 @@ int hwaddr_aton_i(const char *txt, u8 *addr)
 	for (i = 0; i < 6; i++) {
 		int a, b;
 
-		a = hex2num_i(*txt++);
+		a = hex2num_ibu(*txt++);
 		if (a < 0)
 			return -1;
-		b = hex2num_i(*txt++);
+		b = hex2num_ibu(*txt++);
 		if (b < 0)
 			return -1;
 		*addr++ = (a << 4) | b;

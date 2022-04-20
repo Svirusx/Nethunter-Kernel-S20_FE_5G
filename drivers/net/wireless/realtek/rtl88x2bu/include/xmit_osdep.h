@@ -43,7 +43,7 @@ struct pkt_file {
 
 #define ETH_ALEN	6
 
-extern NDIS_STATUS rtw_xmit_entry(
+extern NDIS_STATUS rtw_xmitbu_entry(
 	_nic_hdl		cnxt,
 	NDIS_PACKET		*pkt,
 	u32				flags
@@ -53,8 +53,8 @@ extern NDIS_STATUS rtw_xmit_entry(
 
 #ifdef PLATFORM_FREEBSD
 #define NR_XMITFRAME	256
-extern int rtw_xmit_entry(_pkt *pkt, _nic_hdl pnetdev);
-extern void rtw_xmit_entry_wrap(struct ifnet *pifp);
+extern int rtw_xmitbu_entry(_pkt *pkt, _nic_hdl pnetdev);
+extern void rtw_xmitbu_entry_wrap(struct ifnet *pifp);
 #endif /* PLATFORM_FREEBSD */
 
 #ifdef PLATFORM_LINUX
@@ -67,30 +67,30 @@ struct sta_xmit_priv;
 struct xmit_frame;
 struct xmit_buf;
 
-extern int _rtw_xmit_entry(_pkt *pkt, _nic_hdl pnetdev);
-extern int rtw_xmit_entry(_pkt *pkt, _nic_hdl pnetdev);
+extern int _rtw_xmitbu_entry(_pkt *pkt, _nic_hdl pnetdev);
+extern int rtw_xmitbu_entry(_pkt *pkt, _nic_hdl pnetdev);
 
 #endif /* PLATFORM_LINUX */
 
-void rtw_os_xmit_schedule(_adapter *padapter);
+void rtw_os_xmit_schedulebu(_adapter *padapter);
 
-int rtw_os_xmit_resource_alloc(_adapter *padapter, struct xmit_buf *pxmitbuf, u32 alloc_sz, u8 flag);
-void rtw_os_xmit_resource_free(_adapter *padapter, struct xmit_buf *pxmitbuf, u32 free_sz, u8 flag);
+int rtw_os_xmit_resource_allocbu(_adapter *padapter, struct xmit_buf *pxmitbuf, u32 alloc_sz, u8 flag);
+void rtw_os_xmit_resource_freebu(_adapter *padapter, struct xmit_buf *pxmitbuf, u32 free_sz, u8 flag);
 
-extern void rtw_set_tx_chksum_offload(_pkt *pkt, struct pkt_attrib *pattrib);
+extern void rtw_set_tx_chksum_offloadbu(_pkt *pkt, struct pkt_attrib *pattrib);
 
-extern uint rtw_remainder_len(struct pkt_file *pfile);
-extern void _rtw_open_pktfile(_pkt *pkt, struct pkt_file *pfile);
-extern uint _rtw_pktfile_read(struct pkt_file *pfile, u8 *rmem, uint rlen);
-extern sint rtw_endofpktfile(struct pkt_file *pfile);
+extern uint rtw_remainder_lenbu(struct pkt_file *pfile);
+extern void _rtw_open_pktfilebu(_pkt *pkt, struct pkt_file *pfile);
+extern uint _rtw_pktfile_readbu(struct pkt_file *pfile, u8 *rmem, uint rlen);
+extern sint rtw_endofpktfilebu(struct pkt_file *pfile);
 
-extern void rtw_os_pkt_complete(_adapter *padapter, _pkt *pkt);
-extern void rtw_os_xmit_complete(_adapter *padapter, struct xmit_frame *pxframe);
+extern void rtw_os_pkt_completebu(_adapter *padapter, _pkt *pkt);
+extern void rtw_os_xmit_completebu(_adapter *padapter, struct xmit_frame *pxframe);
 
 void rtw_os_check_wakup_queue(_adapter *adapter, u16 os_qid);
 bool rtw_os_check_stop_queue(_adapter *adapter, u16 os_qid);
-void rtw_os_wake_queue_at_free_stainfo(_adapter *padapter, int *qcnt_freed);
+void rtw_os_wake_queue_at_free_stainfobu(_adapter *padapter, int *qcnt_freed);
 
-void dump_os_queue(void *sel, _adapter *padapter);
+void dump_os_queuebu(void *sel, _adapter *padapter);
 
 #endif /* __XMIT_OSDEP_H_ */

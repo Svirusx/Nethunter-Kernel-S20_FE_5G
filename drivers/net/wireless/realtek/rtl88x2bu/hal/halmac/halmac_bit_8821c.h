@@ -16085,17 +16085,17 @@
 #define BIT_NOA_PARSER_EN_8821C BIT(15)
 #define BIT_BSSID_SEL_8821C BIT(14)
 
-#define BIT_SHIFT_P2P_OUI_TYPE_8821C 0
-#define BIT_MASK_P2P_OUI_TYPE_8821C 0xff
-#define BIT_P2P_OUI_TYPE_8821C(x)                                              \
-	(((x) & BIT_MASK_P2P_OUI_TYPE_8821C) << BIT_SHIFT_P2P_OUI_TYPE_8821C)
-#define BITS_P2P_OUI_TYPE_8821C                                                \
-	(BIT_MASK_P2P_OUI_TYPE_8821C << BIT_SHIFT_P2P_OUI_TYPE_8821C)
-#define BIT_CLEAR_P2P_OUI_TYPE_8821C(x) ((x) & (~BITS_P2P_OUI_TYPE_8821C))
-#define BIT_GET_P2P_OUI_TYPE_8821C(x)                                          \
-	(((x) >> BIT_SHIFT_P2P_OUI_TYPE_8821C) & BIT_MASK_P2P_OUI_TYPE_8821C)
-#define BIT_SET_P2P_OUI_TYPE_8821C(x, v)                                       \
-	(BIT_CLEAR_P2P_OUI_TYPE_8821C(x) | BIT_P2P_OUI_TYPE_8821C(v))
+#define BIT_SHIFT_P2P_OUIbu_TYPE_8821C 0
+#define BIT_MASK_P2P_OUIbu_TYPE_8821C 0xff
+#define BIT_P2P_OUIbu_TYPE_8821C(x)                                              \
+	(((x) & BIT_MASK_P2P_OUIbu_TYPE_8821C) << BIT_SHIFT_P2P_OUIbu_TYPE_8821C)
+#define BITS_P2P_OUIbu_TYPE_8821C                                                \
+	(BIT_MASK_P2P_OUIbu_TYPE_8821C << BIT_SHIFT_P2P_OUIbu_TYPE_8821C)
+#define BIT_CLEAR_P2P_OUIbu_TYPE_8821C(x) ((x) & (~BITS_P2P_OUIbu_TYPE_8821C))
+#define BIT_GET_P2P_OUIbu_TYPE_8821C(x)                                          \
+	(((x) >> BIT_SHIFT_P2P_OUIbu_TYPE_8821C) & BIT_MASK_P2P_OUIbu_TYPE_8821C)
+#define BIT_SET_P2P_OUIbu_TYPE_8821C(x, v)                                       \
+	(BIT_CLEAR_P2P_OUIbu_TYPE_8821C(x) | BIT_P2P_OUIbu_TYPE_8821C(v))
 
 /* 2 REG_RSVD_8821C */
 

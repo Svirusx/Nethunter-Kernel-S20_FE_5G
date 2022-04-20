@@ -17,7 +17,7 @@
 #include <drv_types.h>
 
 /**
-* Function:	PHY_CalculateBitShift
+* Function:	PHY_CalculateBitShiftbu
 *
 * OverView:	Get shifted position of the BitMask
 *
@@ -28,7 +28,7 @@
 * Return:		u32		Return the shift bit bit position of the mask
 */
 u32
-PHY_CalculateBitShift(
+PHY_CalculateBitShiftbu(
 	u32 BitMask
 )
 {
@@ -111,7 +111,7 @@ PHY_RFShadowCompare(
 	u32	reg;
 	/* Check if we need to check the register */
 	if (RF_Shadow[eRFPath][Offset].Compare == _TRUE) {
-		reg = rtw_hal_read_rfreg(Adapter, eRFPath, Offset, bRFRegOffsetMask);
+		reg = rtw_hal_read_rfregbu(Adapter, eRFPath, Offset, bRFRegOffsetMask);
 		/* Compare shadow and real rf register for 20bits!! */
 		if (RF_Shadow[eRFPath][Offset].Value != reg) {
 			/* Locate error position. */
@@ -133,7 +133,7 @@ PHY_RFShadowRecorver(
 	if (RF_Shadow[eRFPath][Offset].ErrorOrNot == _TRUE) {
 		/* Check if we need to recorver the register. */
 		if (RF_Shadow[eRFPath][Offset].Recorver == _TRUE) {
-			rtw_hal_write_rfreg(Adapter, eRFPath, Offset, bRFRegOffsetMask,
+			rtw_hal_write_rfregbu(Adapter, eRFPath, Offset, bRFRegOffsetMask,
 					    RF_Shadow[eRFPath][Offset].Value);
 		}
 	}

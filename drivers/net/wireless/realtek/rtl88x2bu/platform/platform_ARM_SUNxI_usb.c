@@ -43,7 +43,7 @@ static script_item_u item;
 #endif
 
 
-int platform_wifi_power_on(void)
+int platform_wifi_power_onbu(void)
 {
 	int ret = 0;
 
@@ -109,7 +109,7 @@ exit:
 	return ret;
 }
 
-void platform_wifi_power_off(void)
+void platform_wifi_power_offbu(void)
 {
 
 #ifdef CONFIG_PLATFORM_ARM_SUNxI

@@ -54,7 +54,7 @@ enum security_type {
 
 #define is_wep_enc(alg) (((alg) == _WEP40_) || ((alg) == _WEP104_))
 
-const char *security_type_str(u8 value);
+const char *security_type_strbu(u8 value);
 #ifdef CONFIG_IEEE80211W
 u32 security_type_bip_to_gmcs(enum security_type type);
 #endif
@@ -353,12 +353,12 @@ struct mic_data {
 	u32     nBytesInM;      /*  # bytes in M */
 };
 
-void rtw_secmicsetkey(struct mic_data *pmicdata, u8 *key);
-void rtw_secmicappendbyte(struct mic_data *pmicdata, u8 b);
-void rtw_secmicappend(struct mic_data *pmicdata, u8 *src, u32 nBytes);
-void rtw_secgetmic(struct mic_data *pmicdata, u8 *dst);
+void rtw_secmicsetkeybu(struct mic_data *pmicdata, u8 *key);
+void rtw_secmicappendbubytebu(struct mic_data *pmicdata, u8 b);
+void rtw_secmicappendbu(struct mic_data *pmicdata, u8 *src, u32 nBytes);
+void rtw_secgetmicbu(struct mic_data *pmicdata, u8 *dst);
 
-void rtw_seccalctkipmic(
+void rtw_seccalctkipmicbu(
 	u8 *key,
 	u8 *header,
 	u8 *data,
@@ -366,13 +366,13 @@ void rtw_seccalctkipmic(
 	u8 *Miccode,
 	u8   priority);
 
-u32 rtw_aes_encrypt(_adapter *padapter, u8 *pxmitframe);
-u32 rtw_tkip_encrypt(_adapter *padapter, u8 *pxmitframe);
-void rtw_wep_encrypt(_adapter *padapter, u8  *pxmitframe);
+u32 rtw_aes_encryptbu(_adapter *padapter, u8 *pxmitframe);
+u32 rtw_tkip_encryptbu(_adapter *padapter, u8 *pxmitframe);
+void rtw_wep_encryptbu(_adapter *padapter, u8  *pxmitframe);
 
-u32 rtw_aes_decrypt(_adapter *padapter, u8  *precvframe);
-u32 rtw_tkip_decrypt(_adapter *padapter, u8  *precvframe);
-void rtw_wep_decrypt(_adapter *padapter, u8  *precvframe);
+u32 rtw_aes_decryptbu(_adapter *padapter, u8  *precvframe);
+u32 rtw_tkip_decryptbu(_adapter *padapter, u8  *precvframe);
+void rtw_wep_decryptbu(_adapter *padapter, u8  *precvframe);
 
 u32 rtw_gcmp_encrypt(_adapter *padapter, u8 *pxmitframe);
 u32 rtw_gcmp_decrypt(_adapter *padapter, u8 *precvframe);
@@ -403,8 +403,8 @@ int tdls_verify_mic(u8 *kck, u8 trans_seq,
 			u8 *lnkid, u8 *rsnie, u8 *timeoutie, u8 *ftie);
 #endif /* CONFIG_TDLS */
 
-void rtw_sec_restore_wep_key(_adapter *adapter);
-u8 rtw_handle_tkip_countermeasure(_adapter *adapter, const char *caller);
+void rtw_sec_restore_wep_keybu(_adapter *adapter);
+u8 rtw_handle_tkip_countermeasurebu(_adapter *adapter, const char *caller);
 
 #ifdef CONFIG_WOWLAN
 u16 rtw_calc_crc(u8  *pdata, int length);

@@ -71,15 +71,15 @@ static u8 sdio_io(struct dvobj_priv *d, u32 addr, void *buf, size_t len, u8 writ
 			if (retry) {
 				RTW_INFO("%s: Retry %s OK! addr=0x%05x %zu bytes, retry=%u,%u\n",
 					 __FUNCTION__, write?"write":"read",
-					 addr, len, retry, ATOMIC_READ(&d->continual_io_error));
+					 addr, len, retry, ATOMIC_READbu(&d->continual_io_error));
 				RTW_INFO_DUMP("Data: ", buf, len);
 			}
-			rtw_reset_continual_io_error(d);
+			rtw_reset_continual_io_errorbu(d);
 			break;
 		}
 		RTW_ERR("%s: %s FAIL! error(%d) addr=0x%05x %zu bytes, retry=%u,%u\n",
 			__FUNCTION__, write?"write":"read", err, addr, len,
-			retry, ATOMIC_READ(&d->continual_io_error));
+			retry, ATOMIC_READbu(&d->continual_io_error));
 
 #ifdef DBG_SDIO
 #if (DBG_SDIO >= 3)
@@ -98,11 +98,11 @@ static u8 sdio_io(struct dvobj_priv *d, u32 addr, void *buf, size_t len, u8 writ
 #endif /* DBG_SDIO */
 
 		retry++;
-		stop_retry = rtw_inc_and_chk_continual_io_error(d);
+		stop_retry = rtw_inc_and_chk_continual_io_errorbu(d);
 		if ((err == -1) || (stop_retry == _TRUE) || (retry > SD_IO_TRY_CNT)) {
 			/* critical error, unrecoverable */
 			RTW_ERR("%s: Fatal error! Set surprise remove flag ON! (retry=%u,%u)\n",
-				__FUNCTION__, retry, ATOMIC_READ(&d->continual_io_error));
+				__FUNCTION__, retry, ATOMIC_READbu(&d->continual_io_error));
 			rtw_set_surprise_removed(dvobj_get_primary_adapter(d));
 			return _FAIL;
 		}
@@ -111,7 +111,7 @@ static u8 sdio_io(struct dvobj_priv *d, u32 addr, void *buf, size_t len, u8 writ
 		if ((addr & 0x10000) || !(addr & 0xE000)) {
 			RTW_WARN("%s: Retry %s addr=0x%05x %zu bytes, retry=%u,%u\n",
 				 __FUNCTION__, write?"write":"read", addr, len,
-				 retry, ATOMIC_READ(&d->continual_io_error));
+				 retry, ATOMIC_READbu(&d->continual_io_error));
 			continue;
 		}
 		return _FAIL;

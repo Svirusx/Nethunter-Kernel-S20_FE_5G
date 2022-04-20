@@ -30,7 +30,7 @@
 #include "mp_precomp.h"
 #include "phydm_precomp.h"
 
-const u32 db_invert_table[12][8] = {
+const u32 db_invert_tablebu[12][8] = {
 	{10, 13, 16, 20, 25, 32, 40, 50}, /* @U(32,3) */
 	{64, 80, 101, 128, 160, 201, 256, 318}, /* @U(32,3) */
 	{401, 505, 635, 800, 1007, 1268, 1596, 2010}, /* @U(32,3) */
@@ -51,7 +51,7 @@ const u32 db_invert_table[12][8] = {
 	 2511886432U, 3162277660U, 3981071706U} }; /* @U(32,0) */
 
 /*Y = 10*log(X)*/
-s32 odm_pwdb_conversion(s32 X, u32 total_bit, u32 decimal_bit)
+s32 odm_pwdb_conversionbu(s32 X, u32 total_bit, u32 decimal_bit)
 {
 	s32 Y, integer = 0, decimal = 0;
 	u32 i;
@@ -75,7 +75,7 @@ s32 odm_pwdb_conversion(s32 X, u32 total_bit, u32 decimal_bit)
 	return Y;
 }
 
-s32 odm_sign_conversion(s32 value, u32 total_bit)
+s32 odm_sign_conversionbu(s32 value, u32 total_bit)
 {
 	if (value & BIT(total_bit - 1))
 		value -= BIT(total_bit);
@@ -84,7 +84,7 @@ s32 odm_sign_conversion(s32 value, u32 total_bit)
 }
 
 /*threshold must form low to high*/
-u16 phydm_find_intrvl(void *dm_void, u16 val, u16 *threshold, u16 th_len)
+u16 phydm_find_intrvlbu(void *dm_void, u16 val, u16 *threshold, u16 th_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u16 i = 0;
@@ -104,7 +104,7 @@ u16 phydm_find_intrvl(void *dm_void, u16 val, u16 *threshold, u16 th_len)
 	return ret_val;
 }
 
-void phydm_seq_sorting(void *dm_void, u32 *value, u32 *rank_idx, u32 *idx_out,
+void phydm_seq_sortingbu(void *dm_void, u32 *value, u32 *rank_idx, u32 *idx_out,
 		       u8 seq_length)
 {
 	u8 i = 0, j = 0;
@@ -136,26 +136,26 @@ void phydm_seq_sorting(void *dm_void, u32 *value, u32 *rank_idx, u32 *idx_out,
 		idx_out[rank_idx[i]] = i + 1;
 }
 
-u32 odm_convert_to_db(u64 value)
+u32 odm_convert_to_dbbu(u64 value)
 {
 	u8 i;
 	u8 j;
 	u32 dB;
 
-	if (value >= db_invert_table[11][7])
+	if (value >= db_invert_tablebu[11][7])
 		return 96; /* @maximum 96 dB */
 
 	for (i = 0; i < 12; i++) {
-		if (i <= 2 && (value << FRAC_BITS) <= db_invert_table[i][7])
+		if (i <= 2 && (value << FRAC_BITS) <= db_invert_tablebu[i][7])
 			break;
-		else if (i > 2 && value <= db_invert_table[i][7])
+		else if (i > 2 && value <= db_invert_tablebu[i][7])
 			break;
 	}
 
 	for (j = 0; j < 8; j++) {
-		if (i <= 2 && (value << FRAC_BITS) <= db_invert_table[i][j])
+		if (i <= 2 && (value << FRAC_BITS) <= db_invert_tablebu[i][j])
 			break;
-		else if (i > 2 && i < 12 && value <= db_invert_table[i][j])
+		else if (i > 2 && i < 12 && value <= db_invert_tablebu[i][j])
 			break;
 	}
 
@@ -164,8 +164,8 @@ u32 odm_convert_to_db(u64 value)
 		goto end;
 
 	if (i == 3 && j == 0) {
-		if (db_invert_table[3][0] - value >
-		    value - (db_invert_table[2][7] >> FRAC_BITS)) {
+		if (db_invert_tablebu[3][0] - value >
+		    value - (db_invert_tablebu[2][7] >> FRAC_BITS)) {
 			i = 2;
 			j = 7;
 		}
@@ -177,14 +177,14 @@ u32 odm_convert_to_db(u64 value)
 
 	/*compare difference to get precise dB*/
 	if (j == 0) {
-		if (db_invert_table[i][j] - value >
-		    value - db_invert_table[i - 1][7]) {
+		if (db_invert_tablebu[i][j] - value >
+		    value - db_invert_tablebu[i - 1][7]) {
 			i = i - 1;
 			j = 7;
 		}
 	} else {
-		if (db_invert_table[i][j] - value >
-		    value - db_invert_table[i][j - 1]) {
+		if (db_invert_tablebu[i][j] - value >
+		    value - db_invert_tablebu[i][j - 1]) {
 			j = j - 1;
 		}
 	}
@@ -194,7 +194,7 @@ end:
 	return dB;
 }
 
-u64 phydm_db_2_linear(u32 value)
+u64 phydm_db_2_linearbu(u32 value)
 {
 	u8 i = 0;
 	u8 j = 0;
@@ -213,7 +213,7 @@ u64 phydm_db_2_linear(u32 value)
 	i = (u8)((value - 1) >> 3);
 	j = (u8)(value - 1) - (i << 3);
 
-	linear = db_invert_table[i][j];
+	linear = db_invert_tablebu[i][j];
 
 	if (i > 2)
 		linear = linear << FRAC_BITS;
@@ -221,7 +221,7 @@ u64 phydm_db_2_linear(u32 value)
 	return linear;
 }
 
-u16 phydm_show_fraction_num(u32 frac_val, u8 bit_num)
+u16 phydm_show_fraction_numbu(u32 frac_val, u8 bit_num)
 {
 	u8 i = 0;
 	u16 val = 0;
@@ -249,7 +249,7 @@ u16 phydm_ones_num_in_bitmap(u64 val, u8 size)
 	return ones_num;
 }
 
-u64 phydm_gen_bitmask(u8 mask_num)
+u64 phydm_gen_bitmaskbu(u8 mask_num)
 {
 	u8 i = 0;
 	u64 bitmask = 0;
@@ -263,7 +263,7 @@ u64 phydm_gen_bitmask(u8 mask_num)
 	return bitmask;
 }
 
-s32 phydm_cnvrt_2_sign(u32 val, u8 bit_num)
+s32 phydm_cnvrt_2_signbu(u32 val, u8 bit_num)
 {
 	if (bit_num >= 32)
 		return (s32)val;
@@ -274,7 +274,7 @@ s32 phydm_cnvrt_2_sign(u32 val, u8 bit_num)
 	return val;
 }
 
-s64 phydm_cnvrt_2_sign_64(u64 val, u8 bit_num)
+s64 phydm_cnvrt_2_signbu_64(u64 val, u8 bit_num)
 {
 	u64 one = 1;
 	s64 val_sign = (s64)val;

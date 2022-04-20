@@ -279,7 +279,7 @@ struct	wlan_network {
 	int	network_type;	/* refer to ieee80211.h for WIRELESS_11A/B/G */
 	int	fixed;			/* set to fixed when not to be removed as site-surveying */
 	systime last_scanned; /* timestamp for the network */
-	systime last_non_hidden_ssid_ap;
+	systime last_non_hidden_ssid_apbu;
 #ifdef CONFIG_RTW_MESH
 #if CONFIG_RTW_MESH_ACNODE_PREVENT
 	systime acnode_stime;

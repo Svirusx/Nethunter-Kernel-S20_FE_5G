@@ -32,7 +32,7 @@ struct oid_par_priv {
 };
 
 #if defined(PLATFORM_LINUX) && defined(CONFIG_WIRELESS_EXT)
-extern struct iw_handler_def  rtw_handlers_def;
+extern struct iw_handler_def  rtw_handlers_defbu;
 #endif
 
 extern void rtw_request_wps_pbc_event(_adapter *padapter);

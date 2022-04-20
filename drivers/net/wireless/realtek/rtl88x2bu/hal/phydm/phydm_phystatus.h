@@ -1216,13 +1216,13 @@ phydm_query_is_mu_api(struct dm_struct *phydm, u8 ppdu_idx, u8 *p_data_rate,
 		      u8 *p_gid);
 #endif
 
-void phydm_reset_phystatus_avg(struct dm_struct *dm);
+void phydm_reset_phystatus_avgbu(struct dm_struct *dm);
 
-void phydm_reset_phystatus_statistic(struct dm_struct *dm);
+void phydm_reset_phystatus_statisticbu(struct dm_struct *dm);
 
-void phydm_reset_rssi_for_dm(struct dm_struct *dm, u8 station_id);
+void phydm_reset_rssi_for_dmbu(struct dm_struct *dm, u8 station_id);
 
-void phydm_get_cck_rssi_table_from_reg(struct dm_struct *dm);
+void phydm_get_cck_rssibu_table_from_regbu(struct dm_struct *dm);
 
 #if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
 void phydm_normal_driver_rx_sniffer(
@@ -1237,12 +1237,12 @@ void phydm_normal_driver_rx_sniffer(
 s32 phydm_signal_scale_mapping(struct dm_struct *dm, s32 curr_sig);
 #endif
 
-boolean odm_phy_status_query(struct dm_struct *dm,
+boolean odm_phy_status_querybu(struct dm_struct *dm,
 			     struct phydm_phyinfo_struct *phy_info,
 			     u8 *phy_sts,
 			     struct phydm_perpkt_info_struct *pktinfo);
 
-void phydm_rx_phy_status_init(void *dm_void);
+void phydm_rx_phy_status_initbu(void *dm_void);
 
 void phydm_physts_dbg(void *dm_void, char input[][16], u32 *_used,
 		      char *output, u32 *_out_len);

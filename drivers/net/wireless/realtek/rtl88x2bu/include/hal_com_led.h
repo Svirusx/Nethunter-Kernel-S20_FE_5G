@@ -275,7 +275,7 @@ typedef struct _LED_USB	LED_DATA, *PLED_DATA;
 typedef enum _LED_STRATEGY_USB	LED_STRATEGY, *PLED_STRATEGY;
 #ifdef CONFIG_RTW_SW_LED
 void
-LedControlUSB(
+LedControlUSBbu(
 		PADAPTER		Adapter,
 		LED_CTL_MODE		LedAction
 );
@@ -371,27 +371,27 @@ struct led_priv {
 			adapter_to_led(adapter)->SwLedOff((adapter), (pLed)); \
 	} while (0)
 
-void BlinkTimerCallback(void *data);
-void BlinkWorkItemCallback(_workitem *work);
+void BlinkTimerCallbackbu(void *data);
+void BlinkWorkItemCallbackbu(_workitem *work);
 
-void ResetLedStatus(PLED_DATA pLed);
+void ResetLedStatusbu(PLED_DATA pLed);
 
 void
-InitLed(
+InitLedbu(
 	_adapter			*padapter,
 	PLED_DATA		pLed,
 	LED_PIN			LedPin
 );
 
 void
-DeInitLed(
+DeInitLedbubu(
 	PLED_DATA		pLed
 );
 
 /* hal... */
-extern void BlinkHandler(PLED_DATA	pLed);
-void dump_led_config(void *sel, _adapter *adapter);
-void rtw_led_set_strategy(_adapter *adapter, u8 strategy);
+extern void BlinkHandlerbu(PLED_DATA	pLed);
+void dump_led_configbu(void *sel, _adapter *adapter);
+void rtw_led_set_strategybu(_adapter *adapter, u8 strategy);
 #endif /* CONFIG_RTW_LED */
 
 #if defined(CONFIG_RTW_LED)
@@ -414,23 +414,23 @@ void rtw_led_set_strategy(_adapter *adapter, u8 strategy);
 void rtw_sw_led_blink_uc_trx_only(LED_DATA *led);
 void rtw_sw_led_ctl_mode_uc_trx_only(_adapter *adapter, LED_CTL_MODE ctl);
 #endif
-void rtw_led_control(_adapter *adapter, LED_CTL_MODE ctl);
-void rtw_led_tx_control(_adapter *adapter, const u8 *da);
-void rtw_led_rx_control(_adapter *adapter, const u8 *da);
-void rtw_led_set_iface_en(_adapter *adapter, u8 en);
-void rtw_led_set_iface_en_mask(_adapter *adapter, u8 mask);
-void rtw_led_set_ctl_en_mask(_adapter *adapter, u32 ctl_mask);
-void rtw_led_set_ctl_en_mask_primary(_adapter *adapter);
-void rtw_led_set_ctl_en_mask_virtual(_adapter *adapter);
+void rtw_led_controlbu(_adapter *adapter, LED_CTL_MODE ctl);
+void rtw_led_tx_controlbu(_adapter *adapter, const u8 *da);
+void rtw_led_rx_controlbu(_adapter *adapter, const u8 *da);
+void rtw_led_set_iface_enbu(_adapter *adapter, u8 en);
+void rtw_led_set_iface_enbu_mask(_adapter *adapter, u8 mask);
+void rtw_led_set_ctl_en_maskbu(_adapter *adapter, u32 ctl_mask);
+void rtw_led_set_ctl_en_maskbu_primary(_adapter *adapter);
+void rtw_led_set_ctl_en_maskbu_virtual(_adapter *adapter);
 #else
-#define rtw_led_control(adapter, ctl) do {} while (0)
-#define rtw_led_tx_control(adapter, da) do {} while (0)
-#define rtw_led_rx_control(adapter, da) do {} while (0)
-#define rtw_led_set_iface_en(adapter, en) do {} while (0)
-#define rtw_led_set_iface_en_mask(adapter, mask) do {} while (0)
-#define rtw_led_set_ctl_en_mask(adapter, ctl_mask) do {} while (0)
-#define rtw_led_set_ctl_en_mask_primary(adapter) do {} while (0)
-#define rtw_led_set_ctl_en_mask_virtual(adapter) do {} while (0)
+#define rtw_led_controlbu(adapter, ctl) do {} while (0)
+#define rtw_led_tx_controlbu(adapter, da) do {} while (0)
+#define rtw_led_rx_controlbu(adapter, da) do {} while (0)
+#define rtw_led_set_iface_enbu(adapter, en) do {} while (0)
+#define rtw_led_set_iface_enbu_mask(adapter, mask) do {} while (0)
+#define rtw_led_set_ctl_en_maskbu(adapter, ctl_mask) do {} while (0)
+#define rtw_led_set_ctl_en_maskbu_primary(adapter) do {} while (0)
+#define rtw_led_set_ctl_en_maskbu_virtual(adapter) do {} while (0)
 #endif /* defined(CONFIG_RTW_LED) && defined(CONFIG_RTW_SW_LED) */
 
 #endif /*__HAL_COMMON_LED_H_*/

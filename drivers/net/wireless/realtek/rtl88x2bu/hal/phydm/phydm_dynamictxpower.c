@@ -41,10 +41,10 @@ void phydm_rd_reg_pwr(void *dm_void, u32 *_used, char *output, u32 *_out_len)
 	s8 pwr_ofst0 = 0;
 	s8 pwr_ofst1 = 0;
 
-	pwr_ofst0_en = (boolean)odm_get_bb_reg(dm, R_0x1e70, BIT(23));
-	pwr_ofst1_en = (boolean)odm_get_bb_reg(dm, R_0x1e70, BIT(31));
-	pwr_ofst0 = (s8)odm_get_bb_reg(dm, R_0x1e70, 0x7f0000);
-	pwr_ofst1 = (s8)odm_get_bb_reg(dm, R_0x1e70, 0x7f000000);
+	pwr_ofst0_en = (boolean)odm_get_bb_regbu(dm, R_0x1e70, BIT(23));
+	pwr_ofst1_en = (boolean)odm_get_bb_regbu(dm, R_0x1e70, BIT(31));
+	pwr_ofst0 = (s8)odm_get_bb_regbu(dm, R_0x1e70, 0x7f0000);
+	pwr_ofst1 = (s8)odm_get_bb_regbu(dm, R_0x1e70, 0x7f000000);
 
 	PDM_SNPF(out_len, used, output + used, out_len - used,
 		 "reg0: en:%d, pwr_ofst:0x%x, reg1: en:%d, pwr_ofst:0x%x\n",
@@ -66,13 +66,13 @@ void phydm_wt_reg_pwr(void *dm_void, boolean is_ofst1, boolean pwr_ofst_en,
 		bb_ctrl->tx_pwr_ofst_reg0 = pwr_ofst;
 
 		reg_0x1e70 |= (pwr_ofst_en << 7) + (pwr_ofst & 0x7f);
-		odm_set_bb_reg(dm, R_0x1e70, 0x00ff0000, reg_0x1e70);
+		odm_set_bb_regbu(dm, R_0x1e70, 0x00ff0000, reg_0x1e70);
 	} else {
 		bb_ctrl->tx_pwr_ofst_reg1_en = pwr_ofst_en;
 		bb_ctrl->tx_pwr_ofst_reg1 = pwr_ofst;
 
 		reg_0x1e70 |= (pwr_ofst_en << 7) + (pwr_ofst & 0x7f);
-		odm_set_bb_reg(dm, R_0x1e70, 0xff000000, reg_0x1e70);
+		odm_set_bb_regbu(dm, R_0x1e70, 0xff000000, reg_0x1e70);
 	}
 };
 
@@ -90,13 +90,13 @@ void phydm_rd_ram_pwr(void *dm_void, u8 macid, u32 *_used, char *output,
 
 	reg_0x1e84 |= (macid & 0x3f) << 24; /* macid*/
 	reg_0x1e84 |= BIT(31); /* read_en*/
-	odm_set_bb_reg(dm, R_0x1e84, MASKDWORD, reg_0x1e84);
+	odm_set_bb_regbu(dm, R_0x1e84, MASKDWORD, reg_0x1e84);
 
-	pwr_ofst0_en = (boolean)odm_get_bb_reg(dm, R_0x2de8, BIT(23));
-	pwr_ofst1_en = (boolean)odm_get_bb_reg(dm, R_0x2de8, BIT(31));
-	pwr_ofst0 = (s8)odm_get_bb_reg(dm, R_0x2de8, 0x7f0000);
-	pwr_ofst1 = (s8)odm_get_bb_reg(dm, R_0x2de8, 0x7f000000);
-	odm_set_bb_reg(dm, R_0x1e84, MASKDWORD, 0x0); /* disable rd/wt*/
+	pwr_ofst0_en = (boolean)odm_get_bb_regbu(dm, R_0x2de8, BIT(23));
+	pwr_ofst1_en = (boolean)odm_get_bb_regbu(dm, R_0x2de8, BIT(31));
+	pwr_ofst0 = (s8)odm_get_bb_regbu(dm, R_0x2de8, 0x7f0000);
+	pwr_ofst1 = (s8)odm_get_bb_regbu(dm, R_0x2de8, 0x7f000000);
+	odm_set_bb_regbu(dm, R_0x1e84, MASKDWORD, 0x0); /* disable rd/wt*/
 
 	PDM_SNPF(out_len, used, output + used, out_len - used,
 		 "(macid:%d) ram0: en:%d, pwr_ofst:0x%x, ram1: en:%d, pwr_ofst:0x%x\n",
@@ -143,9 +143,9 @@ void phydm_wt_ram_pwr(void *dm_void, u8 macid, boolean is_ofst1,
 	}
 	reg_0x1e84 |= (macid & 0x3f) << 24;/* macid*/
 	reg_0x1e84 |= BIT(30); /* write_en*/
-	odm_set_bb_reg(dm, R_0x1e84, MASKDWORD, reg_0x1e84);
-	odm_set_bb_reg(dm, R_0x1e84, MASKDWORD, 0x80000000); /* read_en*/
-	odm_set_bb_reg(dm, R_0x1e84, MASKDWORD, 0x0); /* disable rd/wt*/
+	odm_set_bb_regbu(dm, R_0x1e84, MASKDWORD, reg_0x1e84);
+	odm_set_bb_regbu(dm, R_0x1e84, MASKDWORD, 0x80000000); /* read_en*/
+	odm_set_bb_regbu(dm, R_0x1e84, MASKDWORD, 0x0); /* disable rd/wt*/
 };
 
 void phydm_rst_ram_pwr(void *dm_void)
@@ -165,11 +165,11 @@ void phydm_rst_ram_pwr(void *dm_void)
 			     dm_ram_per_sta->hw_igi;
 		reg_0x1e84 |= (i & 0x3f) << 24;
 		reg_0x1e84 |= BIT(30);
-		odm_set_bb_reg(dm, R_0x1e84, MASKDWORD, reg_0x1e84);
+		odm_set_bb_regbu(dm, R_0x1e84, MASKDWORD, reg_0x1e84);
 	}
 
-	odm_set_bb_reg(dm, R_0x1e84, MASKDWORD, 0x80000000);
-	odm_set_bb_reg(dm, R_0x1e84, MASKDWORD, 0x0);
+	odm_set_bb_regbu(dm, R_0x1e84, MASKDWORD, 0x80000000);
+	odm_set_bb_regbu(dm, R_0x1e84, MASKDWORD, 0x0);
 };
 
 u8 phydm_pwr_lv_mapping_2nd(u8 tx_pwr_lv)
@@ -230,7 +230,7 @@ void phydm_dtp_init_2nd(void *dm_void)
 	if (dm->support_ic_type & (ODM_RTL8822C | ODM_RTL8812F)) {
 		phydm_rst_ram_pwr(dm);
 		/* rsp tx use type 0*/
-		odm_set_mac_reg(dm, R_0x6d8, BIT(19) | BIT(18), RAM_PWR_OFST0);
+		odm_set_mac_regbu(dm, R_0x6d8, BIT(19) | BIT(18), RAM_PWR_OFST0);
 	}
 	#endif
 };
@@ -493,7 +493,7 @@ void phydm_dynamic_response_power(void *dm_void)
 		  dm->dynamic_tx_high_power_lvl);
 	dm->last_dtp_lvl = dm->dynamic_tx_high_power_lvl;
 	rpwr = phydm_pwr_lv_mapping(dm->dynamic_tx_high_power_lvl);
-	odm_set_mac_reg(dm, ODM_REG_RESP_TX_11AC, BIT(20) | BIT(19) | BIT(18),
+	odm_set_mac_regbu(dm, ODM_REG_RESP_TX_11AC, BIT(20) | BIT(19) | BIT(18),
 			rpwr);
 	PHYDM_DBG(dm, DBG_DYN_TXPWR, "RespPwr Set TxPwr: Lv (%d)\n",
 		  dm->dynamic_tx_high_power_lvl);
@@ -782,10 +782,10 @@ void phydm_dynamic_tx_power_win(void *dm_void)
 		if (mgnt_info->RegRspPwr == 1) {
 			if (dm->rssi_min > 60) {
 				/*Resp TXAGC offset = -3dB*/
-				odm_set_mac_reg(dm, R_0x6d8, 0x1C0000, 1);
+				odm_set_mac_regbu(dm, R_0x6d8, 0x1C0000, 1);
 			} else if (dm->rssi_min < 55) {
 				/*Resp TXAGC offset = 0dB*/
-				odm_set_mac_reg(dm, R_0x6d8, 0x1C0000, 0);
+				odm_set_mac_regbu(dm, R_0x6d8, 0x1C0000, 0);
 			}
 		}
 	}

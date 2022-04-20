@@ -91,7 +91,7 @@ void interrupt_handler_8703bu(_adapter *padapter, u16 pkt_len, u8 *pbuf);
 #endif /* CONFIG_SUPPORT_USB_INT */
 #endif /* CONFIG_RTL8703B */
 
-void usb_set_intf_ops(_adapter *padapter, struct _io_ops *pops);
+void usb_set_intf_opsbu(_adapter *padapter, struct _io_ops *pops);
 
 #ifdef CONFIG_RTL8723D
 void rtl8723du_set_hw_type(struct dvobj_priv *pdvobj);

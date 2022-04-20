@@ -99,17 +99,17 @@ struct phydm_auto_dbg_struct {
  * 1 ============================================================
  */
 
-void phydm_dbg_port_dump(void *dm_void, u32 *used, char *output, u32 *out_len);
+void phydm_dbg_port_dumpbu(void *dm_void, u32 *used, char *output, u32 *out_len);
 
-void phydm_auto_dbg_console(
+void phydm_auto_dbg_consolebu(
 	void *dm_void,
 	char input[][16],
 	u32 *_used,
 	char *output,
 	u32 *_out_len);
 
-void phydm_auto_dbg_engine(void *dm_void);
+void phydm_auto_dbg_enginebu(void *dm_void);
 
-void phydm_auto_dbg_engine_init(void *dm_void);
+void phydm_auto_dbg_enginebu_init(void *dm_void);
 #endif
 #endif

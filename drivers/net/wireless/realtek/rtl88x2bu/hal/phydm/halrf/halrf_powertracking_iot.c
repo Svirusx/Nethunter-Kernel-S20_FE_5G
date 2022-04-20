@@ -34,7 +34,7 @@
  * ************************************************************
  */
 
-const u32 ofdm_swing_table[OFDM_TABLE_SIZE] = {
+const u32 ofdm_swing_tablebu[OFDM_TABLE_SIZE] = {
 	0x7f8001fe,	/* 0, +6.0dB */
 	0x788001e2,	/* 1, +5.5dB */
 	0x71c001c7,	/* 2, +5.0dB*/
@@ -74,7 +74,7 @@ const u32 ofdm_swing_table[OFDM_TABLE_SIZE] = {
 	0x10000040,	/* 36, -12.0dB*/
 };
 
-const u8 cck_swing_table_ch1_ch13[CCK_TABLE_SIZE][8] = {
+const u8 cck_swing_table_ch1_ch13bu[CCK_TABLE_SIZE][8] = {
 	{0x36, 0x35, 0x2e, 0x25, 0x1c, 0x12, 0x09, 0x04},	/* 0, +0dB */
 	{0x33, 0x32, 0x2b, 0x23, 0x1a, 0x11, 0x08, 0x04},	/* 1, -0.5dB */
 	{0x30, 0x2f, 0x29, 0x21, 0x19, 0x10, 0x08, 0x03},	/* 2, -1.0dB*/
@@ -110,7 +110,7 @@ const u8 cck_swing_table_ch1_ch13[CCK_TABLE_SIZE][8] = {
 	{0x09, 0x08, 0x07, 0x06, 0x04, 0x03, 0x01, 0x01}	/* 32, -16.0dB*/
 };
 
-const u8 cck_swing_table_ch14[CCK_TABLE_SIZE][8] = {
+const u8 cck_swing_table_ch14bu[CCK_TABLE_SIZE][8] = {
 	{0x36, 0x35, 0x2e, 0x1b, 0x00, 0x00, 0x00, 0x00},	/* 0, +0dB */
 	{0x33, 0x32, 0x2b, 0x19, 0x00, 0x00, 0x00, 0x00},	/* 1, -0.5dB */
 	{0x30, 0x2f, 0x29, 0x18, 0x00, 0x00, 0x00, 0x00},	/* 2, -1.0dB */
@@ -146,7 +146,7 @@ const u8 cck_swing_table_ch14[CCK_TABLE_SIZE][8] = {
 	{0x09, 0x08, 0x07, 0x04, 0x00, 0x00, 0x00, 0x00}	/* 32, -16.0dB*/
 };
 
-const u32 ofdm_swing_table_new[OFDM_TABLE_SIZE] = {
+const u32 ofdm_swing_tablebu_newbu[OFDM_TABLE_SIZE] = {
 	0x0b40002d, /* 0,  -15.0dB	*/
 	0x0c000030, /* 1,  -14.5dB*/
 	0x0cc00033, /* 2,  -14.0dB*/
@@ -192,7 +192,7 @@ const u32 ofdm_swing_table_new[OFDM_TABLE_SIZE] = {
 	0x7f8001fe  /* 42, +6.0dB*/
 };
 
-const u8 cck_swing_table_ch1_ch14_88f[CCK_TABLE_SIZE_88F][16] = {
+const u8 cck_swing_table_ch1_ch14_88fbu[CCK_TABLE_SIZE_88F][16] = {
 	{0x44, 0x42, 0x3C, 0x33, 0x28, 0x1C, 0x13, 0x0B, 0x05, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},    /*-16dB*/
 	{0x48, 0x46, 0x3F, 0x36, 0x2A, 0x1E, 0x14, 0x0B, 0x05, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},    /*-15.5dB*/
 	{0x4D, 0x4A, 0x43, 0x39, 0x2C, 0x20, 0x15, 0x0C, 0x06, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},    /*-15dB*/
@@ -216,7 +216,7 @@ const u8 cck_swing_table_ch1_ch14_88f[CCK_TABLE_SIZE_88F][16] = {
 	{0xD8, 0xD1, 0xBD, 0xA0, 0x7D, 0x5A, 0x3B, 0x22, 0x10, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}     /*-6dB*/
 };
 
-const u8 cck_swing_table_ch1_ch13_88f[CCK_TABLE_SIZE_88F][16] = {
+const u8 cck_swing_table_ch1_ch13bu_88f[CCK_TABLE_SIZE_88F][16] = {
 	{0x44, 0x42, 0x3C, 0x33, 0x28, 0x1C, 0x13, 0x0B, 0x05, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},    /*-16dB*/
 	{0x48, 0x46, 0x3F, 0x36, 0x2A, 0x1E, 0x14, 0x0B, 0x05, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},    /*-15.5dB*/
 	{0x4D, 0x4A, 0x43, 0x39, 0x2C, 0x20, 0x15, 0x0C, 0x06, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},    /*-15dB*/
@@ -240,7 +240,7 @@ const u8 cck_swing_table_ch1_ch13_88f[CCK_TABLE_SIZE_88F][16] = {
 	{0xD8, 0xD1, 0xBD, 0xA0, 0x7D, 0x5A, 0x3B, 0x22, 0x10, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}     /*-6dB*/
 };
 
-const u8 cck_swing_table_ch14_88f[CCK_TABLE_SIZE_88F][16] = {
+const u8 cck_swing_table_ch14bu_88f[CCK_TABLE_SIZE_88F][16] = {
 	{0x44,	 0x42, 0x3C, 0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},    /*-16dB*/
 	{0x48, 0x46, 0x3F, 0x2A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},    /*-15.5dB*/
 	{0x4D, 0x4A, 0x43, 0x2C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},    /*-15dB*/
@@ -264,7 +264,7 @@ const u8 cck_swing_table_ch14_88f[CCK_TABLE_SIZE_88F][16] = {
 	{0xD8, 0xD1, 0xBD, 0x7D, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}     /*-6dB*/
 };
 
-const u8 cck_swing_table_ch1_ch13_new[CCK_TABLE_SIZE][8] = {
+const u8 cck_swing_table_ch1_ch13bu_newbu[CCK_TABLE_SIZE][8] = {
 	{0x09, 0x08, 0x07, 0x06, 0x04, 0x03, 0x01, 0x01},	/*  0, -16.0dB*/
 	{0x09, 0x09, 0x08, 0x06, 0x05, 0x03, 0x01, 0x01},	/*   1, -15.5dB*/
 	{0x0a, 0x09, 0x08, 0x07, 0x05, 0x03, 0x02, 0x01},	/*  2, -15.0dB*/
@@ -300,7 +300,7 @@ const u8 cck_swing_table_ch1_ch13_new[CCK_TABLE_SIZE][8] = {
 	{0x36, 0x35, 0x2e, 0x25, 0x1c, 0x12, 0x09, 0x04}	/*  32, +0dB*/
 };
 
-const u8 cck_swing_table_ch14_new[CCK_TABLE_SIZE][8] = {
+const u8 cck_swing_table_ch14bu_new[CCK_TABLE_SIZE][8] = {
 	{0x09, 0x08, 0x07, 0x04, 0x00, 0x00, 0x00, 0x00},	/*  0, -16.0dB*/
 	{0x09, 0x09, 0x08, 0x05, 0x00, 0x00, 0x00, 0x00},	/* 1, -15.5dB*/
 	{0x0a, 0x09, 0x08, 0x05, 0x00, 0x00, 0x00, 0x00},	/*  2, -15.0dB*/
@@ -336,7 +336,7 @@ const u8 cck_swing_table_ch14_new[CCK_TABLE_SIZE][8] = {
 	{0x36, 0x35, 0x2e, 0x1b, 0x00, 0x00, 0x00, 0x00}	/* 32, +0dB	*/
 };
 
-const u32 cck_swing_table_ch1_ch14_8723d[CCK_TABLE_SIZE_8723D] = {
+const u32 cck_swing_table_ch1_ch14_8723dbu[CCK_TABLE_SIZE_8723D] = {
 	0x0CD,          /*0 ,    -20dB*/
 	0x0D9,
 	0x0E6,
@@ -381,7 +381,7 @@ const u32 cck_swing_table_ch1_ch14_8723d[CCK_TABLE_SIZE_8723D] = {
 };
 
 /* JJ ADD 20161014 */
-const u32 cck_swing_table_ch1_ch14_8710b[CCK_TABLE_SIZE_8710B] = {
+const u32 cck_swing_table_ch1_ch14_8710bbu[CCK_TABLE_SIZE_8710B] = {
 	0x0CD,          /*0 ,    -20dB*/
 	0x0D9,
 	0x0E6,
@@ -426,7 +426,7 @@ const u32 cck_swing_table_ch1_ch14_8710b[CCK_TABLE_SIZE_8710B] = {
 };
 
 /* Winnita ADD 20171116 PathA 0xAB4[10:0],PathB 0xAB4[21:11]*/
-const u32 cck_swing_table_ch1_ch14_8192f[CCK_TABLE_SIZE_8192F] = {
+const u32 cck_swing_table_ch1_ch14_8192fbu[CCK_TABLE_SIZE_8192F] = {
 	0x0CD,			 /*0 ,    -20dB*/
 	0x0D9,
 	0x0E6,
@@ -643,7 +643,7 @@ const u32 cck_swing_table_03db_ch1_ch14_8710c[CCK_03DB_TABLE_SIZE_8710C] = {
 	0xCA3		/*80 ,    +16dB*/
 };
 
-const u32 ofdm_swing_table_03DB_8710c[OFDM_03DB_TABLE_SIZE_8710C] = {
+const u32 ofdm_swing_tablebu_03DB_8710c[OFDM_03DB_TABLE_SIZE_8710C] = {
 	0xE4,		/*0 ,    -7dB*/
 	0xEB,		/*1 ,    -6.75dB*/
 	0xF2,		/*2 ,    -6.5dB*/
@@ -729,7 +729,7 @@ const u32 ofdm_swing_table_03DB_8710c[OFDM_03DB_TABLE_SIZE_8710C] = {
 
 
 
-const u32 tx_scaling_table_jaguar[TXSCALE_TABLE_SIZE] = {
+const u32 tx_scaling_table_jaguarbu[TXSCALE_TABLE_SIZE] = {
 	0x081, /* 0,  -12.0dB*/
 	0x088, /* 1,  -11.5dB*/
 	0x090, /* 2,  -11.0dB*/
@@ -770,17 +770,17 @@ const u32 tx_scaling_table_jaguar[TXSCALE_TABLE_SIZE] = {
 };
 
 void
-odm_txpowertracking_init(
+odm_txpowertracking_initbu(
 	void	*dm_void
 )
 {
 	struct dm_struct	*dm = (struct dm_struct *)dm_void;
 
-	odm_txpowertracking_thermal_meter_init(dm);
+	odm_txpowertracking_thermal_meter_initbu(dm);
 }
 
 u8
-get_swing_index(
+get_swing_indexbu(
 	void	*dm_void
 )
 {
@@ -794,17 +794,17 @@ get_swing_index(
 
 #if (RTL8710C_SUPPORT == 1)
 	if (dm->support_ic_type == ODM_RTL8710C) {
-		bb_swing = odm_get_bb_reg(dm, R_0xcc8, 0x000007ff);
+		bb_swing = odm_get_bb_regbu(dm, R_0xcc8, 0x000007ff);
 
 		for (i = 0; i < OFDM_03DB_TABLE_SIZE_8710C; i++) {
-			if (bb_swing == ofdm_swing_table_03DB_8710c[i])
+			if (bb_swing == ofdm_swing_tablebu_03DB_8710c[i])
 				break;
 		}
 	}
 #elif (RTL8195B_SUPPORT == 1)
 	if (dm->support_ic_type == ODM_RTL8195B) {
-		bb_swing = odm_get_bb_reg(dm, R_0xc1c, 0xFFE00000);
-		swing_table = (u32*)tx_scaling_table_jaguar;
+		bb_swing = odm_get_bb_regbu(dm, R_0xc1c, 0xFFE00000);
+		swing_table = (u32*)tx_scaling_table_jaguarbu;
 		swing_table_size = TXSCALE_TABLE_SIZE;
 
 		for (i = 0; i < swing_table_size; i++) {
@@ -820,7 +820,7 @@ get_swing_index(
 }
 
 u8
-get_cck_swing_index(
+get_cck_swing_indexbu(
 	void		*dm_void
 )
 {
@@ -832,25 +832,25 @@ get_cck_swing_index(
 #if (RTL8188E_SUPPORT == 1 || RTL8723B_SUPPORT == 1 || RTL8192E_SUPPORT == 1)
 	if (dm->support_ic_type == ODM_RTL8188E || dm->support_ic_type == ODM_RTL8723B ||
 	    dm->support_ic_type == ODM_RTL8192E) {
-		bb_cck_swing = odm_read_1byte(dm, 0xa22);
+		bb_cck_swing = odm_read_1bytebu(dm, 0xa22);
 
 		for (i = 0; i < CCK_TABLE_SIZE; i++) {
-			if (bb_cck_swing == cck_swing_table_ch1_ch13_new[i][0])
+			if (bb_cck_swing == cck_swing_table_ch1_ch13bu_newbu[i][0])
 				break;
 		}
 	}
 #elif (RTL8703B_SUPPORT == 1)
 	if (dm->support_ic_type == ODM_RTL8703B) {
-		bb_cck_swing = odm_read_1byte(dm, 0xa22);
+		bb_cck_swing = odm_read_1bytebu(dm, 0xa22);
 
 		for (i = 0; i < CCK_TABLE_SIZE_88F; i++) {
-			if (bb_cck_swing == cck_swing_table_ch1_ch14_88f[i][0])
+			if (bb_cck_swing == cck_swing_table_ch1_ch14_88fbu[i][0])
 				break;
 		}
 	}
 #elif (RTL8710C_SUPPORT == 1)
 	if (dm->support_ic_type == ODM_RTL8710C) {
-		bb_cck_swing = odm_get_bb_reg(dm, R_0xab4, 0x7ff);
+		bb_cck_swing = odm_get_bb_regbu(dm, R_0xab4, 0x7ff);
 
 		RF_DBG(dm, DBG_RF_TX_PWR_TRACK,
 		       "bb_cck_swing = 0x%x\n", bb_cck_swing);
@@ -874,7 +874,7 @@ get_txagc_default_index(
 	s8 tmp;
 
 	if (dm->support_ic_type == ODM_RTL8814B) {
-		tmp = (s8)(odm_get_bb_reg(dm, R_0x18a0, 0x7f) & 0xff);
+		tmp = (s8)(odm_get_bb_regbu(dm, R_0x18a0, 0x7f) & 0xff);
 		if (tmp & BIT(6))
 			tmp = tmp | 0x80;
 		return tmp;
@@ -883,7 +883,7 @@ get_txagc_default_index(
 }
 
 void
-odm_txpowertracking_thermal_meter_init(
+odm_txpowertracking_thermal_meter_initbu(
 	void	*dm_void
 )
 {
@@ -907,15 +907,15 @@ odm_txpowertracking_thermal_meter_init(
 
 	if (!cali_info->default_bb_swing_index_flag) {
 		if (dm->support_ic_type == ODM_RTL8195B) {
-			default_swing_index = get_swing_index(dm);
+			default_swing_index = get_swing_indexbu(dm);
 			cali_info->default_ofdm_index = (default_swing_index >= TXSCALE_TABLE_SIZE) ? 24 : default_swing_index;
 			cali_info->default_cck_index = 24;
 		} else if (dm->support_ic_type == ODM_RTL8721D) {
 			cali_info->default_ofdm_index = 28;	/*OFDM: -1dB*/
 			cali_info->default_cck_index = 28;	/*CCK: -6dB*/
 		} else if (dm->support_ic_type == ODM_RTL8710C) {
-			cali_info->default_ofdm_index = get_swing_index(dm);
-			cali_info->default_cck_index = get_cck_swing_index(dm);
+			cali_info->default_ofdm_index = get_swing_indexbu(dm);
+			cali_info->default_cck_index = get_cck_swing_indexbu(dm);
 		}
 		cali_info->default_bb_swing_index_flag = true;
 	}
@@ -936,17 +936,17 @@ odm_txpowertracking_thermal_meter_init(
 }
 
 void
-odm_txpowertracking_check(
+odm_txpowertracking_checkbu(
 	void	*dm_void
 )
 {
 	struct dm_struct	*dm = (struct dm_struct *)dm_void;
 
-	odm_txpowertracking_check_iot(dm);
+	odm_txpowertracking_checkbu_iot(dm);
 }
 
 void
-odm_txpowertracking_check_iot(
+odm_txpowertracking_checkbu_iot(
 	void	*dm_void
 )
 {
@@ -958,21 +958,21 @@ odm_txpowertracking_check_iot(
 
 	if (!dm->rf_calibrate_info.tm_trigger) {
 		if (dm->support_ic_type == ODM_RTL8195B)
-			odm_set_rf_reg(dm, RF_PATH_A, RF_T_METER_NEW, (BIT(17) | BIT(16)), 0x03);
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_T_METER_NEW, (BIT(17) | BIT(16)), 0x03);
 		else if (dm->support_ic_type == ODM_RTL8721D ||
 			dm->support_ic_type == ODM_RTL8710C)
-			odm_set_rf_reg(dm, RF_PATH_A, RF_T_METER_NEW,
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_T_METER_NEW,
 				       (BIT(12) | BIT(11)), 0x03);
 
 		dm->rf_calibrate_info.tm_trigger = 1;
 		return;
 	}
-	odm_txpowertracking_callback_thermal_meter(dm);
+	odm_txpowertracking_callback_thermal_meterbu(dm);
 	dm->rf_calibrate_info.tm_trigger = 0;
 }
 
 void
-odm_txpowertracking_check_mp(
+odm_txpowertracking_checkbu_mp(
 	void	*dm_void
 )
 {
@@ -980,7 +980,7 @@ odm_txpowertracking_check_mp(
 	struct dm_struct		*dm = (struct dm_struct *)dm_void;
 	void	*adapter = dm->adapter;
 
-	if (odm_check_power_status(adapter) == false) {
+	if (odm_check_power_statusbu(adapter) == false) {
 		RT_TRACE(COMP_POWER_TRACKING, DBG_LOUD, ("check_pow_status, return false\n"));
 		return;
 	}
@@ -990,7 +990,7 @@ odm_txpowertracking_check_mp(
 }
 
 void
-odm_txpowertracking_check_ap(
+odm_txpowertracking_checkbu_ap(
 	void	*dm_void
 )
 {

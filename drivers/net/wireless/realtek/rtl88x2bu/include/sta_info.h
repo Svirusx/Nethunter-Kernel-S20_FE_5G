@@ -44,10 +44,10 @@
 #define RTW_ACL_MODE_MAX					3
 
 #if CONFIG_RTW_MACADDR_ACL
-extern const char *const _acl_period_str[RTW_ACL_PERIOD_NUM];
-#define acl_period_str(mode) (((mode) >= RTW_ACL_PERIOD_NUM) ? "INVALID" : _acl_period_str[(mode)])
-extern const char *const _acl_mode_str[RTW_ACL_MODE_MAX];
-#define acl_mode_str(mode) (((mode) >= RTW_ACL_MODE_MAX) ? "INVALID" : _acl_mode_str[(mode)])
+extern const char *const _acl_period_strbu[RTW_ACL_PERIOD_NUM];
+#define acl_period_str(mode) (((mode) >= RTW_ACL_PERIOD_NUM) ? "INVALID" : _acl_period_strbu[(mode)])
+extern const char *const _acl_mode_strbu[RTW_ACL_MODE_MAX];
+#define acl_mode_str(mode) (((mode) >= RTW_ACL_MODE_MAX) ? "INVALID" : _acl_mode_strbu[(mode)])
 #endif
 
 #ifndef RTW_PRE_LINK_STA_NUM
@@ -69,7 +69,7 @@ struct pre_link_sta_ctl_t {
 #define MAX_ALLOWED_TDLS_STA_NUM	4
 #endif
 
-enum sta_info_update_type {
+enum sta_info_updatebu_type {
 	STA_INFO_UPDATE_NONE = 0,
 	STA_INFO_UPDATE_BW = BIT(0),
 	STA_INFO_UPDATE_RATE = BIT(1),
@@ -156,12 +156,12 @@ struct	stainfo_stats	{
 #endif
 
 	/* unicast only */
-	u64 last_rx_data_uc_pkts; /* For Read & Clear requirement in proc_get_rx_stat() */
-	u32 duplicate_cnt;	/* Read & Clear, in proc_get_rx_stat() */
-	u32 rxratecnt[128];	/* Read & Clear, in proc_get_rx_stat() */
-	u32 tx_ok_cnt;		/* Read & Clear, in proc_get_tx_stat() */
-	u32 tx_fail_cnt;	/* Read & Clear, in proc_get_tx_stat() */
-	u32 tx_retry_cnt;	/* Read & Clear, in proc_get_tx_stat() */
+	u64 last_rx_data_uc_pkts; /* For Read & Clear requirement in proc_get_rx_statbu() */
+	u32 duplicate_cnt;	/* Read & Clear, in proc_get_rx_statbu() */
+	u32 rxratecnt[128];	/* Read & Clear, in proc_get_rx_statbu() */
+	u32 tx_ok_cnt;		/* Read & Clear, in proc_get_tx_statbu() */
+	u32 tx_fail_cnt;	/* Read & Clear, in proc_get_tx_statbu() */
+	u32 tx_retry_cnt;	/* Read & Clear, in proc_get_tx_statbu() */
 #ifdef CONFIG_RTW_MESH
 	u32 rx_hwmp_pkts;
 	u32 last_rx_hwmp_pkts;
@@ -219,14 +219,14 @@ struct st_ctl_t {
 	_queue tracker_q;
 };
 
-void rtw_st_ctl_init(struct st_ctl_t *st_ctl);
-void rtw_st_ctl_deinit(struct st_ctl_t *st_ctl);
-void rtw_st_ctl_register(struct st_ctl_t *st_ctl, u8 st_reg_id, struct st_register *reg);
-void rtw_st_ctl_unregister(struct st_ctl_t *st_ctl, u8 st_reg_id);
-bool rtw_st_ctl_chk_reg_s_proto(struct st_ctl_t *st_ctl, u8 s_proto);
-bool rtw_st_ctl_chk_reg_rule(struct st_ctl_t *st_ctl, _adapter *adapter, u8 *local_naddr, u8 *local_port, u8 *remote_naddr, u8 *remote_port);
-void rtw_st_ctl_rx(struct sta_info *sta, u8 *ehdr_pos);
-void dump_st_ctl(void *sel, struct st_ctl_t *st_ctl);
+void rtw_st_ctl_initbu(struct st_ctl_t *st_ctl);
+void rtw_st_ctl_deinitbu(struct st_ctl_t *st_ctl);
+void rtw_st_ctl_registerbu(struct st_ctl_t *st_ctl, u8 st_reg_id, struct st_register *reg);
+void rtw_st_ctl_unregisterbu(struct st_ctl_t *st_ctl, u8 st_reg_id);
+bool rtw_st_ctl_chk_reg_s_protobu(struct st_ctl_t *st_ctl, u8 s_proto);
+bool rtw_st_ctl_chk_reg_rulebu(struct st_ctl_t *st_ctl, _adapter *adapter, u8 *local_naddr, u8 *local_port, u8 *remote_naddr, u8 *remote_port);
+void rtw_st_ctl_rxbu(struct sta_info *sta, u8 *ehdr_pos);
+void dump_st_ctlbu(void *sel, struct st_ctl_t *st_ctl);
 
 #ifdef CONFIG_TDLS
 struct TDLS_PeerKey {
@@ -746,31 +746,31 @@ __inline static u32 wifi_mac_hash(const u8 *mac)
 }
 
 
-extern u32	_rtw_init_sta_priv(struct sta_priv *pstapriv);
-extern u32	_rtw_free_sta_priv(struct sta_priv *pstapriv);
+extern u32	_rtw_init_sta_privbu(struct sta_priv *pstapriv);
+extern u32	_rtw_free_sta_privbu(struct sta_priv *pstapriv);
 
 #define stainfo_offset_valid(offset) (offset < NUM_STA && offset >= 0)
-int rtw_stainfo_offset(struct sta_priv *stapriv, struct sta_info *sta);
-struct sta_info *rtw_get_stainfo_by_offset(struct sta_priv *stapriv, int offset);
+int rtw_stainfo_offsetbu(struct sta_priv *stapriv, struct sta_info *sta);
+struct sta_info *rtw_get_stainfobu_by_offsetbu(struct sta_priv *stapriv, int offset);
 
-extern struct sta_info *rtw_alloc_stainfo(struct	sta_priv *pstapriv, const u8 *hwaddr);
-extern u32	rtw_free_stainfo(_adapter *padapter , struct sta_info *psta);
-extern void rtw_free_all_stainfo(_adapter *padapter);
-extern struct sta_info *rtw_get_stainfo(struct sta_priv *pstapriv, const u8 *hwaddr);
-extern u32 rtw_init_bcmc_stainfo(_adapter *padapter);
-extern struct sta_info *rtw_get_bcmc_stainfo(_adapter *padapter);
+extern struct sta_info *rtw_alloc_stainfobu(struct	sta_priv *pstapriv, const u8 *hwaddr);
+extern u32	rtw_free_stainfobu(_adapter *padapter , struct sta_info *psta);
+extern void rtw_free_all_stainfobu(_adapter *padapter);
+extern struct sta_info *rtw_get_stainfobu(struct sta_priv *pstapriv, const u8 *hwaddr);
+extern u32 rtw_init_bcmc_stainfobu(_adapter *padapter);
+extern struct sta_info *rtw_get_bcmc_stainfobu(_adapter *padapter);
 
 #ifdef CONFIG_AP_MODE
-u16 rtw_aid_alloc(_adapter *adapter, struct sta_info *sta);
-void dump_aid_status(void *sel, _adapter *adapter);
+u16 rtw_aid_allocbu(_adapter *adapter, struct sta_info *sta);
+void dump_aid_statusbu(void *sel, _adapter *adapter);
 #endif
 
 #if CONFIG_RTW_MACADDR_ACL
-extern u8 rtw_access_ctrl(_adapter *adapter, const u8 *mac_addr);
-void dump_macaddr_acl(void *sel, _adapter *adapter);
+extern u8 rtw_access_ctrlbu(_adapter *adapter, const u8 *mac_addr);
+void dump_macaddr_aclbu(void *sel, _adapter *adapter);
 #endif
 
-bool rtw_is_pre_link_sta(struct sta_priv *stapriv, u8 *addr);
+bool rtw_is_pre_link_stabu(struct sta_priv *stapriv, u8 *addr);
 #if CONFIG_RTW_PRE_LINK_STA
 struct sta_info *rtw_pre_link_sta_add(struct sta_priv *stapriv, u8 *hwaddr);
 void rtw_pre_link_sta_del(struct sta_priv *stapriv, u8 *hwaddr);

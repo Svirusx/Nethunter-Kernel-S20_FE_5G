@@ -112,7 +112,7 @@ enum rtw_chd_5g {
 	RTW_CHD_5G_NULL = RTW_CHD_5G_00,
 };
 
-static const struct ch_list_t rtw_channel_def_2g[] = {
+static const struct ch_list_t rtw_channelbu_def_2g[] = {
 	/* 0, RTW_CHD_2G_00 */	CH_LIST_ENT(0, 0),
 	/* 1, RTW_CHD_2G_01 */	CH_LIST_ENT(13, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, CLA_2G_12_14_PASSIVE),
 	/* 2, RTW_CHD_2G_02 */	CH_LIST_ENT(13, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 0),
@@ -123,7 +123,7 @@ static const struct ch_list_t rtw_channel_def_2g[] = {
 };
 
 #if CONFIG_IEEE80211_BAND_5GHZ
-static const struct ch_list_t rtw_channel_def_5g[] = {
+static const struct ch_list_t rtw_channelbu_def_5g[] = {
 	/* 0, RTW_CHD_5G_00 */	CH_LIST_ENT(0, 0),
 	/* 1, RTW_CHD_5G_01 */	CH_LIST_ENT(21, 36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112, 116, 132, 136, 140, 149, 153, 157, 161, 165, CLA_5G_B2_DFS | CLA_5G_B3_DFS),
 	/* 2, RTW_CHD_5G_02 */	CH_LIST_ENT(19, 36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140, CLA_5G_B2_DFS | CLA_5G_B3_DFS),
@@ -329,12 +329,12 @@ static const struct chplan_ent_t RTW_ChannelPlanMap[] = {
 
 const int RTW_ChannelPlanMap_size = sizeof(RTW_ChannelPlanMap) / sizeof(RTW_ChannelPlanMap[0]);
 
-u8 rtw_chplan_get_default_regd_2g(u8 id)
+u8 rtw_chplan_get_default_regdbu_2g(u8 id)
 {
 	return RTW_ChannelPlanMap[id].regd_2g;
 }
 
-u8 rtw_chplan_get_default_regd_5g(u8 id)
+u8 rtw_chplan_get_default_regdbu_5g(u8 id)
 {
 #if CONFIG_IEEE80211_BAND_5GHZ
 	return RTW_ChannelPlanMap[id].regd_5g;
@@ -343,10 +343,10 @@ u8 rtw_chplan_get_default_regd_5g(u8 id)
 #endif
 }
 
-u8 rtw_chplan_get_default_regd(u8 id)
+u8 rtw_chplan_get_default_regdbu(u8 id)
 {
-	u8 regd_2g = rtw_chplan_get_default_regd_2g(id);
-	u8 regd_5g = rtw_chplan_get_default_regd_5g(id);
+	u8 regd_2g = rtw_chplan_get_default_regdbu_2g(id);
+	u8 regd_5g = rtw_chplan_get_default_regdbu_5g(id);
 
 	if (regd_2g != TXPWR_LMT_NONE && regd_5g != TXPWR_LMT_NONE) {
 		if (regd_2g != regd_5g)
@@ -356,7 +356,7 @@ u8 rtw_chplan_get_default_regd(u8 id)
 	return regd_2g != TXPWR_LMT_NONE ? regd_2g : regd_5g;
 }
 
-bool rtw_chplan_is_empty(u8 id)
+bool rtw_chplan_is_emptybu(u8 id)
 {
 	const struct chplan_ent_t *chplan_map = &RTW_ChannelPlanMap[id];
 
@@ -372,10 +372,10 @@ bool rtw_chplan_is_empty(u8 id)
 
 bool rtw_is_channel_plan_valid(u8 id)
 {
-	return id < RTW_ChannelPlanMap_size && !rtw_chplan_is_empty(id);
+	return id < RTW_ChannelPlanMap_size && !rtw_chplan_is_emptybu(id);
 }
 
-bool rtw_regsty_is_excl_chs(struct registry_priv *regsty, u8 ch)
+bool rtw_regsty_is_excl_chsbu(struct registry_priv *regsty, u8 ch)
 {
 	int i;
 
@@ -394,7 +394,7 @@ const char *_regd_src_str[] = {
 	[REGD_SRC_NUM] = "UNKNOWN",
 };
 
-static u8 init_channel_set_from_rtk_priv(_adapter *padapter, RT_CHANNEL_INFO *channel_set)
+static u8 init_channel_setbu_from_rtk_priv(_adapter *padapter, RT_CHANNEL_INFO *channel_set)
 {
 	struct rf_ctl_t *rfctl = adapter_to_rfctl(padapter);
 	struct registry_priv *regsty = adapter_to_regsty(padapter);
@@ -411,12 +411,12 @@ static u8 init_channel_set_from_rtk_priv(_adapter *padapter, RT_CHANNEL_INFO *ch
 		return chanset_size;
 	}
 
-	_rtw_memset(channel_set, 0, sizeof(RT_CHANNEL_INFO) * MAX_CHANNEL_NUM);
+	_rtw_memsetbu(channel_set, 0, sizeof(RT_CHANNEL_INFO) * MAX_CHANNEL_NUM);
 
-	if (IsSupported24G(regsty->wireless_mode) && hal_chk_band_cap(padapter, BAND_CAP_2G))
+	if (IsSupported24G(regsty->wireless_mode) && hal_chk_band_capbu(padapter, BAND_CAP_2G))
 		b2_4GBand = _TRUE;
 
-	if (is_supported_5g(regsty->wireless_mode) && hal_chk_band_cap(padapter, BAND_CAP_5G))
+	if (is_supported_5g(regsty->wireless_mode) && hal_chk_band_capbu(padapter, BAND_CAP_5G))
 		b5GBand = _TRUE;
 
 	if (b2_4GBand == _FALSE && b5GBand == _FALSE) {
@@ -427,11 +427,11 @@ static u8 init_channel_set_from_rtk_priv(_adapter *padapter, RT_CHANNEL_INFO *ch
 	if (b2_4GBand) {
 		u8 chd_2g = RTW_ChannelPlanMap[ChannelPlan].chd_2g;
 
-		attrib = CH_LIST_ATTRIB(rtw_channel_def_2g[chd_2g]);
+		attrib = CH_LIST_ATTRIB(rtw_channelbu_def_2g[chd_2g]);
 
-		for (index = 0; index < CH_LIST_LEN(rtw_channel_def_2g[chd_2g]); index++) {
-			ch = CH_LIST_CH(rtw_channel_def_2g[chd_2g], index);
-			if (rtw_regsty_is_excl_chs(regsty, ch) == _TRUE)
+		for (index = 0; index < CH_LIST_LEN(rtw_channelbu_def_2g[chd_2g]); index++) {
+			ch = CH_LIST_CH(rtw_channelbu_def_2g[chd_2g], index);
+			if (rtw_regsty_is_excl_chsbu(regsty, ch) == _TRUE)
 				continue;
 
 			if (chanset_size >= MAX_CHANNEL_NUM) {
@@ -458,11 +458,11 @@ static u8 init_channel_set_from_rtk_priv(_adapter *padapter, RT_CHANNEL_INFO *ch
 		bool dfs;
 		u8 chd_5g = RTW_ChannelPlanMap[ChannelPlan].chd_5g;
 
-		attrib = CH_LIST_ATTRIB(rtw_channel_def_5g[chd_5g]);
+		attrib = CH_LIST_ATTRIB(rtw_channelbu_def_5g[chd_5g]);
 
-		for (index = 0; index < CH_LIST_LEN(rtw_channel_def_5g[chd_5g]); index++) {
-			ch = CH_LIST_CH(rtw_channel_def_5g[chd_5g], index);
-			if (rtw_regsty_is_excl_chs(regsty, ch) == _TRUE)
+		for (index = 0; index < CH_LIST_LEN(rtw_channelbu_def_5g[chd_5g]); index++) {
+			ch = CH_LIST_CH(rtw_channelbu_def_5g[chd_5g], index);
+			if (rtw_regsty_is_excl_chsbu(regsty, ch) == _TRUE)
 				continue;
 			dfs = (rtw_is_5g_band2(ch) && (attrib & CLA_5G_B2_DFS))
 				|| (rtw_is_5g_band3(ch) && (attrib & CLA_5G_B3_DFS))
@@ -514,15 +514,15 @@ static u8 init_channel_set_from_rtk_priv(_adapter *padapter, RT_CHANNEL_INFO *ch
 	return chanset_size;
 }
 
-u8 init_channel_set(_adapter *adapter)
+u8 init_channel_setbu(_adapter *adapter)
 {
 	struct rf_ctl_t *rfctl = adapter_to_rfctl(adapter);
 
 	if (rfctl->regd_src == REGD_SRC_RTK_PRIV)
-		return init_channel_set_from_rtk_priv(adapter, rfctl->channel_set);
+		return init_channel_setbu_from_rtk_priv(adapter, rfctl->channel_set);
 #ifdef CONFIG_REGD_SRC_FROM_OS
 	else if (rfctl->regd_src == REGD_SRC_OS)
-		return rtw_os_init_channel_set(adapter, rfctl->channel_set);
+		return rtw_os_init_channel_setbu(adapter, rfctl->channel_set);
 #endif
 	else
 		rtw_warn_on(1);
@@ -532,8 +532,8 @@ u8 init_channel_set(_adapter *adapter)
 
 bool rtw_chset_is_dfs_range(struct _RT_CHANNEL_INFO *chset, u32 hi, u32 lo)
 {
-	u8 hi_ch = rtw_freq2ch(hi);
-	u8 lo_ch = rtw_freq2ch(lo);
+	u8 hi_ch = rtw_freq2chbu(hi);
+	u8 lo_ch = rtw_freq2chbu(lo);
 	int i;
 
 	for (i = 0; i < MAX_CHANNEL_NUM && chset[i].ChannelNum != 0; i++){
@@ -562,7 +562,7 @@ bool rtw_chset_is_dfs_chbw(struct _RT_CHANNEL_INFO *chset, u8 ch, u8 bw, u8 offs
 {
 	u32 hi, lo;
 
-	if (!rtw_chbw_to_freq_range(ch, bw, offset, &hi, &lo))
+	if (!rtw_chbw_to_freq_rangebu(ch, bw, offset, &hi, &lo))
 		return 0;
 
 	return rtw_chset_is_dfs_range(chset, hi, lo);
@@ -585,7 +585,7 @@ u8 rtw_process_beacon_hint(_adapter *adapter, WLAN_BSSID_EX *bss)
 	struct rf_ctl_t *rfctl = adapter_to_rfctl(adapter);
 	RT_CHANNEL_INFO *chset = rfctl->channel_set;
 	u8 ch = bss->Configuration.DSConfig;
-	int chset_idx = rtw_chset_search_ch(chset, ch);
+	int chset_idx = rtw_chset_search_chbu(chset, ch);
 	u8 act_cnt = 0;
 
 	if (chset_idx < 0)
@@ -605,7 +605,7 @@ exit:
 	return act_cnt;
 }
 
-const char *_rtw_dfs_regd_str[] = {
+const char *_rtw_dfs_regd_strbu[] = {
 	[RTW_DFS_REGD_NONE]	= "NONE",
 	[RTW_DFS_REGD_FCC]	= "FCC",
 	[RTW_DFS_REGD_MKK]	= "MKK",
@@ -2364,12 +2364,12 @@ static const struct country_chplan country_chplan_map[] = {
 #endif /* CONFIG_CUSTOMIZED_COUNTRY_CHPLAN_MAP or RTW_DEF_MODULE_REGULATORY_CERT or newest */
 
 /*
-* rtw_get_chplan_from_country -
+* rtw_get_chplan_from_countrybu -
 * @country_code: string of country code
 *
 * Return pointer of struct country_chplan entry or NULL when unsupported country_code is given
 */
-const struct country_chplan *rtw_get_chplan_from_country(const char *country_code)
+const struct country_chplan *rtw_get_chplan_from_countrybu(const char *country_code)
 {
 	const struct country_chplan *ent = NULL;
 	const struct country_chplan *map = NULL;
@@ -2377,8 +2377,8 @@ const struct country_chplan *rtw_get_chplan_from_country(const char *country_cod
 	char code[2];
 	int i;
 
-	code[0] = alpha_to_upper(country_code[0]);
-	code[1] = alpha_to_upper(country_code[1]);
+	code[0] = alpha_to_upperbu(country_code[0]);
+	code[1] = alpha_to_upperbu(country_code[1]);
 
 #ifdef CONFIG_CUSTOMIZED_COUNTRY_CHPLAN_MAP
 	map = CUSTOMIZED_country_chplan_map;
@@ -2400,7 +2400,7 @@ const struct country_chplan *rtw_get_chplan_from_country(const char *country_cod
 	return ent;
 }
 
-void dump_country_chplan(void *sel, const struct country_chplan *ent)
+void dump_country_chplanbu(void *sel, const struct country_chplan *ent)
 {
 	char buf[16];
 
@@ -2415,7 +2415,7 @@ void dump_country_chplan(void *sel, const struct country_chplan *ent)
 	);
 }
 
-void dump_country_chplan_map(void *sel)
+void dump_country_chplanbu_map(void *sel)
 {
 	const struct country_chplan *ent;
 	u8 code[2];
@@ -2429,16 +2429,16 @@ void dump_country_chplan_map(void *sel)
 
 	for (code[0] = 'A'; code[0] <= 'Z'; code[0]++) {
 		for (code[1] = 'A'; code[1] <= 'Z'; code[1]++) {
-			ent = rtw_get_chplan_from_country(code);
+			ent = rtw_get_chplan_from_countrybu(code);
 			if (!ent)
 				continue;
 
-			dump_country_chplan(sel, ent);
+			dump_country_chplanbu(sel, ent);
 		}
 	}
 }
 
-void dump_chplan_id_list(void *sel)
+void dump_chplan_id_listbu(void *sel)
 {
 	u8 first = 1;
 	int i;
@@ -2456,24 +2456,24 @@ void dump_chplan_id_list(void *sel)
 }
 
 #ifdef CONFIG_RTW_DEBUG
-void dump_chplan_test(void *sel)
+void dump_chplan_testbu(void *sel)
 {
 	int i, j;
 
 	/* check redundent */
 	for (i = 0; i < RTW_CHD_2G_MAX; i++) {
 		for (j = 0; j < i; j++) {
-			if (CH_LIST_LEN(rtw_channel_def_2g[i]) == CH_LIST_LEN(rtw_channel_def_2g[j])
-				&& _rtw_memcmp(&CH_LIST_CH(rtw_channel_def_2g[i], 0), &CH_LIST_CH(rtw_channel_def_2g[j], 0), CH_LIST_LEN(rtw_channel_def_2g[i]) + 1) == _TRUE)
+			if (CH_LIST_LEN(rtw_channelbu_def_2g[i]) == CH_LIST_LEN(rtw_channelbu_def_2g[j])
+				&& _rtw_memcmpbu(&CH_LIST_CH(rtw_channelbu_def_2g[i], 0), &CH_LIST_CH(rtw_channelbu_def_2g[j], 0), CH_LIST_LEN(rtw_channelbu_def_2g[i]) + 1) == _TRUE)
 				RTW_PRINT_SEL(sel, "2G chd:%u and %u is the same\n", i, j);
 		}
 	}
 
 	/* check invalid channel */
 	for (i = 0; i < RTW_CHD_2G_MAX; i++) {
-		for (j = 0; j < CH_LIST_LEN(rtw_channel_def_2g[i]); j++) {
-			if (rtw_ch2freq(CH_LIST_CH(rtw_channel_def_2g[i], j)) == 0)
-				RTW_PRINT_SEL(sel, "2G invalid ch:%u at (%d,%d)\n", CH_LIST_CH(rtw_channel_def_2g[i], j), i, j);
+		for (j = 0; j < CH_LIST_LEN(rtw_channelbu_def_2g[i]); j++) {
+			if (rtw_ch2freqbu(CH_LIST_CH(rtw_channelbu_def_2g[i], j)) == 0)
+				RTW_PRINT_SEL(sel, "2G invalid ch:%u at (%d,%d)\n", CH_LIST_CH(rtw_channelbu_def_2g[i], j), i, j);
 		}
 	}
 
@@ -2481,17 +2481,17 @@ void dump_chplan_test(void *sel)
 	/* check redundent */
 	for (i = 0; i < RTW_CHD_5G_MAX; i++) {
 		for (j = 0; j < i; j++) {
-			if (CH_LIST_LEN(rtw_channel_def_5g[i]) == CH_LIST_LEN(rtw_channel_def_5g[j])
-				&& _rtw_memcmp(&CH_LIST_CH(rtw_channel_def_5g[i], 0), &CH_LIST_CH(rtw_channel_def_5g[j], 0), CH_LIST_LEN(rtw_channel_def_5g[i]) + 1) == _TRUE)
+			if (CH_LIST_LEN(rtw_channelbu_def_5g[i]) == CH_LIST_LEN(rtw_channelbu_def_5g[j])
+				&& _rtw_memcmpbu(&CH_LIST_CH(rtw_channelbu_def_5g[i], 0), &CH_LIST_CH(rtw_channelbu_def_5g[j], 0), CH_LIST_LEN(rtw_channelbu_def_5g[i]) + 1) == _TRUE)
 				RTW_PRINT_SEL(sel, "5G chd:%u and %u is the same\n", i, j);
 		}
 	}
 
 	/* check invalid channel */
 	for (i = 0; i < RTW_CHD_5G_MAX; i++) {
-		for (j = 0; j < CH_LIST_LEN(rtw_channel_def_5g[i]); j++) {
-			if (rtw_ch2freq(CH_LIST_CH(rtw_channel_def_5g[i], j)) == 0)
-				RTW_PRINT_SEL(sel, "5G invalid ch:%u at (%d,%d)\n", CH_LIST_CH(rtw_channel_def_5g[i], j), i, j);
+		for (j = 0; j < CH_LIST_LEN(rtw_channelbu_def_5g[i]); j++) {
+			if (rtw_ch2freqbu(CH_LIST_CH(rtw_channelbu_def_5g[i], j)) == 0)
+				RTW_PRINT_SEL(sel, "5G invalid ch:%u at (%d,%d)\n", CH_LIST_CH(rtw_channelbu_def_5g[i], j), i, j);
 		}
 	}
 #endif
@@ -2503,14 +2503,14 @@ void dump_chplan_test(void *sel)
 		for (j = 0; j < i; j++) {
 			if (!rtw_is_channel_plan_valid(j))
 				continue;
-			if (_rtw_memcmp(&RTW_ChannelPlanMap[i], &RTW_ChannelPlanMap[j], sizeof(RTW_ChannelPlanMap[i])) == _TRUE)
+			if (_rtw_memcmpbu(&RTW_ChannelPlanMap[i], &RTW_ChannelPlanMap[j], sizeof(RTW_ChannelPlanMap[i])) == _TRUE)
 				RTW_PRINT_SEL(sel, "channel plan 0x%02x and 0x%02x is the same\n", i, j);
 		}
 	}
 }
 #endif /* CONFIG_RTW_DEBUG */
 
-void dump_chplan_ver(void *sel)
+void dump_chplan_verbu(void *sel)
 {
 	RTW_PRINT_SEL(sel, "%s%s-%s\n", RTW_DOMAIN_MAP_VER, RTW_DOMAIN_MAP_M_VER, RTW_COUNTRY_MAP_VER);
 }

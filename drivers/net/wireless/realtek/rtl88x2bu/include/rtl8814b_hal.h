@@ -71,7 +71,7 @@
 #define _RXERR_RPT_SEL(type)		(BIT_RXERR_RPT_SEL_V1_3_0_8814B(type) \
 					| ((type & 0x10) ? BIT_RXERR_RPT_SEL_V1_4_8814B : 0))
 
-/* hal_com.c:rtw_lps_state_chk() */
+/* hal_com.c:rtw_lps_state_chkbu() */
 #define BIT_PWRBIT_OW_EN		BIT_WMAC_TCRPWRMGT_HWDATA_EN_8814B
 
 /*

@@ -51,22 +51,22 @@ void Linkdown_workitem_callback(struct work_struct *work)
 }
 #endif
 
-extern void rtw_indicate_wx_assoc_event(_adapter *padapter);
-extern void rtw_indicate_wx_disassoc_event(_adapter *padapter);
+extern void rtw_indicate_wx_assoc_eventbu(_adapter *padapter);
+extern void rtw_indicate_wx_disassoc_eventbu(_adapter *padapter);
 
-void rtw_os_indicate_connect(_adapter *adapter)
+void rtw_os_indicate_connectbu(_adapter *adapter)
 {
 	struct mlme_priv *pmlmepriv = &(adapter->mlmepriv);
 
 #ifdef CONFIG_IOCTL_CFG80211
 	if ((check_fwstate(pmlmepriv, WIFI_ADHOC_MASTER_STATE) == _TRUE) ||
 	    (check_fwstate(pmlmepriv, WIFI_ADHOC_STATE) == _TRUE))
-		rtw_cfg80211_ibss_indicate_connect(adapter);
+		rtw_cfg80211_ibss_indicate_connectbu(adapter);
 	else
-		rtw_cfg80211_indicate_connect(adapter);
+		rtw_cfg80211_indicate_connectbu(adapter);
 #endif /* CONFIG_IOCTL_CFG80211 */
 
-	rtw_indicate_wx_assoc_event(adapter);
+	rtw_indicate_wx_assoc_eventbu(adapter);
 
 #ifdef CONFIG_RTW_MESH
 #if CONFIG_RTW_MESH_CTO_MGATE_CARRIER
@@ -85,17 +85,17 @@ void rtw_os_indicate_connect(_adapter *adapter)
 
 }
 
-extern void indicate_wx_scan_complete_event(_adapter *padapter);
-void rtw_os_indicate_scan_done(_adapter *padapter, bool aborted)
+extern void indicate_wx_scan_complete_eventbu(_adapter *padapter);
+void rtw_os_indicate_scan_donebu(_adapter *padapter, bool aborted)
 {
 #ifdef CONFIG_IOCTL_CFG80211
-	rtw_cfg80211_indicate_scan_done(padapter, aborted);
+	rtw_cfg80211_indicate_scan_donebu(padapter, aborted);
 #endif
-	indicate_wx_scan_complete_event(padapter);
+	indicate_wx_scan_complete_eventbu(padapter);
 }
 
 static RT_PMKID_LIST   backupPMKIDList[NUM_PMKID_CACHE];
-void rtw_reset_securitypriv(_adapter *adapter)
+void rtw_reset_securityprivbu(_adapter *adapter)
 {
 	u8	backupPMKIDIndex = 0;
 	u8	backupTKIPCountermeasure = 0x00;
@@ -117,17 +117,17 @@ void rtw_reset_securitypriv(_adapter *adapter)
 		/* Backup the btkip_countermeasure information. */
 		/* When the countermeasure is trigger, the driver have to disconnect with AP for 60 seconds. */
 
-		_rtw_memset(&backupPMKIDList[0], 0x00, sizeof(RT_PMKID_LIST) * NUM_PMKID_CACHE);
+		_rtw_memsetbu(&backupPMKIDList[0], 0x00, sizeof(RT_PMKID_LIST) * NUM_PMKID_CACHE);
 
-		_rtw_memcpy(&backupPMKIDList[0], &adapter->securitypriv.PMKIDList[0], sizeof(RT_PMKID_LIST) * NUM_PMKID_CACHE);
+		_rtw_memcpybu(&backupPMKIDList[0], &adapter->securitypriv.PMKIDList[0], sizeof(RT_PMKID_LIST) * NUM_PMKID_CACHE);
 		backupPMKIDIndex = adapter->securitypriv.PMKIDIndex;
 		backupTKIPCountermeasure = adapter->securitypriv.btkip_countermeasure;
 		backupTKIPcountermeasure_time = adapter->securitypriv.btkip_countermeasure_time;
-		_rtw_memset((unsigned char *)&adapter->securitypriv, 0, sizeof(struct security_priv));
+		_rtw_memsetbu((unsigned char *)&adapter->securitypriv, 0, sizeof(struct security_priv));
 
 		/* Added by Albert 2009/02/18 */
 		/* Restore the PMK information to securitypriv structure for the following connection. */
-		_rtw_memcpy(&adapter->securitypriv.PMKIDList[0], &backupPMKIDList[0], sizeof(RT_PMKID_LIST) * NUM_PMKID_CACHE);
+		_rtw_memcpybu(&adapter->securitypriv.PMKIDList[0], &backupPMKIDList[0], sizeof(RT_PMKID_LIST) * NUM_PMKID_CACHE);
 		adapter->securitypriv.PMKIDIndex = backupPMKIDIndex;
 		adapter->securitypriv.btkip_countermeasure = backupTKIPCountermeasure;
 		adapter->securitypriv.btkip_countermeasure_time = backupTKIPcountermeasure_time;
@@ -164,7 +164,7 @@ void rtw_reset_securitypriv(_adapter *adapter)
 	RTW_INFO(FUNC_ADPT_FMT" - End to Disconnect\n", FUNC_ADPT_ARG(adapter));
 }
 
-void rtw_os_indicate_disconnect(_adapter *adapter,  u16 reason, u8 locally_generated)
+void rtw_os_indicate_disconnectbu(_adapter *adapter,  u16 reason, u8 locally_generated)
 {
 	/* RT_PMKID_LIST   backupPMKIDList[NUM_PMKID_CACHE]; */
 
@@ -172,21 +172,21 @@ void rtw_os_indicate_disconnect(_adapter *adapter,  u16 reason, u8 locally_gener
 	rtw_netif_carrier_off(adapter->pnetdev); /* Do it first for tx broadcast pkt after disconnection issue! */
 
 #ifdef CONFIG_IOCTL_CFG80211
-	rtw_cfg80211_indicate_disconnect(adapter,  reason, locally_generated);
+	rtw_cfg80211_indicate_disconnectbu(adapter,  reason, locally_generated);
 #endif /* CONFIG_IOCTL_CFG80211 */
 
-	rtw_indicate_wx_disassoc_event(adapter);
+	rtw_indicate_wx_disassoc_eventbu(adapter);
 
 #ifdef RTK_DMP_PLATFORM
 	_set_workitem(&adapter->mlmepriv.Linkdown_workitem);
 #endif
 	/* modify for CONFIG_IEEE80211W, none 11w also can use the same command */
-	rtw_reset_securitypriv_cmd(adapter);
+	rtw_reset_securityprivbu_cmdbu(adapter);
 
 
 }
 
-void rtw_report_sec_ie(_adapter *adapter, u8 authmode, u8 *sec_ie)
+void rtw_report_sec_iebu(_adapter *adapter, u8 authmode, u8 *sec_ie)
 {
 	uint	len;
 	u8	*buff, *p, i;
@@ -215,7 +215,7 @@ void rtw_report_sec_ie(_adapter *adapter, u8 authmode, u8 *sec_ie)
 
 		p += sprintf(p, ")");
 
-		_rtw_memset(&wrqu, 0, sizeof(wrqu));
+		_rtw_memsetbu(&wrqu, 0, sizeof(wrqu));
 
 		wrqu.data.length = p - buff;
 
@@ -233,7 +233,7 @@ void rtw_report_sec_ie(_adapter *adapter, u8 authmode, u8 *sec_ie)
 
 #ifdef CONFIG_AP_MODE
 
-void rtw_indicate_sta_assoc_event(_adapter *padapter, struct sta_info *psta)
+void rtw_indicate_sta_assoc_eventbu(_adapter *padapter, struct sta_info *psta)
 {
 	union iwreq_data wrqu;
 	struct sta_priv *pstapriv = &padapter->stapriv;
@@ -250,9 +250,9 @@ void rtw_indicate_sta_assoc_event(_adapter *padapter, struct sta_info *psta)
 
 	wrqu.addr.sa_family = ARPHRD_ETHER;
 
-	_rtw_memcpy(wrqu.addr.sa_data, psta->cmn.mac_addr, ETH_ALEN);
+	_rtw_memcpybu(wrqu.addr.sa_data, psta->cmn.mac_addr, ETH_ALEN);
 
-	RTW_INFO("+rtw_indicate_sta_assoc_event\n");
+	RTW_INFO("+rtw_indicate_sta_assoc_eventbu\n");
 
 #ifndef CONFIG_IOCTL_CFG80211
 	wireless_send_event(padapter->pnetdev, IWEVREGISTERED, &wrqu, NULL);
@@ -260,7 +260,7 @@ void rtw_indicate_sta_assoc_event(_adapter *padapter, struct sta_info *psta)
 
 }
 
-void rtw_indicate_sta_disassoc_event(_adapter *padapter, struct sta_info *psta)
+void rtw_indicate_sta_disassoc_eventbu(_adapter *padapter, struct sta_info *psta)
 {
 	union iwreq_data wrqu;
 	struct sta_priv *pstapriv = &padapter->stapriv;
@@ -277,9 +277,9 @@ void rtw_indicate_sta_disassoc_event(_adapter *padapter, struct sta_info *psta)
 
 	wrqu.addr.sa_family = ARPHRD_ETHER;
 
-	_rtw_memcpy(wrqu.addr.sa_data, psta->cmn.mac_addr, ETH_ALEN);
+	_rtw_memcpybu(wrqu.addr.sa_data, psta->cmn.mac_addr, ETH_ALEN);
 
-	RTW_INFO("+rtw_indicate_sta_disassoc_event\n");
+	RTW_INFO("+rtw_indicate_sta_disassoc_eventbu\n");
 
 #ifndef CONFIG_IOCTL_CFG80211
 	wireless_send_event(padapter->pnetdev, IWEVEXPIRED, &wrqu, NULL);
@@ -300,11 +300,11 @@ static int mgnt_xmit_entry(struct sk_buff *skb, struct net_device *pnetdev)
 	return rtw_hal_hostap_mgnt_xmit_entry(padapter, skb);
 }
 
-static int mgnt_netdev_open(struct net_device *pnetdev)
+static int mgnt_netdev_openbubu(struct net_device *pnetdev)
 {
 	struct hostapd_priv *phostapdpriv = rtw_netdev_priv(pnetdev);
 
-	RTW_INFO("mgnt_netdev_open: MAC Address:" MAC_FMT "\n", MAC_ARG(pnetdev->dev_addr));
+	RTW_INFO("mgnt_netdev_openbubu: MAC Address:" MAC_FMT "\n", MAC_ARG(pnetdev->dev_addr));
 
 
 	init_usb_anchor(&phostapdpriv->anchored);
@@ -336,7 +336,7 @@ static int mgnt_netdev_close(struct net_device *pnetdev)
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 29))
 static const struct net_device_ops rtl871x_mgnt_netdev_ops = {
-	.ndo_open = mgnt_netdev_open,
+	.ndo_open = mgnt_netdev_openbubu,
 	.ndo_stop = mgnt_netdev_close,
 	.ndo_start_xmit = mgnt_xmit_entry,
 	#if 0
@@ -353,7 +353,7 @@ int hostapd_mode_init(_adapter *padapter)
 	struct hostapd_priv *phostapdpriv;
 	struct net_device *pnetdev;
 
-	pnetdev = rtw_alloc_etherdev(sizeof(struct hostapd_priv));
+	pnetdev = rtw_alloc_etherdevbu(sizeof(struct hostapd_priv));
 	if (!pnetdev)
 		return -ENOMEM;
 
@@ -377,7 +377,7 @@ int hostapd_mode_init(_adapter *padapter)
 
 #else
 
-	pnetdev->open = mgnt_netdev_open;
+	pnetdev->open = mgnt_netdev_openbubu;
 
 	pnetdev->stop = mgnt_netdev_close;
 
@@ -412,7 +412,7 @@ int hostapd_mode_init(_adapter *padapter)
 	mac[4] = 0x11;
 	mac[5] = 0x12;
 
-	_rtw_memcpy(pnetdev->dev_addr, mac, ETH_ALEN);
+	_rtw_memcpybu(pnetdev->dev_addr, mac, ETH_ALEN);
 
 
 	rtw_netif_carrier_off(pnetdev);
@@ -423,7 +423,7 @@ int hostapd_mode_init(_adapter *padapter)
 		RTW_INFO("hostapd_mode_init(): register_netdev fail!\n");
 
 		if (pnetdev)
-			rtw_free_netdev(pnetdev);
+			rtw_free_netdevbu(pnetdev);
 	}
 
 	return 0;
@@ -436,7 +436,7 @@ void hostapd_mode_unload(_adapter *padapter)
 	struct net_device *pnetdev = phostapdpriv->pmgnt_netdev;
 
 	unregister_netdev(pnetdev);
-	rtw_free_netdev(pnetdev);
+	rtw_free_netdevbu(pnetdev);
 
 }
 

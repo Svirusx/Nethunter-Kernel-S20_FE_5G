@@ -247,10 +247,10 @@ void Hal_EfuseParseBoardType_8710B(PADAPTER Adapter,
 
 void rtl8710b_set_hal_ops(struct hal_ops *pHalFunc);
 void init_hal_spec_8710b(_adapter *adapter);
-u8 SetHwReg8710B(PADAPTER padapter, u8 variable, u8 *val);
-void GetHwReg8710B(PADAPTER padapter, u8 variable, u8 *val);
-u8 SetHalDefVar8710B(PADAPTER padapter, HAL_DEF_VARIABLE variable, void *pval);
-u8 GetHalDefVar8710B(PADAPTER padapter, HAL_DEF_VARIABLE variable, void *pval);
+u8 SetHwRegbu8710B(PADAPTER padapter, u8 variable, u8 *val);
+void GetHwRegbu8710B(PADAPTER padapter, u8 variable, u8 *val);
+u8 SetHalDefVarbu8710B(PADAPTER padapter, HAL_DEF_VARIABLE variable, void *pval);
+u8 GetHalDefVarbu8710B(PADAPTER padapter, HAL_DEF_VARIABLE variable, void *pval);
 
 /* register */
 void rtl8710b_InitBeaconParameters(PADAPTER padapter);
@@ -266,7 +266,7 @@ void rtl8710b_stop_thread(_adapter *padapter);
 
 void CCX_FwC2HTxRpt_8710b(PADAPTER padapter, u8 *pdata, u8 len);
 
-u8 MRateToHwRate8710B(u8 rate);
+u8 MRateToHwRatebu8710B(u8 rate);
 u8 HwRateToMRate8710B(u8 rate);
 
 #ifdef CONFIG_USB_HCI

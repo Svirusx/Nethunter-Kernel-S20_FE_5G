@@ -31,7 +31,7 @@
 #include "phydm_precomp.h"
 
 boolean
-odm_check_power_status(void *dm_void)
+odm_check_power_statusbu(void *dm_void)
 {
 #if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -50,7 +50,7 @@ odm_check_power_status(void *dm_void)
 	/*
 	 *	2011/07/19 MH We can not execute tx pwoer tracking/ LLC calibrate or IQK.
 	 */
-	((PADAPTER)adapter)->HalFunc.GetHwRegHandler((PADAPTER)adapter, HW_VAR_RF_STATE, (u8 *)(&rt_state));
+	((PADAPTER)adapter)->HalFunc.GetHwRegbuHandler((PADAPTER)adapter, HW_VAR_RF_STATE, (u8 *)(&rt_state));
 	if (((PADAPTER)adapter)->bDriverStopped || ((PADAPTER)adapter)->bDriverIsGoingToPnpSetPowerSleep || rt_state == eRfOff) {
 		RF_DBG(dm, DBG_RF_INIT,
 		       "check_pow_status Return false, due to %d/%d/%d\n",
@@ -64,7 +64,7 @@ odm_check_power_status(void *dm_void)
 }
 
 #if (DM_ODM_SUPPORT_TYPE & (ODM_WIN | ODM_CE))
-void halrf_update_pwr_track(void *dm_void, u8 rate)
+void halrf_update_pwr_trackbu(void *dm_void, u8 rate)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 #if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
@@ -151,7 +151,7 @@ void halrf_update_init_rate_work_item_callback(
 }
 #endif
 
-void halrf_set_pwr_track(void *dm_void, u8 enable)
+void halrf_set_pwr_trackbu(void *dm_void, u8 enable)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct dm_rf_calibration_struct *cali_info = &dm->rf_calibrate_info;
@@ -159,23 +159,23 @@ void halrf_set_pwr_track(void *dm_void, u8 enable)
 	struct txpwrtrack_cfg c;
 	u8 i;
 
-	configure_txpower_track(dm, &c);
+	configure_txpower_trackbu(dm, &c);
 	if (enable) {
 		rf->rf_supportability = rf->rf_supportability | HAL_RF_TX_PWR_TRACK;
 #if !(RTL8723F_SUPPORT == 1)
 		if (cali_info->txpowertrack_control == 1 || cali_info->txpowertrack_control == 3)
-			halrf_do_tssi(dm);
+			halrf_do_tssibu(dm);
 #else
-	halrf_tssi_get_efuse(dm);
-	halrf_do_tssi(dm);
+	halrf_tssi_get_efusebu(dm);
+	halrf_do_tssibu(dm);
 #endif
 
 	} else {
 		rf->rf_supportability = rf->rf_supportability & ~HAL_RF_TX_PWR_TRACK;
-		odm_clear_txpowertracking_state(dm);
-		halrf_do_tssi(dm);
-		halrf_calculate_tssi_codeword(dm);
-		halrf_set_tssi_codeword(dm);
+		odm_clear_txpowertracking_statebu(dm);
+		halrf_do_tssibu(dm);
+		halrf_calculate_tssi_codewordbu(dm);
+		halrf_set_tssi_codewordbu(dm);
 		
 //#if !(RTL8723F_SUPPORT == 1)
 		for (i = 0; i < c.rf_path_count; i++)
@@ -187,7 +187,7 @@ void halrf_set_pwr_track(void *dm_void, u8 enable)
 	if (dm->mp_mode) {
 		if (*dm->mp_mode)
 			/*Re-do dpk when tssi mode is changed*/
-			halrf_dpk_trigger(dm);
+			halrf_dpk_triggerbu(dm);
 	}
 #endif
 

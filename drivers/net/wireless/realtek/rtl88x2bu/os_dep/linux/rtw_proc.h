@@ -53,19 +53,19 @@ struct rtw_proc_hdl {
 
 #ifdef CONFIG_PROC_DEBUG
 
-int rtw_drv_proc_init(void);
-void rtw_drv_proc_deinit(void);
-struct proc_dir_entry *rtw_adapter_proc_init(struct net_device *dev);
-void rtw_adapter_proc_deinit(struct net_device *dev);
-void rtw_adapter_proc_replace(struct net_device *dev);
+int rtw_drv_proc_initbu(void);
+void rtw_drv_proc_deinitbu(void);
+struct proc_dir_entry *rtw_adapter_proc_initbu(struct net_device *dev);
+void rtw_adapter_proc_deinitbu(struct net_device *dev);
+void rtw_adapter_proc_replacebu(struct net_device *dev);
 
 #else /* !CONFIG_PROC_DEBUG */
 
-static inline int rtw_drv_proc_init(void) {return _FAIL;}
-#define rtw_drv_proc_deinit() do {} while (0)
-static inline struct proc_dir_entry *rtw_adapter_proc_init(struct net_device *dev) {return NULL;}
-#define rtw_adapter_proc_deinit(dev) do {} while (0)
-#define rtw_adapter_proc_replace(dev) do {} while (0)
+static inline int rtw_drv_proc_initbu(void) {return _FAIL;}
+#define rtw_drv_proc_deinitbu() do {} while (0)
+static inline struct proc_dir_entry *rtw_adapter_proc_initbu(struct net_device *dev) {return NULL;}
+#define rtw_adapter_proc_deinitbu(dev) do {} while (0)
+#define rtw_adapter_proc_replacebu(dev) do {} while (0)
 
 #endif /* !CONFIG_PROC_DEBUG */
 

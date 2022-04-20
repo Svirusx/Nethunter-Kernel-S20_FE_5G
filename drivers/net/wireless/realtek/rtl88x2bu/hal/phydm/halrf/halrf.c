@@ -42,7 +42,7 @@ void _iqk_check_if_reload(void *dm_void)
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct dm_iqk_info *iqk_info = &dm->IQK_info;
 
-	iqk_info->is_reload = (boolean)odm_get_bb_reg(dm, R_0x1bf0, BIT(16));
+	iqk_info->is_reload = (boolean)odm_get_bb_regbu(dm, R_0x1bf0, BIT(16));
 }
 
 void _iqk_page_switch(void *dm_void)
@@ -50,9 +50,9 @@ void _iqk_page_switch(void *dm_void)
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
 	if (dm->support_ic_type == ODM_RTL8821C)
-		odm_write_4byte(dm, 0x1b00, 0xf8000008);
+		odm_write_4bytebu(dm, 0x1b00, 0xf8000008);
 	else
-		odm_write_4byte(dm, 0x1b00, 0xf800000a);
+		odm_write_4bytebu(dm, 0x1b00, 0xf800000a);
 }
 
 u32 halrf_psd_log2base(u32 val)
@@ -132,63 +132,63 @@ void halrf_iqk_xym_read(void *dm_void, u8 path, u8 xym_type)
 		num = 10;
 	}
 
-	odm_write_4byte(dm, 0x1b00, 0xf8000008);
-	tmp1 = odm_read_4byte(dm, 0x1b1c);
-	odm_write_4byte(dm, 0x1b1c, 0xa2193c32);
+	odm_write_4bytebu(dm, 0x1b00, 0xf8000008);
+	tmp1 = odm_read_4bytebu(dm, 0x1b1c);
+	odm_write_4bytebu(dm, 0x1b1c, 0xa2193c32);
 
-	odm_write_4byte(dm, 0x1b00, 0xf800000a);
-	tmp2 = odm_read_4byte(dm, 0x1b1c);
-	odm_write_4byte(dm, 0x1b1c, 0xa2193c32);
+	odm_write_4bytebu(dm, 0x1b00, 0xf800000a);
+	tmp2 = odm_read_4bytebu(dm, 0x1b1c);
+	odm_write_4bytebu(dm, 0x1b1c, 0xa2193c32);
 
 	for (path = 0; path < 2; path++) {
-		odm_write_4byte(dm, 0x1b00, 0xf8000008 | path << 1);
+		odm_write_4bytebu(dm, 0x1b00, 0xf8000008 | path << 1);
 		switch (xym_type) {
 		case 0:
 			for (i = 0; i < num; i++) {
-				odm_write_4byte(dm, 0x1b14, 0xe6 + start + i);
-				odm_write_4byte(dm, 0x1b14, 0x0);
+				odm_write_4bytebu(dm, 0x1b14, 0xe6 + start + i);
+				odm_write_4bytebu(dm, 0x1b14, 0x0);
 				iqk_info->rx_xym[path][i] =
-						odm_read_4byte(dm, 0x1b38);
+						odm_read_4bytebu(dm, 0x1b38);
 			}
 			break;
 		case 1:
 			for (i = 0; i < num; i++) {
-				odm_write_4byte(dm, 0x1b14, 0xe6 + start + i);
-				odm_write_4byte(dm, 0x1b14, 0x0);
+				odm_write_4bytebu(dm, 0x1b14, 0xe6 + start + i);
+				odm_write_4bytebu(dm, 0x1b14, 0x0);
 				iqk_info->tx_xym[path][i] =
-						odm_read_4byte(dm, 0x1b38);
+						odm_read_4bytebu(dm, 0x1b38);
 			}
 			break;
 		case 2:
 			for (i = 0; i < 6; i++) {
-				odm_write_4byte(dm, 0x1b14, 0xe0 + i);
-				odm_write_4byte(dm, 0x1b14, 0x0);
+				odm_write_4bytebu(dm, 0x1b14, 0xe0 + i);
+				odm_write_4bytebu(dm, 0x1b14, 0x0);
 				iqk_info->gs1_xym[path][i] =
-						odm_read_4byte(dm, 0x1b38);
+						odm_read_4bytebu(dm, 0x1b38);
 			}
 			break;
 		case 3:
 			for (i = 0; i < 6; i++) {
-				odm_write_4byte(dm, 0x1b14, 0xe0 + i);
-				odm_write_4byte(dm, 0x1b14, 0x0);
+				odm_write_4bytebu(dm, 0x1b14, 0xe0 + i);
+				odm_write_4bytebu(dm, 0x1b14, 0x0);
 				iqk_info->gs2_xym[path][i] =
-						odm_read_4byte(dm, 0x1b38);
+						odm_read_4bytebu(dm, 0x1b38);
 			}
 			break;
 		case 4:
 			for (i = 0; i < 6; i++) {
-				odm_write_4byte(dm, 0x1b14, 0xe0 + i);
-				odm_write_4byte(dm, 0x1b14, 0x0);
+				odm_write_4bytebu(dm, 0x1b14, 0xe0 + i);
+				odm_write_4bytebu(dm, 0x1b14, 0x0);
 				iqk_info->rxk1_xym[path][i] =
-						odm_read_4byte(dm, 0x1b38);
+						odm_read_4bytebu(dm, 0x1b38);
 			}
 			break;
 		}
-		odm_write_4byte(dm, 0x1b38, 0x20000000);
-		odm_write_4byte(dm, 0x1b00, 0xf8000008);
-		odm_write_4byte(dm, 0x1b1c, tmp1);
-		odm_write_4byte(dm, 0x1b00, 0xf800000a);
-		odm_write_4byte(dm, 0x1b1c, tmp2);
+		odm_write_4bytebu(dm, 0x1b38, 0x20000000);
+		odm_write_4bytebu(dm, 0x1b00, 0xf8000008);
+		odm_write_4bytebu(dm, 0x1b1c, tmp1);
+		odm_write_4bytebu(dm, 0x1b00, 0xf800000a);
+		odm_write_4bytebu(dm, 0x1b1c, tmp2);
 		_iqk_page_switch(dm);
 	}
 }
@@ -264,17 +264,17 @@ void halrf_iqk_xym_dump(void *dm_void)
 	u32 tmp1, tmp2;
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
-	odm_write_4byte(dm, 0x1b00, 0xf8000008);
-	tmp1 = odm_read_4byte(dm, 0x1b1c);
-	odm_write_4byte(dm, 0x1b00, 0xf800000a);
-	tmp2 = odm_read_4byte(dm, 0x1b1c);
+	odm_write_4bytebu(dm, 0x1b00, 0xf8000008);
+	tmp1 = odm_read_4bytebu(dm, 0x1b1c);
+	odm_write_4bytebu(dm, 0x1b00, 0xf800000a);
+	tmp2 = odm_read_4bytebu(dm, 0x1b1c);
 #if 0
 	/*halrf_iqk_xym_read(dm, xym_type);*/
 #endif
-	odm_write_4byte(dm, 0x1b00, 0xf8000008);
-	odm_write_4byte(dm, 0x1b1c, tmp1);
-	odm_write_4byte(dm, 0x1b00, 0xf800000a);
-	odm_write_4byte(dm, 0x1b1c, tmp2);
+	odm_write_4bytebu(dm, 0x1b00, 0xf8000008);
+	odm_write_4bytebu(dm, 0x1b1c, tmp1);
+	odm_write_4bytebu(dm, 0x1b00, 0xf800000a);
+	odm_write_4bytebu(dm, 0x1b1c, tmp2);
 	_iqk_page_switch(dm);
 }
 #endif
@@ -299,7 +299,7 @@ void halrf_iqk_info_dump(void *dm_void, u32 *_used, char *output, u32 *_out_len)
 		 (dm->fw_offload_ability & PHYDM_RF_IQK_OFFLOAD) ? "FW-IQK" :
 		 "Driver-IQK");
 
-	reload_iqk = (u8)odm_get_bb_reg(dm, R_0x1bf0, BIT(16));
+	reload_iqk = (u8)odm_get_bb_regbu(dm, R_0x1bf0, BIT(16));
 	PDM_SNPF(out_len, used, output + used, out_len - used, "%-20s: %s\n",
 		 "reload", (reload_iqk) ? "True" : "False");
 
@@ -341,7 +341,7 @@ void halrf_iqk_info_dump(void *dm_void, u32 *_used, char *output, u32 *_out_len)
 		 "%-20s: %llu %s\n", "progressing_time",
 		 dm->rf_calibrate_info.iqk_total_progressing_time, "(ms)");
 
-	tmp = odm_read_4byte(dm, 0x1bf0);
+	tmp = odm_read_4bytebu(dm, 0x1bf0);
 	for (rf_path = RF_PATH_A; rf_path <= RF_PATH_B; rf_path++)
 		for (j = 0; j < 2; j++)
 			iqk_result[0][rf_path][j] = (boolean)
@@ -439,7 +439,7 @@ void halrf_iqk_dbg(void *dm_void)
 	RF_DBG(dm, DBG_RF_IQK, "%-20s: %llu %s\n", "progressing_time",
 	       dm->rf_calibrate_info.iqk_progressing_time, "(ms)");
 
-	tmp = odm_read_4byte(dm, 0x1bf0);
+	tmp = odm_read_4bytebu(dm, 0x1bf0);
 	for (rf_path = RF_PATH_A; rf_path <= RF_PATH_B; rf_path++)
 		for (j = 0; j < 2; j++)
 			iqk_result[0][rf_path][j] = (boolean)
@@ -447,7 +447,7 @@ void halrf_iqk_dbg(void *dm_void)
 
 	RF_DBG(dm, DBG_RF_IQK, "%-20s: 0x%08x\n", "Reg0x1bf0", tmp);
 	RF_DBG(dm, DBG_RF_IQK, "%-20s: 0x%08x\n", "Reg0x1be8",
-	       odm_read_4byte(dm, 0x1be8));
+	       odm_read_4bytebu(dm, 0x1be8));
 	RF_DBG(dm, DBG_RF_IQK, "%-20s: %s\n", "PATH_A-Tx result",
 	       (iqk_result[0][RF_PATH_A][0]) ? "Fail" : "Pass");
 	RF_DBG(dm, DBG_RF_IQK, "%-20s: %s\n", "PATH_A-Rx result",
@@ -691,40 +691,40 @@ void halrf_iqk_hwtx_check(void *dm_void, boolean is_check)
 	u32 tmp_b04;
 
 	if (is_check) {
-		iqk_info->is_hwtx = (boolean)odm_get_bb_reg(dm, R_0xb00, BIT(8));
+		iqk_info->is_hwtx = (boolean)odm_get_bb_regbu(dm, R_0xb00, BIT(8));
 	} else {
 		if (iqk_info->is_hwtx) {
-			tmp_b04 = odm_read_4byte(dm, 0xb04);
-			odm_set_bb_reg(dm, R_0xb04, BIT(3) | BIT(2), 0x0);
-			odm_write_4byte(dm, 0xb04, tmp_b04);
+			tmp_b04 = odm_read_4bytebu(dm, 0xb04);
+			odm_set_bb_regbu(dm, R_0xb04, BIT(3) | BIT(2), 0x0);
+			odm_write_4bytebu(dm, 0xb04, tmp_b04);
 		}
 	}
 #endif
 }
 #endif
 
-u8 halrf_match_iqk_version(void *dm_void)
+u8 halrf_match_iqk_versionbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
 	u32 iqk_version = 0;
 	char temp[10] = {0};
 
-	odm_move_memory(dm, temp, HALRF_IQK_VER, sizeof(temp));
+	odm_move_memorybu(dm, temp, HALRF_IQK_VER, sizeof(temp));
 	PHYDM_SSCANF(temp + 2, DCMD_HEX, &iqk_version);
 
 	if (dm->support_ic_type == ODM_RTL8822B) {
-		if (iqk_version >= 0x24 && (odm_get_hw_img_version(dm) >= 72))
+		if (iqk_version >= 0x24 && (odm_get_hw_img_versionbu(dm) >= 72))
 			return 1;
 		else if ((iqk_version <= 0x23) &&
-			 (odm_get_hw_img_version(dm) <= 71))
+			 (odm_get_hw_img_versionbu(dm) <= 71))
 			return 1;
 		else
 			return 0;
 	}
 
 	if (dm->support_ic_type == ODM_RTL8821C) {
-		if (iqk_version >= 0x18 && (odm_get_hw_img_version(dm) >= 37))
+		if (iqk_version >= 0x18 && (odm_get_hw_img_versionbu(dm) >= 37))
 			return 1;
 		else
 			return 0;
@@ -733,71 +733,71 @@ u8 halrf_match_iqk_version(void *dm_void)
 	return 1;
 }
 
-void halrf_rf_lna_setting(void *dm_void, enum halrf_lna_set type)
+void halrf_rf_lna_settingbu(void *dm_void, enum halrf_lna_set type)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
 	switch (dm->support_ic_type) {
 #if (RTL8188E_SUPPORT == 1)
 	case ODM_RTL8188E:
-		halrf_rf_lna_setting_8188e(dm, type);
+		halrf_rf_lna_settingbu_8188e(dm, type);
 		break;
 #endif
 #if (RTL8192E_SUPPORT == 1)
 	case ODM_RTL8192E:
-		halrf_rf_lna_setting_8192e(dm, type);
+		halrf_rf_lna_settingbu_8192e(dm, type);
 		break;
 #endif
 #if (RTL8192F_SUPPORT == 1)
 	case ODM_RTL8192F:
-		halrf_rf_lna_setting_8192f(dm, type);
+		halrf_rf_lna_settingbu_8192f(dm, type);
 		break;
 #endif
 
 #if (RTL8723B_SUPPORT == 1)
 	case ODM_RTL8723B:
-		halrf_rf_lna_setting_8723b(dm, type);
+		halrf_rf_lna_settingbu_8723b(dm, type);
 		break;
 #endif
 #if (RTL8812A_SUPPORT == 1)
 	case ODM_RTL8812:
-		halrf_rf_lna_setting_8812a(dm, type);
+		halrf_rf_lna_settingbu_8812a(dm, type);
 		break;
 #endif
 #if ((RTL8821A_SUPPORT == 1) || (RTL8881A_SUPPORT == 1))
 	case ODM_RTL8881A:
 	case ODM_RTL8821:
-		halrf_rf_lna_setting_8821a(dm, type);
+		halrf_rf_lna_settingbu_8821a(dm, type);
 		break;
 #endif
 #if (RTL8822B_SUPPORT == 1)
 	case ODM_RTL8822B:
-		halrf_rf_lna_setting_8822b(dm_void, type);
+		halrf_rf_lna_settingbu_8822b(dm_void, type);
 		break;
 #endif
 #if (RTL8822C_SUPPORT == 1)
 	case ODM_RTL8822C:
-		halrf_rf_lna_setting_8822c(dm_void, type);
+		halrf_rf_lna_settingbu_8822c(dm_void, type);
 		break;
 #endif
 #if (RTL8812F_SUPPORT == 1)
 	case ODM_RTL8812F:
-		halrf_rf_lna_setting_8812f(dm_void, type);
+		halrf_rf_lna_settingbu_8812f(dm_void, type);
 		break;
 #endif
 #if (RTL8821C_SUPPORT == 1)
 	case ODM_RTL8821C:
-		halrf_rf_lna_setting_8821c(dm_void, type);
+		halrf_rf_lna_settingbu_8821c(dm_void, type);
 		break;
 #endif
 #if (RTL8710C_SUPPORT == 1)
 	case ODM_RTL8710C:
-		halrf_rf_lna_setting_8710c(dm_void, type);
+		halrf_rf_lna_settingbu_8710c(dm_void, type);
 		break;
 #endif
 #if (RTL8721D_SUPPORT == 1)
 	case ODM_RTL8721D:
-		halrf_rf_lna_setting_8721d(dm, type);
+		halrf_rf_lna_settingbu_8721d(dm, type);
 		break;
 #endif
 #if (RTL8814B_SUPPORT == 1)
@@ -809,7 +809,7 @@ void halrf_rf_lna_setting(void *dm_void, enum halrf_lna_set type)
 	}
 }
 
-void halrf_support_ability_debug(void *dm_void, char input[][16], u32 *_used,
+void halrf_support_ability_debugbu(void *dm_void, char input[][16], u32 *_used,
 				 char *output, u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -904,19 +904,19 @@ void halrf_support_band_shift_debug(void *dm_void, char input[][16], u32 *_used,
 	} else {
 		if (dm_value[0] == 01) {
 			rf->rf_shift_band = HAL_RF_2P3;
-			halrf_lck_trigger(dm);
+			halrf_lck_triggerbu(dm);
 			PDM_SNPF(out_len, used, output + used, out_len - used,
 				 "\n[rf_shift_band] = %d\nRF Band Shift to 2.3G!\n",
 				 rf->rf_shift_band);
 		} else if (dm_value[0] == 02) {
 			rf->rf_shift_band = HAL_RF_2P5;
-			halrf_lck_trigger(dm);
+			halrf_lck_triggerbu(dm);
 			PDM_SNPF(out_len, used, output + used, out_len - used,
 				 "\n[rf_shift_band] = %d\nRF Band Shift to 2.5G!\n",
 				 rf->rf_shift_band);
 		} else {
 			rf->rf_shift_band = HAL_RF_2P4;
-			halrf_lck_trigger(dm);
+			halrf_lck_triggerbu(dm);
 			PDM_SNPF(out_len, used, output + used, out_len - used,
 				 "\n[rf_shift_band] = %d\nNo RF Band Shift,default: 2.4G!\n",
 				 rf->rf_shift_band);
@@ -928,7 +928,7 @@ void halrf_support_band_shift_debug(void *dm_void, char input[][16], u32 *_used,
 }
 #endif
 
-void halrf_cmn_info_init(void *dm_void, enum halrf_cmninfo_init cmn_info,
+void halrf_cmn_info_initbu(void *dm_void, enum halrf_cmninfo_init cmn_info,
 			 u32 value)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -949,7 +949,7 @@ void halrf_cmn_info_init(void *dm_void, enum halrf_cmninfo_init cmn_info,
 	}
 }
 
-void halrf_cmn_info_hook(void *dm_void, enum halrf_cmninfo_hook cmn_info,
+void halrf_cmn_info_hookbu(void *dm_void, enum halrf_cmninfo_hook cmn_info,
 			 void *value)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -977,7 +977,7 @@ void halrf_cmn_info_hook(void *dm_void, enum halrf_cmninfo_hook cmn_info,
 	}
 }
 
-void halrf_cmn_info_set(void *dm_void, u32 cmn_info, u64 value)
+void halrf_cmn_info_setbu(void *dm_void, u32 cmn_info, u64 value)
 {
 	/* This init variable may be changed in run time. */
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -1028,7 +1028,7 @@ void halrf_cmn_info_set(void *dm_void, u32 cmn_info, u64 value)
 	}
 }
 
-u64 halrf_cmn_info_get(void *dm_void, u32 cmn_info)
+u64 halrf_cmn_info_getbu(void *dm_void, u32 cmn_info)
 {
 	/* This init variable may be changed in run time. */
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -1060,7 +1060,7 @@ u64 halrf_cmn_info_get(void *dm_void, u32 cmn_info)
 	return return_value;
 }
 
-void halrf_supportability_init_mp(void *dm_void)
+void halrf_supportability_initbu_mpbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct _hal_rf_ *rf = &dm->rf_table;
@@ -1230,7 +1230,7 @@ void halrf_supportability_init_mp(void *dm_void)
 	       dm->support_ic_type, rf->rf_supportability);
 }
 
-void halrf_supportability_init(void *dm_void)
+void halrf_supportability_initbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct _hal_rf_ *rf = &dm->rf_table;
@@ -1401,7 +1401,7 @@ void halrf_supportability_init(void *dm_void)
 	       dm->support_ic_type, rf->rf_supportability);
 }
 
-void halrf_watchdog(void *dm_void)
+void halrf_watchdogbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct _hal_rf_ *rf = &dm->rf_table;
@@ -1413,9 +1413,9 @@ void halrf_watchdog(void *dm_void)
 		rf->is_tssi_in_progress)
 		return;
 #if !(RTL8723F_SUPPORT == 1)
-	phydm_rf_watchdog(dm);
+	phydm_rf_watchdogbu(dm);
 #endif
-	halrf_dpk_track(dm);
+	halrf_dpk_trackbu(dm);
 #if (RTL8723F_SUPPORT == 1)
 		halrf_xtal_thermal_track(dm);
 #endif
@@ -1556,7 +1556,7 @@ void halrf_bbreset(void *dm_void)
 	}
 }
 
-void halrf_rf_k_connect_trigger(void *dm_void, boolean is_recovery,
+void halrf_rf_k_connect_triggerbu(void *dm_void, boolean is_recovery,
 				enum halrf_k_segment_time seg_time)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;	
@@ -1575,19 +1575,19 @@ void halrf_rf_k_connect_trigger(void *dm_void, boolean is_recovery,
 	}
 
 	/*[TX GAP K]*/
-	halrf_txgapk_trigger(dm);
+	halrf_txgapk_triggerbu(dm);
 
 	/*[LOK, IQK]*/
-	halrf_segment_iqk_trigger(dm, true, seg_time);
+	halrf_segment_iqk_triggerbu(dm, true, seg_time);
 
 	/*[TSSI Trk]*/
 	halrf_tssi_trigger(dm);
 	/*[DPK]*/
 #if 1
 	if(dpk_info->is_dpk_by_channel == true)
-		halrf_dpk_trigger(dm);
+		halrf_dpk_triggerbu(dm);
 	else
-		halrf_dpk_reload(dm);
+		halrf_dpk_reloadbu(dm);
 #endif
 	//ADDA restore to MP_UI setting;
 	config_halrf_path_adda_setting_trigger(dm);
@@ -1626,7 +1626,7 @@ void halrf_dack_restore(void *dm_void)
 		break;
 	}
 }
-void halrf_dack_trigger(void *dm_void, boolean force)
+void halrf_dack_triggerbu(void *dm_void, boolean force)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct _hal_rf_ *rf = &dm->rf_table;
@@ -1636,7 +1636,7 @@ void halrf_dack_trigger(void *dm_void, boolean force)
 	if (!(rf->rf_supportability & HAL_RF_DACK))
 		return;
 
-	start_time = odm_get_current_time(dm);
+	start_time = odm_get_current_timebu(dm);
 
 	switch (dm->support_ic_type) {
 #if (RTL8822C_SUPPORT == 1)
@@ -1657,7 +1657,7 @@ void halrf_dack_trigger(void *dm_void, boolean force)
 	default:
 		break;
 	}
-	rf->dpk_progressing_time = odm_get_progressing_time(dm, start_time);
+	rf->dpk_progressing_time = odm_get_progressing_timebu(dm, start_time);
 	RF_DBG(dm, DBG_RF_DACK, "[DACK]DACK progressing_time = %lld ms\n",
 	       rf->dpk_progressing_time);
 }
@@ -1685,7 +1685,7 @@ void halrf_dack_dbg(void *dm_void)
 }
 
 
-void halrf_segment_iqk_trigger(void *dm_void, boolean clear,
+void halrf_segment_iqk_triggerbu(void *dm_void, boolean clear,
 			       boolean segment_iqk)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -1694,7 +1694,7 @@ void halrf_segment_iqk_trigger(void *dm_void, boolean clear,
 	u64 start_time;
 
 #if (DM_ODM_SUPPORT_TYPE & (ODM_WIN))
-	if (odm_check_power_status(dm) == false)
+	if (odm_check_power_statusbu(dm) == false)
 		return;
 #endif
 
@@ -1722,10 +1722,10 @@ void halrf_segment_iqk_trigger(void *dm_void, boolean clear,
 	halrf_rfk_handshake(dm, true);
 
 	if (!dm->rf_calibrate_info.is_iqk_in_progress) {
-		odm_acquire_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_acquire_spin_lockbu(dm, RT_IQK_SPINLOCK);
 		dm->rf_calibrate_info.is_iqk_in_progress = true;
-		odm_release_spin_lock(dm, RT_IQK_SPINLOCK);
-		start_time = odm_get_current_time(dm);
+		odm_release_spin_lockbu(dm, RT_IQK_SPINLOCK);
+		start_time = odm_get_current_timebu(dm);
 		dm->IQK_info.segment_iqk = segment_iqk;
 
 		halrf_rfk_power_save(dm, false);
@@ -1852,13 +1852,13 @@ void halrf_segment_iqk_trigger(void *dm_void, boolean clear,
 		
 		halrf_rfk_power_save(dm, true);
 		dm->rf_calibrate_info.iqk_progressing_time =
-				odm_get_progressing_time(dm, start_time);
+				odm_get_progressing_timebu(dm, start_time);
 		RF_DBG(dm, DBG_RF_IQK, "[IQK]IQK progressing_time = %lld ms\n",
 		       dm->rf_calibrate_info.iqk_progressing_time);
 
-		odm_acquire_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_acquire_spin_lockbu(dm, RT_IQK_SPINLOCK);
 		dm->rf_calibrate_info.is_iqk_in_progress = false;
-		odm_release_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_release_spin_lockbu(dm, RT_IQK_SPINLOCK);
 
 		halrf_rfk_handshake(dm, false);
 	} else {
@@ -1868,7 +1868,7 @@ void halrf_segment_iqk_trigger(void *dm_void, boolean clear,
 }
 
 
-void halrf_iqk_trigger(void *dm_void, boolean is_recovery)
+void halrf_iqk_triggerbu(void *dm_void, boolean is_recovery)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct dm_iqk_info *iqk_info = &dm->IQK_info;
@@ -1877,7 +1877,7 @@ void halrf_iqk_trigger(void *dm_void, boolean is_recovery)
 	u64 start_time;
 
 #if (DM_ODM_SUPPORT_TYPE & (ODM_WIN))
-	if (odm_check_power_status(dm) == false)
+	if (odm_check_power_statusbu(dm) == false)
 		return;
 #endif
 
@@ -1906,10 +1906,10 @@ void halrf_iqk_trigger(void *dm_void, boolean is_recovery)
 	halrf_rfk_handshake(dm, true);
 
 	if (!dm->rf_calibrate_info.is_iqk_in_progress) {
-		odm_acquire_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_acquire_spin_lockbu(dm, RT_IQK_SPINLOCK);
 		dm->rf_calibrate_info.is_iqk_in_progress = true;
-		odm_release_spin_lock(dm, RT_IQK_SPINLOCK);
-		start_time = odm_get_current_time(dm);
+		odm_release_spin_lockbu(dm, RT_IQK_SPINLOCK);
+		start_time = odm_get_current_timebu(dm);
 		halrf_rfk_power_save(dm, false);
 		switch (dm->support_ic_type) {
 #if (RTL8188E_SUPPORT == 1)
@@ -2033,12 +2033,12 @@ void halrf_iqk_trigger(void *dm_void, boolean is_recovery)
 		}
 
 	halrf_rfk_power_save(dm, true);
-	rf->iqk_progressing_time = odm_get_progressing_time(dm, start_time);
+	rf->iqk_progressing_time = odm_get_progressing_timebu(dm, start_time);
 	RF_DBG(dm, DBG_RF_LCK, "[IQK]Trigger IQK progressing_time = %lld ms\n",
 	       rf->iqk_progressing_time);
-		odm_acquire_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_acquire_spin_lockbu(dm, RT_IQK_SPINLOCK);
 		dm->rf_calibrate_info.is_iqk_in_progress = false;
-		odm_release_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_release_spin_lockbu(dm, RT_IQK_SPINLOCK);
 
 		halrf_rfk_handshake(dm, false);
 	} else {
@@ -2047,7 +2047,7 @@ void halrf_iqk_trigger(void *dm_void, boolean is_recovery)
 	}
 }
 
-void halrf_lck_trigger(void *dm_void)
+void halrf_lck_triggerbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct dm_iqk_info *iqk_info = &dm->IQK_info;
@@ -2055,7 +2055,7 @@ void halrf_lck_trigger(void *dm_void)
 	u64 start_time;
 
 #if (DM_ODM_SUPPORT_TYPE & (ODM_WIN))
-	if (odm_check_power_status(dm) == false)
+	if (odm_check_power_statusbu(dm) == false)
 		return;
 #endif
 
@@ -2084,10 +2084,10 @@ void halrf_lck_trigger(void *dm_void)
 	}
 
 	if (!dm->rf_calibrate_info.is_lck_in_progress) {
-		odm_acquire_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_acquire_spin_lockbu(dm, RT_IQK_SPINLOCK);
 		dm->rf_calibrate_info.is_lck_in_progress = true;
-		odm_release_spin_lock(dm, RT_IQK_SPINLOCK);
-		start_time = odm_get_current_time(dm);
+		odm_release_spin_lockbu(dm, RT_IQK_SPINLOCK);
+		start_time = odm_get_current_timebu(dm);
 		switch (dm->support_ic_type) {
 #if (RTL8188E_SUPPORT == 1)
 		case ODM_RTL8188E:
@@ -2204,22 +2204,22 @@ void halrf_lck_trigger(void *dm_void)
 			break;
 		}
 		dm->rf_calibrate_info.lck_progressing_time =
-				odm_get_progressing_time(dm, start_time);
+				odm_get_progressing_timebu(dm, start_time);
 		RF_DBG(dm, DBG_RF_LCK, "[LCK]LCK progressing_time = %lld ms\n",
 		       dm->rf_calibrate_info.lck_progressing_time);
 #if (RTL8822B_SUPPORT == 1 || RTL8821C_SUPPORT == 1)
 		halrf_lck_dbg(dm);
 #endif
-		odm_acquire_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_acquire_spin_lockbu(dm, RT_IQK_SPINLOCK);
 		dm->rf_calibrate_info.is_lck_in_progress = false;
-		odm_release_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_release_spin_lockbu(dm, RT_IQK_SPINLOCK);
 	} else {
 		RF_DBG(dm, DBG_RF_LCK,
 		       "[LCK]= Return the LCK CMD, because RFK is in Progress =\n");
 	}
 }
 
-void halrf_aac_check(struct dm_struct *dm)
+void halrf_aac_checkbu(struct dm_struct *dm)
 {
 	switch (dm->support_ic_type) {
 #if (RTL8821C_SUPPORT == 1)
@@ -2260,7 +2260,7 @@ void halrf_rxdck(void *dm_void)
 	}
 }
 
-void halrf_x2k_check(struct dm_struct *dm)
+void halrf_x2k_checkbu(struct dm_struct *dm)
 {
 
 	switch (dm->support_ic_type) {
@@ -2301,9 +2301,9 @@ void halrf_set_rfsupportability(void *dm_void)
 	    *rf->manual_rf_supportability != 0xffffffff) {
 		rf->rf_supportability = *rf->manual_rf_supportability;
 	} else if (*dm->mp_mode) {
-		halrf_supportability_init_mp(dm);
+		halrf_supportability_initbu_mpbu(dm);
 	} else {
-		halrf_supportability_init(dm);
+		halrf_supportability_initbu(dm);
 	}
 }
 
@@ -2325,32 +2325,32 @@ void halrf_rfe_definition(struct dm_struct *dm)
 	}
 }
 
-void halrf_init(void *dm_void)
+void halrf_initbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct _hal_rf_ *rf = &dm->rf_table;
 
 	RF_DBG(dm, DBG_RF_INIT, "HALRF_Init\n");
 	rf->aac_checked = false;
-	halrf_init_debug_setting(dm);
+	halrf_initbu_debug_setting(dm);
 	halrf_set_rfsupportability(dm);
 	halrf_rfe_definition(dm);
 #if 1
 	/*Init all RF funciton*/
-	halrf_aac_check(dm);
-	halrf_dack_trigger(dm, false);
-	halrf_x2k_check(dm);
+	halrf_aac_checkbu(dm);
+	halrf_dack_triggerbu(dm, false);
+	halrf_x2k_checkbu(dm);
 #endif
 
 	/*power trim, thrmal trim, pa bias*/
-	phydm_config_new_kfree(dm);
+	phydm_config_new_kfreebu(dm);
 
 	/*TSSI Init*/
-	halrf_tssi_dck(dm, true);
-	halrf_tssi_get_efuse(dm);
-	halrf_tssi_set_de(dm);
+	halrf_tssi_dckbu(dm, true);
+	halrf_tssi_get_efusebu(dm);
+	halrf_tssi_set_debu(dm);
 #if (RTL8723F_SUPPORT == 1)
-	halrf_do_tssi(dm);
+	halrf_do_tssibu(dm);
 	halrf_rx_port_ctl_8723f(dm);
 #endif
 
@@ -2358,7 +2358,7 @@ void halrf_init(void *dm_void)
 	halrf_txgapk_write_gain_table(dm);
 }
 
-void halrf_dpk_trigger(void *dm_void)
+void halrf_dpk_triggerbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct _hal_rf_ *rf = &dm->rf_table;
@@ -2368,7 +2368,7 @@ void halrf_dpk_trigger(void *dm_void)
 	u64 start_time;
 
 #if (DM_ODM_SUPPORT_TYPE & (ODM_WIN))
-	if (odm_check_power_status(dm) == false)
+	if (odm_check_power_statusbu(dm) == false)
 		return;
 #endif
 
@@ -2397,10 +2397,10 @@ void halrf_dpk_trigger(void *dm_void)
 	halrf_rfk_handshake(dm, true);
 
 	if (!rf->is_dpk_in_progress) {
-		odm_acquire_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_acquire_spin_lockbu(dm, RT_IQK_SPINLOCK);
 		rf->is_dpk_in_progress = true;
-		odm_release_spin_lock(dm, RT_IQK_SPINLOCK);
-		start_time = odm_get_current_time(dm);
+		odm_release_spin_lockbu(dm, RT_IQK_SPINLOCK);
+		start_time = odm_get_current_timebu(dm);
 		halrf_rfk_power_save(dm, false);
 		switch (dm->support_ic_type) {
 #if (RTL8822C_SUPPORT == 1)
@@ -2466,13 +2466,13 @@ void halrf_dpk_trigger(void *dm_void)
 			break;
 	}
 	halrf_rfk_power_save(dm, true);
-	rf->dpk_progressing_time = odm_get_progressing_time(dm, start_time);
+	rf->dpk_progressing_time = odm_get_progressing_timebu(dm, start_time);
 	RF_DBG(dm, DBG_RF_DPK, "[DPK]DPK progressing_time = %lld ms\n",
 	       rf->dpk_progressing_time);
 
-		odm_acquire_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_acquire_spin_lockbu(dm, RT_IQK_SPINLOCK);
 		rf->is_dpk_in_progress = false;
-		odm_release_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_release_spin_lockbu(dm, RT_IQK_SPINLOCK);
 
 		halrf_rfk_handshake(dm, false);
 	} else {
@@ -2481,7 +2481,7 @@ void halrf_dpk_trigger(void *dm_void)
 	}
 }
 
-void halrf_set_dpkbychannel(void *dm_void, boolean dpk_by_ch)
+void halrf_set_dpkbychannelbu(void *dm_void, boolean dpk_by_ch)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct _hal_rf_ *rf = &dm->rf_table;
@@ -2513,7 +2513,7 @@ void halrf_set_dpkbychannel(void *dm_void, boolean dpk_by_ch)
 
 }
 
-void halrf_set_dpkenable(void *dm_void, boolean is_dpk_enable)
+void halrf_set_dpkenablebu(void *dm_void, boolean is_dpk_enable)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct _hal_rf_ *rf = &dm->rf_table;
@@ -2547,7 +2547,7 @@ void halrf_set_dpkenable(void *dm_void, boolean is_dpk_enable)
 	}
 
 }
-boolean halrf_get_dpkbychannel(void *dm_void)
+boolean halrf_get_dpkbychannelbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct _hal_rf_ *rf = &dm->rf_table;
@@ -2578,7 +2578,7 @@ boolean halrf_get_dpkbychannel(void *dm_void)
 }
 
 
-boolean halrf_get_dpkenable(void *dm_void)
+boolean halrf_get_dpkenablebu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct _hal_rf_ *rf = &dm->rf_table;
@@ -2608,7 +2608,7 @@ boolean halrf_get_dpkenable(void *dm_void)
 
 }
 
-u8 halrf_dpk_result_check(void *dm_void)
+u8 halrf_dpk_result_checkbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct dm_dpk_info *dpk_info = &dm->dpk_info;
@@ -2706,7 +2706,7 @@ u8 halrf_dpk_result_check(void *dm_void)
 	return result;
 }
 
-void halrf_dpk_sram_read(void *dm_void)
+void halrf_dpk_sram_readbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
@@ -2775,7 +2775,7 @@ void halrf_dpk_sram_read(void *dm_void)
 	}
 }
 
-void halrf_dpk_enable_disable(void *dm_void)
+void halrf_dpk_enable_disablebu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct _hal_rf_ *rf = &dm->rf_table;
@@ -2784,9 +2784,9 @@ void halrf_dpk_enable_disable(void *dm_void)
 		return;
 
 	if (!rf->is_dpk_in_progress) {
-		odm_acquire_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_acquire_spin_lockbu(dm, RT_IQK_SPINLOCK);
 		rf->is_dpk_in_progress = true;
-		odm_release_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_release_spin_lockbu(dm, RT_IQK_SPINLOCK);
 
 	switch (dm->support_ic_type) {
 #if (RTL8822C_SUPPORT == 1)
@@ -2853,16 +2853,16 @@ void halrf_dpk_enable_disable(void *dm_void)
 		break;
 	}
 
-		odm_acquire_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_acquire_spin_lockbu(dm, RT_IQK_SPINLOCK);
 		rf->is_dpk_in_progress = false;
-		odm_release_spin_lock(dm, RT_IQK_SPINLOCK);
+		odm_release_spin_lockbu(dm, RT_IQK_SPINLOCK);
 	} else {
 		RF_DBG(dm, DBG_RF_DPK,
 		       "== Return the DPK CMD, because RFKs in Progress ==\n");
 	}
 }
 
-void halrf_dpk_track(void *dm_void)
+void halrf_dpk_trackbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct dm_dpk_info *dpk_info = &dm->dpk_info;
@@ -2948,7 +2948,7 @@ void halrf_dpk_track(void *dm_void)
 	}
 }
 
-void halrf_set_dpk_track(void *dm_void, u8 enable)
+void halrf_set_dpk_trackbu(void *dm_void, u8 enable)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct _hal_rf_ *rf = &(dm->rf_table);
@@ -2959,7 +2959,7 @@ void halrf_set_dpk_track(void *dm_void, u8 enable)
 		rf->rf_supportability = rf->rf_supportability & ~HAL_RF_DPK_TRACK;
 }
 
-void halrf_dpk_reload(void *dm_void)
+void halrf_dpk_reloadbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct dm_dpk_info *dpk_info = &dm->dpk_info;
@@ -3024,13 +3024,13 @@ void halrf_dpk_switch(void *dm_void, u8 enable)
 	if (enable) {
 		rf->rf_supportability = rf->rf_supportability | HAL_RF_DPK;
 		dpk_info->is_dpk_enable = true;
-		halrf_dpk_enable_disable(dm);
-		halrf_dpk_trigger(dm);
-		halrf_set_dpk_track(dm, 1);
+		halrf_dpk_enable_disablebu(dm);
+		halrf_dpk_triggerbu(dm);
+		halrf_set_dpk_trackbu(dm, 1);
 	} else {
-		halrf_set_dpk_track(dm, 0);
+		halrf_set_dpk_trackbu(dm, 0);
 		dpk_info->is_dpk_enable = false;
-		halrf_dpk_enable_disable(dm);
+		halrf_dpk_enable_disablebu(dm);
 		rf->rf_supportability = rf->rf_supportability & ~HAL_RF_DPK;
 	}
 }
@@ -3242,12 +3242,12 @@ void halrf_dpk_debug_cmd(void *dm_void, char input[][16], u32 *_used,
 		PDM_SNPF(out_len, used, output + used, out_len - used,
 			 "DPK is Enabled!!\n");
 		dpk_info->is_dpk_enable = true;
-		halrf_dpk_enable_disable(dm);
+		halrf_dpk_enable_disablebu(dm);
 	} else if ((strcmp(input[2], cmd[2]) == 0)){
 		PDM_SNPF(out_len, used, output + used, out_len - used,
 			 "DPK is Disabled!!\n");
 		dpk_info->is_dpk_enable = false;
-		halrf_dpk_enable_disable(dm);
+		halrf_dpk_enable_disablebu(dm);
 	} else if ((strcmp(input[2], cmd[3]) == 0))
 		_halrf_display_dpk_info(dm, &used, output, &out_len);
 	else if ((strcmp(input[2], cmd[4]) == 0) && (strcmp(input[3], cmd[1]) == 0)) {
@@ -3261,7 +3261,7 @@ void halrf_dpk_debug_cmd(void *dm_void, char input[][16], u32 *_used,
 	} else {
 		PDM_SNPF(out_len, used, output + used, out_len - used,
 			 "DPK Trigger start!!\n");
-		halrf_dpk_trigger(dm);
+		halrf_dpk_triggerbu(dm);
 		PDM_SNPF(out_len, used, output + used, out_len - used,
 			 "DPK Trigger finish!!\n");
 	}
@@ -3287,7 +3287,7 @@ void halrf_dpk_c2h_report_transfer(void	*dm_void, boolean is_ok, u8 *buf, u8 buf
 	}
 }
 
-void halrf_dpk_info_rsvd_page(void *dm_void, u8 *buf, u32 *buf_size)
+void halrf_dpk_info_rsvd_pagebu(void *dm_void, u8 *buf, u32 *buf_size)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct _hal_rf_ *rf = &dm->rf_table;
@@ -3336,7 +3336,7 @@ void halrf_iqk_info_rsvd_page(void *dm_void, u8 *buf, u32 *buf_size)
 }
 
 enum hal_status
-halrf_config_rfk_with_header_file(void *dm_void, u32 config_type)
+halrf_config_rfk_with_header_filebu(void *dm_void, u32 config_type)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	enum hal_status result = HAL_STATUS_SUCCESS;
@@ -3399,14 +3399,14 @@ halrf_config_rfk_with_header_file(void *dm_void, u32 config_type)
 
 #if 1
 	if (dm->fw_offload_ability & PHYDM_PHY_PARAM_OFFLOAD) {
-		result = phydm_set_reg_by_fw(dm, PHYDM_HALMAC_CMD_END, 0, 0, 0, (enum rf_path)0, 0);
+		result = phydm_set_reg_by_fwbu(dm, PHYDM_HALMAC_CMD_END, 0, 0, 0, (enum rf_path)0, 0);
 		RF_DBG(dm, DBG_RF_IQK,"phy param offload end!result = %d", result);
 	}
 #endif
 	return result;
 }
 
-void halrf_txgapk_trigger(void *dm_void)
+void halrf_txgapk_triggerbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct _hal_rf_ *rf = &dm->rf_table;
@@ -3418,7 +3418,7 @@ void halrf_txgapk_trigger(void *dm_void)
 	rf->rfk_type = RF04_TXGAPK;
 	halrf_rfk_handshake(dm, true);
 
-	start_time = odm_get_current_time(dm);
+	start_time = odm_get_current_timebu(dm);
 	rf->is_txgapk_in_progress = true;
 	halrf_rfk_power_save(dm, false);
 
@@ -3464,44 +3464,44 @@ void halrf_txgapk_trigger(void *dm_void)
 	halrf_rfk_handshake(dm, false);
 
 	rf->dpk_progressing_time =
-		odm_get_progressing_time(dm_void, start_time);
+		odm_get_progressing_timebu(dm_void, start_time);
 	RF_DBG(dm, DBG_RF_TXGAPK, "[TGGC]TXGAPK progressing_time = %lld ms\n",
 	       rf->dpk_progressing_time);
 }
 
-void halrf_tssi_get_efuse(void *dm_void)
+void halrf_tssi_get_efusebu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	
 #if (RTL8822C_SUPPORT == 1)
 	if (dm->support_ic_type & ODM_RTL8822C) {
-		halrf_tssi_get_efuse_8822c(dm);
+		halrf_tssi_get_efusebu_8822c(dm);
 		halrf_get_efuse_thermal_pwrtype_8822c(dm);
 	}
 #endif
 
 #if (RTL8812F_SUPPORT == 1)
 	if (dm->support_ic_type & ODM_RTL8812F) {
-		halrf_tssi_get_efuse_8812f(dm);
+		halrf_tssi_get_efusebu_8812f(dm);
 	}
 #endif
 
 #if (RTL8814B_SUPPORT == 1)
 	if (dm->support_ic_type & ODM_RTL8814B) {
-		halrf_tssi_get_efuse_8814b(dm);
+		halrf_tssi_get_efusebu_8814b(dm);
 		halrf_get_efuse_thermal_pwrtype_8814b(dm);
 	}
 #endif
 
 #if (RTL8197G_SUPPORT == 1)
 	if (dm->support_ic_type & ODM_RTL8197G) {
-		halrf_tssi_get_efuse_8197g(dm);
+		halrf_tssi_get_efusebu_8197g(dm);
 	}
 #endif
 
 #if (RTL8723F_SUPPORT == 1)
 	if (dm->support_ic_type & ODM_RTL8723F) {
-		halrf_tssi_get_efuse_8723f(dm);
+		halrf_tssi_get_efusebu_8723f(dm);
 	}
 #endif
 
@@ -3519,29 +3519,29 @@ void halrf_do_rxbb_dck(void *dm_void)
 
 }
 
-void halrf_do_tssi(void *dm_void)
+void halrf_do_tssibu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
 #if (RTL8822C_SUPPORT == 1)
 	if (dm->support_ic_type == ODM_RTL8822C)
-		halrf_do_tssi_8822c(dm);
+		halrf_do_tssibu_8822c(dm);
 #endif
 
 #if (RTL8812F_SUPPORT == 1)
 	if (dm->support_ic_type == ODM_RTL8812F)
-		halrf_do_tssi_8812f(dm);
+		halrf_do_tssibu_8812f(dm);
 #endif
 
 #if (RTL8197G_SUPPORT == 1)
 	if (dm->support_ic_type == ODM_RTL8197G)
-		halrf_do_tssi_8197g(dm);
+		halrf_do_tssibu_8197g(dm);
 #endif
 
 #if (RTL8723F_SUPPORT == 1)
 	if (dm->support_ic_type == ODM_RTL8723F)
 		halrf_rfk_power_save(dm, false);
-		halrf_do_tssi_8723f(dm);
+		halrf_do_tssibu_8723f(dm);
 		halrf_rfk_power_save(dm, true);
 #endif
 
@@ -3554,48 +3554,48 @@ void halrf_set_tssi_enable(void *dm_void, boolean enable)
 
 	if (enable == 1) {
 		rf->power_track_type = 4;
-		odm_set_bb_reg(dm, R_0x1e7c, 0x40000000, 0x1);
+		odm_set_bb_regbu(dm, R_0x1e7c, 0x40000000, 0x1);
 	} else {
 		rf->power_track_type = 0;
-		odm_set_bb_reg(dm, R_0x1e7c, 0x40000000, 0x0);
+		odm_set_bb_regbu(dm, R_0x1e7c, 0x40000000, 0x0);
 	}
 }
 
 
-void halrf_do_thermal(void *dm_void)
+void halrf_do_thermalbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
 #if (RTL8822C_SUPPORT == 1)
 	if (dm->support_ic_type & ODM_RTL8822C)
-		halrf_do_thermal_8822c(dm);
+		halrf_do_thermalbu_8822c(dm);
 #endif
 }
 
 
 
-u32 halrf_set_tssi_value(void *dm_void, u32 tssi_value)
+u32 halrf_set_tssi_valuebu(void *dm_void, u32 tssi_value)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
 #if (RTL8822C_SUPPORT == 1)
 	if (dm->support_ic_type & ODM_RTL8822C)
-		return halrf_set_tssi_value_8822c(dm, tssi_value);
+		return halrf_set_tssi_valuebu_8822c(dm, tssi_value);
 #endif
 
 #if (RTL8814B_SUPPORT == 1)
 	if (dm->support_ic_type & ODM_RTL8814B)
-		return halrf_set_tssi_value_8814b(dm, tssi_value);
+		return halrf_set_tssi_valuebu_8814b(dm, tssi_value);
 #endif
 #if (RTL8723F_SUPPORT == 1)
 		if (dm->support_ic_type & ODM_RTL8723F)
-		return halrf_tssi_set_de_8723f(dm, tssi_value);
+		return halrf_tssi_set_debu_8723f(dm, tssi_value);
 #endif
 
 	return 0;
 }
 
-void halrf_set_tssi_power(void *dm_void, s8 power)
+void halrf_set_tssi_powerbu(void *dm_void, s8 power)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
@@ -3604,86 +3604,86 @@ void halrf_set_tssi_power(void *dm_void, s8 power)
 #endif
 }
 
-void halrf_tssi_set_de_for_tx_verify(void *dm_void, u32 tssi_de, u8 path)
+void halrf_tssi_set_debu_for_tx_verify(void *dm_void, u32 tssi_de, u8 path)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
 #if (RTL8822C_SUPPORT == 1)
 	if (dm->support_ic_type & ODM_RTL8822C)
-		halrf_tssi_set_de_for_tx_verify_8822c(dm, tssi_de, path);
+		halrf_tssi_set_debu_for_tx_verify_8822c(dm, tssi_de, path);
 #endif
 
 #if (RTL8814B_SUPPORT == 1)
 	if (dm->support_ic_type & ODM_RTL8814B)
-		halrf_tssi_set_de_for_tx_verify_8814b(dm, tssi_de, path);
+		halrf_tssi_set_debu_for_tx_verify_8814b(dm, tssi_de, path);
 #endif
 
 #if (RTL8812F_SUPPORT == 1)
 	if (dm->support_ic_type & ODM_RTL8812F)
-		halrf_tssi_set_de_for_tx_verify_8812f(dm, tssi_de, path);
+		halrf_tssi_set_debu_for_tx_verify_8812f(dm, tssi_de, path);
 #endif
 
 #if (RTL8197G_SUPPORT == 1)
 	if (dm->support_ic_type & ODM_RTL8197G)
-		halrf_tssi_set_de_for_tx_verify_8197g(dm, tssi_de, path);
+		halrf_tssi_set_debu_for_tx_verify_8197g(dm, tssi_de, path);
 #endif
 
 #if (RTL8723F_SUPPORT == 1)
 	if (dm->support_ic_type & ODM_RTL8723F)
-		halrf_tssi_set_de_for_tx_verify_8723f(dm, tssi_de, path);
+		halrf_tssi_set_debu_for_tx_verify_8723f(dm, tssi_de, path);
 #endif
 }
 
-u32 halrf_query_tssi_value(void *dm_void)
+u32 halrf_query_tssi_valuebu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
 #if (RTL8822C_SUPPORT == 1)
 	if (dm->support_ic_type & ODM_RTL8822C)
-		return halrf_query_tssi_value_8822c(dm);
+		return halrf_query_tssi_valuebu_8822c(dm);
 #endif
 
 #if (RTL8814B_SUPPORT == 1)
 	if (dm->support_ic_type & ODM_RTL8814B)
-		return halrf_query_tssi_value_8814b(dm);
+		return halrf_query_tssi_valuebu_8814b(dm);
 #endif
 	return 0;
 }
 
-void halrf_tssi_cck(void *dm_void)
+void halrf_tssi_cckbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
 #if (RTL8822C_SUPPORT == 1)
-	/*halrf_tssi_cck_8822c(dm);*/
+	/*halrf_tssi_cckbu_8822c(dm);*/
 	if (dm->support_ic_type & ODM_RTL8822C)
-		halrf_thermal_cck_8822c(dm);
+		halrf_thermal_cckbu_8822c(dm);
 #endif
 
 }
 
-void halrf_thermal_cck(void *dm_void)
+void halrf_thermal_cckbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
 #if (RTL8822C_SUPPORT == 1)
 	if (dm->support_ic_type & ODM_RTL8822C)
-		halrf_thermal_cck_8822c(dm);
+		halrf_thermal_cckbu_8822c(dm);
 #endif
 
 }
 
-void halrf_tssi_set_de(void *dm_void)
+void halrf_tssi_set_debu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	
 #if (RTL8814B_SUPPORT == 1)
 	if (dm->support_ic_type & ODM_RTL8814B)
-		halrf_tssi_set_de_8814b(dm);
+		halrf_tssi_set_debu_8814b(dm);
 #endif
 }
 
-void halrf_tssi_dck(void *dm_void, u8 direct_do)
+void halrf_tssi_dckbu(void *dm_void, u8 direct_do)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	
@@ -3698,45 +3698,45 @@ void halrf_tssi_dck(void *dm_void, u8 direct_do)
 		if (dm->rfe_type == 1 || dm->rfe_type == 6)
 			return;
 #endif
-		halrf_tssi_dck_8814b(dm, direct_do);
+		halrf_tssi_dckbu_8814b(dm, direct_do);
 	}
 #endif
 
 #if (RTL8822C_SUPPORT == 1)
 	if (dm->support_ic_type & ODM_RTL8822C)
-		halrf_tssi_dck_8822c(dm);
+		halrf_tssi_dckbu_8822c(dm);
 #endif
 
 #if (RTL8812F_SUPPORT == 1)
 	if (dm->support_ic_type & ODM_RTL8812F)
-		halrf_tssi_dck_8812f(dm);
+		halrf_tssi_dckbu_8812f(dm);
 #endif
 
 #if (RTL8197G_SUPPORT == 1)
 	if (dm->support_ic_type == ODM_RTL8197G)
-		halrf_tssi_dck_8197g(dm);
+		halrf_tssi_dckbu_8197g(dm);
 #endif
 
 	halrf_rfk_handshake(dm, false);
 
 }
 
-void halrf_calculate_tssi_codeword(void *dm_void)
+void halrf_calculate_tssi_codewordbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	
 #if (RTL8814B_SUPPORT == 1)
 	if (dm->support_ic_type & ODM_RTL8814B)
-		halrf_calculate_tssi_codeword_8814b(dm, RF_PATH_A);
+		halrf_calculate_tssi_codewordbu_8814b(dm, RF_PATH_A);
 #endif
 
 #if (RTL8822C_SUPPORT == 1)
 	if (dm->support_ic_type & ODM_RTL8822C)
-		halrf_calculate_tssi_codeword_8822c(dm);
+		halrf_calculate_tssi_codewordbu_8822c(dm);
 #endif	
 }
 
-void halrf_set_tssi_codeword(void *dm_void)
+void halrf_set_tssi_codewordbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct _hal_rf_ *rf = &dm->rf_table;
@@ -3746,17 +3746,17 @@ void halrf_set_tssi_codeword(void *dm_void)
 	
 #if (RTL8814B_SUPPORT == 1)
 	if (dm->support_ic_type & ODM_RTL8814B)
-		halrf_set_tssi_codeword_8814b(dm, tssi->tssi_codeword);
+		halrf_set_tssi_codewordbu_8814b(dm, tssi->tssi_codeword);
 #endif
 
 #if (RTL8822C_SUPPORT == 1)
 	if (dm->support_ic_type & ODM_RTL8822C)
-		halrf_set_tssi_codeword_8822c(dm, tssi->tssi_codeword);
+		halrf_set_tssi_codewordbu_8822c(dm, tssi->tssi_codeword);
 #endif	
 
 }
 
-u8 halrf_get_tssi_codeword_for_txindex(void *dm_void)
+u8 halrf_get_tssi_codeword_for_txindexbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
@@ -3831,28 +3831,28 @@ u32 halrf_tssi_trigger_de(void *dm_void, u8 path)
 	return 0;
 }
 
-u32 halrf_tssi_get_de(void *dm_void, u8 path)
+u32 halrf_tssi_get_debu(void *dm_void, u8 path)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
 #if (RTL8822C_SUPPORT == 1)
 	if (dm->support_ic_type & ODM_RTL8822C)
-		return halrf_tssi_get_de_8822c(dm, path);
+		return halrf_tssi_get_debu_8822c(dm, path);
 #endif
 	
 #if (RTL8812F_SUPPORT == 1)
 	if (dm->support_ic_type & ODM_RTL8812F)
-		return halrf_tssi_get_de_8812f(dm, path);
+		return halrf_tssi_get_debu_8812f(dm, path);
 #endif
 
 #if (RTL8814B_SUPPORT == 1)
 	if (dm->support_ic_type & ODM_RTL8814B)
-		return halrf_tssi_get_de_8814b(dm, path);
+		return halrf_tssi_get_debu_8814b(dm, path);
 #endif
 
 #if (RTL8197G_SUPPORT == 1)
 	if (dm->support_ic_type & ODM_RTL8197G)
-		return halrf_tssi_get_de_8197g(dm, path);
+		return halrf_tssi_get_debu_8197g(dm, path);
 #endif
 
 	return 0;
@@ -3892,14 +3892,14 @@ void halrf_tssi_trigger(void *dm_void)
 	}
 #endif
 
-	halrf_calculate_tssi_codeword(dm);
-	halrf_set_tssi_codeword(dm);
-	halrf_tssi_dck(dm, false);
+	halrf_calculate_tssi_codewordbu(dm);
+	halrf_set_tssi_codewordbu(dm);
+	halrf_tssi_dckbu(dm, false);
 #if (DM_ODM_SUPPORT_TYPE & (ODM_AP))
-	halrf_tssi_get_efuse(dm);
+	halrf_tssi_get_efusebu(dm);
 #endif
-	halrf_tssi_set_de(dm);
-	halrf_do_tssi(dm);
+	halrf_tssi_set_debu(dm);
+	halrf_do_tssibu(dm);
 }
 
 void halrf_txgapk_write_gain_table(void *dm_void)
@@ -3929,7 +3929,7 @@ void halrf_txgap_enable_disable(void *dm_void, u8 enable)
 
 	if (enable) {
 		rf->rf_supportability = rf->rf_supportability | HAL_RF_TXGAPK;
-		halrf_txgapk_trigger(dm);
+		halrf_txgapk_triggerbu(dm);
 	} else {
 		rf->rf_supportability = rf->rf_supportability & ~HAL_RF_TXGAPK;
 		halrf_txgapk_reload_tx_gain(dm);
@@ -3971,7 +3971,7 @@ void halrf_xtal_thermal_track(void *dm_void)
 
 		RF_DBG(dm, DBG_RF_TX_PWR_TRACK, "[RF][xtal] thermal_base = 0x%x\n", thermal_base);
 		
-		thermal_value = (s8)odm_get_rf_reg(dm, RF_PATH_A, RF_0x42, 0xfc00);	/* 0x42: RF Reg[15:10]*/
+		thermal_value = (s8)odm_get_rf_regbu(dm, RF_PATH_A, RF_0x42, 0xfc00);	/* 0x42: RF Reg[15:10]*/
 
 		thermal_detla = (s8)(thermal_value - thermal_base);
 		
@@ -3985,8 +3985,8 @@ void halrf_xtal_thermal_track(void *dm_void)
 		RF_DBG(dm, DBG_RF_TX_PWR_TRACK,
 		       "[RF][Xtal] thermal_value = 0x%x, thermal_detla = 0x%x, xtal_offset_last = 0x%x\n", 
 		       thermal_value, thermal_detla, cali_info->xtal_offset_last);
-		odm_move_memory(dm, xtal_table_up, cali_info->delta_swing_table_xtal_p, sizeof(xtal_table_up));//(void *)
-		odm_move_memory(dm, xtal_table_down, cali_info->delta_swing_table_xtal_n, sizeof(xtal_table_down));
+		odm_move_memorybu(dm, xtal_table_up, cali_info->delta_swing_table_xtal_p, sizeof(xtal_table_up));//(void *)
+		odm_move_memorybu(dm, xtal_table_down, cali_info->delta_swing_table_xtal_n, sizeof(xtal_table_down));
 		/*
 		RF_DBG(dm, DBG_RF_TX_PWR_TRACK,
 						   "[RF][Xtal] xtal_table_up[1] = %d\n", xtal_table_up[1]);*/
@@ -4018,25 +4018,25 @@ void halrf_xtal_thermal_track(void *dm_void)
 		if (xtal_offset_eanble != 0) {
 			RF_DBG(dm, DBG_RF_TX_PWR_TRACK, "**********Enter Xtal Tracking**********\n");
 			RF_DBG(dm, DBG_RF_TX_PWR_TRACK,
-		       "[RF][Xtal] R_0x103c[16:10] = 0x%x\n", odm_get_mac_reg(dm, R_0x103c, 0x0001FC00));
+		       "[RF][Xtal] R_0x103c[16:10] = 0x%x\n", odm_get_mac_regbu(dm, R_0x103c, 0x0001FC00));
 
 			crystal_cap = dm->dm_cfo_track.crystal_cap_default & 0x7F;
 			RF_DBG(dm, DBG_RF_TX_PWR_TRACK,
 		       "[RF][Xtal] DEFAULT crystal_cap = 0x%x\n", crystal_cap);
 			reg_val = crystal_cap + cali_info->xtal_offset;
-			//reg_val = (u32)(odm_get_mac_reg(dm, R_0x103c, 0x0001FC00) + cali_info->xtal_offset);
+			//reg_val = (u32)(odm_get_mac_regbu(dm, R_0x103c, 0x0001FC00) + cali_info->xtal_offset);
 			RF_DBG(dm, DBG_RF_TX_PWR_TRACK,
 		       "[RF][Xtal] reg_val = 0x%x\n", reg_val);
 			/* write 0x103c[23:17] = 0x103c[16:10] = crystal_cap */
 			crystal_cap = reg_val | (reg_val << 7);
-			odm_set_mac_reg(dm, R_0x103c, 0x00FFFC00, crystal_cap);
+			odm_set_mac_regbu(dm, R_0x103c, 0x00FFFC00, crystal_cap);
 			RF_DBG(dm, DBG_RF_TX_PWR_TRACK,
-		       "[RF][Xtal] R_0x103c[16:10] = 0x%x\n", odm_get_mac_reg(dm, R_0x103c, 0x0001FC00));
+		       "[RF][Xtal] R_0x103c[16:10] = 0x%x\n", odm_get_mac_regbu(dm, R_0x103c, 0x0001FC00));
 			RF_DBG(dm, DBG_RF_TX_PWR_TRACK,
-		       "[RF][Xtal] R_0x103c[23:17] = 0x%x\n", odm_get_mac_reg(dm, R_0x103c, 0x00FE0000));
+		       "[RF][Xtal] R_0x103c[23:17] = 0x%x\n", odm_get_mac_regbu(dm, R_0x103c, 0x00FE0000));
 			RF_DBG(dm, DBG_RF_TX_PWR_TRACK, "**********End Xtal Tracking**********\n");
 		}
-		odm_set_rf_reg(dm, RF_PATH_A, RF_0x42, 0x30000, 0x3);
+		odm_set_rf_regbu(dm, RF_PATH_A, RF_0x42, 0x30000, 0x3);
 		//delay
 	}
 	/*RF_DBG(dm, DBG_RF_TX_PWR_TRACK,
@@ -4057,20 +4057,20 @@ void _halrf_dump_subpage(void *dm_void, u32 *_used, char *output, u32 *_out_len,
 
 	RF_DBG(dm, DBG_RF_RFK, " ===============[ Subpage_%d start]===============\n", page);
 
-	odm_set_bb_reg(dm, R_0x1b00, BIT(2) | BIT(1), page);
+	odm_set_bb_regbu(dm, R_0x1b00, BIT(2) | BIT(1), page);
 
 	for (addr = 0x1b00; addr < 0x1c00; addr += 0x10) {
 		PDM_SNPF(out_len, used, output + used, out_len - used,
 			 " 0x%x : 0x%08x  0x%08x  0x%08x  0x%08x\n", addr,
-			odm_get_bb_reg(dm, addr, MASKDWORD),
-		 	odm_get_bb_reg(dm, addr + 0x4, MASKDWORD),
-		 	odm_get_bb_reg(dm, addr + 0x8, MASKDWORD),
-		 	odm_get_bb_reg(dm, addr + 0xc, MASKDWORD));
+			odm_get_bb_regbu(dm, addr, MASKDWORD),
+		 	odm_get_bb_regbu(dm, addr + 0x4, MASKDWORD),
+		 	odm_get_bb_regbu(dm, addr + 0x8, MASKDWORD),
+		 	odm_get_bb_regbu(dm, addr + 0xc, MASKDWORD));
 		RF_DBG(dm, DBG_RF_RFK, " 0x%x : 0x%08x  0x%08x  0x%08x  0x%08x\n", addr,
-		       odm_get_bb_reg(dm, addr, MASKDWORD),
-		       odm_get_bb_reg(dm, addr + 0x4, MASKDWORD),
-		       odm_get_bb_reg(dm, addr + 0x8, MASKDWORD),
-		       odm_get_bb_reg(dm, addr + 0xc, MASKDWORD));
+		       odm_get_bb_regbu(dm, addr, MASKDWORD),
+		       odm_get_bb_regbu(dm, addr + 0x4, MASKDWORD),
+		       odm_get_bb_regbu(dm, addr + 0x8, MASKDWORD),
+		       odm_get_bb_regbu(dm, addr + 0xc, MASKDWORD));
 	}
 
 	*_used = used;
@@ -4116,7 +4116,7 @@ void halrf_dump_rfk_reg(void *dm_void, char input[][16], u32 *_used,
 	/*to avoid DPK track interruption*/
 	rf->rf_supportability = rf->rf_supportability & ~HAL_RF_DPK_TRACK;
 
-	reg_1b00 = odm_get_bb_reg(dm, R_0x1b00, MASKDWORD);
+	reg_1b00 = odm_get_bb_regbu(dm, R_0x1b00, MASKDWORD);
 
 	if (input[2])
 		PHYDM_SSCANF(input[2], DCMD_DECIMAL, &var1[0]);
@@ -4133,7 +4133,7 @@ void halrf_dump_rfk_reg(void *dm_void, char input[][16], u32 *_used,
 	} else
 		_halrf_dump_subpage(dm, &used, output, &out_len, (u8)var1[0]);
 
-	odm_set_bb_reg(dm, R_0x1b00, MASKDWORD, reg_1b00);
+	odm_set_bb_regbu(dm, R_0x1b00, MASKDWORD, reg_1b00);
 
 	rf->rf_supportability = supportability;
 
@@ -4142,16 +4142,16 @@ void halrf_dump_rfk_reg(void *dm_void, char input[][16], u32 *_used,
 }
 
 /*Golbal function*/
-void halrf_reload_bp(void *dm_void, u32 *bp_reg, u32 *bp, u32 num)
+void halrf_reload_bpbu(void *dm_void, u32 *bp_reg, u32 *bp, u32 num)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 i;
 
 	for (i = 0; i < num; i++)
-		odm_write_4byte(dm, bp_reg[i], bp[i]);
+		odm_write_4bytebu(dm, bp_reg[i], bp[i]);
 }
 
-void halrf_reload_bprf(void *dm_void, u32 *bp_reg, u32 bp[][4], u32 num,
+void halrf_reload_bpburf(void *dm_void, u32 *bp_reg, u32 bp[][4], u32 num,
 		       u8 ss)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -4159,21 +4159,21 @@ void halrf_reload_bprf(void *dm_void, u32 *bp_reg, u32 bp[][4], u32 num,
 
 	for (i = 0; i < num; i++) {
 		for (path = 0; path < ss; path++)
-			odm_set_rf_reg(dm, (enum rf_path)path, bp_reg[i],
+			odm_set_rf_regbu(dm, (enum rf_path)path, bp_reg[i],
 				       MASK20BITS, bp[i][path]);
 	}
 }
 
-void halrf_bp(void *dm_void, u32 *bp_reg, u32 *bp, u32 num)
+void halrf_bpbu(void *dm_void, u32 *bp_reg, u32 *bp, u32 num)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 i;
 
 	for (i = 0; i < num; i++)
-		bp[i] = odm_read_4byte(dm, bp_reg[i]);
+		bp[i] = odm_read_4bytebu(dm, bp_reg[i]);
 }
 
-void halrf_bprf(void *dm_void, u32 *bp_reg, u32 bp[][4], u32 num, u8 ss)
+void halrf_bpburf(void *dm_void, u32 *bp_reg, u32 bp[][4], u32 num, u8 ss)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 i, path;
@@ -4181,13 +4181,13 @@ void halrf_bprf(void *dm_void, u32 *bp_reg, u32 bp[][4], u32 num, u8 ss)
 	for (i = 0; i < num; i++) {
 		for (path = 0; path < ss; path++) {
 			bp[i][path] =
-				odm_get_rf_reg(dm, (enum rf_path)path,
+				odm_get_rf_regbu(dm, (enum rf_path)path,
 					       bp_reg[i], MASK20BITS);
 		}
 	}
 }
 
-void halrf_swap(void *dm_void, u32 *v1, u32 *v2)
+void halrf_swapbu(void *dm_void, u32 *v1, u32 *v2)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 temp;
@@ -4197,23 +4197,23 @@ void halrf_swap(void *dm_void, u32 *v1, u32 *v2)
 	*v2 = temp;
 }
 
-void halrf_bubble(void *dm_void, u32 *v1, u32 *v2)
+void halrf_bubblebu(void *dm_void, u32 *v1, u32 *v2)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 temp;
 
 	if (*v1 >= 0x200 && *v2 >= 0x200) {
 		if (*v1 > *v2)
-			halrf_swap(dm, v1, v2);
+			halrf_swapbu(dm, v1, v2);
 	} else if (*v1 < 0x200 && *v2 < 0x200) {
 		if (*v1 > *v2)
-			halrf_swap(dm, v1, v2);
+			halrf_swapbu(dm, v1, v2);
 	} else if (*v1 < 0x200 && *v2 >= 0x200) {
-		halrf_swap(dm, v1, v2);
+		halrf_swapbu(dm, v1, v2);
 	}
 }
 
-void halrf_b_sort(void *dm_void, u32 *iv, u32 *qv)
+void halrf_b_sortbu(void *dm_void, u32 *iv, u32 *qv)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 temp;
@@ -4222,13 +4222,13 @@ void halrf_b_sort(void *dm_void, u32 *iv, u32 *qv)
 	RF_DBG(dm, DBG_RF_DACK, "[DACK]bubble!!!!!!!!!!!!");
 	for (i = 0; i < SN - 1; i++) {
 		for (j = 0; j < (SN - 1 - i) ; j++) {
-			halrf_bubble(dm, &iv[j], &iv[j + 1]);
-			halrf_bubble(dm, &qv[j], &qv[j + 1]);
+			halrf_bubblebu(dm, &iv[j], &iv[j + 1]);
+			halrf_bubblebu(dm, &qv[j], &qv[j + 1]);
 		}
 	}
 }
 
-void halrf_minmax_compare(void *dm_void, u32 value, u32 *min,
+void halrf_minmax_comparebu(void *dm_void, u32 value, u32 *min,
 			  u32 *max)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -4259,7 +4259,7 @@ void halrf_minmax_compare(void *dm_void, u32 value, u32 *min,
 	}
 }
 
-u32 halrf_delta(void *dm_void, u32 v1, u32 v2)
+u32 halrf_deltabu(void *dm_void, u32 v1, u32 v2)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
@@ -4280,7 +4280,7 @@ u32 halrf_delta(void *dm_void, u32 v1, u32 v2)
 		return v2 - v1;
 }
 
-boolean halrf_compare(void *dm_void, u32 value)
+boolean halrf_comparebu(void *dm_void, u32 value)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
@@ -4296,7 +4296,7 @@ boolean halrf_compare(void *dm_void, u32 value)
 	return fail;
 }
 
-void halrf_mode(void *dm_void, u32 *i_value, u32 *q_value)
+void halrf_modebu(void *dm_void, u32 *i_value, u32 *q_value)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 iv[SN], qv[SN], im[SN], qm[SN], temp, temp1, temp2;
@@ -4306,7 +4306,7 @@ void halrf_mode(void *dm_void, u32 *i_value, u32 *q_value)
 	u8 i, j, ii = 0, qi = 0;
 	boolean fail = false;
 
-	ODM_delay_ms(10);
+	ODM_delay_msbu(10);
 	for (i = 0; i < SN; i++) {
 		im[i] = 0;
 		qm[i] = 0;
@@ -4315,14 +4315,14 @@ void halrf_mode(void *dm_void, u32 *i_value, u32 *q_value)
 	c = 0;
 	while (i < SN && c < 1000) {
 		c++;
-		temp = odm_get_bb_reg(dm, 0x2dbc, 0x3fffff);
+		temp = odm_get_bb_regbu(dm, 0x2dbc, 0x3fffff);
 		iv[i] = (temp & 0x3ff000) >> 12;
 		qv[i] = temp & 0x3ff;
 
 		fail = false;
-		if (halrf_compare(dm, iv[i]))
+		if (halrf_comparebu(dm, iv[i]))
 			fail = true;
-		if (halrf_compare(dm, qv[i]))
+		if (halrf_comparebu(dm, qv[i]))
 			fail = true;
 		if (!fail)
 			i++;
@@ -4335,8 +4335,8 @@ void halrf_mode(void *dm_void, u32 *i_value, u32 *q_value)
 		q_min = qv[0];
 		q_max = qv[0];
 		for (i = 0; i < SN; i++) {
-			halrf_minmax_compare(dm, iv[i], &i_min, &i_max);
-			halrf_minmax_compare(dm, qv[i], &q_min, &q_max);
+			halrf_minmax_comparebu(dm, iv[i], &i_min, &i_max);
+			halrf_minmax_comparebu(dm, qv[i], &q_min, &q_max);
 		}
 		RF_DBG(dm, DBG_RF_DACK, "[DACK]i_min=0x%x, i_max=0x%x",
 		       i_min, i_max);
@@ -4357,12 +4357,12 @@ void halrf_mode(void *dm_void, u32 *i_value, u32 *q_value)
 			q_delta = q_max + (0x400 - q_min);
 		RF_DBG(dm, DBG_RF_DACK, "[DACK]i_delta=0x%x, q_delta=0x%x",
 		       i_delta, q_delta);
-		halrf_b_sort(dm, iv, qv);
+		halrf_b_sortbu(dm, iv, qv);
 		if (i_delta > 5 || q_delta > 5) {
-			temp = odm_get_bb_reg(dm, 0x2dbc, 0x3fffff);
+			temp = odm_get_bb_regbu(dm, 0x2dbc, 0x3fffff);
 			iv[0] = (temp & 0x3ff000) >> 12;
 			qv[0] = temp & 0x3ff;
-			temp = odm_get_bb_reg(dm, 0x2dbc, 0x3fffff);
+			temp = odm_get_bb_regbu(dm, 0x2dbc, 0x3fffff);
 			iv[SN - 1] = (temp & 0x3ff000) >> 12;
 			qv[SN - 1] = temp & 0x3ff;
 		} else {
@@ -4422,6 +4422,6 @@ void halrf_delay_10us(u16 v1)
 	u16 i = 0;
 	
 	for (i = 0; i < v1; i++)
-		ODM_delay_us(10);
+		ODM_delay_usbu(10);
 }
 

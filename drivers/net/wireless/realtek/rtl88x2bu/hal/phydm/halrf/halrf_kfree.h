@@ -273,23 +273,23 @@ enum phydm_kfree_channeltosw {
 	PHYDM_5GHB = 5,
 };
 
-void phydm_get_thermal_trim_offset(void *dm_void);
+void phydm_get_thermal_trim_offsetbu(void *dm_void);
 
-void phydm_get_power_trim_offset(void *dm_void);
+void phydm_get_power_trim_offsetbu(void *dm_void);
 
-void phydm_get_pa_bias_offset(void *dm_void);
+void phydm_get_pa_bias_offsetbu(void *dm_void);
 
-s8 phydm_get_thermal_offset(void *dm_void);
+s8 phydm_get_thermal_offsetbu(void *dm_void);
 
 s8 phydm_get_multi_thermal_offset(void *dm_void, u8 path);
 
-void phydm_clear_kfree_to_rf(void *dm_void, u8 e_rf_path, u8 data);
+void phydm_clear_kfree_to_rfbu(void *dm_void, u8 e_rf_path, u8 data);
 
-void phydm_config_new_kfree(void *dm_void);
+void phydm_config_new_kfreebu(void *dm_void);
 
 s8 phydm_get_tssi_trim_de(void *dm_void, u8 path);
 
-void phydm_config_kfree(void *dm_void, u8 channel_to_sw);
+void phydm_config_kfreebu(void *dm_void, u8 channel_to_sw);
 
 void phydm_set_lna_trim_offset (void *dm_void, u8 path, u8 cg_cs, u8 enable);
 

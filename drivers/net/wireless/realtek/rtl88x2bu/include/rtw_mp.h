@@ -714,7 +714,7 @@ u32	mp_query_psd(PADAPTER pAdapter, u8 *data);
 void	rtw_mp_trigger_iqk(PADAPTER padapter);
 void	rtw_mp_trigger_lck(PADAPTER padapter);
 void	rtw_mp_trigger_dpk(PADAPTER padapter);
-u8 rtw_mp_mode_check(PADAPTER padapter);
+u8 rtw_mp_modebu_check(PADAPTER padapter);
 bool rtw_is_mp_tssitrk_on(_adapter *adapter);
 
 void hal_mpt_SwitchRfSetting(PADAPTER pAdapter);

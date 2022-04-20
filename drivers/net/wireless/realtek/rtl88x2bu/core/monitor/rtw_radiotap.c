@@ -209,14 +209,14 @@ sint rtw_fill_radiotap_hdr(_adapter *padapter, struct rx_pkt_attrib *a, u8 *buf)
 				     BIT(IEEE80211_RADIOTAP_ANTENNA) |
 				     BIT(IEEE80211_RADIOTAP_RADIOTAP_NAMESPACE) |
 				     BIT(IEEE80211_RADIOTAP_EXT));
-			_rtw_memcpy(&hdr_buf[rt_len], &tmp_32bit, 4);
+			_rtw_memcpybu(&hdr_buf[rt_len], &tmp_32bit, 4);
 			rt_len += 4;
 		}
 
 		tmp_32bit = (BIT(IEEE80211_RADIOTAP_DBM_ANTSIGNAL) |
 			     BIT(IEEE80211_RADIOTAP_LOCK_QUALITY) |
 			     BIT(IEEE80211_RADIOTAP_ANTENNA));
-		_rtw_memcpy(&hdr_buf[rt_len], &tmp_32bit, 4);
+		_rtw_memcpybu(&hdr_buf[rt_len], &tmp_32bit, 4);
 		rt_len += 4;
 	}
 #endif
@@ -229,7 +229,7 @@ sint rtw_fill_radiotap_hdr(_adapter *padapter, struct rx_pkt_attrib *a, u8 *buf)
 			rt_len = ((rt_len + 7) & 0xFFF8); /* Alignment */
 
 		tmp_64bit = cpu_to_le64(a->free_cnt);
-		_rtw_memcpy(&hdr_buf[rt_len], &tmp_64bit, 8);
+		_rtw_memcpybu(&hdr_buf[rt_len], &tmp_64bit, 8);
 		rt_len += 8;
 	}
 
@@ -241,7 +241,7 @@ sint rtw_fill_radiotap_hdr(_adapter *padapter, struct rx_pkt_attrib *a, u8 *buf)
 	/* rate */
 	if (a->data_rate <= DESC_RATE54M) {
 		rtap_hdr->it_present |= BIT(IEEE80211_RADIOTAP_RATE);
-		hdr_buf[rt_len] = hw_rate_to_m_rate(a->data_rate);
+		hdr_buf[rt_len] = hw_rate_to_m_ratebu(a->data_rate);
 		rt_len += 1;
 	}
 
@@ -250,8 +250,8 @@ sint rtw_fill_radiotap_hdr(_adapter *padapter, struct rx_pkt_attrib *a, u8 *buf)
 		rtap_hdr->it_present |= BIT(IEEE80211_RADIOTAP_CHANNEL);
 		rt_len += (rt_len % 2); /* Alignment */
 
-		tmp_16bit = CHAN2FREQ(rtw_get_oper_ch(padapter));
-		_rtw_memcpy(&hdr_buf[rt_len], &tmp_16bit, 2);
+		tmp_16bit = CHAN2FREQ(rtw_get_oper_chbu(padapter));
+		_rtw_memcpybu(&hdr_buf[rt_len], &tmp_16bit, 2);
 		rt_len += 2;
 
 		/* channel flags */
@@ -269,16 +269,16 @@ sint rtw_fill_radiotap_hdr(_adapter *padapter, struct rx_pkt_attrib *a, u8 *buf)
 			tmp_16bit |= cpu_to_le16(IEEE80211_CHAN_OFDM);
 		}
 
-		if (rtw_get_oper_bw(padapter) == CHANNEL_WIDTH_10) {
+		if (rtw_get_oper_bwbu(padapter) == CHANNEL_WIDTH_10) {
 			/* 10Mhz Channel Width */
 			tmp_16bit |= cpu_to_le16(IEEE80211_CHAN_HALF);
 		}
 
-		if (rtw_get_oper_bw(padapter) == CHANNEL_WIDTH_5) {
+		if (rtw_get_oper_bwbu(padapter) == CHANNEL_WIDTH_5) {
 			/* 5Mhz Channel Width */
 			tmp_16bit |= cpu_to_le16(IEEE80211_CHAN_QUARTER);
 		}
-		_rtw_memcpy(&hdr_buf[rt_len], &tmp_16bit, 2);
+		_rtw_memcpybu(&hdr_buf[rt_len], &tmp_16bit, 2);
 		rt_len += 2;
 	}
 
@@ -313,7 +313,7 @@ sint rtw_fill_radiotap_hdr(_adapter *padapter, struct rx_pkt_attrib *a, u8 *buf)
 	/* RX flags, Required Alignment: 2 bytes */
 	rtap_hdr->it_present |= BIT(IEEE80211_RADIOTAP_RX_FLAGS);
 	tmp_16bit = 0;
-	_rtw_memcpy(&hdr_buf[rt_len], &tmp_16bit, 2);
+	_rtw_memcpybu(&hdr_buf[rt_len], &tmp_16bit, 2);
 	rt_len += 2;
 #endif
 
@@ -381,7 +381,7 @@ sint rtw_fill_radiotap_hdr(_adapter *padapter, struct rx_pkt_attrib *a, u8 *buf)
 			ref_num += 1;
 		}
 		tmp_32bit = cpu_to_le32(ref_num);
-		_rtw_memcpy(&hdr_buf[rt_len], &tmp_32bit, 4);
+		_rtw_memcpybu(&hdr_buf[rt_len], &tmp_32bit, 4);
 		rt_len += 4;
 
 		/* u16 flags */
@@ -406,7 +406,7 @@ sint rtw_fill_radiotap_hdr(_adapter *padapter, struct rx_pkt_attrib *a, u8 *buf)
 			tmp_16bit |= cpu_to_le16(IEEE80211_RADIOTAP_AMPDU_EOF);
 		}
 
-		_rtw_memcpy(&hdr_buf[rt_len], &tmp_16bit, 2);
+		_rtw_memcpybu(&hdr_buf[rt_len], &tmp_16bit, 2);
 		rt_len += 2;
 
 		/* u8 delimiter CRC value, u8 reserved */
@@ -477,7 +477,7 @@ sint rtw_fill_radiotap_hdr(_adapter *padapter, struct rx_pkt_attrib *a, u8 *buf)
 		/* Partial AID */
 		tmp_16bit |= cpu_to_le16(IEEE80211_RADIOTAP_VHT_KNOWN_PARTIAL_AID);
 
-		_rtw_memcpy(&hdr_buf[rt_len], &tmp_16bit, 2);
+		_rtw_memcpybu(&hdr_buf[rt_len], &tmp_16bit, 2);
 		rt_len += 3;
 
 		/* u8 bandwidth */
@@ -525,7 +525,7 @@ sint rtw_fill_radiotap_hdr(_adapter *padapter, struct rx_pkt_attrib *a, u8 *buf)
 
 		/* u16 partial_aid */
 		tmp_16bit = cpu_to_le16(moif->u.snif_info.vht_nsts_aid);
-		_rtw_memcpy(&hdr_buf[rt_len], &tmp_16bit, 2);
+		_rtw_memcpybu(&hdr_buf[rt_len], &tmp_16bit, 2);
 		rt_len += 2;
 	}
 
@@ -537,12 +537,12 @@ sint rtw_fill_radiotap_hdr(_adapter *padapter, struct rx_pkt_attrib *a, u8 *buf)
 
 		/* u64 timestamp */
 		tmp_64bit = cpu_to_le64(a->free_cnt);
-		_rtw_memcpy(&hdr_buf[rt_len], &tmp_64bit, 8);
+		_rtw_memcpybu(&hdr_buf[rt_len], &tmp_64bit, 8);
 		rt_len += 8;
 
 		/* u16 accuracy */
 		tmp_16bit = cpu_to_le16(22);
-		_rtw_memcpy(&hdr_buf[rt_len], &tmp_16bit, 2);
+		_rtw_memcpybu(&hdr_buf[rt_len], &tmp_16bit, 2);
 		rt_len += 2;
 
 		/* u8 unit/position */
@@ -600,10 +600,10 @@ void rx_query_moinfo(struct rx_pkt_attrib *a, u8 *desc)
 {
 	switch (a->drvinfo_sz) {
 	case 40:
-		_rtw_memcpy(a->moif, &desc[32], 8);
+		_rtw_memcpybu(a->moif, &desc[32], 8);
 		break;
 	case 48:
-		_rtw_memcpy(a->moif, &desc[32], 12);
+		_rtw_memcpybu(a->moif, &desc[32], 12);
 		break;
 	case 32:
 		/* passthrough */

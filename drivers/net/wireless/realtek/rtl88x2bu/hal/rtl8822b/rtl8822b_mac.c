@@ -58,7 +58,7 @@ inline u8 rtl8822b_rcr_config(PADAPTER p, u32 rcr)
 
 inline u8 rtl8822b_rx_ba_ssn_appended(PADAPTER p)
 {
-	return rtw_hal_rcr_check(p, BIT_APP_BASSN_8822B);
+	return rtw_hal_rcr_checkbu(p, BIT_APP_BASSN_8822B);
 }
 
 inline u8 rtl8822b_rx_fcs_append_switch(PADAPTER p, u8 enable)
@@ -68,16 +68,16 @@ inline u8 rtl8822b_rx_fcs_append_switch(PADAPTER p, u8 enable)
 
 	rcr_bit = BIT_APP_FCS_8822B;
 	if (_TRUE == enable)
-		ret = rtw_hal_rcr_add(p, rcr_bit);
+		ret = rtw_hal_rcr_addbu(p, rcr_bit);
 	else
-		ret = rtw_hal_rcr_clear(p, rcr_bit);
+		ret = rtw_hal_rcr_clearbu(p, rcr_bit);
 
 	return ret;
 }
 
 inline u8 rtl8822b_rx_fcs_appended(PADAPTER p)
 {
-	return rtw_hal_rcr_check(p, BIT_APP_FCS_8822B);
+	return rtw_hal_rcr_checkbu(p, BIT_APP_FCS_8822B);
 }
 
 inline u8 rtl8822b_rx_tsf_addr_filter_config(PADAPTER p, u8 config)
@@ -114,13 +114,13 @@ s32 rtl8822b_fw_dl(PADAPTER adapter, u8 wowlan)
 #ifdef CONFIG_FILE_FWIMG
 #ifdef CONFIG_WOWLAN
 	if (wowlan)
-		rtw_get_phy_file_path(adapter, MAC_FILE_FW_WW_IMG);
+		rtw_get_phy_file_pathbu(adapter, MAC_FILE_FW_WW_IMG);
 	else
 #endif /* CONFIG_WOWLAN */
-		rtw_get_phy_file_path(adapter, MAC_FILE_FW_NIC);
+		rtw_get_phy_file_pathbu(adapter, MAC_FILE_FW_NIC);
 
-	if (rtw_is_file_readable(rtw_phy_para_file_path) == _TRUE) {
-		RTW_INFO("%s acquire FW from file:%s\n", __FUNCTION__, rtw_phy_para_file_path);
+	if (rtw_is_file_readablebu(rtw_phy_para_file_pathbu) == _TRUE) {
+		RTW_INFO("%s acquire FW from file:%s\n", __FUNCTION__, rtw_phy_para_file_pathbu);
 		fw_bin = _TRUE;
 	} else
 #endif /* CONFIG_FILE_FWIMG */
@@ -131,7 +131,7 @@ s32 rtl8822b_fw_dl(PADAPTER adapter, u8 wowlan)
 
 #ifdef CONFIG_FILE_FWIMG
 	if (_TRUE == fw_bin) {
-		err = rtw_halmac_dlfw_from_file(d, rtw_phy_para_file_path);
+		err = rtw_halmac_dlfw_from_file(d, rtw_phy_para_file_pathbu);
 	} else
 #endif /* CONFIG_FILE_FWIMG */
 	{

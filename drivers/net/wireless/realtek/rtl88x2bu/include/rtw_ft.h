@@ -45,7 +45,7 @@ enum _rtw_ft_sta_status {
 	((a)->mlmepriv.ft_roam.ft_status == (s))
 
 #define rtw_ft_roam_status(a, s)	\
-	((rtw_to_roam(a) > 0) && rtw_ft_chk_status(a, s))
+	((rtw_to_roambu(a) > 0) && rtw_ft_chk_status(a, s))
 
 #define rtw_ft_authed_sta(a)	\
 	((rtw_ft_chk_status(a, RTW_FT_AUTHENTICATED_STA)) ||	\
@@ -92,7 +92,7 @@ enum rtw_ft_capability {
 	} while (0)
 
 #define rtw_ft_roam(a)	\
-	((rtw_to_roam(a) > 0) && rtw_ft_chk_flags(a, RTW_FT_PEER_EN))
+	((rtw_to_roambu(a) > 0) && rtw_ft_chk_flags(a, RTW_FT_PEER_EN))
 	
 #define rtw_ft_valid_akm(a, t)	\
 	((rtw_ft_chk_flags(a, RTW_FT_EN)) && \
@@ -152,7 +152,7 @@ void rtw_ft_validate_akm_type(_adapter  *padapter,
 
 void rtw_ft_update_bcn(_adapter *padapter, union recv_frame *precv_frame);
 
-void rtw_ft_start_clnt_join(_adapter *padapter);
+void rtw_ft_start_clnt_joinbu(_adapter *padapter);
 
 u8 rtw_ft_update_rsnie(
 	_adapter *padapter, u8 bwrite, 
@@ -174,7 +174,7 @@ void rtw_ft_report_evt(_adapter *padapter);
 
 void rtw_ft_report_reassoc_evt(_adapter *padapter, u8 *pMacAddr);
 
-void rtw_ft_link_timer_hdl(void *ctx);
+void rtw_ft_link_timer_hdlbu(void *ctx);
 
 void rtw_ft_roam_timer_hdl(void *ctx);
 

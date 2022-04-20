@@ -20,7 +20,7 @@
 #include "mp_precomp.h"
 #include "phydm_precomp.h"
 
-u64 _sqrt(u64 x)
+u64 _sqrtbu(u64 x)
 {
 	u64 i = 0;
 	u64 j = (x >> 1) + 1;
@@ -41,7 +41,7 @@ u64 _sqrt(u64 x)
 	return j;
 }
 
-u32 halrf_get_psd_data(
+u32 halrf_get_psd_databu(
 	struct dm_struct *dm,
 	u32 point)
 {
@@ -82,21 +82,21 @@ u32 halrf_get_psd_data(
 		psd_start = 0x00400000;
 	}
 
-	psd_val = odm_get_bb_reg(dm, psd_reg, MASKDWORD);
+	psd_val = odm_get_bb_regbu(dm, psd_reg, MASKDWORD);
 
 	psd_val &= psd_point;
 	psd_val |= point;
 
-	odm_set_bb_reg(dm, psd_reg, MASKDWORD, psd_val);
+	odm_set_bb_regbu(dm, psd_reg, MASKDWORD, psd_val);
 
 	psd_val |= psd_start;
 
-	odm_set_bb_reg(dm, psd_reg, MASKDWORD, psd_val);
+	odm_set_bb_regbu(dm, psd_reg, MASKDWORD, psd_val);
 
 	for (i = 0; i < delay_time; i++)
-		ODM_delay_us(1);
+		ODM_delay_usbu(1);
 
-	psd_val = odm_get_bb_reg(dm, psd_report, MASKDWORD);
+	psd_val = odm_get_bb_regbu(dm, psd_report, MASKDWORD);
 
 	if (dm->support_ic_type & (ODM_RTL8821C | ODM_RTL8710B)) {
 		psd_val &= MASKL3BYTES;
@@ -108,7 +108,7 @@ u32 halrf_get_psd_data(
 	return psd_val;
 }
 
-void halrf_psd(
+void halrf_psdbu(
 	struct dm_struct *dm,
 	u32 point,
 	u32 start_point,
@@ -145,15 +145,15 @@ void halrf_psd(
 		psd->psd_data[i] = 0;
 
 	if (dm->support_ic_type & ODM_RTL8710B)
-		avg_org = odm_get_bb_reg(dm, psd_reg, 0x30000);
+		avg_org = odm_get_bb_regbu(dm, psd_reg, 0x30000);
 	else
-		avg_org = odm_get_bb_reg(dm, psd_reg, 0x3000);
+		avg_org = odm_get_bb_regbu(dm, psd_reg, 0x3000);
 
 	if (mode == 1) {
 		if (dm->support_ic_type & ODM_RTL8710B)
-			odm_set_bb_reg(dm, psd_reg, 0x30000, 0x1);
+			odm_set_bb_regbu(dm, psd_reg, 0x30000, 0x1);
 		else
-			odm_set_bb_reg(dm, psd_reg, 0x3000, 0x1);
+			odm_set_bb_regbu(dm, psd_reg, 0x3000, 0x1);
 	}
 
 #if 0
@@ -177,7 +177,7 @@ void halrf_psd(
 			point_temp = i;
 
 		for (k = 0; k < average_tmp; k++) {
-			data_temp[k] = halrf_get_psd_data(dm, point_temp);
+			data_temp[k] = halrf_get_psd_databu(dm, point_temp);
 			data_tatal = data_tatal + (data_temp[k] * data_temp[k]);
 
 #if 0
@@ -191,8 +191,8 @@ void halrf_psd(
 		/*dbg_print("\n");*/
 #endif
 
-		data_tatal = phydm_division64((data_tatal * 100), average_tmp);
-		psd->psd_data[j] = (u32)_sqrt(data_tatal);
+		data_tatal = phydm_division64bu((data_tatal * 100), average_tmp);
+		psd->psd_data[j] = (u32)_sqrtbu(data_tatal);
 
 		i++;
 		j++;
@@ -209,131 +209,131 @@ void halrf_psd(
 #endif
 
 	if (dm->support_ic_type & ODM_RTL8710B)
-		odm_set_bb_reg(dm, psd_reg, 0x30000, avg_org);
+		odm_set_bb_regbu(dm, psd_reg, 0x30000, avg_org);
 	else
-		odm_set_bb_reg(dm, psd_reg, 0x3000, avg_org);
+		odm_set_bb_regbu(dm, psd_reg, 0x3000, avg_org);
 }
 
-void backup_bb_register(struct dm_struct *dm, u32 *bb_backup, u32 *backup_bb_reg, u32 counter)
+void backup_bb_registerbu(struct dm_struct *dm, u32 *bb_backup, u32 *backup_bb_reg, u32 counter)
 {
 	u32 i ;
 
 	for (i = 0; i < counter; i++)
-		bb_backup[i] = odm_get_bb_reg(dm, backup_bb_reg[i], MASKDWORD);
+		bb_backup[i] = odm_get_bb_regbu(dm, backup_bb_reg[i], MASKDWORD);
 }
 
-void restore_bb_register(struct dm_struct *dm, u32 *bb_backup, u32 *backup_bb_reg, u32 counter)
+void restore_bb_registerbu(struct dm_struct *dm, u32 *bb_backup, u32 *backup_bb_reg, u32 counter)
 {
 	u32 i ;
 
 	for (i = 0; i < counter; i++)
-		odm_set_bb_reg(dm, backup_bb_reg[i], MASKDWORD, bb_backup[i]);
+		odm_set_bb_regbu(dm, backup_bb_reg[i], MASKDWORD, bb_backup[i]);
 }
 
 
 
-void _halrf_psd_iqk_init(struct dm_struct *dm)
+void _halrf_psd_iqk_initbu(struct dm_struct *dm)
 {
-	odm_set_bb_reg(dm, 0x1b04, MASKDWORD, 0x0);
-	odm_set_bb_reg(dm, 0x1b08, MASKDWORD, 0x80);
-	odm_set_bb_reg(dm, 0x1b0c, 0xc00, 0x3);
-	odm_set_bb_reg(dm, 0x1b14, MASKDWORD, 0x0);
-	odm_set_bb_reg(dm, 0x1b18, BIT(0), 0x1);
+	odm_set_bb_regbu(dm, 0x1b04, MASKDWORD, 0x0);
+	odm_set_bb_regbu(dm, 0x1b08, MASKDWORD, 0x80);
+	odm_set_bb_regbu(dm, 0x1b0c, 0xc00, 0x3);
+	odm_set_bb_regbu(dm, 0x1b14, MASKDWORD, 0x0);
+	odm_set_bb_regbu(dm, 0x1b18, BIT(0), 0x1);
 
 	if (dm->support_ic_type & ODM_RTL8197G)
-		odm_set_bb_reg(dm, 0x1b20, MASKDWORD, 0x00040008);
+		odm_set_bb_regbu(dm, 0x1b20, MASKDWORD, 0x00040008);
 	if (dm->support_ic_type & ODM_RTL8198F)
-		odm_set_bb_reg(dm, 0x1b20, MASKDWORD, 0x00000000);
+		odm_set_bb_regbu(dm, 0x1b20, MASKDWORD, 0x00000000);
 
 	if (dm->support_ic_type & (ODM_RTL8197G | ODM_RTL8198F)) {
-		odm_set_bb_reg(dm, 0x1b24, MASKDWORD, 0x00030000);
-		odm_set_bb_reg(dm, 0x1b28, MASKDWORD, 0x00000000);
-		odm_set_bb_reg(dm, 0x1b2c, MASKDWORD, 0x00180018);
-		odm_set_bb_reg(dm, 0x1b30, MASKDWORD, 0x20000000);
-		/*odm_set_bb_reg(dm, 0x1b38, MASKDWORD, 0x20000000);*/
-		/*odm_set_bb_reg(dm, 0x1b3c, MASKDWORD, 0x20000000);*/
+		odm_set_bb_regbu(dm, 0x1b24, MASKDWORD, 0x00030000);
+		odm_set_bb_regbu(dm, 0x1b28, MASKDWORD, 0x00000000);
+		odm_set_bb_regbu(dm, 0x1b2c, MASKDWORD, 0x00180018);
+		odm_set_bb_regbu(dm, 0x1b30, MASKDWORD, 0x20000000);
+		/*odm_set_bb_regbu(dm, 0x1b38, MASKDWORD, 0x20000000);*/
+		/*odm_set_bb_regbu(dm, 0x1b3c, MASKDWORD, 0x20000000);*/
 	}
 
-	odm_set_bb_reg(dm, 0x1b1c, 0xfff, 0xd21);
-	odm_set_bb_reg(dm, 0x1b1c, 0xfff00000, 0x821);
-	odm_set_bb_reg(dm, 0x1b28, MASKDWORD, 0x0);
-	odm_set_bb_reg(dm, 0x1bcc, 0x3f, 0x3f);	
+	odm_set_bb_regbu(dm, 0x1b1c, 0xfff, 0xd21);
+	odm_set_bb_regbu(dm, 0x1b1c, 0xfff00000, 0x821);
+	odm_set_bb_regbu(dm, 0x1b28, MASKDWORD, 0x0);
+	odm_set_bb_regbu(dm, 0x1bcc, 0x3f, 0x3f);	
 }
 
-void _halrf_iqk_psd_init_8723f(void *dm_void,	 boolean onoff)
+void _halrf_iqk_psdbu_init_8723f(void *dm_void,	 boolean onoff)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u8 s;
 
-	s = (u8)odm_get_bb_reg(dm, 0x1884, BIT(20));
+	s = (u8)odm_get_bb_regbu(dm, 0x1884, BIT(20));
 
 	if (onoff) {
 		/*01_8723F_AFE_ON_BB_settings.txt*/
-		odm_set_bb_reg(dm, 0x1c38, MASKDWORD, 0x0);
-		odm_set_bb_reg(dm, R_0x1830, BIT(30), 0x0);
-		odm_set_bb_reg(dm, R_0x1860, 0xF0000000, 0xf);
-		odm_set_bb_reg(dm, R_0x1860, 0x0FFFF000, 0x0041);
-		odm_set_bb_reg(dm, 0x09f0, 0x0000FFFF, 0xbbbb);
-		odm_set_bb_reg(dm, 0x1d40, BIT(3), 0x1);
-		odm_set_bb_reg(dm, 0x1d40, 0x00000007, 0x3);
-		odm_set_bb_reg(dm, 0x09b4, 0x00000700, 0x3);
-		odm_set_bb_reg(dm, 0x09b4, 0x00003800, 0x3);
-		odm_set_bb_reg(dm, 0x09b4, 0x0001C000, 0x3);
-		odm_set_bb_reg(dm, 0x09b4, 0x000E0000, 0x3);
-		odm_set_bb_reg(dm, R_0x1c20, BIT(5), 0x1);
-		odm_set_bb_reg(dm, R_0x1e24, BIT(31), 0x0);
-		odm_set_bb_reg(dm, R_0x1e28, 0x0000000F, 0x1);
-		odm_set_bb_reg(dm, R_0x824, 0x000F0000, 0x1);
-		odm_set_bb_reg(dm, R_0x1cd0, 0xF0000000, 0x7);
-		odm_set_bb_reg(dm, R_0x2a24, BIT(13), 0x1);
-		odm_set_bb_reg(dm, R_0x1c68, BIT(24), 0x1);
-		odm_set_bb_reg(dm, R_0x1864, BIT(31), 0x1);
-		odm_set_bb_reg(dm, R_0x180c, BIT(27), 0x1);
-		odm_set_bb_reg(dm, R_0x180c, BIT(30), 0x1);
-		odm_set_bb_reg(dm, R_0x1e24, BIT(17), 0x1);
-		odm_set_bb_reg(dm, R_0x1880, BIT(21), 0x0);
-		odm_set_bb_reg(dm, R_0x1c38, MASKDWORD, 0xffffffff);
+		odm_set_bb_regbu(dm, 0x1c38, MASKDWORD, 0x0);
+		odm_set_bb_regbu(dm, R_0x1830, BIT(30), 0x0);
+		odm_set_bb_regbu(dm, R_0x1860, 0xF0000000, 0xf);
+		odm_set_bb_regbu(dm, R_0x1860, 0x0FFFF000, 0x0041);
+		odm_set_bb_regbu(dm, 0x09f0, 0x0000FFFF, 0xbbbb);
+		odm_set_bb_regbu(dm, 0x1d40, BIT(3), 0x1);
+		odm_set_bb_regbu(dm, 0x1d40, 0x00000007, 0x3);
+		odm_set_bb_regbu(dm, 0x09b4, 0x00000700, 0x3);
+		odm_set_bb_regbu(dm, 0x09b4, 0x00003800, 0x3);
+		odm_set_bb_regbu(dm, 0x09b4, 0x0001C000, 0x3);
+		odm_set_bb_regbu(dm, 0x09b4, 0x000E0000, 0x3);
+		odm_set_bb_regbu(dm, R_0x1c20, BIT(5), 0x1);
+		odm_set_bb_regbu(dm, R_0x1e24, BIT(31), 0x0);
+		odm_set_bb_regbu(dm, R_0x1e28, 0x0000000F, 0x1);
+		odm_set_bb_regbu(dm, R_0x824, 0x000F0000, 0x1);
+		odm_set_bb_regbu(dm, R_0x1cd0, 0xF0000000, 0x7);
+		odm_set_bb_regbu(dm, R_0x2a24, BIT(13), 0x1);
+		odm_set_bb_regbu(dm, R_0x1c68, BIT(24), 0x1);
+		odm_set_bb_regbu(dm, R_0x1864, BIT(31), 0x1);
+		odm_set_bb_regbu(dm, R_0x180c, BIT(27), 0x1);
+		odm_set_bb_regbu(dm, R_0x180c, BIT(30), 0x1);
+		odm_set_bb_regbu(dm, R_0x1e24, BIT(17), 0x1);
+		odm_set_bb_regbu(dm, R_0x1880, BIT(21), 0x0);
+		odm_set_bb_regbu(dm, R_0x1c38, MASKDWORD, 0xffffffff);
 		/*02_IQK_Preset.txt*/
-		//odm_set_rf_reg(dm, RF_PATH_A, 0x05, BIT(0), 0x0);
-		//odm_set_rf_reg(dm, RF_PATH_B, 0x05, BIT(0), 0x0);
-		odm_set_bb_reg(dm, R_0x1b08, MASKDWORD, 0x00000080);
-		//odm_set_bb_reg(dm, R_0x1bd8, MASKDWORD, 0x00000002);
+		//odm_set_rf_regbu(dm, RF_PATH_A, 0x05, BIT(0), 0x0);
+		//odm_set_rf_regbu(dm, RF_PATH_B, 0x05, BIT(0), 0x0);
+		odm_set_bb_regbu(dm, R_0x1b08, MASKDWORD, 0x00000080);
+		//odm_set_bb_regbu(dm, R_0x1bd8, MASKDWORD, 0x00000002);
 		//switch path  10 od 0x1b38 0x1/0x3 [1:0]
 		if (s == 0)
-			odm_set_bb_reg(dm, R_0x1b00, MASKDWORD, 0x00000008);
+			odm_set_bb_regbu(dm, R_0x1b00, MASKDWORD, 0x00000008);
 		else
-			odm_set_bb_reg(dm, R_0x1b00, MASKDWORD, 0x0000000a);
+			odm_set_bb_regbu(dm, R_0x1b00, MASKDWORD, 0x0000000a);
 
-		odm_set_bb_reg(dm, R_0x1b18, MASKDWORD, 0x40010101);
-		odm_set_bb_reg(dm, R_0x1b14, MASKDWORD, 0x40010100);
-		//odm_set_bb_reg(dm, R_0x1b1c, MASKDWORD, 0xA2103C00);
-		odm_set_bb_reg(dm, R_0x1b0c, 0x00000C00, 0x2);
-		odm_set_bb_reg(dm, R_0x1bcc, 0x0000003F, 0x3f);	
+		odm_set_bb_regbu(dm, R_0x1b18, MASKDWORD, 0x40010101);
+		odm_set_bb_regbu(dm, R_0x1b14, MASKDWORD, 0x40010100);
+		//odm_set_bb_regbu(dm, R_0x1b1c, MASKDWORD, 0xA2103C00);
+		odm_set_bb_regbu(dm, R_0x1b0c, 0x00000C00, 0x2);
+		odm_set_bb_regbu(dm, R_0x1bcc, 0x0000003F, 0x3f);	
 		//DbgPrint("[PSD][8723F]iqkpsd init!\n");
 	} else {
 		/*10_IQK_Reg_PSD_Restore.txt*/
-		//odm_set_bb_reg(dm, R_0x1b1c, MASKDWORD, 0xA2103C00);
-		odm_set_bb_reg(dm, R_0x1b08, MASKDWORD, 0x00000000);
-		odm_set_bb_reg(dm, R_0x1b38, BIT(0), 0x0);
-		odm_set_bb_reg(dm, R_0x1bcc, 0x0000003F, 0x0);	
-		//odm_set_rf_reg(dm, RF_PATH_A, 0x05, BIT(0), 0x1);
-		//odm_set_rf_reg(dm, RF_PATH_B, 0x05, BIT(0), 0x1);
+		//odm_set_bb_regbu(dm, R_0x1b1c, MASKDWORD, 0xA2103C00);
+		odm_set_bb_regbu(dm, R_0x1b08, MASKDWORD, 0x00000000);
+		odm_set_bb_regbu(dm, R_0x1b38, BIT(0), 0x0);
+		odm_set_bb_regbu(dm, R_0x1bcc, 0x0000003F, 0x0);	
+		//odm_set_rf_regbu(dm, RF_PATH_A, 0x05, BIT(0), 0x1);
+		//odm_set_rf_regbu(dm, RF_PATH_B, 0x05, BIT(0), 0x1);
 		/*11_8723F_restore_AFE_BB_settings.txt*/
-		odm_set_bb_reg(dm, 0x1c38, MASKDWORD, 0x0);
-		odm_set_bb_reg(dm, R_0x1830, BIT(30), 0x1);
-		odm_set_bb_reg(dm, R_0x1e24, BIT(31), 0x1);
-		odm_set_bb_reg(dm, R_0x2a24, BIT(13), 0x0);
-		odm_set_bb_reg(dm, R_0x1c68, BIT(24), 0x0);
-		odm_set_bb_reg(dm, R_0x1864, BIT(31), 0x0);
-		odm_set_bb_reg(dm, R_0x180c, BIT(27), 0x0);
-		odm_set_bb_reg(dm, R_0x180c, BIT(30), 0x0);
-		odm_set_bb_reg(dm, R_0x1880, BIT(21), 0x0);
-		odm_set_bb_reg(dm, R_0x1c38, MASKDWORD, 0xffa1005e);
+		odm_set_bb_regbu(dm, 0x1c38, MASKDWORD, 0x0);
+		odm_set_bb_regbu(dm, R_0x1830, BIT(30), 0x1);
+		odm_set_bb_regbu(dm, R_0x1e24, BIT(31), 0x1);
+		odm_set_bb_regbu(dm, R_0x2a24, BIT(13), 0x0);
+		odm_set_bb_regbu(dm, R_0x1c68, BIT(24), 0x0);
+		odm_set_bb_regbu(dm, R_0x1864, BIT(31), 0x0);
+		odm_set_bb_regbu(dm, R_0x180c, BIT(27), 0x0);
+		odm_set_bb_regbu(dm, R_0x180c, BIT(30), 0x0);
+		odm_set_bb_regbu(dm, R_0x1880, BIT(21), 0x0);
+		odm_set_bb_regbu(dm, R_0x1c38, MASKDWORD, 0xffa1005e);
 		//DbgPrint("[PSD][8723F]iqkpsd resotre!\n");
 	}
 }
 
-u64 halrf_get_iqk_psd_data(void *dm_void, u32 point)
+u64 halrf_get_iqk_psd_databu(void *dm_void, u32 point)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct _hal_rf_ *rf = &(dm->rf_table);
@@ -359,7 +359,7 @@ u64 halrf_get_iqk_psd_data(void *dm_void, u32 point)
 			delay_time = 150;
 	}
 #endif
-	psd_point = odm_get_bb_reg(dm, R_0x1b2c, MASKDWORD);
+	psd_point = odm_get_bb_regbu(dm, R_0x1b2c, MASKDWORD);
 
 	psd_point &= 0xF000FFFF;
 
@@ -367,51 +367,51 @@ u64 halrf_get_iqk_psd_data(void *dm_void, u32 point)
 
 	psd_point = psd_point | (point << 16);
 
-	odm_set_bb_reg(dm, R_0x1b2c, MASKDWORD, psd_point);
+	odm_set_bb_regbu(dm, R_0x1b2c, MASKDWORD, psd_point);
 
-	odm_set_bb_reg(dm, R_0x1b34, BIT(0), 0x1);
+	odm_set_bb_regbu(dm, R_0x1b34, BIT(0), 0x1);
 
-	odm_set_bb_reg(dm, R_0x1b34, BIT(0), 0x0);
+	odm_set_bb_regbu(dm, R_0x1b34, BIT(0), 0x0);
 
 	for (i = 0; i < delay_time; i++)
-		ODM_delay_us(1);
+		ODM_delay_usbu(1);
 
 	if (dm->support_ic_type & (ODM_RTL8197G | ODM_RTL8198F)) {
 		if (dm->support_ic_type & ODM_RTL8197G)
-			odm_set_bb_reg(dm, R_0x1bd4, MASKDWORD, 0x001a0001);
+			odm_set_bb_regbu(dm, R_0x1bd4, MASKDWORD, 0x001a0001);
 		else
-			odm_set_bb_reg(dm, R_0x1bd4, MASKDWORD, 0x00250001);
+			odm_set_bb_regbu(dm, R_0x1bd4, MASKDWORD, 0x00250001);
 
-		psd_val1 = odm_get_bb_reg(dm, R_0x1bfc, MASKDWORD);
+		psd_val1 = odm_get_bb_regbu(dm, R_0x1bfc, MASKDWORD);
 
 		psd_val1 = (psd_val1 & 0x001f0000) >> 16;
 
 		if (dm->support_ic_type & ODM_RTL8197G)
-			odm_set_bb_reg(dm, R_0x1bd4, MASKDWORD, 0x001b0001);
+			odm_set_bb_regbu(dm, R_0x1bd4, MASKDWORD, 0x001b0001);
 		else
-			odm_set_bb_reg(dm, R_0x1bd4, MASKDWORD, 0x002e0001);
+			odm_set_bb_regbu(dm, R_0x1bd4, MASKDWORD, 0x002e0001);
 
-		psd_val2 = odm_get_bb_reg(dm, R_0x1bfc, MASKDWORD);
+		psd_val2 = odm_get_bb_regbu(dm, R_0x1bfc, MASKDWORD);
 
 		psd_val = (psd_val1 << 27) + (psd_val2 >> 5);
 	} else if (dm->support_ic_type & ODM_RTL8723F) {
-		odm_set_bb_reg(dm, R_0x1bd4, MASKDWORD, 0x00210001);
-		psd_val1 = odm_get_bb_reg(dm, R_0x1bfc, MASKDWORD);
+		odm_set_bb_regbu(dm, R_0x1bd4, MASKDWORD, 0x00210001);
+		psd_val1 = odm_get_bb_regbu(dm, R_0x1bfc, MASKDWORD);
 		psd_val1 = (psd_val1 & 0x00FF0000) >> 16;
-		odm_set_bb_reg(dm, R_0x1bd4, MASKDWORD, 0x00220001);
-		psd_val2 = odm_get_bb_reg(dm, R_0x1bfc, MASKDWORD);
+		odm_set_bb_regbu(dm, R_0x1bd4, MASKDWORD, 0x00220001);
+		psd_val2 = odm_get_bb_regbu(dm, R_0x1bfc, MASKDWORD);
 		//psd_val = (psd_val1 << 27) + (psd_val2 >> 5);
 		psd_val = (psd_val1 << 32) + psd_val2;
 	} else {
-		odm_set_bb_reg(dm, R_0x1bd4, MASKDWORD, 0x00250001);
+		odm_set_bb_regbu(dm, R_0x1bd4, MASKDWORD, 0x00250001);
 
-		psd_val1 = odm_get_bb_reg(dm, R_0x1bfc, MASKDWORD);
+		psd_val1 = odm_get_bb_regbu(dm, R_0x1bfc, MASKDWORD);
 
 		psd_val1 = (psd_val1 & 0x07FF0000) >> 16;
 
-		odm_set_bb_reg(dm, R_0x1bd4, MASKDWORD, 0x002e0001);
+		odm_set_bb_regbu(dm, R_0x1bd4, MASKDWORD, 0x002e0001);
 
-		psd_val2 = odm_get_bb_reg(dm, R_0x1bfc, MASKDWORD);
+		psd_val2 = odm_get_bb_regbu(dm, R_0x1bfc, MASKDWORD);
 
 		psd_val = (psd_val1 << 21) + (psd_val2 >> 11);
 	}
@@ -419,7 +419,7 @@ u64 halrf_get_iqk_psd_data(void *dm_void, u32 point)
 	return psd_val;
 }
 
-void halrf_iqk_psd(
+void halrf_iqk_psdbu(
 	struct dm_struct *dm,
 	u32 point,
 	u32 start_point,
@@ -442,7 +442,7 @@ void halrf_iqk_psd(
 		if (dm->support_ic_type & (ODM_RTL8822C | ODM_RTL8723F))
 			average_tmp = 1; //HW average
 		else {
-			reg_tmp = odm_get_bb_reg(dm, R_0x1b1c, 0x000e0000);
+			reg_tmp = odm_get_bb_regbu(dm, R_0x1b1c, 0x000e0000);
 			if (reg_tmp == 0)
 				average_tmp = 1;
 			else if (reg_tmp == 3)
@@ -451,10 +451,10 @@ void halrf_iqk_psd(
 				average_tmp = 16;
 			else if (reg_tmp == 5)
 				average_tmp = 32;
-			odm_set_bb_reg(dm, R_0x1b1c, 0x000e0000, 0x0);
+			odm_set_bb_regbu(dm, R_0x1b1c, 0x000e0000, 0x0);
 		}
 	} else {
-		reg_tmp = odm_get_bb_reg(dm, R_0x1b1c, 0x000e0000);
+		reg_tmp = odm_get_bb_regbu(dm, R_0x1b1c, 0x000e0000);
 		if (reg_tmp == 0)
 			average_tmp = 1;
 		else if (reg_tmp == 3)
@@ -464,7 +464,7 @@ void halrf_iqk_psd(
 		else if (reg_tmp == 5)
 			average_tmp = 32;
 #ifndef RTL8723F_SUPPORT
-		odm_set_bb_reg(dm, R_0x1b1c, 0x000e0000, 0x0);
+		odm_set_bb_regbu(dm, R_0x1b1c, 0x000e0000, 0x0);
 #endif
 	}
 
@@ -496,7 +496,7 @@ void halrf_iqk_psd(
 		}
 
 		for (k = 0; k < average_tmp; k++) {
-			data_temp[k] = halrf_get_iqk_psd_data(dm, point_temp);
+			data_temp[k] = halrf_get_iqk_psd_databu(dm, point_temp);
 			/*data_tatal = data_tatal + (data_temp[k] * data_temp[k]);*/
 			data_tatal = data_tatal + data_temp[k];
 
@@ -508,7 +508,7 @@ void halrf_iqk_psd(
 #endif
 		}
 
-		data_tatal = phydm_division64((data_tatal * 10), average_tmp);
+		data_tatal = phydm_division64bu((data_tatal * 10), average_tmp);
 		psd->psd_data[j] = (u32)data_tatal;
 
 		i++;
@@ -516,7 +516,7 @@ void halrf_iqk_psd(
 	}
 
 	if (dm->support_ic_type & (ODM_RTL8814B | ODM_RTL8198F | ODM_RTL8197G))
-		odm_set_bb_reg(dm, R_0x1b1c, 0x000e0000, reg_tmp);
+		odm_set_bb_regbu(dm, R_0x1b1c, 0x000e0000, reg_tmp);
 #else
 	while (i < stop_point) {
 		data_tatal = 0;
@@ -529,7 +529,7 @@ void halrf_iqk_psd(
 			//point_temp = i + 0xC00;
 		//-512:0xE00,512:0x200,0x200+0xC00 = 0xE00
 
-		data_temp[k] = halrf_get_iqk_psd_data(dm, point_temp);
+		data_temp[k] = halrf_get_iqk_psd_databu(dm, point_temp);
 		data_tatal = data_temp[k];
 		psd->psd_data[j] = (u32)data_tatal;
 		i++;
@@ -552,7 +552,7 @@ void halrf_iqk_psd(
 
 
 u32
-halrf_psd_init(
+halrf_psd_initbu(
 	void *dm_void)
 {
 	enum rt_status ret_status = RT_STATUS_SUCCESS;
@@ -576,26 +576,26 @@ halrf_psd_init(
 	} else {
 		psd->psd_progress = 1;
 		if (dm->support_ic_type & ODM_RTL8723F) {
-			backup_bb_register(dm, bb_backup, backup_bb_reg, 11);
-			_halrf_iqk_psd_init_8723f(dm, true);
-			halrf_iqk_psd(dm, psd->point, psd->start_point, psd->stop_point, psd->average);
-			_halrf_iqk_psd_init_8723f(dm, false);
-			restore_bb_register(dm, bb_backup, backup_bb_reg, 11);
+			backup_bb_registerbu(dm, bb_backup, backup_bb_reg, 11);
+			_halrf_iqk_psdbu_init_8723f(dm, true);
+			halrf_iqk_psdbu(dm, psd->point, psd->start_point, psd->stop_point, psd->average);
+			_halrf_iqk_psdbu_init_8723f(dm, false);
+			restore_bb_registerbu(dm, bb_backup, backup_bb_reg, 11);
 		} else if (dm->support_ic_type & 
 		(ODM_RTL8822C | ODM_RTL8814B | ODM_RTL8198F | ODM_RTL8197G)) {
-			/*backup_bb_register(dm, bb_backup, backup_bb_reg, 12);*/
-			_halrf_psd_iqk_init(dm);
-			halrf_iqk_psd(dm, psd->point, psd->start_point, psd->stop_point, psd->average);
-			/*restore_bb_register(dm, bb_backup, backup_bb_reg, 12);*/
+			/*backup_bb_registerbu(dm, bb_backup, backup_bb_reg, 12);*/
+			_halrf_psd_iqk_initbu(dm);
+			halrf_iqk_psdbu(dm, psd->point, psd->start_point, psd->stop_point, psd->average);
+			/*restore_bb_registerbu(dm, bb_backup, backup_bb_reg, 12);*/
 		} else
-			halrf_psd(dm, psd->point, psd->start_point, psd->stop_point, psd->average);
+			halrf_psdbu(dm, psd->point, psd->start_point, psd->stop_point, psd->average);
 		psd->psd_progress = 0;
 	}
 	return ret_status;
 }
 
 u32
-halrf_psd_query(
+halrf_psd_querybu(
 	void *dm_void,
 	u32 *outbuf,
 	u32 buf_size)
@@ -608,14 +608,14 @@ halrf_psd_query(
 	if (psd->psd_progress)
 		ret_status = RT_STATUS_PENDING;
 	else
-		odm_move_memory(dm, outbuf, psd->psd_data,
+		odm_move_memorybu(dm, outbuf, psd->psd_data,
 				sizeof(u32) * psd->buf_size);
 
 	return ret_status;
 }
 
 u32
-halrf_psd_init_query(
+halrf_psd_init_querybu(
 	void *dm_void,
 	u32 *outbuf,
 	u32 point,
@@ -638,8 +638,8 @@ halrf_psd_init_query(
 		ret_status = RT_STATUS_PENDING;
 	} else {
 		psd->psd_progress = 1;
-		halrf_psd(dm, psd->point, psd->start_point, psd->stop_point, psd->average);
-		odm_move_memory(dm, outbuf, psd->psd_data, 0x400);
+		halrf_psdbu(dm, psd->point, psd->start_point, psd->stop_point, psd->average);
+		odm_move_memorybu(dm, outbuf, psd->psd_data, 0x400);
 		psd->psd_progress = 0;
 	}
 

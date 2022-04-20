@@ -163,7 +163,7 @@ void phydm_la_stop(void *dm_void);
 
 void phydm_la_init(void *dm_void);
 
-void adc_smp_de_init(void *dm_void);
+void adc_smp_de_initbu(void *dm_void);
 
 #if (DM_ODM_SUPPORT_TYPE & ODM_WIN)
 void adc_smp_work_item_callback(void *context);

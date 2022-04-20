@@ -404,8 +404,8 @@ struct rtw_mesh_info {
 extern const char *_action_self_protected_str[];
 #define action_self_protected_str(action) ((action < RTW_ACT_SELF_PROTECTED_NUM) ? _action_self_protected_str[action] : _action_self_protected_str[0])
 
-u8 *rtw_set_ie_mesh_id(u8 *buf, u32 *buf_len, const char *mesh_id, u8 id_len);
-u8 *rtw_set_ie_mesh_config(u8 *buf, u32 *buf_len
+u8 *rtw_set_iebu_mesh_id(u8 *buf, u32 *buf_len, const char *mesh_id, u8 id_len);
+u8 *rtw_set_iebu_mesh_config(u8 *buf, u32 *buf_len
 	, u8 path_sel_proto, u8 path_sel_metric, u8 congest_ctl_mode, u8 sync_method, u8 auth_proto
 	, u8 num_of_peerings, bool cto_mgate, bool cto_as
 	, bool accept_peerings, bool mcca_sup, bool mcca_en, bool forwarding

@@ -33,9 +33,9 @@ void phydm_dynamic_switch_htstf_mumimo_8822b(struct dm_struct *dm)
 	/*@if Pin > -60dBm, enable HT-STF gain controller, otherwise, if rssi < -65dBm, disable the controller*/
 
 	if (dm->rssi_min >= rssi_l2h)
-		odm_set_bb_reg(dm, R_0x8d8, BIT(17), 0x1);
+		odm_set_bb_regbu(dm, R_0x8d8, BIT(17), 0x1);
 	else if (dm->rssi_min < rssi_h2l)
-		odm_set_bb_reg(dm, R_0x8d8, BIT(17), 0x0);
+		odm_set_bb_regbu(dm, R_0x8d8, BIT(17), 0x0);
 }
 
 void phydm_dynamic_parameters_ota(struct dm_struct *dm)
@@ -43,45 +43,45 @@ void phydm_dynamic_parameters_ota(struct dm_struct *dm)
 	u8 rssi_l2h = 40, rssi_h2l = 35;
 
 	/* PD TH modify due to enlarge MF windows size */
-	odm_set_bb_reg(dm, 0x838, 0xf0, 0x6);
+	odm_set_bb_regbu(dm, 0x838, 0xf0, 0x6);
 
 	if ((*dm->channel <= 14) && (*dm->band_width == CHANNEL_WIDTH_20)) {
 		if (dm->rssi_min >= rssi_l2h) {
 			/*@if (dm->bhtstfdisabled == false)*/
-			odm_set_bb_reg(dm, R_0x8d8, BIT(17), 0x1);
+			odm_set_bb_regbu(dm, R_0x8d8, BIT(17), 0x1);
 
-			odm_set_bb_reg(dm, R_0x98c, 0x7fc0000, 0x0);
-			odm_set_bb_reg(dm, R_0x818, 0x7000000, 0x1);
-			odm_set_bb_reg(dm, R_0xc04, BIT(18), 0x0);
-			odm_set_bb_reg(dm, R_0xe04, BIT(18), 0x0);
+			odm_set_bb_regbu(dm, R_0x98c, 0x7fc0000, 0x0);
+			odm_set_bb_regbu(dm, R_0x818, 0x7000000, 0x1);
+			odm_set_bb_regbu(dm, R_0xc04, BIT(18), 0x0);
+			odm_set_bb_regbu(dm, R_0xe04, BIT(18), 0x0);
 			if (dm->p_advance_ota & PHYDM_HP_OTA_SETTING_A) {
-				odm_set_bb_reg(dm, R_0x19d8, MASKDWORD, 0x444);
-				odm_set_bb_reg(dm, R_0x19d4, MASKDWORD, 0x4444aaaa);
+				odm_set_bb_regbu(dm, R_0x19d8, MASKDWORD, 0x444);
+				odm_set_bb_regbu(dm, R_0x19d4, MASKDWORD, 0x4444aaaa);
 			} else if (dm->p_advance_ota & PHYDM_HP_OTA_SETTING_B) {
-				odm_set_bb_reg(dm, R_0x19d8, MASKDWORD, 0x444);
-				odm_set_bb_reg(dm, R_0x19d4, MASKDWORD, 0x444444aa);
+				odm_set_bb_regbu(dm, R_0x19d8, MASKDWORD, 0x444);
+				odm_set_bb_regbu(dm, R_0x19d4, MASKDWORD, 0x444444aa);
 			}
 		} else if (dm->rssi_min < rssi_h2l) {
 			/*@if (dm->bhtstfdisabled == true)*/
-			odm_set_bb_reg(dm, R_0x8d8, BIT(17), 0x0);
+			odm_set_bb_regbu(dm, R_0x8d8, BIT(17), 0x0);
 
-			odm_set_bb_reg(dm, R_0x98c, MASKDWORD, 0x43440000);
-			odm_set_bb_reg(dm, R_0x818, 0x7000000, 0x4);
-			odm_set_bb_reg(dm, R_0xc04, (BIT(18) | BIT(21)), 0x0);
-			odm_set_bb_reg(dm, R_0xe04, (BIT(18) | BIT(21)), 0x0);
-			odm_set_bb_reg(dm, R_0x19d8, MASKDWORD, 0xaaa);
-			odm_set_bb_reg(dm, R_0x19d4, MASKDWORD, 0xaaaaaaaa);
+			odm_set_bb_regbu(dm, R_0x98c, MASKDWORD, 0x43440000);
+			odm_set_bb_regbu(dm, R_0x818, 0x7000000, 0x4);
+			odm_set_bb_regbu(dm, R_0xc04, (BIT(18) | BIT(21)), 0x0);
+			odm_set_bb_regbu(dm, R_0xe04, (BIT(18) | BIT(21)), 0x0);
+			odm_set_bb_regbu(dm, R_0x19d8, MASKDWORD, 0xaaa);
+			odm_set_bb_regbu(dm, R_0x19d4, MASKDWORD, 0xaaaaaaaa);
 		}
 	} else {
 #if 0
-		//odm_set_bb_reg(dm, R_0x8d8, BIT(17), 0x0);
+		//odm_set_bb_regbu(dm, R_0x8d8, BIT(17), 0x0);
 #endif
-		odm_set_bb_reg(dm, R_0x98c, MASKDWORD, 0x43440000);
-		odm_set_bb_reg(dm, R_0x818, 0x7000000, 0x4);
-		odm_set_bb_reg(dm, R_0xc04, (BIT(18) | BIT(21)), 0x0);
-		odm_set_bb_reg(dm, R_0xe04, (BIT(18) | BIT(21)), 0x0);
-		odm_set_bb_reg(dm, R_0x19d8, MASKDWORD, 0xaaa);
-		odm_set_bb_reg(dm, R_0x19d4, MASKDWORD, 0xaaaaaaaa);
+		odm_set_bb_regbu(dm, R_0x98c, MASKDWORD, 0x43440000);
+		odm_set_bb_regbu(dm, R_0x818, 0x7000000, 0x4);
+		odm_set_bb_regbu(dm, R_0xc04, (BIT(18) | BIT(21)), 0x0);
+		odm_set_bb_regbu(dm, R_0xe04, (BIT(18) | BIT(21)), 0x0);
+		odm_set_bb_regbu(dm, R_0x19d8, MASKDWORD, 0xaaa);
+		odm_set_bb_regbu(dm, R_0x19d4, MASKDWORD, 0xaaaaaaaa);
 	}
 }
 
@@ -99,40 +99,40 @@ _set_tx_a_cali_value(
 
 	switch (offset) {
 	case 0x0:
-		odm_set_rf_reg(dm, rf_path, RF_0x18, 0xFFFFF, 0X10124);
+		odm_set_rf_regbu(dm, rf_path, RF_0x18, 0xFFFFF, 0X10124);
 		break;
 	case 0x1:
-		odm_set_rf_reg(dm, rf_path, RF_0x18, 0xFFFFF, 0X10524);
+		odm_set_rf_regbu(dm, rf_path, RF_0x18, 0xFFFFF, 0X10524);
 		break;
 	case 0x2:
-		odm_set_rf_reg(dm, rf_path, RF_0x18, 0xFFFFF, 0X10924);
+		odm_set_rf_regbu(dm, rf_path, RF_0x18, 0xFFFFF, 0X10924);
 		break;
 	case 0x3:
-		odm_set_rf_reg(dm, rf_path, RF_0x18, 0xFFFFF, 0X10D24);
+		odm_set_rf_regbu(dm, rf_path, RF_0x18, 0xFFFFF, 0X10D24);
 		break;
 	case 0x4:
-		odm_set_rf_reg(dm, rf_path, RF_0x18, 0xFFFFF, 0X30164);
+		odm_set_rf_regbu(dm, rf_path, RF_0x18, 0xFFFFF, 0X30164);
 		break;
 	case 0x5:
-		odm_set_rf_reg(dm, rf_path, RF_0x18, 0xFFFFF, 0X30564);
+		odm_set_rf_regbu(dm, rf_path, RF_0x18, 0xFFFFF, 0X30564);
 		break;
 	case 0x6:
-		odm_set_rf_reg(dm, rf_path, RF_0x18, 0xFFFFF, 0X30964);
+		odm_set_rf_regbu(dm, rf_path, RF_0x18, 0xFFFFF, 0X30964);
 		break;
 	case 0x7:
-		odm_set_rf_reg(dm, rf_path, RF_0x18, 0xFFFFF, 0X30D64);
+		odm_set_rf_regbu(dm, rf_path, RF_0x18, 0xFFFFF, 0X30D64);
 		break;
 	case 0x8:
-		odm_set_rf_reg(dm, rf_path, RF_0x18, 0xFFFFF, 0X50195);
+		odm_set_rf_regbu(dm, rf_path, RF_0x18, 0xFFFFF, 0X50195);
 		break;
 	case 0x9:
-		odm_set_rf_reg(dm, rf_path, RF_0x18, 0xFFFFF, 0X50595);
+		odm_set_rf_regbu(dm, rf_path, RF_0x18, 0xFFFFF, 0X50595);
 		break;
 	case 0xa:
-		odm_set_rf_reg(dm, rf_path, RF_0x18, 0xFFFFF, 0X50995);
+		odm_set_rf_regbu(dm, rf_path, RF_0x18, 0xFFFFF, 0X50995);
 		break;
 	case 0xb:
-		odm_set_rf_reg(dm, rf_path, RF_0x18, 0xFFFFF, 0X50D95);
+		odm_set_rf_regbu(dm, rf_path, RF_0x18, 0xFFFFF, 0X50D95);
 		break;
 	default:
 		PHYDM_DBG(dm, ODM_COMP_API, "Invalid TxA band offset...\n");
@@ -140,7 +140,7 @@ _set_tx_a_cali_value(
 	}
 
 	/* @Get TxA value */
-	modi_tx_a_value = odm_get_rf_reg(dm, rf_path, RF_0x61, 0xFFFFF);
+	modi_tx_a_value = odm_get_rf_regbu(dm, rf_path, RF_0x61, 0xFFFFF);
 	tmp1_byte = (u8)modi_tx_a_value & (BIT(3) | BIT(2) | BIT(1) | BIT(0));
 
 	/* @check how much need to calibration */
@@ -204,7 +204,7 @@ _set_tx_a_cali_value(
 	}
 
 	/* Write back to RF reg */
-	odm_set_rf_reg(dm, rf_path, RF_0x30, 0xFFFF, (offset << 12 | (modi_tx_a_value & 0xFF0) | tmp1_byte));
+	odm_set_rf_regbu(dm, rf_path, RF_0x30, 0xFFFF, (offset << 12 | (modi_tx_a_value & 0xFF0) | tmp1_byte));
 }
 
 static void
@@ -214,7 +214,7 @@ _txa_bias_cali_4_each_path(
 	u8 efuse_value)
 {
 	/* switch on set TxA bias */
-	odm_set_rf_reg(dm, rf_path, RF_0xef, 0xFFFFF, 0x200);
+	odm_set_rf_regbu(dm, rf_path, RF_0xef, 0xFFFFF, 0x200);
 
 	/* Set 12 sets of TxA value */
 	_set_tx_a_cali_value(dm, (enum rf_path)rf_path, 0x0, efuse_value);
@@ -231,7 +231,7 @@ _txa_bias_cali_4_each_path(
 	_set_tx_a_cali_value(dm, (enum rf_path)rf_path, 0xb, efuse_value);
 
 	/* switch off set TxA bias */
-	odm_set_rf_reg(dm, rf_path, RF_0xef, 0xFFFFF, 0x0);
+	odm_set_rf_regbu(dm, rf_path, RF_0xef, 0xFFFFF, 0x0);
 }
 
 /* @for 8822B PCIE D-cut patch only */
@@ -250,8 +250,8 @@ void phydm_txcurrentcalibration(struct dm_struct *dm)
 		  dm->efuse0x3d7, dm->efuse0x3d8);
 
 	/* save original 0x18 value */
-	orig_rf0x18_path_a = odm_get_rf_reg(dm, RF_PATH_A, RF_0x18, 0xFFFFF);
-	orig_rf0x18_path_b = odm_get_rf_reg(dm, RF_PATH_B, RF_0x18, 0xFFFFF);
+	orig_rf0x18_path_a = odm_get_rf_regbu(dm, RF_PATH_A, RF_0x18, 0xFFFFF);
+	orig_rf0x18_path_b = odm_get_rf_regbu(dm, RF_PATH_B, RF_0x18, 0xFFFFF);
 
 	/* @define efuse content */
 	efuse0x3D8 = dm->efuse0x3d8;
@@ -269,52 +269,52 @@ void phydm_txcurrentcalibration(struct dm_struct *dm)
 	_txa_bias_cali_4_each_path(dm, RF_PATH_B, efuse0x3D8);
 
 	/* restore original 0x18 value */
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x18, 0xFFFFF, orig_rf0x18_path_a);
-	odm_set_rf_reg(dm, RF_PATH_B, RF_0x18, 0xFFFFF, orig_rf0x18_path_b);
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x18, 0xFFFFF, orig_rf0x18_path_a);
+	odm_set_rf_regbu(dm, RF_PATH_B, RF_0x18, 0xFFFFF, orig_rf0x18_path_b);
 }
 
 void phydm_1rcca_setting(struct dm_struct *dm, boolean enable_1rcca)
 {
 	u32 reg_32;
 
-	reg_32 = odm_get_bb_reg(dm, R_0xa04, 0x0f000000);
+	reg_32 = odm_get_bb_regbu(dm, R_0xa04, 0x0f000000);
 
 	/* @Enable or disable 1RCCA setting accrodding to the control from driver */
 	if (enable_1rcca) {
 		if (reg_32 == 0x0)
 			/* @CCK path-a */
-			odm_set_bb_reg(dm, R_0x808, MASKBYTE0, 0x13);
+			odm_set_bb_regbu(dm, R_0x808, MASKBYTE0, 0x13);
 		else if (reg_32 == 0x5)
 			/* @CCK path-b */
-			odm_set_bb_reg(dm, R_0x808, MASKBYTE0, 0x23);
+			odm_set_bb_regbu(dm, R_0x808, MASKBYTE0, 0x23);
 	} else {
 		if (dm->valid_path_set == BB_PATH_A) {
 			/* @disable 1RCCA */
 			/* @CCK default is at path-a */
-			odm_set_bb_reg(dm, R_0x808, MASKBYTE0, 0x31);
-			odm_set_bb_reg(dm, R_0xa04, 0x0f000000, 0x0);
+			odm_set_bb_regbu(dm, R_0x808, MASKBYTE0, 0x31);
+			odm_set_bb_regbu(dm, R_0xa04, 0x0f000000, 0x0);
 		} else if (dm->valid_path_set == BB_PATH_B) {
 			/* @disable 1RCCA */
 			/* @CCK default is at path-a */
-			odm_set_bb_reg(dm, R_0x808, MASKBYTE0, 0x32);
-			odm_set_bb_reg(dm, R_0xa04, 0x0f000000, 0x5);
+			odm_set_bb_regbu(dm, R_0x808, MASKBYTE0, 0x32);
+			odm_set_bb_regbu(dm, R_0xa04, 0x0f000000, 0x5);
 		} else {
 			/* @disable 1RCCA */
 			/* @CCK default is at path-a */
-			odm_set_bb_reg(dm, R_0x808, MASKBYTE0, 0x33);
-			odm_set_bb_reg(dm, R_0xa04, 0x0f000000, 0x0);
+			odm_set_bb_regbu(dm, R_0x808, MASKBYTE0, 0x33);
+			odm_set_bb_regbu(dm, R_0xa04, 0x0f000000, 0x0);
 		}
 	}
 }
 
 void phydm_dynamic_select_cck_path_8822b(struct dm_struct *dm)
 {
-	struct phydm_fa_struct *fa_cnt = (struct phydm_fa_struct *)phydm_get_structure(dm, PHYDM_FALSEALMCNT);
+	struct phydm_fa_struct *fa_cnt = (struct phydm_fa_struct *)phydm_get_structurebu(dm, PHYDM_FALSEALMCNT);
 	struct drp_rtl8822b_struct *drp_8822b = &dm->phydm_rtl8822b;
 
 	if (dm->ap_total_num > 10) {
 		if (drp_8822b->path_judge & BIT(2))
-			odm_set_bb_reg(dm, R_0xa04, 0x0f000000, 0x0); /*@fix CCK Path A if AP nums > 10*/
+			odm_set_bb_regbu(dm, R_0xa04, 0x0f000000, 0x0); /*@fix CCK Path A if AP nums > 10*/
 		return;
 	}
 
@@ -327,15 +327,15 @@ void phydm_dynamic_select_cck_path_8822b(struct dm_struct *dm)
 	if (drp_8822b->path_judge & BB_PATH_A) {
 		drp_8822b->path_a_cck_fa = (u16)fa_cnt->cnt_cck_fail;
 		drp_8822b->path_judge &= ~BB_PATH_A;
-		odm_set_bb_reg(dm, R_0xa04, 0x0f000000, 0x5); /*@change to path B collect CCKFA*/
+		odm_set_bb_regbu(dm, R_0xa04, 0x0f000000, 0x5); /*@change to path B collect CCKFA*/
 	} else if (drp_8822b->path_judge & BB_PATH_B) {
 		drp_8822b->path_b_cck_fa = (u16)fa_cnt->cnt_cck_fail;
 		drp_8822b->path_judge &= ~BB_PATH_B;
 
 		if (drp_8822b->path_a_cck_fa <= drp_8822b->path_b_cck_fa)
-			odm_set_bb_reg(dm, R_0xa04, 0x0f000000, 0x0); /*@FA A<=B choose A*/
+			odm_set_bb_regbu(dm, R_0xa04, 0x0f000000, 0x0); /*@FA A<=B choose A*/
 		else
-			odm_set_bb_reg(dm, R_0xa04, 0x0f000000, 0x5); /*@FA B>A choose B*/
+			odm_set_bb_regbu(dm, R_0xa04, 0x0f000000, 0x5); /*@FA B>A choose B*/
 
 		drp_8822b->path_judge |= BIT(2); /*@it means we have already choosed cck rx path*/
 	}
@@ -347,33 +347,33 @@ void phydm_dynamic_select_cck_path_8822b(struct dm_struct *dm)
 void phydm_somlrxhp_setting(struct dm_struct *dm, boolean switch_soml)
 {
 	if (switch_soml) {
-		odm_set_bb_reg(dm, R_0x19a8, MASKDWORD, 0xd90a0000);
+		odm_set_bb_regbu(dm, R_0x19a8, MASKDWORD, 0xd90a0000);
 		/* @Following are RxHP settings for T2R as always low, workaround for OTA test, required to classify */
 	} else {
-		odm_set_bb_reg(dm, R_0x19a8, MASKDWORD, 0x090a0000);
+		odm_set_bb_regbu(dm, R_0x19a8, MASKDWORD, 0x090a0000);
 	}
 
 	/* @Dynamic RxHP setting with SoML on/off apply on all RFE type */
 	if (!switch_soml && (dm->rfe_type == 1 || dm->rfe_type == 6 || dm->rfe_type == 7 || dm->rfe_type == 9)) {
-		odm_set_bb_reg(dm, R_0x8cc, MASKDWORD, 0x08108000);
-		odm_set_bb_reg(dm, R_0x8d8, BIT(27), 0x0);
+		odm_set_bb_regbu(dm, R_0x8cc, MASKDWORD, 0x08108000);
+		odm_set_bb_regbu(dm, R_0x8d8, BIT(27), 0x0);
 	}
 
 	if (*dm->channel <= 14) {
 		if (switch_soml && (!(dm->rfe_type == 3 || dm->rfe_type == 5 || dm->rfe_type == 8 || dm->rfe_type == 17))) {
-			odm_set_bb_reg(dm, R_0x8cc, MASKDWORD, 0x08108000);
-			odm_set_bb_reg(dm, R_0x8d8, BIT(27), 0x0);
+			odm_set_bb_regbu(dm, R_0x8cc, MASKDWORD, 0x08108000);
+			odm_set_bb_regbu(dm, R_0x8d8, BIT(27), 0x0);
 		}
 	} else if (*dm->channel > 35) {
 		if (switch_soml) {
-			odm_set_bb_reg(dm, R_0x8cc, MASKDWORD, 0x08108000);
-			odm_set_bb_reg(dm, R_0x8d8, BIT(27), 0x0);
+			odm_set_bb_regbu(dm, R_0x8cc, MASKDWORD, 0x08108000);
+			odm_set_bb_regbu(dm, R_0x8d8, BIT(27), 0x0);
 		}
 	}
 	/* @for 8822B RXHP H2L, since always L will cause DFS FRD */
 	if (dm->is_dfs_band) {
-			odm_set_bb_reg(dm, 0x8d8, MASKDWORD, 0x29035612);
-			odm_set_bb_reg(dm, 0x8cc, MASKDWORD, 0x08108492);
+			odm_set_bb_regbu(dm, 0x8d8, MASKDWORD, 0x29035612);
+			odm_set_bb_regbu(dm, 0x8cc, MASKDWORD, 0x08108492);
 	}
 #if 0
 	if (!(dm->rfe_type == 1 || dm->rfe_type == 6 || dm->rfe_type == 7 || dm->rfe_type == 9)) {
@@ -381,24 +381,24 @@ void phydm_somlrxhp_setting(struct dm_struct *dm, boolean switch_soml)
 			/* TFBGA iFEM SoML on/off with RxHP always high-to-low */
 			if (switch_soml == true && (!(dm->rfe_type == 3 || dm->rfe_type == 5))) {
 				if (switch_soml == true) {
-				odm_set_bb_reg(dm, R_0x8cc, MASKDWORD, 0x08108000);
-				odm_set_bb_reg(dm, R_0x8d8, BIT(27), 0x0);
-				odm_set_bb_reg(dm, R_0xc04, (BIT(21) | (BIT(18))), 0x0);
-				odm_set_bb_reg(dm, R_0xe04, (BIT(21) | (BIT(18))), 0x0);
+				odm_set_bb_regbu(dm, R_0x8cc, MASKDWORD, 0x08108000);
+				odm_set_bb_regbu(dm, R_0x8d8, BIT(27), 0x0);
+				odm_set_bb_regbu(dm, R_0xc04, (BIT(21) | (BIT(18))), 0x0);
+				odm_set_bb_regbu(dm, R_0xe04, (BIT(21) | (BIT(18))), 0x0);
 				} else {
-				odm_set_bb_reg(dm, R_0x8cc, MASKDWORD, 0x08108492);
-				odm_set_bb_reg(dm, R_0x8d8, BIT(27), 0x1);
+				odm_set_bb_regbu(dm, R_0x8cc, MASKDWORD, 0x08108492);
+				odm_set_bb_regbu(dm, R_0x8d8, BIT(27), 0x1);
 				}
 			}
 		} else if (*dm->channel > 35) {
 			if (switch_soml == true) {
-				odm_set_bb_reg(dm, R_0x8cc, MASKDWORD, 0x08108000);
-				odm_set_bb_reg(dm, R_0x8d8, BIT(27), 0x0);
-				odm_set_bb_reg(dm, R_0xc04, (BIT(21) | (BIT(18))), 0x0);
-				odm_set_bb_reg(dm, R_0xe04, (BIT(21) | (BIT(18))), 0x0);
+				odm_set_bb_regbu(dm, R_0x8cc, MASKDWORD, 0x08108000);
+				odm_set_bb_regbu(dm, R_0x8d8, BIT(27), 0x0);
+				odm_set_bb_regbu(dm, R_0xc04, (BIT(21) | (BIT(18))), 0x0);
+				odm_set_bb_regbu(dm, R_0xe04, (BIT(21) | (BIT(18))), 0x0);
 			} else {
-				odm_set_bb_reg(dm, R_0x8cc, MASKDWORD, 0x08108492);
-				odm_set_bb_reg(dm, R_0x8d8, BIT(27), 0x1);
+				odm_set_bb_regbu(dm, R_0x8cc, MASKDWORD, 0x08108492);
+				odm_set_bb_regbu(dm, R_0x8d8, BIT(27), 0x1);
 			}
 		}
 		PHYDM_DBG(dm, ODM_COMP_API,
@@ -413,19 +413,19 @@ void phydm_config_tx2path_8822b(struct dm_struct *dm,
 {
 	if (wireless_mode == WIRELESS_CCK) {
 		if (is_tx2_path)
-			odm_set_bb_reg(dm, R_0xa04, 0xf0000000, 0xc);
+			odm_set_bb_regbu(dm, R_0xa04, 0xf0000000, 0xc);
 		else
-			odm_set_bb_reg(dm, R_0xa04, 0xf0000000, 0x8);
+			odm_set_bb_regbu(dm, R_0xa04, 0xf0000000, 0x8);
 	} else {
 		if (is_tx2_path)
-			odm_set_bb_reg(dm, R_0x93c, 0xf00000, 0x3);
+			odm_set_bb_regbu(dm, R_0x93c, 0xf00000, 0x3);
 		else
-			odm_set_bb_reg(dm, R_0x93c, 0xf00000, 0x1);
+			odm_set_bb_regbu(dm, R_0x93c, 0xf00000, 0x1);
 	}
 }
 
 #ifdef DYN_ANT_WEIGHTING_SUPPORT
-void phydm_dynamic_ant_weighting_8822b(void *dm_void)
+void phydm_dynamic_ant_weightingbu_8822b(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u8 rssi_l2h = 43, rssi_h2l = 37;
@@ -439,26 +439,26 @@ void phydm_dynamic_ant_weighting_8822b(void *dm_void)
 #endif
 	if (*dm->channel <= 14) {
 		if (dm->rssi_min >= rssi_l2h) {
-			odm_set_bb_reg(dm, R_0x98c, 0x7fc0000, 0x0);
+			odm_set_bb_regbu(dm, R_0x98c, 0x7fc0000, 0x0);
 
 			/*@equal weighting*/
-			reg_8 = (u8)odm_get_bb_reg(dm, R_0xf94, BIT(0) | BIT(1) | BIT(2));
+			reg_8 = (u8)odm_get_bb_regbu(dm, R_0xf94, BIT(0) | BIT(1) | BIT(2));
 			PHYDM_DBG(dm, ODM_COMP_API,
 				  "Equal weighting ,rssi_min = %d\n, 0xf94[2:0] = 0x%x\n",
 				  dm->rssi_min, reg_8);
 		} else if (dm->rssi_min <= rssi_h2l) {
-			odm_set_bb_reg(dm, R_0x98c, MASKDWORD, 0x43440000);
+			odm_set_bb_regbu(dm, R_0x98c, MASKDWORD, 0x43440000);
 
 			/*@fix sec_min_wgt = 1/2*/
-			reg_8 = (u8)odm_get_bb_reg(dm, R_0xf94, BIT(0) | BIT(1) | BIT(2));
+			reg_8 = (u8)odm_get_bb_regbu(dm, R_0xf94, BIT(0) | BIT(1) | BIT(2));
 			PHYDM_DBG(dm, ODM_COMP_API,
 				  "AGC weighting ,rssi_min = %d\n, 0xf94[2:0] = 0x%x\n",
 				  dm->rssi_min, reg_8);
 		}
 	} else {
-		odm_set_bb_reg(dm, R_0x98c, MASKDWORD, 0x43440000);
+		odm_set_bb_regbu(dm, R_0x98c, MASKDWORD, 0x43440000);
 
-		reg_8 = (u8)odm_get_bb_reg(dm, R_0xf94, BIT(0) | BIT(1) | BIT(2));
+		reg_8 = (u8)odm_get_bb_regbu(dm, R_0xf94, BIT(0) | BIT(1) | BIT(2));
 		PHYDM_DBG(dm, ODM_COMP_API,
 			  "AGC weighting ,rssi_min = %d\n, 0xf94[2:0] = 0x%x\n",
 			  dm->rssi_min, reg_8);
@@ -481,7 +481,7 @@ phydm_pw_sat_8822b(
 		return;
 
 	/* check */
-	ret = odm_get_bb_reg(dm, 0xcb0, BIT(9));
+	ret = odm_get_bb_regbu(dm, 0xcb0, BIT(9));
 
 	/* apply on eFEM type*/
 	if (rssi_value >= 75) {
@@ -491,22 +491,22 @@ phydm_pw_sat_8822b(
 				  ("Already in bypass mode setting\n"));
 				return;
 			}
-			odm_set_bb_reg(dm, 0x8cc, MASKDWORD, 0x8108000);
-			odm_set_bb_reg(dm, 0x8d8, BIT(27), 0x0);
-			odm_set_bb_reg(dm, 0x840, BIT(12), 0x1);
-			odm_set_bb_reg(dm, 0x810, (BIT(24)|BIT(25)), 0x2);
-			odm_set_bb_reg(dm, 0x814, BIT(0), 0x1);
-			odm_set_bb_reg(dm, 0x844, BIT(24), 0x1);
+			odm_set_bb_regbu(dm, 0x8cc, MASKDWORD, 0x8108000);
+			odm_set_bb_regbu(dm, 0x8d8, BIT(27), 0x0);
+			odm_set_bb_regbu(dm, 0x840, BIT(12), 0x1);
+			odm_set_bb_regbu(dm, 0x810, (BIT(24)|BIT(25)), 0x2);
+			odm_set_bb_regbu(dm, 0x814, BIT(0), 0x1);
+			odm_set_bb_regbu(dm, 0x844, BIT(24), 0x1);
 
-			odm_set_bb_reg(dm, 0x830, MASKDWORD, 0x79a0eaaa);
-			odm_set_bb_reg(dm, 0xe58, BIT(20), 0x1);
+			odm_set_bb_regbu(dm, 0x830, MASKDWORD, 0x79a0eaaa);
+			odm_set_bb_regbu(dm, 0xe58, BIT(20), 0x1);
 				
-			odm_set_bb_reg(dm, 0xcb0, (MASKBYTE2 | MASKLWORD),
+			odm_set_bb_regbu(dm, 0xcb0, (MASKBYTE2 | MASKLWORD),
 					0x177717);
-			odm_set_bb_reg(dm, 0xeb0, (MASKBYTE2 | MASKLWORD),
+			odm_set_bb_regbu(dm, 0xeb0, (MASKBYTE2 | MASKLWORD),
 					0x177717);
-			odm_set_bb_reg(dm, 0xcb4, MASKBYTE1, 0x77);
-			odm_set_bb_reg(dm, 0xeb4, MASKBYTE1, 0x77);
+			odm_set_bb_regbu(dm, 0xcb4, MASKBYTE1, 0x77);
+			odm_set_bb_regbu(dm, 0xeb4, MASKBYTE1, 0x77);
 
 			PHYDM_DBG(dm, ODM_PHY_CONFIG,
 				 ("External-fem turn off !!\n"));
@@ -520,12 +520,12 @@ phydm_pw_sat_8822b(
 				  ("Not in bypass mode setting\n"));
 				return;
 			}
-			odm_set_bb_reg(dm, 0xcb0, (MASKBYTE2 | MASKLWORD),
+			odm_set_bb_regbu(dm, 0xcb0, (MASKBYTE2 | MASKLWORD),
 					0x177517);
-			odm_set_bb_reg(dm, 0xeb0, (MASKBYTE2 | MASKLWORD),
+			odm_set_bb_regbu(dm, 0xeb0, (MASKBYTE2 | MASKLWORD),
 					0x177517);
-			odm_set_bb_reg(dm, 0xcb4, MASKBYTE1, 0x75);
-			odm_set_bb_reg(dm, 0xeb4, MASKBYTE1, 0x75);
+			odm_set_bb_regbu(dm, 0xcb4, MASKBYTE1, 0x75);
+			odm_set_bb_regbu(dm, 0xeb4, MASKBYTE1, 0x75);
 
 			PHYDM_DBG(dm, ODM_PHY_CONFIG,
 			("External-fem turn on !!rssi =%d\n", rssi_value));
@@ -551,11 +551,11 @@ void phydm_hwsetting_8822b(struct dm_struct *dm)
 				  "Default HT-STF gain control setting\n");
 	}
 
-	phydm_dynamic_ant_weighting(dm);
+	phydm_dynamic_ant_weightingbu(dm);
 
 	if (dm->p_advance_ota & PHYDM_ASUS_OTA_SETTING) {
 		/* PD TH modify due to enlarge MF windows size */
-		odm_set_bb_reg(dm, 0x838, 0xf0, 0x6);
+		odm_set_bb_regbu(dm, 0x838, 0xf0, 0x6);
 
 		if (dm->rssi_min <= 20)
 			phydm_somlrxhp_setting(dm, false);
@@ -572,7 +572,7 @@ void phydm_hwsetting_8822b(struct dm_struct *dm)
 
 	if (dm->p_advance_ota & PHYDM_LENOVO_OTA_SETTING_NBI_CSI) {
 		if ((*dm->band_width == CHANNEL_WIDTH_80) && (*dm->channel == 157)) {
-			set_result_nbi = phydm_nbi_setting(dm, FUNC_ENABLE, *dm->channel, 80, 5760, PHYDM_DONT_CARE);
+			set_result_nbi = phydm_nbi_settingbu(dm, FUNC_ENABLE, *dm->channel, 80, 5760, PHYDM_DONT_CARE);
 			PHYDM_DBG(dm, ODM_PHY_CONFIG, "Enable NBI\n");
 		}
 	}

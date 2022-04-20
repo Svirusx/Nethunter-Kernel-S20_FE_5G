@@ -30,7 +30,7 @@
 #include "mp_precomp.h"
 #include "phydm_precomp.h"
 
-void phydm_init_debug_setting(struct dm_struct *dm)
+void phydm_init_debug_settingbu(struct dm_struct *dm)
 {
 	dm->fw_debug_components = 0;
 	dm->debug_components =
@@ -73,15 +73,15 @@ void phydm_init_debug_setting(struct dm_struct *dm)
 	dm->c2h_cmd_start = 0;
 	dm->cmn_dbg_msg_cnt = PHYDM_WATCH_DOG_PERIOD;
 	dm->cmn_dbg_msg_period = PHYDM_WATCH_DOG_PERIOD;
-	phydm_reset_rx_rate_distribution(dm);
+	phydm_reset_rx_rate_distributionbu(dm);
 }
 
-void phydm_bb_dbg_port_header_sel(void *dm_void, u32 header_idx)
+void phydm_bb_dbg_port_header_selbu(void *dm_void, u32 header_idx)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
 	if (dm->support_ic_type & ODM_IC_11AC_SERIES) {
-		odm_set_bb_reg(dm, R_0x8f8, 0x3c00000, header_idx);
+		odm_set_bb_regbu(dm, R_0x8f8, 0x3c00000, header_idx);
 
 		/*@
 		 * header_idx:
@@ -101,7 +101,7 @@ void phydm_bb_dbg_port_header_sel(void *dm_void, u32 header_idx)
 	}
 }
 
-void phydm_bb_dbg_port_clock_en(void *dm_void, u8 enable)
+void phydm_bb_dbg_port_clock_enbu(void *dm_void, u8 enable)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 reg_value = 0;
@@ -109,40 +109,40 @@ void phydm_bb_dbg_port_clock_en(void *dm_void, u8 enable)
 	if (dm->support_ic_type & ODM_IC_11AC_2_SERIES) {
 		/*@enable/disable debug port clock, for power saving*/
 		reg_value = enable ? 0x7 : 0;
-		odm_set_bb_reg(dm, R_0x198c, 0x7, reg_value);
+		odm_set_bb_regbu(dm, R_0x198c, 0x7, reg_value);
 	}
 }
 
-u32 phydm_get_bb_dbg_port_idx(void *dm_void)
+u32 phydm_get_bb_dbg_port_idxbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 val = 0;
 
 	if (dm->support_ic_type & ODM_IC_11AC_SERIES) {
-		phydm_bb_dbg_port_clock_en(dm, true);
-		val = odm_get_bb_reg(dm, R_0x8fc, MASKDWORD);
+		phydm_bb_dbg_port_clock_enbu(dm, true);
+		val = odm_get_bb_regbu(dm, R_0x8fc, MASKDWORD);
 	} else if (dm->support_ic_type & ODM_IC_JGR3_SERIES) {
-		val = odm_get_bb_reg(dm, R_0x1c3c, 0xfff00);
+		val = odm_get_bb_regbu(dm, R_0x1c3c, 0xfff00);
 	} else { /*@if (dm->support_ic_type & ODM_IC_11N_SERIES)*/
-		val = odm_get_bb_reg(dm, R_0x908, MASKDWORD);
+		val = odm_get_bb_regbu(dm, R_0x908, MASKDWORD);
 	}
 	return val;
 }
 
-u8 phydm_set_bb_dbg_port(void *dm_void, u8 curr_dbg_priority, u32 debug_port)
+u8 phydm_set_bb_dbg_portbu(void *dm_void, u8 curr_dbg_priority, u32 debug_port)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u8 dbg_port_result = false;
 
 	if (curr_dbg_priority > dm->pre_dbg_priority) {
 		if (dm->support_ic_type & ODM_IC_11AC_SERIES) {
-			phydm_bb_dbg_port_clock_en(dm, true);
+			phydm_bb_dbg_port_clock_enbu(dm, true);
 
-			odm_set_bb_reg(dm, R_0x8fc, MASKDWORD, debug_port);
+			odm_set_bb_regbu(dm, R_0x8fc, MASKDWORD, debug_port);
 		} else if (dm->support_ic_type & ODM_IC_JGR3_SERIES) {
-			odm_set_bb_reg(dm, R_0x1c3c, 0xfff00, debug_port);
+			odm_set_bb_regbu(dm, R_0x1c3c, 0xfff00, debug_port);
 		} else { /*@if (dm->support_ic_type & ODM_IC_11N_SERIES)*/
-			odm_set_bb_reg(dm, R_0x908, MASKDWORD, debug_port);
+			odm_set_bb_regbu(dm, R_0x908, MASKDWORD, debug_port);
 		}
 		PHYDM_DBG(dm, ODM_COMP_API,
 			  "DbgPort ((0x%x)) set success, Cur_priority=((%d)), Pre_priority=((%d))\n",
@@ -154,28 +154,28 @@ u8 phydm_set_bb_dbg_port(void *dm_void, u8 curr_dbg_priority, u32 debug_port)
 	return dbg_port_result;
 }
 
-void phydm_release_bb_dbg_port(void *dm_void)
+void phydm_release_bb_dbg_portbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
-	phydm_bb_dbg_port_clock_en(dm, false);
-	phydm_bb_dbg_port_header_sel(dm, 0);
+	phydm_bb_dbg_port_clock_enbu(dm, false);
+	phydm_bb_dbg_port_header_selbu(dm, 0);
 
 	dm->pre_dbg_priority = DBGPORT_RELEASE;
 	PHYDM_DBG(dm, ODM_COMP_API, "Release BB dbg_port\n");
 }
 
-u32 phydm_get_bb_dbg_port_val(void *dm_void)
+u32 phydm_get_bb_dbg_port_valbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 dbg_port_value = 0;
 
 	if (dm->support_ic_type & ODM_IC_11AC_SERIES)
-		dbg_port_value = odm_get_bb_reg(dm, R_0xfa0, MASKDWORD);
+		dbg_port_value = odm_get_bb_regbu(dm, R_0xfa0, MASKDWORD);
 	else if (dm->support_ic_type & ODM_IC_JGR3_SERIES)
-		dbg_port_value = odm_get_bb_reg(dm, R_0x2dbc, MASKDWORD);
+		dbg_port_value = odm_get_bb_regbu(dm, R_0x2dbc, MASKDWORD);
 	else /*@if (dm->support_ic_type & ODM_IC_11N_SERIES)*/
-		dbg_port_value = odm_get_bb_reg(dm, R_0xdf4, MASKDWORD);
+		dbg_port_value = odm_get_bb_regbu(dm, R_0xdf4, MASKDWORD);
 
 	PHYDM_DBG(dm, ODM_COMP_API, "dbg_port_value = 0x%x\n", dbg_port_value);
 	return dbg_port_value;
@@ -183,7 +183,7 @@ u32 phydm_get_bb_dbg_port_val(void *dm_void)
 
 #ifdef CONFIG_PHYDM_DEBUG_FUNCTION
 #if (ODM_IC_11N_SERIES_SUPPORT)
-void phydm_bb_hw_dbg_info_n(void *dm_void, u32 *_used, char *output,
+void phydm_bb_hw_dbg_infobu_n(void *dm_void, u32 *_used, char *output,
 			    u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -206,7 +206,7 @@ void phydm_bb_hw_dbg_info_n(void *dm_void, u32 *_used, char *output,
 		 "BB Report Info");
 
 	/*@AGC result*/
-	value32 = odm_get_bb_reg(dm, R_0xdd0, MASKDWORD);
+	value32 = odm_get_bb_regbu(dm, R_0xdd0, MASKDWORD);
 	rf_gain_a = (u8)(value32 & 0x3f);
 	rf_gain_a = rf_gain_a << 1;
 
@@ -224,7 +224,7 @@ void phydm_bb_hw_dbg_info_n(void *dm_void, u32 *_used, char *output,
 		 rf_gain_a, rf_gain_b, rf_gain_c, rf_gain_d);
 
 	/*SNR report*/
-	value32 = odm_get_bb_reg(dm, R_0xdd4, MASKDWORD);
+	value32 = odm_get_bb_regbu(dm, R_0xdd4, MASKDWORD);
 	rx_snr_a = (u8)(value32 & 0xff);
 	rx_snr_a = rx_snr_a >> 1;
 
@@ -242,7 +242,7 @@ void phydm_bb_hw_dbg_info_n(void *dm_void, u32 *_used, char *output,
 		 rx_snr_a, rx_snr_b, rx_snr_c, rx_snr_d);
 
 	/* PostFFT related info*/
-	value32 = odm_get_bb_reg(dm, R_0xdd8, MASKDWORD);
+	value32 = odm_get_bb_regbu(dm, R_0xdd8, MASKDWORD);
 
 	rxevm_0 = (s8)((value32 & MASKBYTE2) >> 16);
 	rxevm_0 /= 2;
@@ -258,7 +258,7 @@ void phydm_bb_hw_dbg_info_n(void *dm_void, u32 *_used, char *output,
 		 "\r\n %-35s = %d / %d", "RXEVM (1ss/2ss)", rxevm_0, rxevm_1);
 
 #if 1
-	phydm_get_cfo_info(dm, &cfo);
+	phydm_get_cfo_infobu(dm, &cfo);
 	for (i = 0; i < dm->num_rf_path; i++) {
 		PDM_SNPF(out_len, used, output + used, out_len - used,
 			 "\r\n %s[%d] %-28s = {%d, %d, %d, %d, %d}",
@@ -268,11 +268,11 @@ void phydm_bb_hw_dbg_info_n(void *dm_void, u32 *_used, char *output,
 	}
 #else
 	/*@CFO Report Info*/
-	odm_set_bb_reg(dm, R_0xd00, BIT(26), 1);
+	odm_set_bb_regbu(dm, R_0xd00, BIT(26), 1);
 
 	/*Short CFO*/
-	value32 = odm_get_bb_reg(dm, R_0xdac, MASKDWORD);
-	value32_1 = odm_get_bb_reg(dm, R_0xdb0, MASKDWORD);
+	value32 = odm_get_bb_regbu(dm, R_0xdac, MASKDWORD);
+	value32_1 = odm_get_bb_regbu(dm, R_0xdb0, MASKDWORD);
 
 	short_cfo_b = (s32)(value32 & 0xfff); /*S(12,11)*/
 	short_cfo_a = (s32)((value32 & 0x0fff0000) >> 16);
@@ -310,8 +310,8 @@ void phydm_bb_hw_dbg_info_n(void *dm_void, u32 *_used, char *output,
 		 long_cfo_b);
 
 	/*SCFO*/
-	value32 = odm_get_bb_reg(dm, R_0xdb8, MASKDWORD);
-	value32_1 = odm_get_bb_reg(dm, R_0xdb4, MASKDWORD);
+	value32 = odm_get_bb_regbu(dm, R_0xdb8, MASKDWORD);
+	value32_1 = odm_get_bb_regbu(dm, R_0xdb4, MASKDWORD);
 
 	scfo_b = (s32)(value32 & 0x7ff); /*S(11,10)*/
 	scfo_a = (s32)((value32 & 0x07ff0000) >> 16);
@@ -344,8 +344,8 @@ void phydm_bb_hw_dbg_info_n(void *dm_void, u32 *_used, char *output,
 		 "\r\n %-35s = %d / %d", "Avg CFO(Hz) <A/B>", avg_cfo_a,
 		 avg_cfo_b);
 
-	value32 = odm_get_bb_reg(dm, R_0xdbc, MASKDWORD);
-	value32_1 = odm_get_bb_reg(dm, R_0xde0, MASKDWORD);
+	value32 = odm_get_bb_regbu(dm, R_0xdbc, MASKDWORD);
+	value32_1 = odm_get_bb_regbu(dm, R_0xde0, MASKDWORD);
 
 	cfo_end_b = (s32)(value32 & 0x1fff); /*S(13,12)*/
 	cfo_end_a = (s32)((value32 & 0x1fff0000) >> 16);
@@ -383,7 +383,7 @@ void phydm_bb_hw_dbg_info_n(void *dm_void, u32 *_used, char *output,
 
 #if (ODM_IC_11AC_SERIES_SUPPORT)
 #if (RTL8822B_SUPPORT)
-void phydm_bb_hw_dbg_info_8822b(void *dm_void, u32 *_used, char *output,
+void phydm_bb_hw_dbg_infobu_8822b(void *dm_void, u32 *_used, char *output,
 				u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -400,7 +400,7 @@ void phydm_bb_hw_dbg_info_8822b(void *dm_void, u32 *_used, char *output,
 
 	PDM_SNPF(out_len, used, output + used, out_len - used,
 		 "\r\n %-35s = %d.%.4d", "condi_num",
-		 condi_num >> 4, phydm_show_fraction_num(condi_num & 0xf, 4));
+		 condi_num >> 4, phydm_show_fraction_numbu(condi_num & 0xf, 4));
 
 	for (i = 0; i < CN_CNT_MAX; i++) {
 		PDM_SNPF(out_len, used, output + used, out_len - used,
@@ -413,7 +413,7 @@ void phydm_bb_hw_dbg_info_8822b(void *dm_void, u32 *_used, char *output,
 }
 #endif
 
-void phydm_bb_hw_dbg_info_ac(void *dm_void, u32 *_used, char *output,
+void phydm_bb_hw_dbg_infobu_acbu(void *dm_void, u32 *_used, char *output,
 			     u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -443,7 +443,7 @@ void phydm_bb_hw_dbg_info_ac(void *dm_void, u32 *_used, char *output,
 
 	/*@ [BW & Mode] =====================================================*/
 
-	value32 = odm_get_bb_reg(dm, R_0xf80, MASKDWORD);
+	value32 = odm_get_bb_regbu(dm, R_0xf80, MASKDWORD);
 	rx_ht = (u8)((value32 & 0x180) >> 7);
 
 	if (rx_ht == AD_VHT_MODE) {
@@ -483,24 +483,24 @@ void phydm_bb_hw_dbg_info_ac(void *dm_void, u32 *_used, char *output,
 
 	/*@ [RX signal power and AGC related info] ==========================*/
 
-	pwdb = (u8)odm_get_bb_reg(dm, R_0xf90, MASKBYTE1);
+	pwdb = (u8)odm_get_bb_regbu(dm, R_0xf90, MASKBYTE1);
 	sig_power = -110 + (pwdb >> 1);
 	PDM_SNPF(out_len, used, output + used, out_len - used,
 		 "\r\n %-35s = %d", "OFDM RX Signal Power(dB)", sig_power);
 
-	value32 = odm_get_bb_reg(dm, R_0xd14, MASKDWORD);
+	value32 = odm_get_bb_regbu(dm, R_0xd14, MASKDWORD);
 	rx_snr[RF_PATH_A] = (u8)(value32 & 0xFF) >> 1; /*@ S(8,1)*/
 	rf_gain[RF_PATH_A] = (s8)(((value32 & MASKBYTE1) >> 8) * 2);
 
-	value32 = odm_get_bb_reg(dm, R_0xd54, MASKDWORD);
+	value32 = odm_get_bb_regbu(dm, R_0xd54, MASKDWORD);
 	rx_snr[RF_PATH_B] = (u8)(value32 & 0xFF) >> 1; /*@ S(8,1)*/
 	rf_gain[RF_PATH_B] = (s8)(((value32 & MASKBYTE1) >> 8) * 2);
 
-	value32 = odm_get_bb_reg(dm, R_0xd94, MASKDWORD);
+	value32 = odm_get_bb_regbu(dm, R_0xd94, MASKDWORD);
 	rx_snr[RF_PATH_C] = (u8)(value32 & 0xFF) >> 1; /*@ S(8,1)*/
 	rf_gain[RF_PATH_C] = (s8)(((value32 & MASKBYTE1) >> 8) * 2);
 
-	value32 = odm_get_bb_reg(dm, R_0xdd4, MASKDWORD);
+	value32 = odm_get_bb_regbu(dm, R_0xdd4, MASKDWORD);
 	rx_snr[RF_PATH_D] = (u8)(value32 & 0xFF) >> 1; /*@ S(8,1)*/
 	rf_gain[RF_PATH_D] = (s8)(((value32 & MASKBYTE1) >> 8) * 2);
 
@@ -513,22 +513,22 @@ void phydm_bb_hw_dbg_info_ac(void *dm_void, u32 *_used, char *output,
 
 	PDM_SNPF(out_len, used, output + used, out_len - used,
 		 "\r\n %-35s = %d", "OFDM CCA cnt",
-		 odm_get_bb_reg(dm, R_0xf08, 0xFFFF0000));
+		 odm_get_bb_regbu(dm, R_0xf08, 0xFFFF0000));
 
 	PDM_SNPF(out_len, used, output + used, out_len - used,
 		 "\r\n %-35s = %d", "OFDM SBD Fail cnt",
-		 odm_get_bb_reg(dm, R_0xfd0, 0xFFFF));
+		 odm_get_bb_regbu(dm, R_0xfd0, 0xFFFF));
 
-	value32 = odm_get_bb_reg(dm, R_0xfc4, MASKDWORD);
+	value32 = odm_get_bb_regbu(dm, R_0xfc4, MASKDWORD);
 	PDM_SNPF(out_len, used, output + used, out_len - used,
 		 "\r\n %-35s = %d / %d", "VHT SIGA/SIGB CRC8 Fail cnt",
 		 value32 & 0xFFFF, ((value32 & 0xFFFF0000) >> 16));
 
 	PDM_SNPF(out_len, used, output + used, out_len - used,
 		 "\r\n %-35s = %d", "CCK CCA cnt",
-		 odm_get_bb_reg(dm, R_0xfcc, 0xFFFF));
+		 odm_get_bb_regbu(dm, R_0xfcc, 0xFFFF));
 
-	value32 = odm_get_bb_reg(dm, R_0xfbc, MASKDWORD);
+	value32 = odm_get_bb_regbu(dm, R_0xfbc, MASKDWORD);
 	PDM_SNPF(out_len, used, output + used, out_len - used,
 		 "\r\n %-35s = %d / %d",
 		 "LSIG (parity Fail/rate Illegal) cnt", value32 & 0xFFFF,
@@ -536,11 +536,11 @@ void phydm_bb_hw_dbg_info_ac(void *dm_void, u32 *_used, char *output,
 
 	PDM_SNPF(out_len, used, output + used, out_len - used,
 		 "\r\n %-35s = %d / %d", "HT/VHT MCS NOT SUPPORT cnt",
-		 odm_get_bb_reg(dm, R_0xfc0, (0xFFFF0000 >> 16)),
-		 odm_get_bb_reg(dm, R_0xfc8, 0xFFFF));
+		 odm_get_bb_regbu(dm, R_0xfc0, (0xFFFF0000 >> 16)),
+		 odm_get_bb_regbu(dm, R_0xfc8, 0xFFFF));
 
 	/*@ [PostFFT Info] =================================================*/
-	value32 = odm_get_bb_reg(dm, R_0xf8c, MASKDWORD);
+	value32 = odm_get_bb_regbu(dm, R_0xf8c, MASKDWORD);
 	rxevm_0 = (s8)((value32 & MASKBYTE2) >> 16);
 	rxevm_0 /= 2;
 	if (rxevm_0 < -63)
@@ -548,7 +548,7 @@ void phydm_bb_hw_dbg_info_ac(void *dm_void, u32 *_used, char *output,
 
 	rxevm_1 = (s8)((value32 & MASKBYTE3) >> 24);
 	rxevm_1 /= 2;
-	value32 = odm_get_bb_reg(dm, R_0xf88, MASKDWORD);
+	value32 = odm_get_bb_regbu(dm, R_0xf88, MASKDWORD);
 	rxevm_2 = (s8)((value32 & MASKBYTE2) >> 16);
 	rxevm_2 /= 2;
 
@@ -565,13 +565,13 @@ void phydm_bb_hw_dbg_info_ac(void *dm_void, u32 *_used, char *output,
 		 rx_snr[RF_PATH_A], rx_snr[RF_PATH_B],
 		 rx_snr[RF_PATH_C], rx_snr[RF_PATH_D]);
 
-	value32 = odm_get_bb_reg(dm, R_0xf8c, MASKDWORD);
+	value32 = odm_get_bb_regbu(dm, R_0xf8c, MASKDWORD);
 	PDM_SNPF(out_len, used, output + used, out_len - used,
 		 "\r\n %-35s = %d / %d", "CSI_1st /CSI_2nd", value32 & 0xFFFF,
 		 ((value32 & 0xFFFF0000) >> 16));
 
 	/*@ [CFO Report Info] ===============================================*/
-	phydm_get_cfo_info(dm, &cfo);
+	phydm_get_cfo_infobu(dm, &cfo);
 	for (i = 0; i < dm->num_rf_path; i++) {
 		PDM_SNPF(out_len, used, output + used, out_len - used,
 			 "\r\n %s[%d] %-28s = {%d, %d, %d, %d, %d}",
@@ -581,7 +581,7 @@ void phydm_bb_hw_dbg_info_ac(void *dm_void, u32 *_used, char *output,
 	}
 
 	/*@ [L-SIG Content] =================================================*/
-	value32 = odm_get_bb_reg(dm, R_0xf20, MASKDWORD);
+	value32 = odm_get_bb_regbu(dm, R_0xf20, MASKDWORD);
 
 	tail = (u8)((value32 & 0xfc0000) >> 18);/*@[23:18]*/
 	parity = (u8)((value32 & 0x20000) >> 17);/*@[17]*/
@@ -592,7 +592,7 @@ void phydm_bb_hw_dbg_info_ac(void *dm_void, u32 *_used, char *output,
 		 "L-SIG");
 	PDM_SNPF(out_len, used, output + used, out_len - used,
 		 "\r\n %-35s = %d M", "rate",
-		 phydm_get_l_sig_rate(dm, (u8)(value32 & 0x0f)));
+		 phydm_get_l_sig_ratebu(dm, (u8)(value32 & 0x0f)));
 
 	PDM_SNPF(out_len, used, output + used, out_len - used,
 		 "\r\n %-35s = %x / %d / %d", "Rsv/length/parity", rsv, length,
@@ -600,7 +600,7 @@ void phydm_bb_hw_dbg_info_ac(void *dm_void, u32 *_used, char *output,
 
 	if (rx_ht == AD_HT_MODE) {
 	/*@ [HT SIG 1] ======================================================*/
-		value32 = odm_get_bb_reg(dm, R_0xf2c, MASKDWORD);
+		value32 = odm_get_bb_regbu(dm, R_0xf2c, MASKDWORD);
 
 		hmcss = (u8)(value32 & 0x7F);
 		hrx_bw = (u8)((value32 & 0x80) >> 7);
@@ -612,7 +612,7 @@ void phydm_bb_hw_dbg_info_ac(void *dm_void, u32 *_used, char *output,
 			 "\r\n %-35s = %d / %d / %d", "MCS/BW/length",
 			 hmcss, hrx_bw, h_length);
 	/*@ [HT SIG 2] ======================================================*/
-		value32 = odm_get_bb_reg(dm, R_0xf30, MASKDWORD);
+		value32 = odm_get_bb_regbu(dm, R_0xf30, MASKDWORD);
 		smooth = (u8)(value32 & 0x01);
 		htsound = (u8)((value32 & 0x02) >> 1);
 		rsv = (u8)((value32 & 0x04) >> 2);
@@ -637,7 +637,7 @@ void phydm_bb_hw_dbg_info_ac(void *dm_void, u32 *_used, char *output,
 			 sgi, htltf, htcrc8, tail);
 	} else if (rx_ht == AD_VHT_MODE) {
 	/*@ [VHT SIG A1] ====================================================*/
-		value32 = odm_get_bb_reg(dm, R_0xf2c, MASKDWORD);
+		value32 = odm_get_bb_regbu(dm, R_0xf2c, MASKDWORD);
 
 		v_rx_bw = (u8)(value32 & 0x03);
 		vrsv = (u8)((value32 & 0x04) >> 2);
@@ -657,7 +657,7 @@ void phydm_bb_hw_dbg_info_ac(void *dm_void, u32 *_used, char *output,
 			 vrsv, vstbc, vgid, v_nsts, vpaid, vtxops, vrsv2);
 
 	/*@ [VHT SIG A2] ====================================================*/
-		value32 = odm_get_bb_reg(dm, R_0xf30, MASKDWORD);
+		value32 = odm_get_bb_regbu(dm, R_0xf30, MASKDWORD);
 
 		/* @sgi=(u8)(value32&0x01); */
 		sgiext = (u8)(value32 & 0x03);
@@ -678,7 +678,7 @@ void phydm_bb_hw_dbg_info_ac(void *dm_void, u32 *_used, char *output,
 			 sgiext, fecext, v_mcss, bf, vrsv, vhtcrc8, v_tail);
 
 	/*@ [VHT SIG B] ====================================================*/
-		value32 = odm_get_bb_reg(dm, R_0xf34, MASKDWORD);
+		value32 = odm_get_bb_regbu(dm, R_0xf34, MASKDWORD);
 
 		#if 0
 		v_length = (u16)(value32 & 0x1fffff);
@@ -707,7 +707,7 @@ void phydm_bb_hw_dbg_info_ac(void *dm_void, u32 *_used, char *output,
 #endif
 
 #ifdef PHYDM_IC_JGR3_SERIES_SUPPORT
-void phydm_bb_hw_dbg_info_jgr3(void *dm_void, u32 *_used, char *output,
+void phydm_bb_hw_dbg_infobu_jgr3(void *dm_void, u32 *_used, char *output,
 			       u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -731,7 +731,7 @@ void phydm_bb_hw_dbg_info_jgr3(void *dm_void, u32 *_used, char *output,
 
 	/*@ [Mode] =====================================================*/
 
-	value32 = odm_get_bb_reg(dm, R_0x2c20, MASKDWORD);
+	value32 = odm_get_bb_regbu(dm, R_0x2c20, MASKDWORD);
 	rx_ht = (u8)((value32 & 0xC0000) >> 18);
 	if (rx_ht == AD_VHT_MODE)
 		tmp_string = "VHT";
@@ -747,37 +747,37 @@ void phydm_bb_hw_dbg_info_jgr3(void *dm_void, u32 *_used, char *output,
 	if (dm->support_ic_type & ODM_RTL8723F) {
 		PDM_SNPF(out_len, used, output + used, out_len - used,
 			 "\r\n %-35s = %d", "CCK CCA cnt",
-			 odm_get_bb_reg(dm, R_0x2aa0, 0xFFFF));
+			 odm_get_bb_regbu(dm, R_0x2aa0, 0xFFFF));
 	} else {
 		PDM_SNPF(out_len, used, output + used, out_len - used,
 			 "\r\n %-35s = %d", "CCK CCA cnt",
-			 odm_get_bb_reg(dm, R_0x2c08, 0xFFFF));
+			 odm_get_bb_regbu(dm, R_0x2c08, 0xFFFF));
 	}
 	PDM_SNPF(out_len, used, output + used, out_len - used,
 		 "\r\n %-35s = %d", "OFDM CCA cnt",
-		 odm_get_bb_reg(dm, R_0x2c08, 0xFFFF0000));
+		 odm_get_bb_regbu(dm, R_0x2c08, 0xFFFF0000));
 
 	PDM_SNPF(out_len, used, output + used, out_len - used,
 		 "\r\n %-35s = %d", "OFDM SBD Fail cnt",
-		 odm_get_bb_reg(dm, R_0x2d20, 0xFFFF0000));
+		 odm_get_bb_regbu(dm, R_0x2d20, 0xFFFF0000));
 
 	PDM_SNPF(out_len, used, output + used, out_len - used,
 		 "\r\n %-35s = %d / %d",
 		 "LSIG (parity Fail/rate Illegal) cnt",
-		 odm_get_bb_reg(dm, R_0x2d04, 0xFFFF0000),
-		 odm_get_bb_reg(dm, R_0x2d08, 0xFFFF));
+		 odm_get_bb_regbu(dm, R_0x2d04, 0xFFFF0000),
+		 odm_get_bb_regbu(dm, R_0x2d08, 0xFFFF));
 
-	value32 = odm_get_bb_reg(dm, R_0x2d10, MASKDWORD);
+	value32 = odm_get_bb_regbu(dm, R_0x2d10, MASKDWORD);
 	PDM_SNPF(out_len, used, output + used, out_len - used,
 		 "\r\n %-35s = %d / %d", "HT/VHT MCS NOT SUPPORT cnt",
 		 value32 & 0xFFFF, ((value32 & 0xFFFF0000) >> 16));
 
-	value32 = odm_get_bb_reg(dm, R_0x2d0c, MASKDWORD);
+	value32 = odm_get_bb_regbu(dm, R_0x2d0c, MASKDWORD);
 	PDM_SNPF(out_len, used, output + used, out_len - used,
 		 "\r\n %-35s = %d / %d", "VHT SIGA/SIGB CRC8 Fail cnt",
 		 value32 & 0xFFFF, ((value32 & 0xFFFF0000) >> 16));
 	/*@ [L-SIG Content] =================================================*/
-	value32 = odm_get_bb_reg(dm, R_0x2c20, MASKDWORD);
+	value32 = odm_get_bb_regbu(dm, R_0x2c20, MASKDWORD);
 
 	parity = (u8)((value32 & 0x20000) >> 17);/*@[17]*/
 	length = (u16)((value32 & 0x1ffe0) >> 5);/*@[16:5]*/
@@ -787,7 +787,7 @@ void phydm_bb_hw_dbg_info_jgr3(void *dm_void, u32 *_used, char *output,
 		 "L-SIG");
 	PDM_SNPF(out_len, used, output + used, out_len - used,
 		 "\r\n %-35s = %d M", "rate",
-		 phydm_get_l_sig_rate(dm, (u8)(value32 & 0x0f)));
+		 phydm_get_l_sig_ratebu(dm, (u8)(value32 & 0x0f)));
 
 	PDM_SNPF(out_len, used, output + used, out_len - used,
 		 "\r\n %-35s = %x / %d / %d", "Rsv/length/parity", rsv, length,
@@ -795,7 +795,7 @@ void phydm_bb_hw_dbg_info_jgr3(void *dm_void, u32 *_used, char *output,
 
 	if (rx_ht == AD_HT_MODE) {
 	/*@ [HT SIG 1] ======================================================*/
-		value32 = odm_get_bb_reg(dm, R_0x2c2c, MASKDWORD);
+		value32 = odm_get_bb_regbu(dm, R_0x2c2c, MASKDWORD);
 
 		hmcss = (u8)(value32 & 0x7F);
 		hrx_bw = (u8)((value32 & 0x80) >> 7);
@@ -807,7 +807,7 @@ void phydm_bb_hw_dbg_info_jgr3(void *dm_void, u32 *_used, char *output,
 			 "\r\n %-35s = %d / %d / %d", "MCS/BW/length",
 			 hmcss, hrx_bw, h_length);
 	/*@ [HT SIG 2] ======================================================*/
-		value32 = odm_get_bb_reg(dm, R_0x2c30, MASKDWORD);
+		value32 = odm_get_bb_regbu(dm, R_0x2c30, MASKDWORD);
 		smooth = (u8)(value32 & 0x01);
 		htsound = (u8)((value32 & 0x02) >> 1);
 		rsv = (u8)((value32 & 0x04) >> 2);
@@ -832,7 +832,7 @@ void phydm_bb_hw_dbg_info_jgr3(void *dm_void, u32 *_used, char *output,
 			 sgi, htltf, htcrc8, tail);
 	} else if (rx_ht == AD_VHT_MODE) {
 	/*@ [VHT SIG A1] ====================================================*/
-		value32 = odm_get_bb_reg(dm, R_0x2c2c, MASKDWORD);
+		value32 = odm_get_bb_regbu(dm, R_0x2c2c, MASKDWORD);
 
 		v_rx_bw = (u8)(value32 & 0x03);
 		vrsv = (u8)((value32 & 0x04) >> 2);
@@ -852,7 +852,7 @@ void phydm_bb_hw_dbg_info_jgr3(void *dm_void, u32 *_used, char *output,
 			 vrsv, vstbc, vgid, v_nsts, vpaid, vtxops, vrsv2);
 
 	/*@ [VHT SIG A2] ====================================================*/
-		value32 = odm_get_bb_reg(dm, R_0x2c30, MASKDWORD);
+		value32 = odm_get_bb_regbu(dm, R_0x2c30, MASKDWORD);
 
 		/* @sgi=(u8)(value32&0x01); */
 		sgiext = (u8)(value32 & 0x03);
@@ -873,7 +873,7 @@ void phydm_bb_hw_dbg_info_jgr3(void *dm_void, u32 *_used, char *output,
 			 sgiext, fecext, v_mcss, bf, vrsv, vhtcrc8, v_tail);
 
 	/*@ [VHT SIG B] ====================================================*/
-		value32 = odm_get_bb_reg(dm, R_0x2c34, MASKDWORD);
+		value32 = odm_get_bb_regbu(dm, R_0x2c34, MASKDWORD);
 
 		PDM_SNPF(out_len, used, output + used, out_len - used,
 			 "\r\n %-35s", "VHT-SIG-B");
@@ -907,7 +907,7 @@ void phydm_bb_hw_dbg_info_jgr3(void *dm_void, u32 *_used, char *output,
 }
 #endif
 
-u8 phydm_get_l_sig_rate(void *dm_void, u8 rate_idx_l_sig)
+u8 phydm_get_l_sig_ratebu(void *dm_void, u8 rate_idx_l_sig)
 {
 	u8 rate_idx = 0xff;
 
@@ -944,7 +944,7 @@ u8 phydm_get_l_sig_rate(void *dm_void, u8 rate_idx_l_sig)
 	return rate_idx;
 }
 
-void phydm_bb_hw_dbg_info(void *dm_void, char input[][16], u32 *_used,
+void phydm_bb_hw_dbg_infobu(void *dm_void, char input[][16], u32 *_used,
 			  char *output, u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -954,24 +954,24 @@ void phydm_bb_hw_dbg_info(void *dm_void, char input[][16], u32 *_used,
 	switch (dm->ic_ip_series) {
 	#if (ODM_IC_11N_SERIES_SUPPORT)
 	case PHYDM_IC_N:
-		phydm_bb_hw_dbg_info_n(dm, &used, output, &out_len);
+		phydm_bb_hw_dbg_infobu_n(dm, &used, output, &out_len);
 		break;
 	#endif
 
 	#if (ODM_IC_11AC_SERIES_SUPPORT)
 	case PHYDM_IC_AC:
-		phydm_bb_hw_dbg_info_ac(dm, &used, output, &out_len);
-		phydm_reset_bb_hw_cnt(dm);
+		phydm_bb_hw_dbg_infobu_acbu(dm, &used, output, &out_len);
+		phydm_reset_bb_hw_cntbu(dm);
 		#if (RTL8822B_SUPPORT)
-		phydm_bb_hw_dbg_info_8822b(dm, &used, output, &out_len);
+		phydm_bb_hw_dbg_infobu_8822b(dm, &used, output, &out_len);
 		#endif
 		break;
 	#endif
 
 	#ifdef PHYDM_IC_JGR3_SERIES_SUPPORT
 	case PHYDM_IC_JGR3:
-		phydm_bb_hw_dbg_info_jgr3(dm, &used, output, &out_len);
-		phydm_reset_bb_hw_cnt(dm);
+		phydm_bb_hw_dbg_infobu_jgr3(dm, &used, output, &out_len);
+		phydm_reset_bb_hw_cntbu(dm);
 		break;
 	#endif
 	default:
@@ -986,7 +986,7 @@ void phydm_bb_hw_dbg_info(void *dm_void, char input[][16], u32 *_used,
 
 #if (DM_ODM_SUPPORT_TYPE & ODM_WIN)
 
-void phydm_dm_summary_cli_win(void *dm_void, char *buf, u8 macid)
+void phydm_dm_summarybu_cli_win(void *dm_void, char *buf, u8 macid)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct phydm_dig_struct *dig_t = &dm->dm_dig_table;
@@ -1172,7 +1172,7 @@ void phydm_basic_dbg_msg_cli_win(void *dm_void, char *buf)
 			RT_PRINT(buf);
 		}
 
-		phydm_print_rate_2_buff(dm, dm->rx_rate, dbg_buf, PHYDM_SNPRINT_SIZE);
+		phydm_print_ratebu_2_buff(dm, dm->rx_rate, dbg_buf, PHYDM_SNPRINT_SIZE);
 		RT_SPRINTF(buf, DBGM_CLI_BUF_SIZE, "\r\n RSSI:{%d, %d, %d, %d}, RxRate:%s (0x%x)",
 			   (dm->rssi_a == 0xff) ? 0 : dm->rssi_a,
 			   (dm->rssi_b == 0xff) ? 0 : dm->rssi_b,
@@ -1181,14 +1181,14 @@ void phydm_basic_dbg_msg_cli_win(void *dm_void, char *buf)
 			  dbg_buf, dm->rx_rate);
 		RT_PRINT(buf);
 
-		phydm_print_rate_2_buff(dm, dm->phy_dbg_info.beacon_phy_rate, dbg_buf, PHYDM_SNPRINT_SIZE);
+		phydm_print_ratebu_2_buff(dm, dm->phy_dbg_info.beacon_phy_rate, dbg_buf, PHYDM_SNPRINT_SIZE);
 		RT_SPRINTF(buf, DBGM_CLI_BUF_SIZE, "\r\n Beacon_cnt=%d, rate_idx:%s (0x%x)",
 			   dm->phy_dbg_info.beacon_cnt_in_period,
 			   dbg_buf,
 			   dm->phy_dbg_info.beacon_phy_rate);
 		RT_PRINT(buf);
 
-		/*Show phydm_rx_rate_distribution;*/
+		/*Show phydm_rx_rate_distributionbu;*/
 		RT_SPRINTF(buf, DBGM_CLI_BUF_SIZE, "\r\n [RxRate Cnt] =============>");
 		RT_PRINT(buf);
 
@@ -1377,49 +1377,49 @@ void phydm_basic_dbg_msg_cli_win(void *dm_void, char *buf)
 			if (i > dm->num_rf_path)
 				break;
 
-			odm_memory_set(dm, tmp_rssi_avg, 0, 4);
-			odm_memory_set(dm, tmp_snr_avg, 0, 4);
-			odm_memory_set(dm, tmp_evm_avg, 0, 4);
+			odm_memory_setbu(dm, tmp_rssi_avg, 0, 4);
+			odm_memory_setbu(dm, tmp_snr_avg, 0, 4);
+			odm_memory_setbu(dm, tmp_evm_avg, 0, 4);
 
 			#if (defined(PHYDM_COMPILE_ABOVE_4SS))
 			if (i == 4) {
 				rate_type = "[4-SS]";
 				tmp_cnt = dbg_s->rssi_4ss_cnt;
-				odm_move_memory(dm, tmp_rssi_avg, dbg_avg->rssi_4ss_avg, dm->num_rf_path);
-				odm_move_memory(dm, tmp_snr_avg, dbg_avg->snr_4ss_avg, dm->num_rf_path);
-				odm_move_memory(dm, tmp_evm_avg, dbg_avg->evm_4ss_avg, 4);
+				odm_move_memorybu(dm, tmp_rssi_avg, dbg_avg->rssi_4ss_avg, dm->num_rf_path);
+				odm_move_memorybu(dm, tmp_snr_avg, dbg_avg->snr_4ss_avg, dm->num_rf_path);
+				odm_move_memorybu(dm, tmp_evm_avg, dbg_avg->evm_4ss_avg, 4);
 			} else
 			#endif
 			#if (defined(PHYDM_COMPILE_ABOVE_3SS))
 			if (i == 3) {
 				rate_type = "[3-SS]";
 				tmp_cnt = dbg_s->rssi_3ss_cnt;
-				odm_move_memory(dm, tmp_rssi_avg, dbg_avg->rssi_3ss_avg, dm->num_rf_path);
-				odm_move_memory(dm, tmp_snr_avg, dbg_avg->snr_3ss_avg, dm->num_rf_path);
-				odm_move_memory(dm, tmp_evm_avg, dbg_avg->evm_3ss_avg, 3);
+				odm_move_memorybu(dm, tmp_rssi_avg, dbg_avg->rssi_3ss_avg, dm->num_rf_path);
+				odm_move_memorybu(dm, tmp_snr_avg, dbg_avg->snr_3ss_avg, dm->num_rf_path);
+				odm_move_memorybu(dm, tmp_evm_avg, dbg_avg->evm_3ss_avg, 3);
 			} else
 			#endif
 			#if (defined(PHYDM_COMPILE_ABOVE_2SS))
 			if (i == 2) {
 				rate_type = "[2-SS]";
 				tmp_cnt = dbg_s->rssi_2ss_cnt;
-				odm_move_memory(dm, tmp_rssi_avg, dbg_avg->rssi_2ss_avg, dm->num_rf_path);
-				odm_move_memory(dm, tmp_snr_avg, dbg_avg->snr_2ss_avg, dm->num_rf_path);
-				odm_move_memory(dm, tmp_evm_avg, dbg_avg->evm_2ss_avg, 2);
+				odm_move_memorybu(dm, tmp_rssi_avg, dbg_avg->rssi_2ss_avg, dm->num_rf_path);
+				odm_move_memorybu(dm, tmp_snr_avg, dbg_avg->snr_2ss_avg, dm->num_rf_path);
+				odm_move_memorybu(dm, tmp_evm_avg, dbg_avg->evm_2ss_avg, 2);
 			} else
 			#endif
 			if (i == 1) {
 				rate_type = "[1-SS]";
 				tmp_cnt = dbg_s->rssi_1ss_cnt;
-				odm_move_memory(dm, tmp_rssi_avg, dbg_avg->rssi_1ss_avg, dm->num_rf_path);
-				odm_move_memory(dm, tmp_snr_avg, dbg_avg->snr_1ss_avg, dm->num_rf_path);
-				odm_move_memory(dm, tmp_evm_avg, &dbg_avg->evm_1ss_avg, 1);
+				odm_move_memorybu(dm, tmp_rssi_avg, dbg_avg->rssi_1ss_avg, dm->num_rf_path);
+				odm_move_memorybu(dm, tmp_snr_avg, dbg_avg->snr_1ss_avg, dm->num_rf_path);
+				odm_move_memorybu(dm, tmp_evm_avg, &dbg_avg->evm_1ss_avg, 1);
 			} else {
 				rate_type = "[L-OFDM]";
 				tmp_cnt = dbg_s->rssi_ofdm_cnt;
-				odm_move_memory(dm, tmp_rssi_avg, dbg_avg->rssi_ofdm_avg, dm->num_rf_path);
-				odm_move_memory(dm, tmp_snr_avg, dbg_avg->snr_ofdm_avg, dm->num_rf_path);
-				odm_move_memory(dm, tmp_evm_avg, &dbg_avg->evm_ofdm_avg, 1);
+				odm_move_memorybu(dm, tmp_rssi_avg, dbg_avg->rssi_ofdm_avg, dm->num_rf_path);
+				odm_move_memorybu(dm, tmp_snr_avg, dbg_avg->snr_ofdm_avg, dm->num_rf_path);
+				odm_move_memorybu(dm, tmp_evm_avg, &dbg_avg->evm_ofdm_avg, 1);
 			}
 
 			RT_SPRINTF(buf, DBGM_CLI_BUF_SIZE,
@@ -1437,7 +1437,7 @@ void phydm_basic_dbg_msg_cli_win(void *dm_void, char *buf)
 			entry = dm->phydm_sta_info[macid];
 
 			if (is_sta_active(entry)) {
-				phydm_print_rate_2_buff(dm, entry->ra_info.curr_tx_rate, dbg_buf, PHYDM_SNPRINT_SIZE);
+				phydm_print_ratebu_2_buff(dm, entry->ra_info.curr_tx_rate, dbg_buf, PHYDM_SNPRINT_SIZE);
 				RT_SPRINTF(buf, DBGM_CLI_BUF_SIZE, "\r\n TxRate[%d]=%s (0x%x)", macid, dbg_buf, entry->ra_info.curr_tx_rate);
 				RT_PRINT(buf);
 				target_macid = macid;
@@ -1461,7 +1461,7 @@ void phydm_basic_dbg_msg_cli_win(void *dm_void, char *buf)
 		if (dm->support_ic_type == ODM_RTL8822B) {
 			RT_SPRINTF(buf, DBGM_CLI_BUF_SIZE, "\r\n Condi_Num=((%d.%.4d))",
 				   dm->phy_dbg_info.condi_num >> 4,
-				   phydm_show_fraction_num(dm->phy_dbg_info.condi_num & 0xf, 4));
+				   phydm_show_fraction_numbu(dm->phy_dbg_info.condi_num & 0xf, 4));
 			RT_PRINT(buf);
 		}
 		#endif
@@ -1536,7 +1536,7 @@ void phydm_basic_dbg_msg_cli_win(void *dm_void, char *buf)
 	RT_PRINT(buf);
 
 	if (fa_t->ofdm2_rate_idx) {
-		phydm_print_rate_2_buff(dm, fa_t->ofdm2_rate_idx,
+		phydm_print_ratebu_2_buff(dm, fa_t->ofdm2_rate_idx,
 					dbg_buf, PHYDM_SNPRINT_SIZE);
 		RT_SPRINTF(buf, DBGM_CLI_BUF_SIZE,
 			   "\r\n [OFDM:%s CRC32 Cnt] {error, ok}= {%d, %d} (%d percent)",
@@ -1546,7 +1546,7 @@ void phydm_basic_dbg_msg_cli_win(void *dm_void, char *buf)
 	}
 
 	if (fa_t->ht2_rate_idx) {
-		phydm_print_rate_2_buff(dm, fa_t->ht2_rate_idx, dbg_buf,
+		phydm_print_ratebu_2_buff(dm, fa_t->ht2_rate_idx, dbg_buf,
 					PHYDM_SNPRINT_SIZE);
 		RT_SPRINTF(buf, DBGM_CLI_BUF_SIZE,
 			   "\r\n [HT  :%s CRC32 Cnt] {error, ok}= {%d, %d} (%d percent)",
@@ -1558,7 +1558,7 @@ void phydm_basic_dbg_msg_cli_win(void *dm_void, char *buf)
 #if (ODM_IC_11AC_SERIES_SUPPORT || defined(PHYDM_IC_JGR3_SERIES_SUPPORT))
 	if (dm->support_ic_type & (ODM_IC_11AC_SERIES | ODM_IC_JGR3_SERIES)) {
 		if (fa_t->vht2_rate_idx) {
-			phydm_print_rate_2_buff(dm, fa_t->vht2_rate_idx,
+			phydm_print_ratebu_2_buff(dm, fa_t->vht2_rate_idx,
 						dbg_buf, PHYDM_SNPRINT_SIZE);
 			RT_SPRINTF(buf, DBGM_CLI_BUF_SIZE,
 				   "\r\n [VHT :%s CRC32 Cnt] {error, ok}= {%d, %d} (%d percent)",
@@ -1582,7 +1582,7 @@ void phydm_basic_dbg_msg_cli_win(void *dm_void, char *buf)
 
 	RT_PRINT(buf);
 
-	phydm_dm_summary_cli_win(dm, buf, target_macid);
+	phydm_dm_summarybu_cli_win(dm, buf, target_macid);
 }
 
 #ifdef CONFIG_PHYDM_DEBUG_FUNCTION
@@ -1597,11 +1597,11 @@ void phydm_sbd_check(
 		pkt_cnt++;
 		/*read SBD conter once every 5 packets*/
 		if (pkt_cnt % 5 == 0) {
-			odm_set_timer(dm, &dm->sbdcnt_timer, 0); /*@ms*/
+			odm_set_timerbu(dm, &dm->sbdcnt_timer, 0); /*@ms*/
 			sbd_state = 1;
 		}
 	} else { /*read counter*/
-		value32 = odm_get_bb_reg(dm, R_0xf98, MASKDWORD);
+		value32 = odm_get_bb_regbu(dm, R_0xf98, MASKDWORD);
 		sym_count = (value32 & 0x7C000000) >> 26;
 		count = (value32 & 0x3F00000) >> 20;
 		pr_debug("#SBD# sym_count %d count %d\n", sym_count, count);
@@ -1639,32 +1639,32 @@ void phydm_sbd_workitem_callback(
 }
 #endif
 
-void phydm_reset_rx_rate_distribution(struct dm_struct *dm)
+void phydm_reset_rx_rate_distributionbu(struct dm_struct *dm)
 {
 	struct odm_phy_dbg_info *dbg = &dm->phy_dbg_info;
 
-	odm_memory_set(dm, &dbg->num_qry_legacy_pkt[0], 0,
+	odm_memory_setbu(dm, &dbg->num_qry_legacy_pkt[0], 0,
 		       (LEGACY_RATE_NUM * 2));
-	odm_memory_set(dm, &dbg->num_qry_ht_pkt[0], 0,
+	odm_memory_setbu(dm, &dbg->num_qry_ht_pkt[0], 0,
 		       (HT_RATE_NUM * 2));
-	odm_memory_set(dm, &dbg->num_qry_pkt_sc_20m[0], 0,
+	odm_memory_setbu(dm, &dbg->num_qry_pkt_sc_20m[0], 0,
 		       (LOW_BW_RATE_NUM * 2));
 
 	dbg->ht_pkt_not_zero = false;
 	dbg->low_bw_20_occur = false;
 
 #if (ODM_IC_11AC_SERIES_SUPPORT || defined(PHYDM_IC_JGR3_SERIES_SUPPORT))
-	odm_memory_set(dm, &dbg->num_qry_vht_pkt[0], 0, VHT_RATE_NUM * 2);
-	odm_memory_set(dm, &dbg->num_qry_pkt_sc_40m[0], 0, LOW_BW_RATE_NUM * 2);
+	odm_memory_setbu(dm, &dbg->num_qry_vht_pkt[0], 0, VHT_RATE_NUM * 2);
+	odm_memory_setbu(dm, &dbg->num_qry_pkt_sc_40m[0], 0, LOW_BW_RATE_NUM * 2);
 	#if (ODM_PHY_STATUS_NEW_TYPE_SUPPORT == 1) || (defined(PHYSTS_3RD_TYPE_SUPPORT))
-	odm_memory_set(dm, &dbg->num_mu_vht_pkt[0], 0, VHT_RATE_NUM * 2);
+	odm_memory_setbu(dm, &dbg->num_mu_vht_pkt[0], 0, VHT_RATE_NUM * 2);
 	#endif
 	dbg->vht_pkt_not_zero = false;
 	dbg->low_bw_40_occur = false;
 #endif
 }
 
-void phydm_rx_rate_distribution(void *dm_void)
+void phydm_rx_rate_distributionbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_phy_dbg_info *dbg = &dm->phy_dbg_info;
@@ -1789,7 +1789,7 @@ void phydm_rx_rate_distribution(void *dm_void)
 #endif
 }
 
-u16 phydm_rx_utility(void *dm_void, u16 avg_phy_rate, u8 rx_max_ss,
+u16 phydm_rx_utilitybu(void *dm_void, u16 avg_phy_rate, u8 rx_max_ss,
 		     enum channel_width bw)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -1819,7 +1819,7 @@ u16 phydm_rx_utility(void *dm_void, u16 avg_phy_rate, u8 rx_max_ss,
 	return utility;
 }
 
-u16 phydm_rx_avg_phy_rate(void *dm_void)
+u16 phydm_rx_avg_phy_ratebu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_phy_dbg_info *dbg = &dm->phy_dbg_info;
@@ -1831,7 +1831,7 @@ u16 phydm_rx_avg_phy_rate(void *dm_void)
 		rate_num = HT_RATE_NUM;
 		rate_base = ODM_RATEMCS0;
 		for (i = 0; i < rate_num; i++) {
-			rate = phy_rate_table[i + rate_base] << *dm->band_width;
+			rate = phy_rate_tablebu[i + rate_base] << *dm->band_width;
 			phy_rate_sum += dbg->num_qry_ht_pkt[i] * rate;
 			pkt_cnt += dbg->num_qry_ht_pkt[i];
 		}
@@ -1841,7 +1841,7 @@ u16 phydm_rx_avg_phy_rate(void *dm_void)
 		rate_num = VHT_RATE_NUM;
 		rate_base = ODM_RATEVHTSS1MCS0;
 		for (i = 0; i < rate_num; i++) {
-			rate = phy_rate_table[i + rate_base] << *dm->band_width;
+			rate = phy_rate_tablebu[i + rate_base] << *dm->band_width;
 			phy_rate_sum += dbg->num_qry_vht_pkt[i] * rate;
 			pkt_cnt += dbg->num_qry_vht_pkt[i];
 		}
@@ -1856,7 +1856,7 @@ u16 phydm_rx_avg_phy_rate(void *dm_void)
 			if (*dm->channel >= 36 && i == ODM_RATE6M)
 				continue;
 
-			rate = phy_rate_table[i];
+			rate = phy_rate_tablebu[i];
 			phy_rate_sum += dbg->num_qry_legacy_pkt[i] * rate;
 			pkt_cnt += dbg->num_qry_legacy_pkt[i];
 		}
@@ -1865,7 +1865,7 @@ u16 phydm_rx_avg_phy_rate(void *dm_void)
 #if (ODM_IC_11AC_SERIES_SUPPORT || defined(PHYDM_IC_JGR3_SERIES_SUPPORT))
 	if (dbg->low_bw_40_occur) {
 		for (i = 0; i < LOW_BW_RATE_NUM; i++) {
-			rate = phy_rate_table[i + rate_base]
+			rate = phy_rate_tablebu[i + rate_base]
 			       << CHANNEL_WIDTH_40;
 			phy_rate_sum += dbg->num_qry_pkt_sc_40m[i] * rate;
 			pkt_cnt += dbg->num_qry_pkt_sc_40m[i];
@@ -1875,7 +1875,7 @@ u16 phydm_rx_avg_phy_rate(void *dm_void)
 
 	if (dbg->low_bw_20_occur) {
 		for (i = 0; i < LOW_BW_RATE_NUM; i++) {
-			rate = phy_rate_table[i + rate_base];
+			rate = phy_rate_tablebu[i + rate_base];
 			phy_rate_sum += dbg->num_qry_pkt_sc_20m[i] * rate;
 			pkt_cnt += dbg->num_qry_pkt_sc_20m[i];
 		}
@@ -1886,7 +1886,7 @@ u16 phydm_rx_avg_phy_rate(void *dm_void)
 	return avg_phy_rate;
 }
 
-void phydm_print_hist_2_buf(void *dm_void, u16 *val, u16 len, char *buf,
+void phydm_print_hist_2_bufbu(void *dm_void, u16 *val, u16 len, char *buf,
 			    u16 buf_size)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -1906,7 +1906,7 @@ void phydm_print_hist_2_buf(void *dm_void, u16 *val, u16 len, char *buf,
 	}
 }
 
-void phydm_nss_hitogram(void *dm_void, enum PDM_RATE_TYPE rate_type)
+void phydm_nss_hitogrambu(void *dm_void, enum PDM_RATE_TYPE rate_type)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_phy_dbg_info *dbg_i = &dm->phy_dbg_info;
@@ -1917,7 +1917,7 @@ void phydm_nss_hitogram(void *dm_void, enum PDM_RATE_TYPE rate_type)
 	u16 *evm_hist = &dbg_s->evm_1ss_hist[0];
 	u16 *snr_hist = &dbg_s->snr_1ss_hist[0];
 	u8 i = 0;
-	u8 ss = phydm_rate_type_2_num_ss(dm, rate_type);
+	u8 ss = phydm_rate_type_2_num_ssbu(dm, rate_type);
 
 	for (i = 0; i < ss; i++) {
 		if (rate_type == PDM_1SS) {
@@ -1940,9 +1940,9 @@ void phydm_nss_hitogram(void *dm_void, enum PDM_RATE_TYPE rate_type)
 			#endif
 		}
 
-		phydm_print_hist_2_buf(dm, evm_hist, h_size, buf, buf_size);
+		phydm_print_hist_2_bufbu(dm, evm_hist, h_size, buf, buf_size);
 		PHYDM_DBG(dm, DBG_CMN, "[%d-SS][EVM][%d]=%s\n", ss, i, buf);
-		phydm_print_hist_2_buf(dm, snr_hist, h_size, buf, buf_size);
+		phydm_print_hist_2_bufbu(dm, snr_hist, h_size, buf, buf_size);
 		PHYDM_DBG(dm, DBG_CMN, "[%d-SS][SNR][%d]=%s\n",  ss, i, buf);
 	}
 }
@@ -1970,7 +1970,7 @@ void phydm_show_cn_hitogram(void *dm_void)
 	for (i = 0; i < PHY_HIST_TH_SIZE; i++)
 		th_tmp[i] = dbg_i->cn_hist_th[i] >> 1;
 
-	phydm_print_hist_2_buf(dm, th_tmp,
+	phydm_print_hist_2_bufbu(dm, th_tmp,
 			       PHY_HIST_TH_SIZE, buf, PHYDM_SNPRINT_SIZE);
 	PHYDM_DBG(dm, DBG_CMN, "%-24s=%s\n", "[CN_TH]", buf);
 
@@ -1985,16 +1985,16 @@ void phydm_show_cn_hitogram(void *dm_void)
 				   dbg_s->p4_cnt[i]); /*u(8,1)<<2 -> u(10,3)*/
 
 		cn_hist = &dbg_s->cn_hist[i][0];
-		phydm_print_hist_2_buf(dm, cn_hist,
+		phydm_print_hist_2_bufbu(dm, cn_hist,
 				       PHY_HIST_SIZE, buf, PHYDM_SNPRINT_SIZE);
 		PHYDM_DBG(dm, DBG_CMN, "[%d-SS]%s=(avg:%d.%4d)%s\n",
 			  i + 1, "[CN]", cn_avg >> 3,
-			  phydm_show_fraction_num(cn_avg & 0x7, 3), buf);
+			  phydm_show_fraction_numbu(cn_avg & 0x7, 3), buf);
 	}
 }
 #endif
 
-void phydm_show_phy_hitogram(void *dm_void)
+void phydm_show_phy_hitogrambu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_phy_dbg_info *dbg_i = &dm->phy_dbg_info;
@@ -2006,42 +2006,42 @@ void phydm_show_phy_hitogram(void *dm_void)
 
 	PHYDM_DBG(dm, DBG_CMN, "[PHY Histogram] ==============>\n");
 /*@===[Threshold]=============================================================*/
-	phydm_print_hist_2_buf(dm, dbg_i->evm_hist_th, th_size, buf, buf_size);
+	phydm_print_hist_2_bufbu(dm, dbg_i->evm_hist_th, th_size, buf, buf_size);
 	PHYDM_DBG(dm, DBG_CMN, "%-16s=%s\n", "[EVM_TH]", buf);
 
-	phydm_print_hist_2_buf(dm, dbg_i->snr_hist_th, th_size, buf, buf_size);
+	phydm_print_hist_2_bufbu(dm, dbg_i->snr_hist_th, th_size, buf, buf_size);
 	PHYDM_DBG(dm, DBG_CMN, "%-16s=%s\n", "[SNR_TH]", buf);
 /*@===[OFDM]==================================================================*/
 	if (dbg_s->rssi_ofdm_cnt) {
-		phydm_print_hist_2_buf(dm, dbg_s->evm_ofdm_hist, PHY_HIST_SIZE,
+		phydm_print_hist_2_bufbu(dm, dbg_s->evm_ofdm_hist, PHY_HIST_SIZE,
 				       buf, buf_size);
 		PHYDM_DBG(dm, DBG_CMN, "%-14s=%s\n", "[OFDM][EVM]", buf);
 
-		phydm_print_hist_2_buf(dm, dbg_s->snr_ofdm_hist, PHY_HIST_SIZE,
+		phydm_print_hist_2_bufbu(dm, dbg_s->snr_ofdm_hist, PHY_HIST_SIZE,
 				       buf, buf_size);
 		PHYDM_DBG(dm, DBG_CMN, "%-14s=%s\n", "[OFDM][SNR]", buf);
 	}
 /*@===[1-SS]==================================================================*/
 	if (dbg_s->rssi_1ss_cnt)
-		phydm_nss_hitogram(dm, PDM_1SS);
+		phydm_nss_hitogrambu(dm, PDM_1SS);
 /*@===[2-SS]==================================================================*/
 	#if (defined(PHYDM_COMPILE_ABOVE_2SS))
 	if ((dm->support_ic_type & PHYDM_IC_ABOVE_2SS) && dbg_s->rssi_2ss_cnt)
-		phydm_nss_hitogram(dm, PDM_2SS);
+		phydm_nss_hitogrambu(dm, PDM_2SS);
 	#endif
 /*@===[3-SS]==================================================================*/
 	#if (defined(PHYDM_COMPILE_ABOVE_3SS))
 	if ((dm->support_ic_type & PHYDM_IC_ABOVE_3SS) && dbg_s->rssi_3ss_cnt)
-		phydm_nss_hitogram(dm, PDM_3SS);
+		phydm_nss_hitogrambu(dm, PDM_3SS);
 	#endif
 /*@===[4-SS]==================================================================*/
 	#if (defined(PHYDM_COMPILE_ABOVE_4SS))
 	if (dm->support_ic_type & PHYDM_IC_ABOVE_4SS && dbg_s->rssi_4ss_cnt)
-		phydm_nss_hitogram(dm, PDM_4SS);
+		phydm_nss_hitogrambu(dm, PDM_4SS);
 	#endif
 }
 
-void phydm_avg_phy_val_nss(void *dm_void, u8 nss)
+void phydm_avg_phy_val_nssbu(void *dm_void, u8 nss)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_phy_dbg_info *dbg_i = &dm->phy_dbg_info;
@@ -2058,7 +2058,7 @@ void phydm_avg_phy_val_nss(void *dm_void, u8 nss)
 	u8 evm_rpt_show[RF_PATH_MEM_SIZE];
 	u8 i = 0;
 
-	odm_memory_set(dm, &evm_rpt_show[0], 0, RF_PATH_MEM_SIZE);
+	odm_memory_setbu(dm, &evm_rpt_show[0], 0, RF_PATH_MEM_SIZE);
 
 	switch (nss) {
 	#if (defined(PHYDM_COMPILE_ABOVE_4SS))
@@ -2170,7 +2170,7 @@ void phydm_avg_phy_val_nss(void *dm_void, u8 nss)
 #endif
 }
 
-void phydm_get_avg_phystatus_val(void *dm_void)
+void phydm_get_avg_phystatus_valbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_phy_dbg_info *dbg_i = &dm->phy_dbg_info;
@@ -2180,7 +2180,7 @@ void phydm_get_avg_phystatus_val(void *dm_void)
 	u8 i = 0;
 
 	PHYDM_DBG(dm, DBG_CMN, "[PHY Avg] ==============>\n");
-	phydm_reset_phystatus_avg(dm);
+	phydm_reset_phystatus_avgbu(dm);
 
 	/*@===[Beacon]===*/
 	if (dbg_s->rssi_beacon_cnt) {
@@ -2281,10 +2281,10 @@ void phydm_get_avg_phystatus_val(void *dm_void)
 	}
 
 	for (i = 0; i <= dm->num_rf_path; i++)
-		phydm_avg_phy_val_nss(dm, i);
+		phydm_avg_phy_val_nssbu(dm, i);
 }
 
-void phydm_get_phy_statistic(void *dm_void)
+void phydm_get_phy_statisticbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct cmn_sta_info *sta = dm->phydm_sta_info[dm->one_entry_macid];
@@ -2293,28 +2293,28 @@ void phydm_get_phy_statistic(void *dm_void)
 	u16 utility = 0;
 	u8 rx_ss = 1;
 
-	avg_phy_rate = phydm_rx_avg_phy_rate(dm);
+	avg_phy_rate = phydm_rx_avg_phy_ratebu(dm);
 
 	if (dm->is_one_entry_only && is_sta_active(sta)) {
-		rx_ss = phydm_get_rx_stream_num(dm, sta->mimo_type);
+		rx_ss = phydm_get_rx_stream_numbu(dm, sta->mimo_type);
 		bw = sta->bw_mode;
-		utility = phydm_rx_utility(dm, avg_phy_rate, rx_ss, bw);
+		utility = phydm_rx_utilitybu(dm, avg_phy_rate, rx_ss, bw);
 	}
 	PHYDM_DBG(dm, DBG_CMN, "Avg_rx_rate = %d, rx_utility=( %d / 1000 )\n",
 		  avg_phy_rate, utility);
 
-	phydm_rx_rate_distribution(dm);
-	phydm_reset_rx_rate_distribution(dm);
+	phydm_rx_rate_distributionbu(dm);
+	phydm_reset_rx_rate_distributionbu(dm);
 
-	phydm_show_phy_hitogram(dm);
+	phydm_show_phy_hitogrambu(dm);
 	#ifdef PHYDM_PHYSTAUS_AUTO_SWITCH
 	phydm_show_cn_hitogram(dm);
 	#endif
-	phydm_get_avg_phystatus_val(dm);
-	phydm_reset_phystatus_statistic(dm);
+	phydm_get_avg_phystatus_valbu(dm);
+	phydm_reset_phystatus_statisticbu(dm);
 };
 
-void phydm_basic_dbg_msg_linked(void *dm_void)
+void phydm_basic_dbg_msg_linkedbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct phydm_cfo_track_struct *cfo_t = &dm->dm_cfo_track;
@@ -2350,7 +2350,7 @@ void phydm_basic_dbg_msg_linked(void *dm_void)
 			  dm->cck_lna_idx, dm->cck_vga_idx);
 	}
 
-	phydm_print_rate_2_buff(dm, dm->rx_rate, dbg_buf, PHYDM_SNPRINT_SIZE);
+	phydm_print_ratebu_2_buff(dm, dm->rx_rate, dbg_buf, PHYDM_SNPRINT_SIZE);
 	PHYDM_DBG(dm, DBG_CMN, "RSSI:{%d, %d, %d, %d}, RxRate:%s (0x%x)\n",
 		  (dm->rssi_a == 0xff) ? 0 : dm->rssi_a,
 		  (dm->rssi_b == 0xff) ? 0 : dm->rssi_b,
@@ -2359,12 +2359,12 @@ void phydm_basic_dbg_msg_linked(void *dm_void)
 		  dbg_buf, dm->rx_rate);
 
 	rate = dbg_t->beacon_phy_rate;
-	phydm_print_rate_2_buff(dm, rate, dbg_buf, PHYDM_SNPRINT_SIZE);
+	phydm_print_ratebu_2_buff(dm, rate, dbg_buf, PHYDM_SNPRINT_SIZE);
 
 	PHYDM_DBG(dm, DBG_CMN, "Beacon_cnt=%d, rate_idx=%s (0x%x)\n",
 		  dbg_t->num_qry_beacon_pkt, dbg_buf, dbg_t->beacon_phy_rate);
 
-	phydm_get_phy_statistic(dm);
+	phydm_get_phy_statisticbu(dm);
 
 	PHYDM_DBG(dm, DBG_CMN,
 		  "rxsc_idx {Legacy, 20, 40, 80} = {%d, %d, %d, %d}\n",
@@ -2378,7 +2378,7 @@ void phydm_basic_dbg_msg_linked(void *dm_void)
 			continue;
 
 		rate = entry->ra_info.curr_tx_rate;
-		phydm_print_rate_2_buff(dm, rate, dbg_buf, PHYDM_SNPRINT_SIZE);
+		phydm_print_ratebu_2_buff(dm, rate, dbg_buf, PHYDM_SNPRINT_SIZE);
 		PHYDM_DBG(dm, DBG_CMN, "TxRate[%d]=%s (0x%x)\n",
 			  macid, dbg_buf, entry->ra_info.curr_tx_rate);
 
@@ -2407,7 +2407,7 @@ void phydm_basic_dbg_msg_linked(void *dm_void)
 		break;
 	#endif
 	default:
-		phydm_get_cfo_info(dm, &cfo);
+		phydm_get_cfo_infobu(dm, &cfo);
 		for (i = 0; i < dm->num_rf_path; i++) {
 			PHYDM_DBG(dm, DBG_CMN,
 				  "CFO[%d] {S, L, Sec, Acq, End} = {%d, %d, %d, %d, %d}\n",
@@ -2423,7 +2423,7 @@ void phydm_basic_dbg_msg_linked(void *dm_void)
 	if (dm->support_ic_type == ODM_RTL8822B) {
 		PHYDM_DBG(dm, DBG_CMN, "Condi_Num=((%d.%.4d)), %d\n",
 			  dbg_t->condi_num >> 4,
-			  phydm_show_fraction_num(dbg_t->condi_num & 0xf, 4),
+			  phydm_show_fraction_numbu(dbg_t->condi_num & 0xf, 4),
 			  dbg_t->condi_num);
 	}
 #endif
@@ -2431,7 +2431,7 @@ void phydm_basic_dbg_msg_linked(void *dm_void)
 	if (dm->support_ic_type & PHYSTS_3RD_TYPE_IC) {
 		PHYDM_DBG(dm, DBG_CMN, "Condi_Num=((%d.%4d dB))\n",
 			  dbg_t->condi_num >> 1,
-			  phydm_show_fraction_num(dbg_t->condi_num & 0x1, 1));
+			  phydm_show_fraction_numbu(dbg_t->condi_num & 0x1, 1));
 	}
 #endif
 
@@ -2451,7 +2451,7 @@ void phydm_basic_dbg_msg_linked(void *dm_void)
 #endif
 }
 
-void phydm_dm_summary(void *dm_void, u8 macid)
+void phydm_dm_summarybu(void *dm_void, u8 macid)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct phydm_dig_struct *dig_t = &dm->dm_dig_table;
@@ -2580,7 +2580,7 @@ void phydm_dm_summary(void *dm_void, u8 macid)
 #endif
 }
 
-void phydm_basic_dbg_message(void *dm_void)
+void phydm_basic_dbg_messagebu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct phydm_fa_struct *fa_t = &dm->false_alm_cnt;
@@ -2594,17 +2594,17 @@ void phydm_basic_dbg_message(void *dm_void)
 
 	#if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
 	/* backup memory*/
-	odm_move_memory(dm, dbg_b, dbg, sizeof(struct odm_phy_dbg_info));
+	odm_move_memorybu(dm, dbg_b, dbg, sizeof(struct odm_phy_dbg_info));
 	#endif
 
 	if (!(dm->debug_components & DBG_CMN)) {
 		#if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
 		/* reset rx rate distribution*/
-		phydm_reset_rx_rate_distribution(dm);
+		phydm_reset_rx_rate_distributionbu(dm);
 		/* cal & reset avg of rssi/snr/evm*/
-		phydm_get_avg_phystatus_val(dm);
+		phydm_get_avg_phystatus_valbu(dm);
 		/* reset sum of rssi/snr/evm*/
-		phydm_reset_phystatus_statistic(dm);
+		phydm_reset_phystatus_statisticbu(dm);
 		#endif
 		return;
 	}
@@ -2620,7 +2620,7 @@ void phydm_basic_dbg_message(void *dm_void)
 		  __func__, dm->phydm_sys_up_time);
 
 	if (dm->is_linked)
-		phydm_basic_dbg_msg_linked(dm);
+		phydm_basic_dbg_msg_linkedbu(dm);
 	else
 		PHYDM_DBG(dm, DBG_CMN, "No Link !!!\n");
 
@@ -2681,7 +2681,7 @@ void phydm_basic_dbg_message(void *dm_void)
 #endif
 }
 
-void phydm_basic_profile(void *dm_void, u32 *_used, char *output, u32 *_out_len)
+void phydm_basic_profilebu(void *dm_void, u32 *_used, char *output, u32 *_out_len)
 {
 #ifdef CONFIG_PHYDM_DEBUG_FUNCTION
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -2927,7 +2927,7 @@ void phydm_basic_profile(void *dm_void, u32 *_used, char *output, u32 *_out_len)
 	PDM_SNPF(out_len, used, output + used, out_len - used, "  %-35s: %s\n",
 		 "CART_Ver", cut);
 	PDM_SNPF(out_len, used, output + used, out_len - used, "  %-35s: %d\n",
-		 "PHY Para Ver", odm_get_hw_img_version(dm));
+		 "PHY Para Ver", odm_get_hw_img_versionbu(dm));
 	PDM_SNPF(out_len, used, output + used, out_len - used, "  %-35s: %d\n",
 		 "PHY Para Commit date", date);
 	PDM_SNPF(out_len, used, output + used, out_len - used, "  %-35s: %s\n",
@@ -3031,7 +3031,7 @@ void phydm_basic_profile(void *dm_void, u32 *_used, char *output, u32 *_out_len)
 }
 
 #ifdef CONFIG_PHYDM_DEBUG_FUNCTION
-void phydm_fw_trace_en_h2c(void *dm_void, boolean enable,
+void phydm_fw_trace_en_h2cbu(void *dm_void, boolean enable,
 			   u32 fw_dbg_comp, u32 monitor_mode, u32 macid)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -3059,10 +3059,10 @@ void phydm_fw_trace_en_h2c(void *dm_void, boolean enable,
 		  "[H2C] FW_debug_en: (( %d )), mode: (( %d )), macid: (( %d ))\n",
 		  enable, monitor_mode, macid);
 
-	odm_fill_h2c_cmd(dm, PHYDM_H2C_FW_TRACE_EN, cmd_length, h2c_parameter);
+	odm_fill_h2c_cmdbu(dm, PHYDM_H2C_FW_TRACE_EN, cmd_length, h2c_parameter);
 }
 
-void phydm_get_per_path_txagc(void *dm_void, u8 path, u32 *_used, char *output,
+void phydm_get_per_path_txagcbu(void *dm_void, u8 path, u32 *_used, char *output,
 			      u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -3136,7 +3136,7 @@ void phydm_get_per_path_txagc(void *dm_void, u8 path, u32 *_used, char *output,
 	*_out_len = out_len;
 }
 
-void phydm_get_txagc(void *dm_void, u32 *_used, char *output, u32 *_out_len)
+void phydm_get_txagcbu(void *dm_void, u32 *_used, char *output, u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 used = *_used;
@@ -3163,13 +3163,13 @@ void phydm_get_txagc(void *dm_void, u32 *_used, char *output, u32 *_out_len)
 			PDM_SNPF(out_len, used, output + used, out_len - used,
 				 "\n%-35s\n", "path-D====================");
 
-		phydm_get_per_path_txagc(dm, i, &used, output, &out_len);
+		phydm_get_per_path_txagcbu(dm, i, &used, output, &out_len);
 	}
 	*_used = used;
 	*_out_len = out_len;
 }
 
-void phydm_set_txagc(void *dm_void, u32 *const val, u32 *_used,
+void phydm_set_txagcbu(void *dm_void, u32 *const val, u32 *_used,
 		     char *output, u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -3253,7 +3253,7 @@ void phydm_set_txagc(void *dm_void, u32 *const val, u32 *_used,
 	*_out_len = out_len;
 }
 
-void phydm_shift_txagc(void *dm_void, u32 *const val, u32 *_used, char *output,
+void phydm_shift_txagcbu(void *dm_void, u32 *const val, u32 *_used, char *output,
 		       u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -3367,7 +3367,7 @@ void phydm_shift_txagc(void *dm_void, u32 *const val, u32 *_used, char *output,
 	*_out_len = out_len;
 }
 
-void phydm_set_txagc_dbg(void *dm_void, char input[][16], u32 *_used,
+void phydm_set_txagcbu_dbg(void *dm_void, char input[][16], u32 *_used,
 			 char *output, u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -3406,13 +3406,13 @@ void phydm_set_txagc_dbg(void *dm_void, char input[][16], u32 *_used,
 					       (enum rf_path)var1[1],
 					       (u8)var1[2]);
 		#else
-		phydm_set_txagc(dm, (u32 *)var1, &used, output, &out_len);
+		phydm_set_txagcbu(dm, (u32 *)var1, &used, output, &out_len);
 		#endif
 		dm->is_disable_phy_api = true;
 	} else if (var1[0] == 2) {
 		PHYDM_SSCANF(input[4], DCMD_HEX, &var1[3]);
 		dm->is_disable_phy_api = false;
-		phydm_shift_txagc(dm, (u32 *)var1, &used, output, &out_len);
+		phydm_shift_txagcbu(dm, (u32 *)var1, &used, output, &out_len);
 		dm->is_disable_phy_api = true;
 	}
 	#ifdef PHYDM_IC_JGR3_SERIES_SUPPORT
@@ -3429,7 +3429,7 @@ void phydm_set_txagc_dbg(void *dm_void, char input[][16], u32 *_used,
 		dm->is_disable_phy_api = true;
 	} else if (var1[0] == 4) {
 		dm->is_disable_phy_api = false;
-		config_phydm_set_txagc_to_hw_8822c(dm);
+		config_phydm_set_txagcbu_to_hw_8822c(dm);
 		dm->is_disable_phy_api = true;
 	}
 	#elif (defined(CONFIG_TXAGC_DEBUG_8814B))
@@ -3439,7 +3439,7 @@ void phydm_set_txagc_dbg(void *dm_void, char input[][16], u32 *_used,
 		dm->is_disable_phy_api = true;
 	} else if (var1[0] == 4) {
 		dm->is_disable_phy_api = false;
-		config_phydm_set_txagc_to_hw_8814b(dm);
+		config_phydm_set_txagcbu_to_hw_8814b(dm);
 		dm->is_disable_phy_api = true;
 	}
 	#endif
@@ -3475,7 +3475,7 @@ void phydm_cmn_msg_setting(void *dm_void, u32 *val, u32 *_used,
 	*_out_len = out_len;
 }
 
-void phydm_debug_trace(void *dm_void, char input[][16], u32 *_used,
+void phydm_debug_tracebu(void *dm_void, char input[][16], u32 *_used,
 		       char *output, u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -3623,7 +3623,7 @@ void phydm_debug_trace(void *dm_void, char input[][16], u32 *_used,
 	*_out_len = out_len;
 }
 
-void phydm_fw_debug_trace(void *dm_void, char input[][16], u32 *_used,
+void phydm_fw_debug_tracebu(void *dm_void, char input[][16], u32 *_used,
 			  char *output, u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -3670,17 +3670,17 @@ void phydm_fw_debug_trace(void *dm_void, char input[][16], u32 *_used,
 		if (comp == 0) {
 			dm->debug_components &= ~DBG_FW_TRACE;
 			/*@H2C to enable C2H Msg*/
-			phydm_fw_trace_en_h2c(dm, false, comp, val[2], val[3]);
+			phydm_fw_trace_en_h2cbu(dm, false, comp, val[2], val[3]);
 		} else {
 			dm->debug_components |= DBG_FW_TRACE;
 			/*@H2C to enable C2H Msg*/
-			phydm_fw_trace_en_h2c(dm, true, comp, val[2], val[3]);
+			phydm_fw_trace_en_h2cbu(dm, true, comp, val[2], val[3]);
 		}
 	}
 }
 
 #if (ODM_IC_11N_SERIES_SUPPORT)
-void phydm_dump_bb_reg_n(void *dm_void, u32 *_used, char *output, u32 *_out_len)
+void phydm_dump_bb_regbu_n(void *dm_void, u32 *_used, char *output, u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 addr = 0;
@@ -3691,7 +3691,7 @@ void phydm_dump_bb_reg_n(void *dm_void, u32 *_used, char *output, u32 *_out_len)
 	for (addr = 0x800; addr < 0xfff; addr += 4) {
 		PDM_VAST_SNPF(out_len, used, output + used, out_len - used,
 			      "0x%03x 0x%08x\n",
-			      addr, odm_get_bb_reg(dm, addr, MASKDWORD));
+			      addr, odm_get_bb_regbu(dm, addr, MASKDWORD));
 	}
 
 	*_used = used;
@@ -3700,7 +3700,7 @@ void phydm_dump_bb_reg_n(void *dm_void, u32 *_used, char *output, u32 *_out_len)
 #endif
 
 #if (ODM_IC_11AC_SERIES_SUPPORT)
-void phydm_dump_bb_reg_ac(void *dm_void, u32 *_used, char *output,
+void phydm_dump_bb_regbu_acbu(void *dm_void, u32 *_used, char *output,
 			  u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -3711,7 +3711,7 @@ void phydm_dump_bb_reg_ac(void *dm_void, u32 *_used, char *output,
 	for (addr = 0x800; addr < 0xfff; addr += 4) {
 		PDM_VAST_SNPF(out_len, used, output + used, out_len - used,
 			      "0x%04x 0x%08x\n",
-			      addr, odm_get_bb_reg(dm, addr, MASKDWORD));
+			      addr, odm_get_bb_regbu(dm, addr, MASKDWORD));
 	}
 
 	if (!(dm->support_ic_type &
@@ -3723,7 +3723,7 @@ void phydm_dump_bb_reg_ac(void *dm_void, u32 *_used, char *output,
 			PDM_VAST_SNPF(out_len, used, output + used,
 				      out_len - used, "0x%04x 0x%08x\n",
 				      addr,
-				      odm_get_bb_reg(dm, addr, MASKDWORD));
+				      odm_get_bb_regbu(dm, addr, MASKDWORD));
 	}
 
 	if (dm->rf_type > RF_3T3R) {
@@ -3731,23 +3731,23 @@ void phydm_dump_bb_reg_ac(void *dm_void, u32 *_used, char *output,
 			PDM_VAST_SNPF(out_len, used, output + used,
 				      out_len - used, "0x%04x 0x%08x\n",
 				      addr,
-				      odm_get_bb_reg(dm, addr, MASKDWORD));
+				      odm_get_bb_regbu(dm, addr, MASKDWORD));
 	}
 
 	for (addr = 0x1900; addr < 0x19ff; addr += 4)
 		PDM_VAST_SNPF(out_len, used, output + used, out_len - used,
 			      "0x%04x 0x%08x\n",
-			      addr, odm_get_bb_reg(dm, addr, MASKDWORD));
+			      addr, odm_get_bb_regbu(dm, addr, MASKDWORD));
 
 	for (addr = 0x1c00; addr < 0x1cff; addr += 4)
 		PDM_VAST_SNPF(out_len, used, output + used, out_len - used,
 			      "0x%04x 0x%08x\n",
-			      addr, odm_get_bb_reg(dm, addr, MASKDWORD));
+			      addr, odm_get_bb_regbu(dm, addr, MASKDWORD));
 
 	for (addr = 0x1f00; addr < 0x1fff; addr += 4)
 		PDM_VAST_SNPF(out_len, used, output + used, out_len - used,
 			      "0x%04x 0x%08x\n",
-			      addr, odm_get_bb_reg(dm, addr, MASKDWORD));
+			      addr, odm_get_bb_regbu(dm, addr, MASKDWORD));
 
 rpt_reg:
 
@@ -3758,7 +3758,7 @@ rpt_reg:
 #endif
 
 #ifdef PHYDM_IC_JGR3_SERIES_SUPPORT
-void phydm_dump_bb_reg_jgr3(void *dm_void, u32 *_used, char *output,
+void phydm_dump_bb_regbu_jgr3(void *dm_void, u32 *_used, char *output,
 			    u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -3770,17 +3770,17 @@ void phydm_dump_bb_reg_jgr3(void *dm_void, u32 *_used, char *output,
 		for (addr = 0x800; addr < 0xdff; addr += 4)
 			PDM_VAST_SNPF(out_len, used, output + used,
 				      out_len - used, "0x%04x 0x%08x\n", addr,
-				      odm_get_bb_reg(dm, addr, MASKDWORD));
+				      odm_get_bb_regbu(dm, addr, MASKDWORD));
 
 		for (addr = 0x1800; addr < 0x1aff; addr += 4)
 			PDM_VAST_SNPF(out_len, used, output + used,
 				      out_len - used, "0x%04x 0x%08x\n", addr,
-				      odm_get_bb_reg(dm, addr, MASKDWORD));
+				      odm_get_bb_regbu(dm, addr, MASKDWORD));
 
 		for (addr = 0x1c00; addr < 0x1eff; addr += 4)
 			PDM_VAST_SNPF(out_len, used, output + used,
 				      out_len - used, "0x%04x 0x%08x\n", addr,
-				      odm_get_bb_reg(dm, addr, MASKDWORD));
+				      odm_get_bb_regbu(dm, addr, MASKDWORD));
 
 		#if (defined(RTL8723F_SUPPORT))
 		if (dm->support_ic_type & ODM_RTL8723F) {
@@ -3788,7 +3788,7 @@ void phydm_dump_bb_reg_jgr3(void *dm_void, u32 *_used, char *output,
 				PDM_VAST_SNPF(out_len, used, output + used,
 					      out_len - used, "0x%04x 0x%08x\n",
 					      addr,
-					      odm_get_bb_reg(dm, addr,
+					      odm_get_bb_regbu(dm, addr,
 							     MASKDWORD));
 			}
 		}
@@ -3797,7 +3797,7 @@ void phydm_dump_bb_reg_jgr3(void *dm_void, u32 *_used, char *output,
 		for (addr = 0x4000; addr < 0x41ff; addr += 4)
 			PDM_VAST_SNPF(out_len, used, output + used,
 				      out_len - used, "0x%04x 0x%08x\n", addr,
-				      odm_get_bb_reg(dm, addr, MASKDWORD));
+				      odm_get_bb_regbu(dm, addr, MASKDWORD));
 
 		#if (defined(RTL8723F_SUPPORT))
 		if (dm->support_ic_type & ODM_RTL8723F) {
@@ -3805,7 +3805,7 @@ void phydm_dump_bb_reg_jgr3(void *dm_void, u32 *_used, char *output,
 				PDM_VAST_SNPF(out_len, used, output + used,
 					      out_len - used, "0x%04x 0x%08x\n",
 					      addr,
-					      odm_get_bb_reg(dm, addr,
+					      odm_get_bb_regbu(dm, addr,
 							     MASKDWORD));
 			}
 		}
@@ -3815,7 +3815,7 @@ void phydm_dump_bb_reg_jgr3(void *dm_void, u32 *_used, char *output,
 	*_out_len = out_len;
 }
 
-void phydm_dump_bb_reg2_jgr3(void *dm_void, u32 *_used, char *output,
+void phydm_dump_bb_regbu2_jgr3(void *dm_void, u32 *_used, char *output,
 			     u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -3832,7 +3832,7 @@ void phydm_dump_bb_reg2_jgr3(void *dm_void, u32 *_used, char *output,
 			PDM_VAST_SNPF(out_len, used, output + used,
 				      out_len - used, "0x%04x 0x%08x\n",
 				      addr,
-				      odm_get_bb_reg(dm, addr, MASKDWORD));
+				      odm_get_bb_regbu(dm, addr, MASKDWORD));
 		}
 	}
 	#endif
@@ -3847,7 +3847,7 @@ void phydm_dump_bb_reg2_jgr3(void *dm_void, u32 *_used, char *output,
 			PDM_VAST_SNPF(out_len, used, output + used,
 				      out_len - used, "0x%04x 0x%08x\n",
 				      addr,
-				      odm_get_bb_reg(dm, addr, MASKDWORD));
+				      odm_get_bb_regbu(dm, addr, MASKDWORD));
 		}
 	}
 	#endif
@@ -3855,7 +3855,7 @@ void phydm_dump_bb_reg2_jgr3(void *dm_void, u32 *_used, char *output,
 	for (addr = 0x2c00; addr < 0x2dff; addr += 4) {
 		PDM_VAST_SNPF(out_len, used, output + used, out_len - used,
 			      "0x%04x 0x%08x\n",
-			      addr, odm_get_bb_reg(dm, addr, MASKDWORD));
+			      addr, odm_get_bb_regbu(dm, addr, MASKDWORD));
 	}
 
 	*_used = used;
@@ -3893,14 +3893,14 @@ void phydm_get_per_path_anapar_jgr3(void *dm_void, u8 path, u32 *_used,
 		dbgport_idx = 0xFF0;
 	}
 
-	state_bp = (u8)odm_get_bb_reg(dm, reg_idx, 0xf00000);
-	odm_set_bb_reg(dm, reg_idx, 0x38000000, 0x5); /* @read en*/
+	state_bp = (u8)odm_get_bb_regbu(dm, reg_idx, 0xf00000);
+	odm_set_bb_regbu(dm, reg_idx, 0x38000000, 0x5); /* @read en*/
 
 	for (state = 0; state <= 0xf; state++) {
-		odm_set_bb_reg(dm, reg_idx, 0xF00000, state);
-		if (phydm_set_bb_dbg_port(dm, DBGPORT_PRI_3, dbgport_idx)) {
-			dbgport_val = phydm_get_bb_dbg_port_val(dm);
-			phydm_release_bb_dbg_port(dm);
+		odm_set_bb_regbu(dm, reg_idx, 0xF00000, state);
+		if (phydm_set_bb_dbg_portbu(dm, DBGPORT_PRI_3, dbgport_idx)) {
+			dbgport_val = phydm_get_bb_dbg_port_valbu(dm);
+			phydm_release_bb_dbg_portbu(dm);
 		} else {
 			PDM_VAST_SNPF(out_len, used, output + used,
 				      out_len - used,
@@ -3913,8 +3913,8 @@ void phydm_get_per_path_anapar_jgr3(void *dm_void, u8 path, u32 *_used,
 			      "state:0x%x = control_bb:0x%x pow_bb:0x%x\n",
 			      state, control_bb, control_pow);
 	}
-	odm_set_bb_reg(dm, reg_idx, 0xf00000, state_bp);
-	odm_set_bb_reg(dm, reg_idx, 0x38000000, 0x6); /* @write en*/
+	odm_set_bb_regbu(dm, reg_idx, 0xf00000, state_bp);
+	odm_set_bb_regbu(dm, reg_idx, 0x38000000, 0x6); /* @write en*/
 
 	*_used = used;
 	*_out_len = out_len;
@@ -3932,15 +3932,15 @@ void phydm_get_csi_table_jgr3(void *dm_void, u32 *_used, char *output,
 	u32 dbgport_val = 0;
 
 	/*enable clk*/
-	odm_set_bb_reg(dm, R_0x1ee8, 0x3, 0x3);
+	odm_set_bb_regbu(dm, R_0x1ee8, 0x3, 0x3);
 	/*enable read table*/
-	odm_set_bb_reg(dm, R_0x1d94, BIT(31) | BIT(30), 0x2);
+	odm_set_bb_regbu(dm, R_0x1d94, BIT(31) | BIT(30), 0x2);
 
 	for (table_idx = 0; table_idx < 128; table_idx++) {
-		odm_set_bb_reg(dm, R_0x1d94, MASKBYTE2, table_idx);
-		if (phydm_set_bb_dbg_port(dm, DBGPORT_PRI_3, dbgport_idx)) {
-			dbgport_val = phydm_get_bb_dbg_port_val(dm);
-			phydm_release_bb_dbg_port(dm);
+		odm_set_bb_regbu(dm, R_0x1d94, MASKBYTE2, table_idx);
+		if (phydm_set_bb_dbg_portbu(dm, DBGPORT_PRI_3, dbgport_idx)) {
+			dbgport_val = phydm_get_bb_dbg_port_valbu(dm);
+			phydm_release_bb_dbg_portbu(dm);
 		} else {
 			PDM_VAST_SNPF(out_len, used, output + used,
 				      out_len - used,
@@ -3953,9 +3953,9 @@ void phydm_get_csi_table_jgr3(void *dm_void, u32 *_used, char *output,
 			      table_idx, table_val);
 	}
 	/*enable write table*/
-	odm_set_bb_reg(dm, R_0x1d94, BIT(31) | BIT(30), 0x1);
+	odm_set_bb_regbu(dm, R_0x1d94, BIT(31) | BIT(30), 0x1);
 	/*disable clk*/
-	odm_set_bb_reg(dm, R_0x1ee8, 0x3, 0x0);
+	odm_set_bb_regbu(dm, R_0x1ee8, 0x3, 0x0);
 
 	*_used = used;
 	*_out_len = out_len;
@@ -3963,7 +3963,7 @@ void phydm_get_csi_table_jgr3(void *dm_void, u32 *_used, char *output,
 
 #endif
 
-void phydm_dump_bb_reg(void *dm_void, u32 *_used, char *output, u32 *_out_len)
+void phydm_dump_bb_regbu(void *dm_void, u32 *_used, char *output, u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 used = *_used;
@@ -3977,19 +3977,19 @@ void phydm_dump_bb_reg(void *dm_void, u32 *_used, char *output, u32 *_out_len)
 	switch (dm->ic_ip_series) {
 	#ifdef PHYDM_IC_JGR3_SERIES_SUPPORT
 	case PHYDM_IC_JGR3:
-		phydm_dump_bb_reg_jgr3(dm, &used, output, &out_len);
+		phydm_dump_bb_regbu_jgr3(dm, &used, output, &out_len);
 		break;
 	#endif
 
 	#if (ODM_IC_11AC_SERIES_SUPPORT)
 	case PHYDM_IC_AC:
-		phydm_dump_bb_reg_ac(dm, &used, output, &out_len);
+		phydm_dump_bb_regbu_acbu(dm, &used, output, &out_len);
 		break;
 	#endif
 
 	#if (ODM_IC_11N_SERIES_SUPPORT)
 	case PHYDM_IC_N:
-		phydm_dump_bb_reg_n(dm, &used, output, &out_len);
+		phydm_dump_bb_regbu_n(dm, &used, output, &out_len);
 		break;
 	#endif
 
@@ -4001,7 +4001,7 @@ void phydm_dump_bb_reg(void *dm_void, u32 *_used, char *output, u32 *_out_len)
 	*_out_len = out_len;
 }
 
-void phydm_dump_rf_reg(void *dm_void, u32 *_used, char *output, u32 *_out_len)
+void phydm_dump_rf_regbu(void *dm_void, u32 *_used, char *output, u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 addr = 0;
@@ -4014,7 +4014,7 @@ void phydm_dump_rf_reg(void *dm_void, u32 *_used, char *output, u32 *_out_len)
 		      "RF-A==========\n");
 
 	for (addr = 0; addr <= 0xFF; addr++) {
-		reg = odm_get_rf_reg(dm, RF_PATH_A, addr, RFREG_MASK);
+		reg = odm_get_rf_regbu(dm, RF_PATH_A, addr, RFREG_MASK);
 		PDM_VAST_SNPF(out_len, used, output + used, out_len - used,
 			      "0x%02x 0x%05x\n", addr, reg);
 		}
@@ -4025,7 +4025,7 @@ void phydm_dump_rf_reg(void *dm_void, u32 *_used, char *output, u32 *_out_len)
 			      "RF-B==========\n");
 
 		for (addr = 0; addr <= 0xFF; addr++) {
-			reg = odm_get_rf_reg(dm, RF_PATH_B, addr, RFREG_MASK);
+			reg = odm_get_rf_regbu(dm, RF_PATH_B, addr, RFREG_MASK);
 			PDM_VAST_SNPF(out_len, used, output + used,
 				      out_len - used, "0x%02x 0x%05x\n",
 				      addr, reg);
@@ -4039,7 +4039,7 @@ void phydm_dump_rf_reg(void *dm_void, u32 *_used, char *output, u32 *_out_len)
 			      "RF-C==========\n");
 
 		for (addr = 0; addr <= 0xFF; addr++) {
-			reg = odm_get_rf_reg(dm, RF_PATH_C, addr, RFREG_MASK);
+			reg = odm_get_rf_regbu(dm, RF_PATH_C, addr, RFREG_MASK);
 			PDM_VAST_SNPF(out_len, used, output + used,
 				      out_len - used, "0x%02x 0x%05x\n",
 				      addr, reg);
@@ -4053,7 +4053,7 @@ void phydm_dump_rf_reg(void *dm_void, u32 *_used, char *output, u32 *_out_len)
 			      "RF-D==========\n");
 
 		for (addr = 0; addr <= 0xFF; addr++) {
-			reg = odm_get_rf_reg(dm, RF_PATH_D, addr, RFREG_MASK);
+			reg = odm_get_rf_regbu(dm, RF_PATH_D, addr, RFREG_MASK);
 			PDM_VAST_SNPF(out_len, used, output + used,
 				      out_len - used, "0x%02x 0x%05x\n",
 				      addr, reg);
@@ -4065,7 +4065,7 @@ void phydm_dump_rf_reg(void *dm_void, u32 *_used, char *output, u32 *_out_len)
 	*_out_len = out_len;
 }
 
-void phydm_dump_mac_reg(void *dm_void, u32 *_used, char *output, u32 *_out_len)
+void phydm_dump_mac_regbu(void *dm_void, u32 *_used, char *output, u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 addr = 0;
@@ -4079,18 +4079,18 @@ void phydm_dump_mac_reg(void *dm_void, u32 *_used, char *output, u32 *_out_len)
 	for (addr = 0; addr < 0x7ff; addr += 4)
 		PDM_VAST_SNPF(out_len, used, output + used, out_len - used,
 			      "0x%04x 0x%08x\n",
-			      addr, odm_get_bb_reg(dm, addr, MASKDWORD));
+			      addr, odm_get_bb_regbu(dm, addr, MASKDWORD));
 
 	for (addr = 0x1000; addr < 0x17ff; addr += 4)
 		PDM_VAST_SNPF(out_len, used, output + used, out_len - used,
 			      "0x%04x 0x%08x\n",
-			      addr, odm_get_bb_reg(dm, addr, MASKDWORD));
+			      addr, odm_get_bb_regbu(dm, addr, MASKDWORD));
 
 	*_used = used;
 	*_out_len = out_len;
 }
 
-void phydm_dump_reg(void *dm_void, char input[][16], u32 *_used, char *output,
+void phydm_dump_regbu(void *dm_void, char input[][16], u32 *_used, char *output,
 		    u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -4112,24 +4112,24 @@ void phydm_dump_reg(void *dm_void, char input[][16], u32 *_used, char *output,
 			PDM_SNPF(out_len, used, output + used, out_len - used,
 				 "dumpreg {0:all, 1:BB, 2:RF, 3:MAC}\n");
 	} else if (var1[0] == 0) {
-		phydm_dump_mac_reg(dm, &used, output, &out_len);
-		phydm_dump_bb_reg(dm, &used, output, &out_len);
+		phydm_dump_mac_regbu(dm, &used, output, &out_len);
+		phydm_dump_bb_regbu(dm, &used, output, &out_len);
 		#ifdef PHYDM_IC_JGR3_SERIES_SUPPORT
 		if (dm->ic_ip_series == PHYDM_IC_JGR3)
-			phydm_dump_bb_reg2_jgr3(dm, &used, output, &out_len);
+			phydm_dump_bb_regbu2_jgr3(dm, &used, output, &out_len);
 		#endif
 
-		phydm_dump_rf_reg(dm, &used, output, &out_len);
+		phydm_dump_rf_regbu(dm, &used, output, &out_len);
 	} else if (var1[0] == 1) {
-		phydm_dump_bb_reg(dm, &used, output, &out_len);
+		phydm_dump_bb_regbu(dm, &used, output, &out_len);
 	} else if (var1[0] == 2) {
-		phydm_dump_rf_reg(dm, &used, output, &out_len);
+		phydm_dump_rf_regbu(dm, &used, output, &out_len);
 	} else if (var1[0] == 3) {
-		phydm_dump_mac_reg(dm, &used, output, &out_len);
+		phydm_dump_mac_regbu(dm, &used, output, &out_len);
 	} else if (var1[0] == 4) {
 		#ifdef PHYDM_IC_JGR3_SERIES_SUPPORT
 		if (dm->ic_ip_series == PHYDM_IC_JGR3)
-			phydm_dump_bb_reg2_jgr3(dm, &used, output, &out_len);
+			phydm_dump_bb_regbu2_jgr3(dm, &used, output, &out_len);
 		#endif
 	}
 
@@ -4137,7 +4137,7 @@ void phydm_dump_reg(void *dm_void, char input[][16], u32 *_used, char *output,
 	*_out_len = out_len;
 }
 
-void phydm_enable_big_jump(void *dm_void, char input[][16], u32 *_used,
+void phydm_enable_big_jumpbu(void *dm_void, char input[][16], u32 *_used,
 			   char *output, u32 *_out_len)
 {
 #if (RTL8822B_SUPPORT)
@@ -4167,14 +4167,14 @@ void phydm_enable_big_jump(void *dm_void, char input[][16], u32 *_used,
 		      (dig_t->big_jump_step2 << 3) |
 		      dig_t->big_jump_step1;
 
-		odm_set_bb_reg(dm, R_0x8c8, 0xfe, val);
+		odm_set_bb_regbu(dm, R_0x8c8, 0xfe, val);
 	} else {
 		dm->dm_dig_table.enable_adjust_big_jump = true;
 	}
 #endif
 }
 
-void phydm_show_rx_rate(void *dm_void, char input[][16], u32 *_used,
+void phydm_show_rx_ratebu(void *dm_void, char input[][16], u32 *_used,
 			char *output, u32 *_out_len)
 {
 #if (RTL8822B_SUPPORT || RTL8821C_SUPPORT || RTL8814B_SUPPORT ||\
@@ -4203,7 +4203,7 @@ void phydm_show_rx_rate(void *dm_void, char input[][16], u32 *_used,
 		return;
 
 	} else if (var1[0] == 0) {
-		phydm_reset_rx_rate_distribution(dm);
+		phydm_reset_rx_rate_distributionbu(dm);
 		*_used = used;
 		*_out_len = out_len;
 		return;
@@ -4260,7 +4260,7 @@ void phydm_show_rx_rate(void *dm_void, char input[][16], u32 *_used,
 #endif
 }
 
-void phydm_per_tone_evm(void *dm_void, char input[][16], u32 *_used,
+void phydm_per_tone_evmbu(void *dm_void, char input[][16], u32 *_used,
 			char *output, u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -4305,11 +4305,11 @@ void phydm_per_tone_evm(void *dm_void, char input[][16], u32 *_used,
 		pr_debug("\nround((%d))\n", (j + 1));
 		if (*dm->band_width == CHANNEL_WIDTH_20) {
 			for (tone_num = 228; tone_num <= 255; tone_num++) {
-				odm_set_bb_reg(dm, R_0x8c4, 0xff8, tone_num);
+				odm_set_bb_regbu(dm, R_0x8c4, 0xff8, tone_num);
 				rxevm_sum_0 = 0;
 				rxevm_sum_1 = 0;
 				for (i = 0; i < avg_num; i++) {
-					val = odm_read_4byte(dm, R_0xf8c);
+					val = odm_read_4bytebu(dm, R_0xf8c);
 
 					rxevm_0 = (s8)((val & MASKBYTE2) >> 16);
 					rxevm_0 = (rxevm_0 / 2);
@@ -4322,7 +4322,7 @@ void phydm_per_tone_evm(void *dm_void, char input[][16], u32 *_used,
 						rxevm_1 = 0;
 					rxevm_sum_0 += rxevm_0;
 					rxevm_sum_1 += rxevm_1;
-					ODM_delay_ms(1);
+					ODM_delay_msbu(1);
 				}
 				evm_tone_0[tone_num] = (rxevm_sum_0 / avg_num);
 				evm_tone_1[tone_num] = (rxevm_sum_1 / avg_num);
@@ -4332,11 +4332,11 @@ void phydm_per_tone_evm(void *dm_void, char input[][16], u32 *_used,
 			}
 
 			for (tone_num = 1; tone_num <= 28; tone_num++) {
-				odm_set_bb_reg(dm, R_0x8c4, 0xff8, tone_num);
+				odm_set_bb_regbu(dm, R_0x8c4, 0xff8, tone_num);
 				rxevm_sum_0 = 0;
 				rxevm_sum_1 = 0;
 				for (i = 0; i < avg_num; i++) {
-					val = odm_read_4byte(dm, R_0xf8c);
+					val = odm_read_4bytebu(dm, R_0xf8c);
 
 					rxevm_0 = (s8)((val & MASKBYTE2) >> 16);
 					rxevm_0 = (rxevm_0 / 2);
@@ -4349,7 +4349,7 @@ void phydm_per_tone_evm(void *dm_void, char input[][16], u32 *_used,
 						rxevm_1 = 0;
 					rxevm_sum_0 += rxevm_0;
 					rxevm_sum_1 += rxevm_1;
-					ODM_delay_ms(1);
+					ODM_delay_msbu(1);
 				}
 				evm_tone_0[tone_num] = (rxevm_sum_0 / avg_num);
 				evm_tone_1[tone_num] = (rxevm_sum_1 / avg_num);
@@ -4359,11 +4359,11 @@ void phydm_per_tone_evm(void *dm_void, char input[][16], u32 *_used,
 			}
 		} else if (*dm->band_width == CHANNEL_WIDTH_40) {
 			for (tone_num = 198; tone_num <= 254; tone_num++) {
-				odm_set_bb_reg(dm, R_0x8c4, 0xff8, tone_num);
+				odm_set_bb_regbu(dm, R_0x8c4, 0xff8, tone_num);
 				rxevm_sum_0 = 0;
 				rxevm_sum_1 = 0;
 				for (i = 0; i < avg_num; i++) {
-					val = odm_read_4byte(dm, R_0xf8c);
+					val = odm_read_4bytebu(dm, R_0xf8c);
 
 					rxevm_0 = (s8)((val & MASKBYTE2) >> 16);
 					rxevm_0 = (rxevm_0 / 2);
@@ -4377,7 +4377,7 @@ void phydm_per_tone_evm(void *dm_void, char input[][16], u32 *_used,
 
 					rxevm_sum_0 += rxevm_0;
 					rxevm_sum_1 += rxevm_1;
-					ODM_delay_ms(1);
+					ODM_delay_msbu(1);
 				}
 				evm_tone_0[tone_num] = (rxevm_sum_0 / avg_num);
 				evm_tone_1[tone_num] = (rxevm_sum_1 / avg_num);
@@ -4387,11 +4387,11 @@ void phydm_per_tone_evm(void *dm_void, char input[][16], u32 *_used,
 			}
 
 			for (tone_num = 2; tone_num <= 58; tone_num++) {
-				odm_set_bb_reg(dm, R_0x8c4, 0xff8, tone_num);
+				odm_set_bb_regbu(dm, R_0x8c4, 0xff8, tone_num);
 				rxevm_sum_0 = 0;
 				rxevm_sum_1 = 0;
 				for (i = 0; i < avg_num; i++) {
-					val = odm_read_4byte(dm, R_0xf8c);
+					val = odm_read_4bytebu(dm, R_0xf8c);
 
 					rxevm_0 = (s8)((val & MASKBYTE2) >> 16);
 					rxevm_0 = (rxevm_0 / 2);
@@ -4404,7 +4404,7 @@ void phydm_per_tone_evm(void *dm_void, char input[][16], u32 *_used,
 						rxevm_1 = 0;
 					rxevm_sum_0 += rxevm_0;
 					rxevm_sum_1 += rxevm_1;
-					ODM_delay_ms(1);
+					ODM_delay_msbu(1);
 				}
 				evm_tone_0[tone_num] = (rxevm_sum_0 / avg_num);
 				evm_tone_1[tone_num] = (rxevm_sum_1 / avg_num);
@@ -4414,11 +4414,11 @@ void phydm_per_tone_evm(void *dm_void, char input[][16], u32 *_used,
 			}
 		} else if (*dm->band_width == CHANNEL_WIDTH_80) {
 			for (tone_num = 134; tone_num <= 254; tone_num++) {
-				odm_set_bb_reg(dm, R_0x8c4, 0xff8, tone_num);
+				odm_set_bb_regbu(dm, R_0x8c4, 0xff8, tone_num);
 				rxevm_sum_0 = 0;
 				rxevm_sum_1 = 0;
 				for (i = 0; i < avg_num; i++) {
-					val = odm_read_4byte(dm, R_0xf8c);
+					val = odm_read_4bytebu(dm, R_0xf8c);
 
 					rxevm_0 = (s8)((val & MASKBYTE2) >> 16);
 					rxevm_0 = (rxevm_0 / 2);
@@ -4431,7 +4431,7 @@ void phydm_per_tone_evm(void *dm_void, char input[][16], u32 *_used,
 						rxevm_1 = 0;
 					rxevm_sum_0 += rxevm_0;
 					rxevm_sum_1 += rxevm_1;
-					ODM_delay_ms(1);
+					ODM_delay_msbu(1);
 				}
 				evm_tone_0[tone_num] = (rxevm_sum_0 / avg_num);
 				evm_tone_1[tone_num] = (rxevm_sum_1 / avg_num);
@@ -4441,11 +4441,11 @@ void phydm_per_tone_evm(void *dm_void, char input[][16], u32 *_used,
 			}
 
 			for (tone_num = 2; tone_num <= 122; tone_num++) {
-				odm_set_bb_reg(dm, R_0x8c4, 0xff8, tone_num);
+				odm_set_bb_regbu(dm, R_0x8c4, 0xff8, tone_num);
 				rxevm_sum_0 = 0;
 				rxevm_sum_1 = 0;
 				for (i = 0; i < avg_num; i++) {
-					val = odm_read_4byte(dm, R_0xf8c);
+					val = odm_read_4bytebu(dm, R_0xf8c);
 
 					rxevm_0 = (s8)((val & MASKBYTE2) >> 16);
 					rxevm_0 = (rxevm_0 / 2);
@@ -4458,7 +4458,7 @@ void phydm_per_tone_evm(void *dm_void, char input[][16], u32 *_used,
 						rxevm_1 = 0;
 					rxevm_sum_0 += rxevm_0;
 					rxevm_sum_1 += rxevm_1;
-					ODM_delay_ms(1);
+					ODM_delay_msbu(1);
 				}
 				evm_tone_0[tone_num] = (rxevm_sum_0 / avg_num);
 				evm_tone_1[tone_num] = (rxevm_sum_1 / avg_num);
@@ -4472,7 +4472,7 @@ void phydm_per_tone_evm(void *dm_void, char input[][16], u32 *_used,
 	*_out_len = out_len;
 }
 
-void phydm_bw_ch_adjust(void *dm_void, char input[][16],
+void phydm_bw_ch_adjustbu(void *dm_void, char input[][16],
 			u32 *_used, char *output, u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -4523,7 +4523,7 @@ out:
 	*_out_len = out_len;
 }
 
-void phydm_ext_rf_element_ctrl(void *dm_void, char input[][16], u32 *_used,
+void phydm_ext_rf_element_ctrlbu(void *dm_void, char input[][16], u32 *_used,
 			       char *output, u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -4539,11 +4539,11 @@ void phydm_ext_rf_element_ctrl(void *dm_void, char input[][16], u32 *_used,
 		return;
 
 	if (val[0] == 1) /*@ext switch*/ {
-		phydm_set_ext_switch(dm, val[1]);
+		phydm_set_ext_switchbu(dm, val[1]);
 	}
 }
 
-void phydm_print_dbgport(void *dm_void, char input[][16], u32 *_used,
+void phydm_print_dbgportbu(void *dm_void, char input[][16], u32 *_used,
 			 char *output, u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -4565,9 +4565,9 @@ void phydm_print_dbgport(void *dm_void, char input[][16], u32 *_used,
 	PHYDM_SSCANF(input[1], DCMD_HEX, &var1[0]);
 
 	dm->debug_components |= ODM_COMP_API;
-	if (phydm_set_bb_dbg_port(dm, DBGPORT_PRI_3, var1[0])) {
-		dbg_port_value = phydm_get_bb_dbg_port_val(dm);
-		phydm_release_bb_dbg_port(dm);
+	if (phydm_set_bb_dbg_portbu(dm, DBGPORT_PRI_3, var1[0])) {
+		dbg_port_value = phydm_get_bb_dbg_port_valbu(dm);
+		phydm_release_bb_dbg_portbu(dm);
 
 		for (i = 0; i < 32; i++)
 			val[i] = (u8)((dbg_port_value & BIT(i)) >> i);
@@ -4591,7 +4591,7 @@ out:
 	*_out_len = out_len;
 }
 
-void phydm_get_anapar_table(void *dm_void, u32 *_used, char *output,
+void phydm_get_anapar_tablebu(void *dm_void, u32 *_used, char *output,
 			    u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -4635,7 +4635,7 @@ void phydm_get_csi_table(void *dm_void, u32 *_used, char *output,
 	*_out_len = out_len;
 }
 
-void phydm_dd_dbg_dump(void *dm_void, char input[][16], u32 *_used,
+void phydm_dd_dbg_dumpbu(void *dm_void, char input[][16], u32 *_used,
 		       char *output, u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -4652,24 +4652,24 @@ void phydm_dd_dbg_dump(void *dm_void, char input[][16], u32 *_used,
 		return;
 	} else if (var1[0] == 1) {
 		/*[Reg]*/
-		phydm_dump_mac_reg(dm, &used, output, &out_len);
-		phydm_dump_bb_reg(dm, &used, output, &out_len);
+		phydm_dump_mac_regbu(dm, &used, output, &out_len);
+		phydm_dump_bb_regbu(dm, &used, output, &out_len);
 		#ifdef PHYDM_IC_JGR3_SERIES_SUPPORT
 		if (dm->ic_ip_series == PHYDM_IC_JGR3)
-			phydm_dump_bb_reg2_jgr3(dm, &used, output, &out_len);
+			phydm_dump_bb_regbu2_jgr3(dm, &used, output, &out_len);
 		#endif
 
-		phydm_dump_rf_reg(dm, &used, output, &out_len);
+		phydm_dump_rf_regbu(dm, &used, output, &out_len);
 		/*[Dbg Port]*/
 		#ifdef PHYDM_AUTO_DEGBUG
-		phydm_dbg_port_dump(dm, &used, output, &out_len);
+		phydm_dbg_port_dumpbu(dm, &used, output, &out_len);
 		#endif
 		/*[Analog Parameters]*/
-		phydm_get_anapar_table(dm, &used, output, &out_len);
+		phydm_get_anapar_tablebu(dm, &used, output, &out_len);
 	}
 }
 
-void phydm_nss_hitogram_mp(void *dm_void, enum PDM_RATE_TYPE rate_type,
+void phydm_nss_hitogrambu_mp(void *dm_void, enum PDM_RATE_TYPE rate_type,
 			   u32 *_used, char *output, u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -4683,15 +4683,15 @@ void phydm_nss_hitogram_mp(void *dm_void, enum PDM_RATE_TYPE rate_type,
 	u16 *evm_hist = &dbg_s->evm_1ss_hist[0];
 	u16 *snr_hist = &dbg_s->snr_1ss_hist[0];
 	u8 i = 0;
-	u8 ss = phydm_rate_type_2_num_ss(dm, rate_type);
+	u8 ss = phydm_rate_type_2_num_ssbu(dm, rate_type);
 
 	if (rate_type == PDM_OFDM) {
-		phydm_print_hist_2_buf(dm, dbg_s->evm_ofdm_hist, PHY_HIST_SIZE,
+		phydm_print_hist_2_bufbu(dm, dbg_s->evm_ofdm_hist, PHY_HIST_SIZE,
 				       buf, buf_size);
 		PDM_SNPF(out_len, used, output + used, out_len - used,
 			 "%-14s=%s\n", "[OFDM][EVM]", buf);
 
-		phydm_print_hist_2_buf(dm, dbg_s->snr_ofdm_hist, PHY_HIST_SIZE,
+		phydm_print_hist_2_bufbu(dm, dbg_s->snr_ofdm_hist, PHY_HIST_SIZE,
 				       buf, buf_size);
 		PDM_SNPF(out_len, used, output + used, out_len - used,
 			 "%-14s=%s\n", "[OFDM][SNR]", buf);
@@ -4722,10 +4722,10 @@ void phydm_nss_hitogram_mp(void *dm_void, enum PDM_RATE_TYPE rate_type,
 			#endif
 		}
 
-		phydm_print_hist_2_buf(dm, evm_hist, h_size, buf, buf_size);
+		phydm_print_hist_2_bufbu(dm, evm_hist, h_size, buf, buf_size);
 		PDM_SNPF(out_len, used, output + used, out_len - used,
 			 "[%d-SS][EVM][%d]=%s\n", ss, i, buf);
-		phydm_print_hist_2_buf(dm, snr_hist, h_size, buf, buf_size);
+		phydm_print_hist_2_bufbu(dm, snr_hist, h_size, buf, buf_size);
 		PDM_SNPF(out_len, used, output + used, out_len - used,
 			 "[%d-SS][SNR][%d]=%s\n",  ss, i, buf);
 	}
@@ -4733,7 +4733,7 @@ void phydm_nss_hitogram_mp(void *dm_void, enum PDM_RATE_TYPE rate_type,
 	*_out_len = out_len;
 }
 
-void phydm_mp_dbg(void *dm_void, char input[][16], u32 *_used, char *output,
+void phydm_mp_dbgbu(void *dm_void, char input[][16], u32 *_used, char *output,
 		  u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -4764,37 +4764,37 @@ void phydm_mp_dbg(void *dm_void, char input[][16], u32 *_used, char *output,
 	PDM_SNPF(out_len, used, output + used, out_len - used,
 		 "[PHY Histogram] ==============>\n");
 	/*@===[Threshold]===*/
-	phydm_print_hist_2_buf(dm, dbg_i->evm_hist_th, th_size, buf, buf_size);
+	phydm_print_hist_2_bufbu(dm, dbg_i->evm_hist_th, th_size, buf, buf_size);
 	PDM_SNPF(out_len, used, output + used, out_len - used,
 		 "%-16s=%s\n", "[EVM_TH]", buf);
-	phydm_print_hist_2_buf(dm, dbg_i->snr_hist_th, th_size, buf, buf_size);
+	phydm_print_hist_2_bufbu(dm, dbg_i->snr_hist_th, th_size, buf, buf_size);
 	PDM_SNPF(out_len, used, output + used, out_len - used,
 		 "%-16s=%s\n", "[SNR_TH]", buf);
 	/*@===[OFDM]===*/
-	phydm_nss_hitogram_mp(dm, PDM_OFDM, &used, output, &out_len);
+	phydm_nss_hitogrambu_mp(dm, PDM_OFDM, &used, output, &out_len);
 	/*@===[1-SS]===*/
-	phydm_nss_hitogram_mp(dm, PDM_1SS, &used, output, &out_len);
+	phydm_nss_hitogrambu_mp(dm, PDM_1SS, &used, output, &out_len);
 	/*@===[2-SS]===*/
 	#if (defined(PHYDM_COMPILE_ABOVE_2SS))
 	if (dm->support_ic_type & PHYDM_IC_ABOVE_2SS)
-		phydm_nss_hitogram_mp(dm, PDM_2SS, &used, output, &out_len);
+		phydm_nss_hitogrambu_mp(dm, PDM_2SS, &used, output, &out_len);
 	#endif
 	/*@===[3-SS]===*/
 	#if (defined(PHYDM_COMPILE_ABOVE_3SS))
 	if (dm->support_ic_type & PHYDM_IC_ABOVE_3SS)
-		phydm_nss_hitogram_mp(dm, PDM_3SS, &used, output, &out_len);
+		phydm_nss_hitogrambu_mp(dm, PDM_3SS, &used, output, &out_len);
 	#endif
 	/*@===[4-SS]===*/
 	#if (defined(PHYDM_COMPILE_ABOVE_4SS))
 	if (dm->support_ic_type & PHYDM_IC_ABOVE_4SS)
-		phydm_nss_hitogram_mp(dm, PDM_4SS, &used, output, &out_len);
+		phydm_nss_hitogrambu_mp(dm, PDM_4SS, &used, output, &out_len);
 	#endif
 	/*@===[PHY Avg]======================================================*/
-	phydm_get_avg_phystatus_val(dm);
+	phydm_get_avg_phystatus_valbu(dm);
 	PDM_SNPF(out_len, used, output + used, out_len - used,
 		 "[PHY Avg] ==============>\n");
 
-	phydm_get_avg_phystatus_val(dm);
+	phydm_get_avg_phystatus_valbu(dm);
 
 	switch (dm->num_rf_path) {
 #if (defined(PHYDM_COMPILE_ABOVE_4SS))
@@ -4879,20 +4879,20 @@ void phydm_mp_dbg(void *dm_void, char input[][16], u32 *_used, char *output,
 		if (i > dm->num_rf_path)
 			break;
 
-		odm_memory_set(dm, tmp_rssi_avg, 0, 4);
-		odm_memory_set(dm, tmp_snr_avg, 0, 4);
-		odm_memory_set(dm, tmp_evm_avg, 0, 4);
+		odm_memory_setbu(dm, tmp_rssi_avg, 0, 4);
+		odm_memory_setbu(dm, tmp_snr_avg, 0, 4);
+		odm_memory_setbu(dm, tmp_evm_avg, 0, 4);
 
 		switch (i) {
 		#if (defined(PHYDM_COMPILE_ABOVE_4SS))
 		case 4:
 			rate_type = "[4-SS]";
 			tmp_cnt = dbg_s->rssi_4ss_cnt;
-			odm_move_memory(dm, tmp_rssi_avg,
+			odm_move_memorybu(dm, tmp_rssi_avg,
 					dbg_avg->rssi_4ss_avg, dm->num_rf_path);
-			odm_move_memory(dm, tmp_snr_avg,
+			odm_move_memorybu(dm, tmp_snr_avg,
 					dbg_avg->snr_4ss_avg, dm->num_rf_path);
-			odm_move_memory(dm, tmp_evm_avg, dbg_avg->evm_4ss_avg,
+			odm_move_memorybu(dm, tmp_evm_avg, dbg_avg->evm_4ss_avg,
 					4);
 			break;
 		#endif
@@ -4900,11 +4900,11 @@ void phydm_mp_dbg(void *dm_void, char input[][16], u32 *_used, char *output,
 		case 3:
 			rate_type = "[3-SS]";
 			tmp_cnt = dbg_s->rssi_3ss_cnt;
-			odm_move_memory(dm, tmp_rssi_avg,
+			odm_move_memorybu(dm, tmp_rssi_avg,
 					dbg_avg->rssi_3ss_avg, dm->num_rf_path);
-			odm_move_memory(dm, tmp_snr_avg,
+			odm_move_memorybu(dm, tmp_snr_avg,
 					dbg_avg->snr_3ss_avg, dm->num_rf_path);
-			odm_move_memory(dm, tmp_evm_avg,
+			odm_move_memorybu(dm, tmp_evm_avg,
 					dbg_avg->evm_3ss_avg, 3);
 			break;
 		#endif
@@ -4912,33 +4912,33 @@ void phydm_mp_dbg(void *dm_void, char input[][16], u32 *_used, char *output,
 		case 2:
 			rate_type = "[2-SS]";
 			tmp_cnt = dbg_s->rssi_2ss_cnt;
-			odm_move_memory(dm, tmp_rssi_avg,
+			odm_move_memorybu(dm, tmp_rssi_avg,
 					dbg_avg->rssi_2ss_avg, dm->num_rf_path);
-			odm_move_memory(dm, tmp_snr_avg, dbg_avg->snr_2ss_avg,
+			odm_move_memorybu(dm, tmp_snr_avg, dbg_avg->snr_2ss_avg,
 					dm->num_rf_path);
-			odm_move_memory(dm, tmp_evm_avg,
+			odm_move_memorybu(dm, tmp_evm_avg,
 					dbg_avg->evm_2ss_avg, 2);
 			break;
 		#endif
 		case 1:
 			rate_type = "[1-SS]";
 			tmp_cnt = dbg_s->rssi_1ss_cnt;
-			odm_move_memory(dm, tmp_rssi_avg,
+			odm_move_memorybu(dm, tmp_rssi_avg,
 					dbg_avg->rssi_1ss_avg, dm->num_rf_path);
-			odm_move_memory(dm, tmp_snr_avg,
+			odm_move_memorybu(dm, tmp_snr_avg,
 					dbg_avg->snr_1ss_avg, dm->num_rf_path);
-			odm_move_memory(dm, tmp_evm_avg,
+			odm_move_memorybu(dm, tmp_evm_avg,
 					&dbg_avg->evm_1ss_avg, 1);
 			break;
 		default:
 			rate_type = "[L-OFDM]";
 			tmp_cnt = dbg_s->rssi_ofdm_cnt;
-			odm_move_memory(dm, tmp_rssi_avg,
+			odm_move_memorybu(dm, tmp_rssi_avg,
 					dbg_avg->rssi_ofdm_avg,
 					dm->num_rf_path);
-			odm_move_memory(dm, tmp_snr_avg,
+			odm_move_memorybu(dm, tmp_snr_avg,
 					dbg_avg->snr_ofdm_avg, dm->num_rf_path);
-			odm_move_memory(dm, tmp_evm_avg,
+			odm_move_memorybu(dm, tmp_evm_avg,
 					&dbg_avg->evm_ofdm_avg, 1);
 			break;
 		}
@@ -4954,7 +4954,7 @@ void phydm_mp_dbg(void *dm_void, char input[][16], u32 *_used, char *output,
 			    tmp_evm_avg[2], tmp_evm_avg[3]);
 	}
 
-	phydm_reset_phystatus_statistic(dm);
+	phydm_reset_phystatus_statisticbu(dm);
 
 	PDM_SNPF(out_len, used, output + used, out_len - used,
 		 "rxsc_idx {Legacy, 20, 40, 80} = {%d, %d, %d, %d}\n",
@@ -5287,7 +5287,7 @@ enum PHYDM_CMD_ID {
 	PHYDM_CSI_DBG
 };
 
-struct phydm_command phy_dm_ary[] = {
+struct phydm_command phy_dm_arybu[] = {
 	{"-h", PHYDM_HELP}, /*@do not move this element to other position*/
 	{"demo", PHYDM_DEMO}, /*@do not move this element to other position*/
 	{"rf", PHYDM_RF_CMD},
@@ -5364,7 +5364,7 @@ struct phydm_command phy_dm_ary[] = {
 
 #endif /*@#ifdef CONFIG_PHYDM_DEBUG_FUNCTION*/
 
-void phydm_cmd_parser(struct dm_struct *dm, char input[][MAX_ARGV],
+void phydm_cmdbu_parserbu(struct dm_struct *dm, char input[][MAX_ARGV],
 		      u32 input_num, u8 flag, char *output, u32 out_len)
 {
 #ifdef CONFIG_PHYDM_DEBUG_FUNCTION
@@ -5372,7 +5372,7 @@ void phydm_cmd_parser(struct dm_struct *dm, char input[][MAX_ARGV],
 	u8 id = 0;
 	u32 var1[10] = {0};
 	u32 i;
-	u32 phydm_ary_size = sizeof(phy_dm_ary) / sizeof(struct phydm_command);
+	u32 phydm_ary_size = sizeof(phy_dm_arybu) / sizeof(struct phydm_command);
 
 	if (flag == 0) {
 		PDM_SNPF(out_len, used, output + used, out_len - used,
@@ -5385,8 +5385,8 @@ void phydm_cmd_parser(struct dm_struct *dm, char input[][MAX_ARGV],
 	/* Parsing Cmd ID */
 	if (input_num) {
 		for (i = 0; i < phydm_ary_size; i++) {
-			if (strcmp(phy_dm_ary[i].name, input[0]) == 0) {
-				id = phy_dm_ary[i].id;
+			if (strcmp(phy_dm_arybu[i].name, input[0]) == 0) {
+				id = phy_dm_arybu[i].id;
 				break;
 			}
 		}
@@ -5404,7 +5404,7 @@ void phydm_cmd_parser(struct dm_struct *dm, char input[][MAX_ARGV],
 
 		for (i = 0; i < phydm_ary_size - 2; i++)
 			PDM_SNPF(out_len, used, output + used, out_len - used,
-				 "  %-5d: %s\n", i, phy_dm_ary[i + 2].name);
+				 "  %-5d: %s\n", i, phy_dm_arybu[i + 2].name);
 	} break;
 
 	case PHYDM_DEMO: { /*@echo demo 10 0x3a z abcde >cmd*/
@@ -5429,15 +5429,15 @@ void phydm_cmd_parser(struct dm_struct *dm, char input[][MAX_ARGV],
 			 "String = %s\n", input[4]);
 	} break;
 	case PHYDM_RF_CMD:
-		halrf_cmd_parser(dm, input, &used, output, &out_len, input_num);
+		halrf_cmd_parserbu(dm, input, &used, output, &out_len, input_num);
 		break;
 
 	case PHYDM_DIG:
-		phydm_dig_debug(dm, input, &used, output, &out_len);
+		phydm_dig_debugbu(dm, input, &used, output, &out_len);
 		break;
 
 	case PHYDM_RA:
-		phydm_ra_debug(dm, input, &used, output, &out_len);
+		phydm_ra_debugbu(dm, input, &used, output, &out_len);
 		break;
 
 	case PHYDM_ANTDIV:
@@ -5453,19 +5453,19 @@ void phydm_cmd_parser(struct dm_struct *dm, char input[][MAX_ARGV],
 		break;
 
 	case PHYDM_DEBUG:
-		phydm_debug_trace(dm, input, &used, output, &out_len);
+		phydm_debug_tracebu(dm, input, &used, output, &out_len);
 		break;
 
 	case PHYDM_MP_DEBUG:
-		phydm_mp_dbg(dm, input, &used, output, &out_len);
+		phydm_mp_dbgbu(dm, input, &used, output, &out_len);
 		break;
 
 	case PHYDM_FW_DEBUG:
-		phydm_fw_debug_trace(dm, input, &used, output, &out_len);
+		phydm_fw_debug_tracebu(dm, input, &used, output, &out_len);
 		break;
 
 	case PHYDM_SUPPORT_ABILITY:
-		phydm_supportability_en(dm, input, &used, output, &out_len);
+		phydm_supportability_enbu(dm, input, &used, output, &out_len);
 		break;
 
 	case PHYDM_SMART_ANT:
@@ -5484,23 +5484,23 @@ void phydm_cmd_parser(struct dm_struct *dm, char input[][MAX_ARGV],
 		break;
 
 	case PHYDM_CH_BW:
-		phydm_bw_ch_adjust(dm, input, &used, output, &out_len);
+		phydm_bw_ch_adjustbu(dm, input, &used, output, &out_len);
 		break;
 
 	case PHYDM_PROFILE:
-		phydm_basic_profile(dm, &used, output, &out_len);
+		phydm_basic_profilebu(dm, &used, output, &out_len);
 		break;
 
 	case PHYDM_GET_TXAGC:
-		phydm_get_txagc(dm, &used, output, &out_len);
+		phydm_get_txagcbu(dm, &used, output, &out_len);
 		break;
 
 	case PHYDM_SET_TXAGC:
-		phydm_set_txagc_dbg(dm, input, &used, output, &out_len);
+		phydm_set_txagcbu_dbg(dm, input, &used, output, &out_len);
 		break;
 
 	case PHYDM_TRX_PATH:
-		phydm_config_trx_path(dm, input, &used, output, &out_len);
+		phydm_config_trx_pathbu(dm, input, &used, output, &out_len);
 		break;
 
 	case PHYDM_LA_MODE:
@@ -5510,33 +5510,33 @@ void phydm_cmd_parser(struct dm_struct *dm, char input[][MAX_ARGV],
 		break;
 
 	case PHYDM_DUMP_REG:
-		phydm_dump_reg(dm, input, &used, output, &out_len);
+		phydm_dump_regbu(dm, input, &used, output, &out_len);
 		break;
 
 	case PHYDM_BIG_JUMP:
-		phydm_enable_big_jump(dm, input, &used, output, &out_len);
+		phydm_enable_big_jumpbu(dm, input, &used, output, &out_len);
 		break;
 
 	case PHYDM_AUTO_DBG:
 		#ifdef PHYDM_AUTO_DEGBUG
-		phydm_auto_dbg_console(dm, input, &used, output, &out_len);
+		phydm_auto_dbg_consolebu(dm, input, &used, output, &out_len);
 		#endif
 		break;
 
 	case PHYDM_DD_DBG:
-		phydm_dd_dbg_dump(dm, input, &used, output, &out_len);
+		phydm_dd_dbg_dumpbu(dm, input, &used, output, &out_len);
 		break;
 
 	case PHYDM_SHOW_RXRATE:
-		phydm_show_rx_rate(dm, input, &used, output, &out_len);
+		phydm_show_rx_ratebu(dm, input, &used, output, &out_len);
 		break;
 
 	case PHYDM_NBI_EN:
-		phydm_nbi_debug(dm, input, &used, output, &out_len);
+		phydm_nbi_debugbu(dm, input, &used, output, &out_len);
 		break;
 
 	case PHYDM_CSI_MASK_EN:
-		phydm_csi_debug(dm, input, &used, output, &out_len);
+		phydm_csi_debugbu(dm, input, &used, output, &out_len);
 		break;
 
 	#ifdef CONFIG_PHYDM_DFS_MASTER
@@ -5551,13 +5551,13 @@ void phydm_cmd_parser(struct dm_struct *dm, char input[][MAX_ARGV],
 
 	case PHYDM_NHM:
 		#ifdef NHM_SUPPORT
-		phydm_nhm_dbg(dm, input, &used, output, &out_len);
+		phydm_nhm_dbgbu(dm, input, &used, output, &out_len);
 		#endif
 		break;
 
 	case PHYDM_CLM:
 		#ifdef CLM_SUPPORT
-		phydm_clm_dbg(dm, input, &used, output, &out_len);
+		phydm_clm_dbgbu(dm, input, &used, output, &out_len);
 		#endif
 		break;
 
@@ -5568,11 +5568,11 @@ void phydm_cmd_parser(struct dm_struct *dm, char input[][MAX_ARGV],
 	#endif
 
 	case PHYDM_ENV_MNTR:
-		phydm_env_mntr_dbg(dm, input, &used, output, &out_len);
+		phydm_env_mntr_dbgbu(dm, input, &used, output, &out_len);
 		break;
 
 	case PHYDM_BB_INFO:
-		phydm_bb_hw_dbg_info(dm, input, &used, output, &out_len);
+		phydm_bb_hw_dbg_infobu(dm, input, &used, output, &out_len);
 		break;
 	/*
 	case PHYDM_TXBF: {
@@ -5606,11 +5606,11 @@ void phydm_cmd_parser(struct dm_struct *dm, char input[][MAX_ARGV],
 	} break;
 	*/
 	case PHYDM_H2C:
-		phydm_h2C_debug(dm, input, &used, output, &out_len);
+		phydm_h2C_debugbu(dm, input, &used, output, &out_len);
 		break;
 
 	case PHYDM_EXT_RF_E_CTRL:
-		phydm_ext_rf_element_ctrl(dm, input, &used, output, &out_len);
+		phydm_ext_rf_element_ctrlbu(dm, input, &used, output, &out_len);
 		break;
 
 	case PHYDM_ADAPTIVE_SOML:
@@ -5622,13 +5622,13 @@ void phydm_cmd_parser(struct dm_struct *dm, char input[][MAX_ARGV],
 	case PHYDM_PSD:
 
 		#ifdef CONFIG_PSD_TOOL
-		phydm_psd_debug(dm, input, &used, output, &out_len);
+		phydm_psd_debugbu(dm, input, &used, output, &out_len);
 		#endif
 
 		break;
 
 	case PHYDM_DEBUG_PORT:
-		phydm_print_dbgport(dm, input, &used, output, &out_len);
+		phydm_print_dbgportbu(dm, input, &used, output, &out_len);
 		break;
 
 	case PHYDM_DIS_HTSTF_CONTROL: {
@@ -5650,18 +5650,18 @@ void phydm_cmd_parser(struct dm_struct *dm, char input[][MAX_ARGV],
 	} break;
 
 	case PHYDM_CFO_TRK:
-		phydm_cfo_tracking_debug(dm, input, &used, output, &out_len);
+		phydm_cfo_trackingbu_debug(dm, input, &used, output, &out_len);
 		break;
 
 	case PHYDM_ADAPTIVITY_DEBUG:
 		#ifdef PHYDM_SUPPORT_ADAPTIVITY
-		phydm_adaptivity_debug(dm, input, &used, output, &out_len);
+		phydm_adaptivity_debugbu(dm, input, &used, output, &out_len);
 		#endif
 		break;
 
 	case PHYDM_DIS_DYM_ANT_WEIGHTING:
 		#ifdef DYN_ANT_WEIGHTING_SUPPORT
-		phydm_ant_weight_dbg(dm, input, &used, output, &out_len);
+		phydm_ant_weight_dbgbu(dm, input, &used, output, &out_len);
 		#endif
 		break;
 
@@ -5672,15 +5672,15 @@ void phydm_cmd_parser(struct dm_struct *dm, char input[][MAX_ARGV],
 		break;
 
 	case PHYDM_STA_INFO:
-		phydm_show_sta_info(dm, input, &used, output, &out_len);
+		phydm_show_sta_infobu(dm, input, &used, output, &out_len);
 		break;
 
 	case PHYDM_PAUSE_FUNC:
-		phydm_pause_func_console(dm, input, &used, output, &out_len);
+		phydm_pause_funcbu_console(dm, input, &used, output, &out_len);
 		break;
 
 	case PHYDM_PER_TONE_EVM:
-		phydm_per_tone_evm(dm, input, &used, output, &out_len);
+		phydm_per_tone_evmbu(dm, input, &used, output, &out_len);
 		break;
 
 	#ifdef CONFIG_DYNAMIC_TX_TWR
@@ -5696,7 +5696,7 @@ void phydm_cmd_parser(struct dm_struct *dm, char input[][MAX_ARGV],
 		break;
 
 	case PHYDM_ANAPAR:
-		phydm_get_anapar_table(dm, &used, output, &out_len);
+		phydm_get_anapar_tablebu(dm, &used, output, &out_len);
 		break;
 	case PHYDM_CCK_RX_PATHDIV:
 		#ifdef PHYDM_CCK_RX_PATHDIV_SUPPORT
@@ -5706,7 +5706,7 @@ void phydm_cmd_parser(struct dm_struct *dm, char input[][MAX_ARGV],
 
 	case PHYDM_BEAM_FORMING:
 		#ifdef CONFIG_BB_TXBF_API
-		phydm_bf_debug(dm, input, &used, output, &out_len);
+		phydm_bf_debugbu(dm, input, &used, output, &out_len);
 		#endif
 		break;
 	case PHYDM_REG_MONITOR:
@@ -5789,7 +5789,7 @@ char *strsep(char **s, const char *ct)
 #endif
 
 #if (DM_ODM_SUPPORT_TYPE & (ODM_CE | ODM_AP | ODM_IOT))
-s32 phydm_cmd(struct dm_struct *dm, char *input, u32 in_len, u8 flag,
+s32 phydm_cmdbu(struct dm_struct *dm, char *input, u32 in_len, u8 flag,
 	      char *output, u32 out_len)
 {
 	char *token;
@@ -5811,13 +5811,13 @@ s32 phydm_cmd(struct dm_struct *dm, char *input, u32 in_len, u8 flag,
 	if (argc == 1)
 		argv[0][strlen(argv[0]) - 1] = '\0';
 
-	phydm_cmd_parser(dm, argv, argc, flag, output, out_len);
+	phydm_cmdbu_parserbu(dm, argv, argc, flag, output, out_len);
 
 	return 0;
 }
 #endif
 
-void phydm_fw_trace_handler(void *dm_void, u8 *cmd_buf, u8 cmd_len)
+void phydm_fw_trace_handlerbu(void *dm_void, u8 *cmd_buf, u8 cmd_len)
 {
 #ifdef CONFIG_PHYDM_DEBUG_FUNCTION
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -5895,7 +5895,7 @@ void phydm_fw_trace_handler(void *dm_void, u8 *cmd_buf, u8 cmd_len)
 #endif /*@#ifdef CONFIG_PHYDM_DEBUG_FUNCTION*/
 }
 
-void phydm_fw_trace_handler_code(void *dm_void, u8 *buffer, u8 cmd_len)
+void phydm_fw_trace_handlerbu_code(void *dm_void, u8 *buffer, u8 cmd_len)
 {
 #ifdef CONFIG_PHYDM_DEBUG_FUNCTION
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -5940,7 +5940,7 @@ void phydm_fw_trace_handler_code(void *dm_void, u8 *buffer, u8 cmd_len)
 					  "[FW] RTY[4]=[ %d ], drop=(( %d )), total=(( %d )), current_rate=((0x %x ))",
 					  content_1, content_2, content_3,
 					  content_4);
-				phydm_print_rate(dm, (u8)content_4,
+				phydm_print_ratebu(dm, (u8)content_4,
 						 DBG_FW_TRACE);
 			} else if (content_0 == 3)
 				PHYDM_DBG(dm, DBG_FW_TRACE,
@@ -6125,7 +6125,7 @@ void phydm_fw_trace_handler_code(void *dm_void, u8 *buffer, u8 cmd_len)
 #endif /*@#ifdef CONFIG_PHYDM_DEBUG_FUNCTION*/
 }
 
-void phydm_fw_trace_handler_8051(void *dm_void, u8 *buffer, u8 cmd_len)
+void phydm_fw_trace_handlerbu_8051(void *dm_void, u8 *buffer, u8 cmd_len)
 {
 #ifdef CONFIG_PHYDM_DEBUG_FUNCTION
 	struct dm_struct *dm = (struct dm_struct *)dm_void;

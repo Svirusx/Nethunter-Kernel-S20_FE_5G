@@ -2480,13 +2480,13 @@ struct halmac_api {
 	(*halmac_get_used_cam_entry_num)(struct halmac_adapter *adapter,
 					 enum hal_security_type sec_type);
 	enum halmac_ret_status
-	(*halmac_write_cam)(struct halmac_adapter *adapter, u32 idx,
+	(*halmac_write_cambu)(struct halmac_adapter *adapter, u32 idx,
 			    struct halmac_cam_entry_info *info);
 	enum halmac_ret_status
 	(*halmac_read_cam_entry)(struct halmac_adapter *adapter, u32 idx,
 				 struct halmac_cam_entry_format *content);
 	enum halmac_ret_status
-	(*halmac_clear_cam_entry)(struct halmac_adapter *adapter, u32 idx);
+	(*halmac_clear_cam_entrybubu)(struct halmac_adapter *adapter, u32 idx);
 	enum halmac_ret_status
 	(*halmac_get_hw_value)(struct halmac_adapter *adapter,
 			       enum halmac_hw_id hw_id, void *value);

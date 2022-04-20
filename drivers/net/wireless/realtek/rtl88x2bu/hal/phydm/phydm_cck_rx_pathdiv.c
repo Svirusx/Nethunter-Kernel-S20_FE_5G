@@ -37,11 +37,11 @@ void phydm_cck_rx_pathdiv_manaul(void *dm_void, boolean en_cck_rx_pathdiv)
 
 	/* @Can not apply for 98F/14B/97G from DD YC*/
 	if (en_cck_rx_pathdiv) {
-		odm_set_bb_reg(dm, R_0x1a14, BIT(7), 0x0);
-		odm_set_bb_reg(dm, R_0x1a74, BIT(8), 0x1);
+		odm_set_bb_regbu(dm, R_0x1a14, BIT(7), 0x0);
+		odm_set_bb_regbu(dm, R_0x1a74, BIT(8), 0x1);
 	} else {
-		odm_set_bb_reg(dm, R_0x1a14, BIT(7), 0x1);
-		odm_set_bb_reg(dm, R_0x1a74, BIT(8), 0x0);
+		odm_set_bb_regbu(dm, R_0x1a14, BIT(7), 0x1);
+		odm_set_bb_regbu(dm, R_0x1a74, BIT(8), 0x0);
 	}
 }
 
