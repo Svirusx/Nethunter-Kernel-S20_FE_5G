@@ -871,7 +871,7 @@ get_used_cam_entry_num_88xx(struct halmac_adapter *adapter,
 }
 
 enum halmac_ret_status
-write_cam_88xx(struct halmac_adapter *adapter, u32 idx,
+write_cambu_88xx(struct halmac_adapter *adapter, u32 idx,
 	       struct halmac_cam_entry_info *info)
 {
 	u32 i;
@@ -988,7 +988,7 @@ read_cam_entry_88xx(struct halmac_adapter *adapter, u32 idx,
 }
 
 enum halmac_ret_status
-clear_cam_entry_88xx(struct halmac_adapter *adapter, u32 idx)
+clear_cam_entrybu_88xx(struct halmac_adapter *adapter, u32 idx)
 {
 	u32 i;
 	u32 cmd = 0x80010000;

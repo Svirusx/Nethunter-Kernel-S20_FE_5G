@@ -118,7 +118,7 @@ void rtl8192e_set_FwJoinBssReport_cmd(PADAPTER padapter, u8 mstatus);
 s32 FillH2CCmd_8192E(PADAPTER padapter, u8 ElementID, u32 CmdLen, u8 *pCmdBuffer);
 u8 GetTxBufferRsvdPageNum8192E(_adapter *padapter, bool wowlan);
 /* u8 rtl8192c_set_FwSelectSuspend_cmd(PADAPTER padapter, u8 bfwpoll, u16 period); */
-s32 c2h_handler_8192e(_adapter *adapter, u8 id, u8 seq, u8 plen, u8 *payload);
+s32 c2h_handlerbu_8192e(_adapter *adapter, u8 id, u8 seq, u8 plen, u8 *payload);
 #ifdef CONFIG_BT_COEXIST
 	void rtl8192e_download_BTCoex_AP_mode_rsvd_page(PADAPTER padapter);
 #endif /* CONFIG_BT_COEXIST */

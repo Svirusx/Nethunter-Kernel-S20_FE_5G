@@ -154,7 +154,7 @@ typedef struct _R_ANTENNA_SELECT_CCK {
 
 /*--------------------------Exported Function prototype---------------------*/
 u32
-PHY_CalculateBitShift(
+PHY_CalculateBitShiftbu(
 	u32 BitMask
 );
 

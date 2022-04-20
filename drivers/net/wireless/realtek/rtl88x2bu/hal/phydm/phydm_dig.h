@@ -132,7 +132,7 @@ enum tdma_dig_state {
 
 /*@--------------------Define Struct-----------------------------------*/
 #ifdef CFG_DIG_DAMPING_CHK
-struct phydm_dig_recorder_strcut {
+struct phydm_dig_recorderbu_strcut {
 	u8		igi_bitmap; /*@Don't add any new parameter before this*/
 	u8		igi_history[DIG_RECORD_NUM];
 	u32		fa_history[DIG_RECORD_NUM];
@@ -150,7 +150,7 @@ struct phydm_mcc_dig {
 
 struct phydm_dig_struct {
 #ifdef CFG_DIG_DAMPING_CHK
-	struct phydm_dig_recorder_strcut dig_recorder_t;
+	struct phydm_dig_recorderbu_strcut dig_recorder_t;
 	u8		dig_dl_en; /*@damping limit function enable*/
 #endif
 	boolean		fw_dig_enable;
@@ -304,15 +304,15 @@ struct phydm_fa_acc_struct {
 #endif	/*@#ifdef PHYDM_TDMA_DIG_SUPPORT*/
 
 /*@--------------------Function declaration-----------------------------*/
-void phydm_write_dig_reg(void *dm_void, u8 igi);
+void phydm_write_dig_regbu(void *dm_void, u8 igi);
 
-void odm_write_dig(void *dm_void, u8 current_igi);
+void odm_write_digbu(void *dm_void, u8 current_igi);
 
-u8 phydm_get_igi(void *dm_void, enum bb_path path);
+u8 phydm_get_igibu(void *dm_void, enum bb_path path);
 
-void phydm_set_dig_val(void *dm_void, u32 *val_buf, u8 val_len);
+void phydm_set_dig_valbu(void *dm_void, u32 *val_buf, u8 val_len);
 
-void odm_pause_dig(void *dm_void, enum phydm_pause_type pause_type,
+void odm_pause_digbu(void *dm_void, enum phydm_pause_type pause_type,
 		   enum phydm_pause_level pause_level, u8 igi_value);
 
 #ifdef PHYDM_HW_IGI
@@ -322,19 +322,19 @@ void phydm_hwigi_dbg(void *dm_void, char input[][16], u32 *_used,
 		     char *output, u32 *_out_len);
 #endif
 
-void phydm_dig_init(void *dm_void);
+void phydm_dig_initbu(void *dm_void);
 
-void phydm_dig(void *dm_void);
+void phydm_digbu(void *dm_void);
 
-void phydm_dig_lps_32k(void *dm_void);
+void phydm_dig_lps_32kbu(void *dm_void);
 
-void phydm_dig_by_rssi_lps(void *dm_void);
+void phydm_dig_by_rssi_lpsbu(void *dm_void);
 
 void phydm_get_dig_coverage(void *dm_void, u8 *max, u8 *min);
 
-u8 phydm_get_igi_for_target_pin_scan(void *dm_void, u8 rssi);
+u8 phydm_get_igibu_for_target_pin_scan(void *dm_void, u8 rssi);
 
-void phydm_false_alarm_counter_statistics(void *dm_void);
+void phydm_false_alarm_counter_statisticsbu(void *dm_void);
 
 u32 phydm_get_edcca_report(void * dm_void);
 
@@ -377,7 +377,7 @@ void phydm_fa_cnt_acc(void *dm_void, boolean rssi_dump_en,
 
 void phydm_set_ofdm_agc_tab(void *dm_void, u8 tab_sel);
 
-void phydm_dig_debug(void *dm_void, char input[][16], u32 *_used, char *output,
+void phydm_dig_debugbu(void *dm_void, char input[][16], u32 *_used, char *output,
 		     u32 *_out_len);
 
 void phydm_fill_fw_dig_info(void *dm_void, boolean *enable,

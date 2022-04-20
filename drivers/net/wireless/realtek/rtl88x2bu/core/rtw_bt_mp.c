@@ -38,7 +38,7 @@ void MPh2c_timeout_handle(void *FunctionContext)
 	if ((_FALSE == pMptCtx->MptH2cRspEvent)
 	    || ((_TRUE == pMptCtx->MptH2cRspEvent)
 		&& (_FALSE == pMptCtx->MptBtC2hEvent)))
-		_rtw_up_sema(&pMptCtx->MPh2c_Sema);
+		_rtw_up_semabu(&pMptCtx->MPh2c_Sema);
 }
 
 u32 WaitC2Hevent(PADAPTER pAdapter, u8 *C2H_event, u32 delay_time)
@@ -53,7 +53,7 @@ u32 WaitC2Hevent(PADAPTER pAdapter, u8 *C2H_event, u32 delay_time)
 
 	_set_timer(&pMptCtx->MPh2c_timeout_timer, delay_time);
 
-	_rtw_down_sema(&pMptCtx->MPh2c_Sema);
+	_rtw_down_semabu(&pMptCtx->MPh2c_Sema);
 
 	if (pMptCtx->bMPh2c_timeout == _TRUE) {
 		*C2H_event = _FALSE;
@@ -215,8 +215,8 @@ mptbt_BtFwOpCodeProcess(
 	pH2c->opCodeVer = opCodeVer;
 	pH2c->reqNum = pMptCtx->h2cReqNum;
 	/* PlatformMoveMemory(&pH2c->buf[0], pH2cPar, h2cParaLen); */
-	/* _rtw_memcpy(&pH2c->buf[0], pH2cPar, h2cParaLen); */
-	_rtw_memcpy(pH2c->buf, pH2cPar, h2cParaLen);
+	/* _rtw_memcpybu(&pH2c->buf[0], pH2cPar, h2cParaLen); */
+	_rtw_memcpybu(pH2c->buf, pH2cPar, h2cParaLen);
 
 	RTW_INFO("[MPT], pH2c->opCode=%d\n", pH2c->opCode);
 	RTW_INFO("[MPT], pH2c->opCodeVer=%d\n", pH2c->opCodeVer);
@@ -493,13 +493,13 @@ MPTBT_FwC2hBtMpCtrl(
 		if ((_FALSE == pMptCtx->bMPh2c_timeout)
 		    && (_FALSE == pMptCtx->MptH2cRspEvent)) {
 			pMptCtx->MptH2cRspEvent = _TRUE;
-			_rtw_up_sema(&pMptCtx->MPh2c_Sema);
+			_rtw_up_semabu(&pMptCtx->MPh2c_Sema);
 		}
 		break;
 
 	case EXT_C2H_TRIG_BY_BT_FW:
 		RTW_INFO("[MPT], EXT_C2H_TRIG_BY_BT_FW\n");
-		_rtw_memcpy(&pMptCtx->c2hBuf[0], tmpBuf, length);
+		_rtw_memcpybu(&pMptCtx->c2hBuf[0], tmpBuf, length);
 		RTW_INFO("[MPT], pExtC2h->statusCode=0x%x\n", pExtC2h->statusCode);
 		RTW_INFO("[MPT], pExtC2h->retLen=0x%x\n", pExtC2h->retLen);
 		RTW_INFO("[MPT], pExtC2h->opCodeVer=0x%x\n", pExtC2h->opCodeVer);
@@ -511,7 +511,7 @@ MPTBT_FwC2hBtMpCtrl(
 		    && (_TRUE == pMptCtx->MptH2cRspEvent)
 		    && (_FALSE == pMptCtx->MptBtC2hEvent)) {
 			pMptCtx->MptBtC2hEvent = _TRUE;
-			_rtw_up_sema(&pMptCtx->MPh2c_Sema);
+			_rtw_up_semabu(&pMptCtx->MPh2c_Sema);
 		}
 		break;
 
@@ -1522,7 +1522,7 @@ mptbt_BtControlProcess(
 		/* RTW_INFO("[MPT], parameters(hex):0x%x %d\n",&pBtReq->pParamStart[0], pBtReq->paraLength); */
 	}
 
-	_rtw_memset((void *)pMptCtx->mptOutBuf, 0, 100);
+	_rtw_memsetbu((void *)pMptCtx->mptOutBuf, 0, 100);
 	pMptCtx->mptOutLen = 4; /* length of (BT_RSP_CMD.status+BT_RSP_CMD.paraLength) */
 
 	pBtRsp = (PBT_RSP_CMD)pMptCtx->mptOutBuf;

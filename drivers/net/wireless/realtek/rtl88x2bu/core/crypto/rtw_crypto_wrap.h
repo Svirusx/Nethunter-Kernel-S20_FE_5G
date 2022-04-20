@@ -5,8 +5,8 @@
 
 #define TEST_FAIL() 0
 
-#define os_memset _rtw_memset
-#define os_memcpy _rtw_memcpy
+#define os_memset _rtw_memsetbu
+#define os_memcpy _rtw_memcpybu
 #define os_malloc rtw_malloc
 
 #define le_to_host16 le16_to_cpu

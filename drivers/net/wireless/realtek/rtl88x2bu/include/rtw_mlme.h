@@ -71,10 +71,10 @@
 #define MIRACAST_MODE_REVERSE(mode) \
 	((((mode) & MIRACAST_SOURCE) ? MIRACAST_SINK : 0) | (((mode) & MIRACAST_SINK) ? MIRACAST_SOURCE : 0))
 
-bool is_miracast_enabled(_adapter *adapter);
-bool rtw_chk_miracast_mode(_adapter *adapter, u8 mode);
-const char *get_miracast_mode_str(int mode);
-void rtw_wfd_st_switch(struct sta_info *sta, bool on);
+bool is_miracast_enabledbu(_adapter *adapter);
+bool rtw_chk_miracast_modebu(_adapter *adapter, u8 mode);
+const char *get_miracast_mode_strbu(int mode);
+void rtw_wfd_st_switchbu(struct sta_info *sta, bool on);
 
 #define MLME_STATE(adapter) get_fwstate(&((adapter)->mlmepriv))
 #define CHK_MLME_STATE(adapter, state) check_fwstate(&((adapter)->mlmepriv), (state))
@@ -97,8 +97,8 @@ void rtw_wfd_st_switch(struct sta_info *sta, bool on);
 	#define MLME_IS_GO(adapter) 0
 #endif /* !CONFIG_P2P */
 
-#define MLME_IS_MSRC(adapter) rtw_chk_miracast_mode((adapter), MIRACAST_SOURCE)
-#define MLME_IS_MSINK(adapter) rtw_chk_miracast_mode((adapter), MIRACAST_SINK)
+#define MLME_IS_MSRC(adapter) rtw_chk_miracast_modebu((adapter), MIRACAST_SOURCE)
+#define MLME_IS_MSINK(adapter) rtw_chk_miracast_modebu((adapter), MIRACAST_SINK)
 
 #define MLME_IS_SCAN(adapter) CHK_MLME_STATE(adapter, WIFI_UNDER_SURVEY)
 #define MLME_IS_LINKING(adapter) CHK_MLME_STATE(adapter, WIFI_UNDER_LINKING)
@@ -107,13 +107,13 @@ void rtw_wfd_st_switch(struct sta_info *sta, bool on);
 #define MLME_IS_WPS(adapter) CHK_MLME_STATE(adapter, WIFI_UNDER_WPS)
 
 #ifdef CONFIG_IOCTL_CFG80211
-#define MLME_IS_ROCH(adapter) (rtw_cfg80211_get_is_roch(adapter) == _TRUE)
+#define MLME_IS_ROCH(adapter) (rtw_cfg80211_get_is_rochbu(adapter) == _TRUE)
 #else
 #define MLME_IS_ROCH(adapter) 0
 #endif
 
 #ifdef CONFIG_IOCTL_CFG80211
-#define MLME_IS_MGMT_TX(adapter) rtw_cfg80211_get_is_mgmt_tx(adapter)
+#define MLME_IS_MGMT_TX(adapter) rtw_cfg80211_get_is_mgmt_txbu(adapter)
 #else
 #define MLME_IS_MGMT_TX(adapter) 0
 #endif
@@ -851,7 +851,7 @@ struct mlme_priv {
 #define RTW_AUTO_SCAN_REASON_ROAM				BIT2
 #define RTW_AUTO_SCAN_REASON_MESH_OFFCH_CAND	BIT3
 
-void rtw_mlme_reset_auto_scan_int(_adapter *adapter, u8 *reason);
+void rtw_mlme_reset_auto_scan_intbu(_adapter *adapter, u8 *reason);
 
 #ifdef CONFIG_AP_MODE
 
@@ -870,29 +870,29 @@ extern void hostapd_mode_unload(_adapter *padapter);
 #endif
 
 
-extern void rtw_joinbss_event_prehandle(_adapter *adapter, u8 *pbuf, u16 status);
-extern void rtw_survey_event_callback(_adapter *adapter, u8 *pbuf);
-extern void rtw_surveydone_event_callback(_adapter *adapter, u8 *pbuf);
-extern void rtw_joinbss_event_callback(_adapter *adapter, u8 *pbuf);
-extern void rtw_stassoc_event_callback(_adapter *adapter, u8 *pbuf);
-extern void rtw_stadel_event_callback(_adapter *adapter, u8 *pbuf);
-void rtw_sta_mstatus_disc_rpt(_adapter *adapter, u8 mac_id);
-void rtw_sta_mstatus_report(_adapter *adapter);
-extern void rtw_wmm_event_callback(PADAPTER padapter, u8 *pbuf);
+extern void rtw_joinbss_event_prehandlebu(_adapter *adapter, u8 *pbuf, u16 status);
+extern void rtw_survey_event_callbackbu(_adapter *adapter, u8 *pbuf);
+extern void rtw_surveydone_event_callbackbu(_adapter *adapter, u8 *pbuf);
+extern void rtw_joinbss_event_callbackbu(_adapter *adapter, u8 *pbuf);
+extern void rtw_stassoc_event_callbackbu(_adapter *adapter, u8 *pbuf);
+extern void rtw_stadel_event_callbackbu(_adapter *adapter, u8 *pbuf);
+void rtw_sta_mstatus_disc_rptbu(_adapter *adapter, u8 mac_id);
+void rtw_sta_mstatus_reportbu(_adapter *adapter);
+extern void rtw_wmm_event_callbackbu(PADAPTER padapter, u8 *pbuf);
 #ifdef CONFIG_IEEE80211W
-void rtw_sta_timeout_event_callback(_adapter *adapter, u8 *pbuf);
+void rtw_sta_timeout_event_callbackbu(_adapter *adapter, u8 *pbuf);
 #endif /* CONFIG_IEEE80211W */
 thread_return event_thread(thread_context context);
 
-extern void rtw_free_network_queue(_adapter *adapter, u8 isfreeall);
-extern int rtw_init_mlme_priv(_adapter *adapter);/* (struct mlme_priv *pmlmepriv); */
+extern void rtw_free_networkbu_queue(_adapter *adapter, u8 isfreeall);
+extern int rtw_init_mlme_privbu(_adapter *adapter);/* (struct mlme_priv *pmlmepriv); */
 
-extern void rtw_free_mlme_priv(struct mlme_priv *pmlmepriv);
+extern void rtw_free_mlme_privbu(struct mlme_priv *pmlmepriv);
 
 
-extern sint rtw_select_and_join_from_scanned_queue(struct mlme_priv *pmlmepriv);
-extern sint rtw_set_key(_adapter *adapter, struct security_priv *psecuritypriv, sint keyid, u8 set_tx, bool enqueue);
-extern sint rtw_set_auth(_adapter *adapter, struct security_priv *psecuritypriv);
+extern sint rtw_select_and_join_from_scanned_queuebu(struct mlme_priv *pmlmepriv);
+extern sint rtw_set_keybu(_adapter *adapter, struct security_priv *psecuritypriv, sint keyid, u8 set_tx, bool enqueue);
+extern sint rtw_set_authbu(_adapter *adapter, struct security_priv *psecuritypriv);
 
 __inline static u8 *get_bssid(struct mlme_priv *pmlmepriv)
 {
@@ -925,23 +925,23 @@ __inline static sint get_fwstate(struct mlme_priv *pmlmepriv)
  * ### NOTE:#### (!!!!)
  * MUST TAKE CARE THAT BEFORE CALLING THIS FUNC, YOU SHOULD HAVE LOCKED pmlmepriv->lock
  */
-extern void rtw_mi_update_iface_status(struct mlme_priv *pmlmepriv, sint state);
+extern void rtw_mi_update_iface_statusbu(struct mlme_priv *pmlmepriv, sint state);
 
 static inline void set_fwstate(struct mlme_priv *pmlmepriv, sint state)
 {
 	pmlmepriv->fw_state |= state;
-	rtw_mi_update_iface_status(pmlmepriv, state);
+	rtw_mi_update_iface_statusbu(pmlmepriv, state);
 }
 static inline void init_fwstate(struct mlme_priv *pmlmepriv, sint state)
 {
 	pmlmepriv->fw_state = state;
-	rtw_mi_update_iface_status(pmlmepriv, state);
+	rtw_mi_update_iface_statusbu(pmlmepriv, state);
 }
 
 static inline void _clr_fwstate_(struct mlme_priv *pmlmepriv, sint state)
 {
 	pmlmepriv->fw_state &= ~state;
-	rtw_mi_update_iface_status(pmlmepriv, state);
+	rtw_mi_update_iface_statusbu(pmlmepriv, state);
 }
 
 /*
@@ -965,7 +965,7 @@ static inline void up_scanned_network(struct mlme_priv *pmlmepriv)
 	pmlmepriv->num_of_scanned++;
 	_exit_critical_bh(&pmlmepriv->lock, &irqL);
 }
-u8 rtw_is_adapter_up(_adapter *padapter);
+u8 rtw_is_adapter_upbu(_adapter *padapter);
 
 __inline static void down_scanned_network(struct mlme_priv *pmlmepriv)
 {
@@ -985,48 +985,48 @@ __inline static void set_scanned_network_val(struct mlme_priv *pmlmepriv, sint v
 	_exit_critical_bh(&pmlmepriv->lock, &irqL);
 }
 
-extern u16 rtw_get_capability(WLAN_BSSID_EX *bss);
-extern bool rtw_update_scanned_network(_adapter *adapter, WLAN_BSSID_EX *target);
-extern void rtw_disconnect_hdl_under_linked(_adapter *adapter, struct sta_info *psta, u8 free_assoc);
-extern void rtw_generate_random_ibss(u8 *pibss);
-struct wlan_network *_rtw_find_network(_queue *scanned_queue, const u8 *addr);
-struct wlan_network *rtw_find_network(_queue *scanned_queue, const u8 *addr);
-extern struct wlan_network *rtw_get_oldest_wlan_network(_queue *scanned_queue);
-struct wlan_network *_rtw_find_same_network(_queue *scanned_queue, struct wlan_network *network);
-struct wlan_network *rtw_find_same_network(_queue *scanned_queue, struct wlan_network *network);
+extern u16 rtw_get_capabilitybu(WLAN_BSSID_EX *bss);
+extern bool rtw_update_scanned_networkbu(_adapter *adapter, WLAN_BSSID_EX *target);
+extern void rtw_disconnect_hdlbu_under_linked(_adapter *adapter, struct sta_info *psta, u8 free_assoc);
+extern void rtw_generate_random_ibssbu(u8 *pibss);
+struct wlan_network *_rtw_find_networkbubu(_queue *scanned_queue, const u8 *addr);
+struct wlan_network *rtw_find_networkbu(_queue *scanned_queue, const u8 *addr);
+extern struct wlan_network *rtw_get_oldest_wlan_networkbu(_queue *scanned_queue);
+struct wlan_network *_rtw_find_same_networkbubu(_queue *scanned_queue, struct wlan_network *network);
+struct wlan_network *rtw_find_same_networkbu(_queue *scanned_queue, struct wlan_network *network);
 
-extern void rtw_free_assoc_resources(_adapter *adapter, u8 lock_scanned_queue);
-extern void rtw_indicate_disconnect(_adapter *adapter, u16 reason, u8 locally_generated);
-extern void rtw_indicate_connect(_adapter *adapter);
-void rtw_indicate_scan_done(_adapter *padapter, bool aborted);
+extern void rtw_free_assoc_resourcesbu(_adapter *adapter, u8 lock_scanned_queue);
+extern void rtw_indicate_disconnectbu(_adapter *adapter, u16 reason, u8 locally_generated);
+extern void rtw_indicate_connectbu(_adapter *adapter);
+void rtw_indicate_scan_donebu(_adapter *padapter, bool aborted);
 
-void rtw_drv_scan_by_self(_adapter *padapter, u8 reason);
-void rtw_scan_wait_completed(_adapter *adapter);
-u32 rtw_scan_abort_timeout(_adapter *adapter, u32 timeout_ms);
-void rtw_scan_abort_no_wait(_adapter *adapter);
-void rtw_scan_abort(_adapter *adapter);
-u32 rtw_join_abort_timeout(_adapter *adapter, u32 timeout_ms);
+void rtw_drv_scan_by_selfbu(_adapter *padapter, u8 reason);
+void rtw_scan_wait_completedbu(_adapter *adapter);
+u32 rtw_scan_abortbu_timeoutbu(_adapter *adapter, u32 timeout_ms);
+void rtw_scan_abortbu_no_waitbu(_adapter *adapter);
+void rtw_scan_abortbu(_adapter *adapter);
+u32 rtw_join_abort_timeoutbu(_adapter *adapter, u32 timeout_ms);
 
-int rtw_cached_pmkid(_adapter *Adapter, u8 *bssid);
-int rtw_rsn_sync_pmkid(_adapter *adapter, u8 *ie, uint ie_len, int i_ent);
+int rtw_cached_pmkidbu(_adapter *Adapter, u8 *bssid);
+int rtw_rsn_sync_pmkidbu(_adapter *adapter, u8 *ie, uint ie_len, int i_ent);
 
-extern int rtw_restruct_sec_ie(_adapter *adapter, u8 *out_ie);
+extern int rtw_restruct_sec_iebu(_adapter *adapter, u8 *out_ie);
 #ifdef CONFIG_WMMPS_STA
 void rtw_uapsd_use_default_setting(_adapter *padapter);
 bool rtw_is_wmmps_mode(_adapter *padapter);
 #endif /* CONFIG_WMMPS_STA */
-extern int rtw_restruct_wmm_ie(_adapter *adapter, u8 *in_ie, u8 *out_ie, uint in_len, uint initial_out_len);
-extern void rtw_init_registrypriv_dev_network(_adapter *adapter);
+extern int rtw_restruct_wmm_iebu(_adapter *adapter, u8 *in_ie, u8 *out_ie, uint in_len, uint initial_out_len);
+extern void rtw_init_registrypriv_dev_networkbu(_adapter *adapter);
 
-extern void rtw_update_registrypriv_dev_network(_adapter *adapter);
+extern void rtw_update_registrypriv_dev_networkbu(_adapter *adapter);
 
-extern void rtw_get_encrypt_decrypt_from_registrypriv(_adapter *adapter);
+extern void rtw_get_encrypt_decrypt_from_registryprivbu(_adapter *adapter);
 
-extern void rtw_join_timeout_handler(void *ctx);
-extern void rtw_scan_timeout_handler(void *ctx);
+extern void rtw_join_timeout_handlerbu(void *ctx);
+extern void rtw_scan_timeout_handlerbu(void *ctx);
 
-extern void rtw_dynamic_check_timer_handlder(void *ctx);
-extern void rtw_iface_dynamic_check_timer_handlder(_adapter *adapter);
+extern void rtw_dynamic_check_timer_handlderbu(void *ctx);
+extern void rtw_iface_dynamic_check_timer_handlderbu(_adapter *adapter);
 
 enum {
 	SS_DENY_MP_MODE,
@@ -1049,21 +1049,21 @@ enum {
 	SS_DENY_ADAPTIVITY,
 };
 
-u8 _rtw_sitesurvey_condition_check(const char *caller, _adapter *adapter, bool check_sc_interval);
-#define rtw_sitesurvey_condition_check(adapter, check_sc_interval) _rtw_sitesurvey_condition_check(__func__, adapter, check_sc_interval)
+u8 _rtw_sitesurvey_condition_checkbu(const char *caller, _adapter *adapter, bool check_sc_interval);
+#define rtw_sitesurvey_condition_check(adapter, check_sc_interval) _rtw_sitesurvey_condition_checkbu(__func__, adapter, check_sc_interval)
 
 #ifdef CONFIG_SET_SCAN_DENY_TIMER
-bool rtw_is_scan_deny(_adapter *adapter);
-void rtw_clear_scan_deny(_adapter *adapter);
-void rtw_set_scan_deny_timer_hdl(void *ctx);
-void rtw_set_scan_deny(_adapter *adapter, u32 ms);
+bool rtw_is_scan_denybu(_adapter *adapter);
+void rtw_clear_scan_denybu(_adapter *adapter);
+void rtw_set_scan_denybu_timer_hdlbu(void *ctx);
+void rtw_set_scan_denybu(_adapter *adapter, u32 ms);
 #else
-#define rtw_is_scan_deny(adapter) _FALSE
-#define rtw_clear_scan_deny(adapter) do {} while (0)
-#define rtw_set_scan_deny(adapter, ms) do {} while (0)
+#define rtw_is_scan_denybu(adapter) _FALSE
+#define rtw_clear_scan_denybu(adapter) do {} while (0)
+#define rtw_set_scan_denybu(adapter, ms) do {} while (0)
 #endif
 
-void rtw_free_mlme_priv_ie_data(struct mlme_priv *pmlmepriv);
+void rtw_free_mlme_privbu_ie_databu(struct mlme_priv *pmlmepriv);
 
 #define MLME_BEACON_IE			0
 #define MLME_PROBE_REQ_IE		1
@@ -1073,42 +1073,42 @@ void rtw_free_mlme_priv_ie_data(struct mlme_priv *pmlmepriv);
 #define MLME_ASSOC_RESP_IE		5
 
 #if defined(CONFIG_WFD) && defined(CONFIG_IOCTL_CFG80211)
-int rtw_mlme_update_wfd_ie_data(struct mlme_priv *mlme, u8 type, u8 *ie, u32 ie_len);
+int rtw_mlme_update_wfd_ie_databu(struct mlme_priv *mlme, u8 type, u8 *ie, u32 ie_len);
 #endif
 
 
 /* extern struct wlan_network* _rtw_dequeue_network(_queue *queue); */
 
-extern struct wlan_network *_rtw_alloc_network(struct mlme_priv *pmlmepriv);
+extern struct wlan_network *_rtw_alloc_networkbubu(struct mlme_priv *pmlmepriv);
 
 
-extern void _rtw_free_network(struct mlme_priv *pmlmepriv, struct wlan_network *pnetwork, u8 isfreeall);
-extern void _rtw_free_network_nolock(struct mlme_priv *pmlmepriv, struct wlan_network *pnetwork);
+extern void _rtw_free_networkbubu(struct mlme_priv *pmlmepriv, struct wlan_network *pnetwork, u8 isfreeall);
+extern void _rtw_free_networkbubu_nolock(struct mlme_priv *pmlmepriv, struct wlan_network *pnetwork);
 
-extern void _rtw_free_network_queue(_adapter *padapter, u8 isfreeall);
+extern void _rtw_free_networkbubu_queue(_adapter *padapter, u8 isfreeall);
 
-extern sint rtw_if_up(_adapter *padapter);
+extern sint rtw_if_upbu(_adapter *padapter);
 
-sint rtw_linked_check(_adapter *padapter);
+sint rtw_linked_checkbu(_adapter *padapter);
 
-u8 *rtw_get_capability_from_ie(u8 *ie);
-u8 *rtw_get_timestampe_from_ie(u8 *ie);
-u8 *rtw_get_beacon_interval_from_ie(u8 *ie);
+u8 *rtw_get_capabilitybu_from_iebu(u8 *ie);
+u8 *rtw_get_timestampe_from_iebu(u8 *ie);
+u8 *rtw_get_beacon_intervalbu_from_iebu(u8 *ie);
 
 
-void rtw_joinbss_reset(_adapter *padapter);
+void rtw_joinbss_resetbu(_adapter *padapter);
 
 #ifdef CONFIG_80211N_HT
-void	rtw_ht_use_default_setting(_adapter *padapter);
-void rtw_build_wmm_ie_ht(_adapter *padapter, u8 *out_ie, uint *pout_len);
-unsigned int rtw_restructure_ht_ie(_adapter *padapter, u8 *in_ie, u8 *out_ie, uint in_len, uint *pout_len, u8 channel);
-void rtw_update_ht_cap(_adapter *padapter, u8 *pie, uint ie_len, u8 channel);
-void rtw_issue_addbareq_cmd(_adapter *padapter, struct xmit_frame *pxmitframe, u8 issue_when_busy);
-void rtw_append_exented_cap(_adapter *padapter, u8 *out_ie, uint *pout_len);
+void	rtw_ht_use_default_settingbu(_adapter *padapter);
+void rtw_build_wmm_ie_htbu(_adapter *padapter, u8 *out_ie, uint *pout_len);
+unsigned int rtw_restructure_ht_iebu(_adapter *padapter, u8 *in_ie, u8 *out_ie, uint in_len, uint *pout_len, u8 channel);
+void rtw_update_ht_capbu(_adapter *padapter, u8 *pie, uint ie_len, u8 channel);
+void rtw_issue_addbareq_cmdbu(_adapter *padapter, struct xmit_frame *pxmitframe, u8 issue_when_busy);
+void rtw_append_exented_capbu(_adapter *padapter, u8 *out_ie, uint *pout_len);
 #endif
 
-int rtw_is_same_ibss(_adapter *adapter, struct wlan_network *pnetwork);
-int is_same_network(WLAN_BSSID_EX *src, WLAN_BSSID_EX *dst, u8 feature);
+int rtw_is_same_ibssbu(_adapter *adapter, struct wlan_network *pnetwork);
+int is_same_networkbu(WLAN_BSSID_EX *src, WLAN_BSSID_EX *dst, u8 feature);
 
 #ifdef CONFIG_LAYER2_ROAMING
 #define rtw_roam_flags(adapter) ((adapter)->mlmepriv.roam_flags)
@@ -1128,27 +1128,27 @@ int is_same_network(WLAN_BSSID_EX *src, WLAN_BSSID_EX *dst, u8 feature);
 		((adapter)->mlmepriv.roam_flags = flags); \
 	} while (0)
 
-void _rtw_roaming(_adapter *adapter, struct wlan_network *tgt_network);
-void rtw_roaming(_adapter *adapter, struct wlan_network *tgt_network);
-void rtw_set_to_roam(_adapter *adapter, u8 to_roam);
-u8 rtw_dec_to_roam(_adapter *adapter);
-u8 rtw_to_roam(_adapter *adapter);
-int rtw_select_roaming_candidate(struct mlme_priv *pmlmepriv);
+void _rtw_roamingbubu(_adapter *adapter, struct wlan_network *tgt_network);
+void rtw_roamingbu(_adapter *adapter, struct wlan_network *tgt_network);
+void rtw_set_to_roambu(_adapter *adapter, u8 to_roam);
+u8 rtw_dec_to_roambu(_adapter *adapter);
+u8 rtw_to_roambu(_adapter *adapter);
+int rtw_select_roaming_candidatebu(struct mlme_priv *pmlmepriv);
 #else
 #define rtw_roam_flags(adapter) 0
 #define rtw_chk_roam_flags(adapter, flags) 0
 #define rtw_clr_roam_flags(adapter, flags) do {} while (0)
 #define rtw_set_roam_flags(adapter, flags) do {} while (0)
 #define rtw_assign_roam_flags(adapter, flags) do {} while (0)
-#define _rtw_roaming(adapter, tgt_network) do {} while (0)
-#define rtw_roaming(adapter, tgt_network) do {} while (0)
-#define rtw_set_to_roam(adapter, to_roam) do {} while (0)
-#define rtw_dec_to_roam(adapter) 0
-#define rtw_to_roam(adapter) 0
-#define rtw_select_roaming_candidate(mlme) _FAIL
+#define _rtw_roamingbubu(adapter, tgt_network) do {} while (0)
+#define rtw_roamingbu(adapter, tgt_network) do {} while (0)
+#define rtw_set_to_roambu(adapter, to_roam) do {} while (0)
+#define rtw_dec_to_roambu(adapter) 0
+#define rtw_to_roambu(adapter) 0
+#define rtw_select_roaming_candidatebu(mlme) _FAIL
 #endif /* CONFIG_LAYER2_ROAMING */
 
-bool rtw_adjust_chbw(_adapter *adapter, u8 req_ch, u8 *req_bw, u8 *req_offset);
+bool rtw_adjust_chbwbu(_adapter *adapter, u8 req_ch, u8 *req_bw, u8 *req_offset);
 
 struct sta_media_status_rpt_cmd_parm {
 	struct sta_info *sta;
@@ -1168,10 +1168,10 @@ void rtw_undo_all_interested_unassoc_sta(_adapter *adapter);
 u8 rtw_search_unassoc_sta(_adapter *adapter, u8 *addr, struct unassoc_sta_info *ret_sta);
 #endif
 
-void rtw_sta_media_status_rpt(_adapter *adapter, struct sta_info *sta, bool connected);
-u8 rtw_sta_media_status_rpt_cmd(_adapter *adapter, struct sta_info *sta, bool connected);
-void rtw_sta_media_status_rpt_cmd_hdl(_adapter *adapter, struct sta_media_status_rpt_cmd_parm *parm);
-void rtw_sta_traffic_info(void *sel, _adapter *adapter);
+void rtw_sta_media_status_rptbu(_adapter *adapter, struct sta_info *sta, bool connected);
+u8 rtw_sta_media_status_rptbu_cmd(_adapter *adapter, struct sta_info *sta, bool connected);
+void rtw_sta_media_status_rptbu_cmd_hdl(_adapter *adapter, struct sta_media_status_rpt_cmd_parm *parm);
+void rtw_sta_traffic_infobu(void *sel, _adapter *adapter);
 
 #define GET_ARP_HTYPE(_arp)	BE_BITS_TO_2BYTE(((u8 *)(_arp)) + 0, 0, 16)
 #define GET_ARP_PTYPE(_arp)	BE_BITS_TO_2BYTE(((u8 *)(_arp)) + 2, 0, 16)
@@ -1195,17 +1195,17 @@ void rtw_sta_traffic_info(void *sel, _adapter *adapter);
 #define ARP_TARGET_MAC_ADDR(_arp)	ARP_THA(_arp, ETH_ALEN, RTW_IP_ADDR_LEN)
 #define ARP_TARGET_IP_ADDR(_arp)	ARP_TPA(_arp, ETH_ALEN, RTW_IP_ADDR_LEN)
 
-#define GET_ARP_SENDER_MAC_ADDR(_arp, _val)	_rtw_memcpy(_val, ARP_SENDER_MAC_ADDR(_arp), ETH_ALEN)
-#define GET_ARP_SENDER_IP_ADDR(_arp, _val)	_rtw_memcpy(_val, ARP_SENDER_IP_ADDR(_arp), RTW_IP_ADDR_LEN)
-#define GET_ARP_TARGET_MAC_ADDR(_arp, _val)	_rtw_memcpy(_val, ARP_TARGET_MAC_ADDR(_arp), ETH_ALEN)
-#define GET_ARP_TARGET_IP_ADDR(_arp, _val)	_rtw_memcpy(_val, ARP_TARGET_IP_ADDR(_arp), RTW_IP_ADDR_LEN)
+#define GET_ARP_SENDER_MAC_ADDR(_arp, _val)	_rtw_memcpybu(_val, ARP_SENDER_MAC_ADDR(_arp), ETH_ALEN)
+#define GET_ARP_SENDER_IP_ADDR(_arp, _val)	_rtw_memcpybu(_val, ARP_SENDER_IP_ADDR(_arp), RTW_IP_ADDR_LEN)
+#define GET_ARP_TARGET_MAC_ADDR(_arp, _val)	_rtw_memcpybu(_val, ARP_TARGET_MAC_ADDR(_arp), ETH_ALEN)
+#define GET_ARP_TARGET_IP_ADDR(_arp, _val)	_rtw_memcpybu(_val, ARP_TARGET_IP_ADDR(_arp), RTW_IP_ADDR_LEN)
 
-#define SET_ARP_SENDER_MAC_ADDR(_arp, _val)	_rtw_memcpy(ARP_SENDER_MAC_ADDR(_arp), _val, ETH_ALEN)
-#define SET_ARP_SENDER_IP_ADDR(_arp, _val)	_rtw_memcpy(ARP_SENDER_IP_ADDR(_arp), _val, RTW_IP_ADDR_LEN)
-#define SET_ARP_TARGET_MAC_ADDR(_arp, _val)	_rtw_memcpy(ARP_TARGET_MAC_ADDR(_arp), _val, ETH_ALEN)
-#define SET_ARP_TARGET_IP_ADDR(_arp, _val)	_rtw_memcpy(ARP_TARGET_IP_ADDR(_arp), _val, RTW_IP_ADDR_LEN)
+#define SET_ARP_SENDER_MAC_ADDR(_arp, _val)	_rtw_memcpybu(ARP_SENDER_MAC_ADDR(_arp), _val, ETH_ALEN)
+#define SET_ARP_SENDER_IP_ADDR(_arp, _val)	_rtw_memcpybu(ARP_SENDER_IP_ADDR(_arp), _val, RTW_IP_ADDR_LEN)
+#define SET_ARP_TARGET_MAC_ADDR(_arp, _val)	_rtw_memcpybu(ARP_TARGET_MAC_ADDR(_arp), _val, ETH_ALEN)
+#define SET_ARP_TARGET_IP_ADDR(_arp, _val)	_rtw_memcpybu(ARP_TARGET_IP_ADDR(_arp), _val, RTW_IP_ADDR_LEN)
 
-void dump_arp_pkt(void *sel, u8 *da, u8 *sa, u8 *arp, bool tx);
+void dump_arp_pktbu(void *sel, u8 *da, u8 *sa, u8 *arp, bool tx);
 
 #define IPV4_SRC(_iphdr)			(((u8 *)(_iphdr)) + 12)
 #define IPV4_DST(_iphdr)			(((u8 *)(_iphdr)) + 16)

@@ -40,9 +40,9 @@ struct odm_noise_monitor {
 	s16 noise_all;
 };
 
-s16 odm_inband_noise_monitor(void *dm_void, u8 is_pause_dig, u8 igi_value,
+s16 odm_inband_noise_monitorbu(void *dm_void, u8 is_pause_dig, u8 igi_value,
 			     u32 max_time);
 
-void phydm_noisy_detection(void *dm_void);
+void phydm_noisy_detectionbu(void *dm_void);
 
 #endif

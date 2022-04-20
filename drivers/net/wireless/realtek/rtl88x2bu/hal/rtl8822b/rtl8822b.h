@@ -133,8 +133,8 @@ void rtl8822b_set_FwPwrModeInIPS_cmd(PADAPTER adapter, u8 cmd_param);
 void rtl8822b_set_fw_pwrmode_inips_cmd_wowlan(PADAPTER padapter, u8 ps_mode);
 #endif /* CONFIG_WOWLAN */
 void rtl8822b_req_txrpt_cmd(PADAPTER, u8 macid);
-void rtl8822b_c2h_handler(PADAPTER, u8 *pbuf, u16 length);
-void rtl8822b_c2h_handler_no_io(PADAPTER, u8 *pbuf, u16 length);
+void rtl8822b_c2h_handlerbu(PADAPTER, u8 *pbuf, u16 length);
+void rtl8822b_c2h_handlerbu_no_io(PADAPTER, u8 *pbuf, u16 length);
 
 #ifdef CONFIG_LPS_PWR_TRACKING
 void rtl8822b_set_fw_thermal_rpt_cmd(_adapter *adapter, u8 enable, u8 thermal_value);

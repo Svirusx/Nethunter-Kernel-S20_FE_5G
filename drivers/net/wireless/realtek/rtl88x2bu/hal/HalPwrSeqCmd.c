@@ -109,7 +109,7 @@ u8 HalPwrSeqCmdParsing(
 				bPollingBit = _FALSE;
 				offset = GET_PWR_CFG_OFFSET(PwrCfgCmd);
 
-				rtw_hal_get_hwreg(padapter, HW_VAR_PWR_CMD, &bHWICSupport);
+				rtw_hal_get_hwregbu(padapter, HW_VAR_PWR_CMD, &bHWICSupport);
 				if (bHWICSupport && offset == 0x06) {
 					flag = 0;
 					maxPollingCnt = 100000;
@@ -132,7 +132,7 @@ u8 HalPwrSeqCmdParsing(
 					if (value == (GET_PWR_CFG_VALUE(PwrCfgCmd) & GET_PWR_CFG_MASK(PwrCfgCmd)))
 						bPollingBit = _TRUE;
 					else
-						rtw_udelay_os(10);
+						rtw_udelay_osbu(10);
 
 					if (pollingCount++ > maxPollingCnt) {
 						RTW_ERR("HalPwrSeqCmdParsing: Fail to polling Offset[%#x]=%02x\n", offset, value);
@@ -163,9 +163,9 @@ u8 HalPwrSeqCmdParsing(
 
 			case PWR_CMD_DELAY:
 				if (GET_PWR_CFG_VALUE(PwrCfgCmd) == PWRSEQ_DELAY_US)
-					rtw_udelay_os(GET_PWR_CFG_OFFSET(PwrCfgCmd));
+					rtw_udelay_osbu(GET_PWR_CFG_OFFSET(PwrCfgCmd));
 				else
-					rtw_udelay_os(GET_PWR_CFG_OFFSET(PwrCfgCmd) * 1000);
+					rtw_udelay_osbu(GET_PWR_CFG_OFFSET(PwrCfgCmd) * 1000);
 				break;
 
 			case PWR_CMD_END:

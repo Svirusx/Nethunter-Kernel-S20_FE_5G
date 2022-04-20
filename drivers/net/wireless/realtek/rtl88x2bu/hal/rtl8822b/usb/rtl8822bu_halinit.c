@@ -42,13 +42,13 @@ u8 rtl8822bu_fw_ips_init(_adapter *padapter)
 #ifdef CONFIG_LPS_LCLK
 		/* for polling cpwm */
 		cpwm_orig = 0;
-		rtw_hal_get_hwreg(padapter, HW_VAR_CPWM, &cpwm_orig);
+		rtw_hal_get_hwregbu(padapter, HW_VAR_CPWM, &cpwm_orig);
 
 		/* set rpwm */
-		rtw_hal_get_hwreg(padapter, HW_VAR_RPWM_TOG, &rpwm);
+		rtw_hal_get_hwregbu(padapter, HW_VAR_RPWM_TOG, &rpwm);
 		rpwm += 0x80;
 		rpwm |= PS_ACK;
-		rtw_hal_set_hwreg(padapter, HW_VAR_SET_RPWM, (u8 *)(&rpwm));
+		rtw_hal_set_hwregbu(padapter, HW_VAR_SET_RPWM, (u8 *)(&rpwm));
 
 
 		RTW_INFO("%s: write rpwm=%02x\n", __func__, rpwm);
@@ -59,9 +59,9 @@ u8 rtl8822bu_fw_ips_init(_adapter *padapter)
 		start_time = rtw_get_current_time();
 		do {
 
-			rtw_mdelay_os(1);
+			rtw_mdelay_osbu(1);
 
-			rtw_hal_get_hwreg(padapter, HW_VAR_CPWM, &cpwm_now);
+			rtw_hal_get_hwregbu(padapter, HW_VAR_CPWM, &cpwm_now);
 			if ((cpwm_orig ^ cpwm_now) & 0x80) {
 				#ifdef DBG_CHECK_FW_PS_STATE
 				RTW_INFO("%s: polling cpwm ok when leaving IPS in FWLPS state, cpwm_orig=%02x, cpwm_now=%02x, 0x100=0x%x\n"
@@ -79,7 +79,7 @@ u8 rtl8822bu_fw_ips_init(_adapter *padapter)
 #endif /* CONFIG_LPS_LCLK */
 		rtl8822b_set_FwPwrModeInIPS_cmd(padapter, 0);
 
-		rtw_hal_set_hwreg(padapter, HW_VAR_APFM_ON_MAC, &bMacPwrCtrlOn);
+		rtw_hal_set_hwregbu(padapter, HW_VAR_APFM_ON_MAC, &bMacPwrCtrlOn);
 #ifdef CONFIG_LPS_LCLK
 		#ifdef DBG_CHECK_FW_PS_STATE
 		if (rtw_fw_ps_state(padapter) == _FAIL) {
@@ -113,16 +113,16 @@ u8 rtl8822bu_fw_ips_deinit(_adapter *padapter)
 			val8 = rtw_read8(padapter, REG_HMETFR);
 			cnt++;
 			RTW_INFO("%s  polling REG_HMETFR=0x%x, cnt=%d\n", __func__, val8, cnt);
-			rtw_mdelay_os(10);
+			rtw_mdelay_osbu(10);
 		} while (cnt < 100 && (val8 != 0));
 
 		/* H2C done, enter 32k */
 		if (val8 == 0) {
 			/* set rpwm to enter 32k */
-			rtw_hal_get_hwreg(padapter, HW_VAR_RPWM_TOG, &rpwm);
+			rtw_hal_get_hwregbu(padapter, HW_VAR_RPWM_TOG, &rpwm);
 			rpwm += 0x80;
 			rpwm |= BIT_SYS_CLK_8822B;
-			rtw_hal_set_hwreg(padapter, HW_VAR_SET_RPWM, (u8 *)(&rpwm));
+			rtw_hal_set_hwregbu(padapter, HW_VAR_SET_RPWM, (u8 *)(&rpwm));
 			RTW_INFO("%s: write rpwm=%02x\n", __func__, rpwm);
 			pwrctl->tog = (val8 + 0x80) & 0x80;
 
@@ -131,7 +131,7 @@ u8 rtl8822bu_fw_ips_deinit(_adapter *padapter)
 				val8 = rtw_read8(padapter, REG_CR);
 				cnt++;
 				RTW_INFO("%s  polling 0x100=0x%x, cnt=%d\n", __func__, val8, cnt);
-				rtw_mdelay_os(10);
+				rtw_mdelay_osbu(10);
 			} while (cnt < 100 && (val8 != 0xEA));
 
 			#ifdef DBG_CHECK_FW_PS_STATE
@@ -396,7 +396,7 @@ static u8 usb_set_queue_pipe_mapping(PADAPTER padapter, u8 NumInPipe, u8 NumOutP
 			return result;
 	}
 
-	result = Hal_MappingOutPipe(padapter, NumOutPipe);
+	result = Hal_MappingOutPipebu(padapter, NumOutPipe);
 
 	return result;
 

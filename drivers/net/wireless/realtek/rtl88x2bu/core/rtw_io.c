@@ -60,7 +60,7 @@ jackson@realtek.com.tw
 #endif
 
 
-u8 _rtw_read8(_adapter *adapter, u32 addr)
+u8 _rtw_read8bu(_adapter *adapter, u32 addr)
 {
 	u8 r_val;
 	/* struct	io_queue  	*pio_queue = (struct io_queue *)adapter->pio_queue; */
@@ -73,7 +73,7 @@ u8 _rtw_read8(_adapter *adapter, u32 addr)
 	return r_val;
 }
 
-u16 _rtw_read16(_adapter *adapter, u32 addr)
+u16 _rtw_read16bu(_adapter *adapter, u32 addr)
 {
 	u16 r_val;
 	/* struct	io_queue  	*pio_queue = (struct io_queue *)adapter->pio_queue; */
@@ -86,7 +86,7 @@ u16 _rtw_read16(_adapter *adapter, u32 addr)
 	return rtw_le16_to_cpu(r_val);
 }
 
-u32 _rtw_read32(_adapter *adapter, u32 addr)
+u32 _rtw_read32bu(_adapter *adapter, u32 addr)
 {
 	u32 r_val;
 	/* struct	io_queue  	*pio_queue = (struct io_queue *)adapter->pio_queue; */
@@ -100,7 +100,7 @@ u32 _rtw_read32(_adapter *adapter, u32 addr)
 
 }
 
-int _rtw_write8(_adapter *adapter, u32 addr, u8 val)
+int _rtw_write8bu(_adapter *adapter, u32 addr, u8 val)
 {
 	/* struct	io_queue  	*pio_queue = (struct io_queue *)adapter->pio_queue; */
 	struct io_priv *pio_priv = &adapter->iopriv;
@@ -111,9 +111,9 @@ int _rtw_write8(_adapter *adapter, u32 addr, u8 val)
 
 	ret = _write8(pintfhdl, addr, val);
 
-	return RTW_STATUS_CODE(ret);
+	return RTW_STATUS_CODEbu(ret);
 }
-int _rtw_write16(_adapter *adapter, u32 addr, u16 val)
+int _rtw_write16bu(_adapter *adapter, u32 addr, u16 val)
 {
 	/* struct	io_queue  	*pio_queue = (struct io_queue *)adapter->pio_queue; */
 	struct io_priv *pio_priv = &adapter->iopriv;
@@ -125,9 +125,9 @@ int _rtw_write16(_adapter *adapter, u32 addr, u16 val)
 	val = rtw_cpu_to_le16(val);
 	ret = _write16(pintfhdl, addr, val);
 
-	return RTW_STATUS_CODE(ret);
+	return RTW_STATUS_CODEbu(ret);
 }
-int _rtw_write32(_adapter *adapter, u32 addr, u32 val)
+int _rtw_write32bu(_adapter *adapter, u32 addr, u32 val)
 {
 	/* struct	io_queue  	*pio_queue = (struct io_queue *)adapter->pio_queue; */
 	struct io_priv *pio_priv = &adapter->iopriv;
@@ -139,10 +139,10 @@ int _rtw_write32(_adapter *adapter, u32 addr, u32 val)
 	val = rtw_cpu_to_le32(val);
 	ret = _write32(pintfhdl, addr, val);
 
-	return RTW_STATUS_CODE(ret);
+	return RTW_STATUS_CODEbu(ret);
 }
 
-int _rtw_writeN(_adapter *adapter, u32 addr , u32 length , u8 *pdata)
+int _rtw_writeNbu(_adapter *adapter, u32 addr , u32 length , u8 *pdata)
 {
 	/* struct	io_queue  	*pio_queue = (struct io_queue *)adapter->pio_queue; */
 	struct io_priv *pio_priv = &adapter->iopriv;
@@ -153,7 +153,7 @@ int _rtw_writeN(_adapter *adapter, u32 addr , u32 length , u8 *pdata)
 
 	ret = _writeN(pintfhdl, addr, length, pdata);
 
-	return RTW_STATUS_CODE(ret);
+	return RTW_STATUS_CODEbu(ret);
 }
 
 #ifdef CONFIG_SDIO_HCI
@@ -240,7 +240,7 @@ int _rtw_sd_iwrite8(_adapter *adapter, u32 addr, u8 val)
 	else
 		RTW_ERR(FUNC_ADPT_FMT" _sd_iwrite8 callback is NULL\n", FUNC_ADPT_ARG(adapter));
 
-	return RTW_STATUS_CODE(ret);
+	return RTW_STATUS_CODEbu(ret);
 }
 
 int _rtw_sd_iwrite16(_adapter *adapter, u32 addr, u16 val)
@@ -257,7 +257,7 @@ int _rtw_sd_iwrite16(_adapter *adapter, u32 addr, u16 val)
 	else
 		RTW_ERR(FUNC_ADPT_FMT" _sd_iwrite16 callback is NULL\n", FUNC_ADPT_ARG(adapter));
 
-	return RTW_STATUS_CODE(ret);
+	return RTW_STATUS_CODEbu(ret);
 }
 int _rtw_sd_iwrite32(_adapter *adapter, u32 addr, u32 val)
 {
@@ -273,14 +273,14 @@ int _rtw_sd_iwrite32(_adapter *adapter, u32 addr, u32 val)
 	else
 		RTW_ERR(FUNC_ADPT_FMT" _sd_iwrite32 callback is NULL\n", FUNC_ADPT_ARG(adapter));
 
-	return RTW_STATUS_CODE(ret);
+	return RTW_STATUS_CODEbu(ret);
 }
 
 #endif /* CONFIG_SDIO_INDIRECT_ACCESS */
 
 #endif /* CONFIG_SDIO_HCI */
 
-int _rtw_write8_async(_adapter *adapter, u32 addr, u8 val)
+int _rtw_write8bu_async(_adapter *adapter, u32 addr, u8 val)
 {
 	/* struct	io_queue  	*pio_queue = (struct io_queue *)adapter->pio_queue; */
 	struct io_priv *pio_priv = &adapter->iopriv;
@@ -291,9 +291,9 @@ int _rtw_write8_async(_adapter *adapter, u32 addr, u8 val)
 
 	ret = _write8_async(pintfhdl, addr, val);
 
-	return RTW_STATUS_CODE(ret);
+	return RTW_STATUS_CODEbu(ret);
 }
-int _rtw_write16_async(_adapter *adapter, u32 addr, u16 val)
+int _rtw_write16bu_async(_adapter *adapter, u32 addr, u16 val)
 {
 	/* struct	io_queue  	*pio_queue = (struct io_queue *)adapter->pio_queue; */
 	struct io_priv *pio_priv = &adapter->iopriv;
@@ -304,9 +304,9 @@ int _rtw_write16_async(_adapter *adapter, u32 addr, u16 val)
 	val = rtw_cpu_to_le16(val);
 	ret = _write16_async(pintfhdl, addr, val);
 
-	return RTW_STATUS_CODE(ret);
+	return RTW_STATUS_CODEbu(ret);
 }
-int _rtw_write32_async(_adapter *adapter, u32 addr, u32 val)
+int _rtw_write32bu_async(_adapter *adapter, u32 addr, u32 val)
 {
 	/* struct	io_queue  	*pio_queue = (struct io_queue *)adapter->pio_queue; */
 	struct io_priv *pio_priv = &adapter->iopriv;
@@ -317,10 +317,10 @@ int _rtw_write32_async(_adapter *adapter, u32 addr, u32 val)
 	val = rtw_cpu_to_le32(val);
 	ret = _write32_async(pintfhdl, addr, val);
 
-	return RTW_STATUS_CODE(ret);
+	return RTW_STATUS_CODEbu(ret);
 }
 
-void _rtw_read_mem(_adapter *adapter, u32 addr, u32 cnt, u8 *pmem)
+void _rtw_read_membu(_adapter *adapter, u32 addr, u32 cnt, u8 *pmem)
 {
 	void (*_read_mem)(struct intf_hdl *pintfhdl, u32 addr, u32 cnt, u8 *pmem);
 	/* struct	io_queue  	*pio_queue = (struct io_queue *)adapter->pio_queue; */
@@ -339,7 +339,7 @@ void _rtw_read_mem(_adapter *adapter, u32 addr, u32 cnt, u8 *pmem)
 
 }
 
-void _rtw_write_mem(_adapter *adapter, u32 addr, u32 cnt, u8 *pmem)
+void _rtw_write_membu(_adapter *adapter, u32 addr, u32 cnt, u8 *pmem)
 {
 	void (*_write_mem)(struct intf_hdl *pintfhdl, u32 addr, u32 cnt, u8 *pmem);
 	/* struct	io_queue  	*pio_queue = (struct io_queue *)adapter->pio_queue; */
@@ -354,7 +354,7 @@ void _rtw_write_mem(_adapter *adapter, u32 addr, u32 cnt, u8 *pmem)
 
 }
 
-void _rtw_read_port(_adapter *adapter, u32 addr, u32 cnt, u8 *pmem)
+void _rtw_read_portbu(_adapter *adapter, u32 addr, u32 cnt, u8 *pmem)
 {
 	u32(*_read_port)(struct intf_hdl *pintfhdl, u32 addr, u32 cnt, u8 *pmem);
 	/* struct	io_queue  	*pio_queue = (struct io_queue *)adapter->pio_queue; */
@@ -373,7 +373,7 @@ void _rtw_read_port(_adapter *adapter, u32 addr, u32 cnt, u8 *pmem)
 
 }
 
-void _rtw_read_port_cancel(_adapter *adapter)
+void _rtw_read_portbu_cancel(_adapter *adapter)
 {
 	void (*_read_port_cancel)(struct intf_hdl *pintfhdl);
 	struct io_priv *pio_priv = &adapter->iopriv;
@@ -387,7 +387,7 @@ void _rtw_read_port_cancel(_adapter *adapter)
 		_read_port_cancel(pintfhdl);
 }
 
-u32 _rtw_write_port(_adapter *adapter, u32 addr, u32 cnt, u8 *pmem)
+u32 _rtw_write_portbu(_adapter *adapter, u32 addr, u32 cnt, u8 *pmem)
 {
 	u32(*_write_port)(struct intf_hdl *pintfhdl, u32 addr, u32 cnt, u8 *pmem);
 	/* struct	io_queue  	*pio_queue = (struct io_queue *)adapter->pio_queue; */
@@ -404,19 +404,19 @@ u32 _rtw_write_port(_adapter *adapter, u32 addr, u32 cnt, u8 *pmem)
 	return ret;
 }
 
-u32 _rtw_write_port_and_wait(_adapter *adapter, u32 addr, u32 cnt, u8 *pmem, int timeout_ms)
+u32 _rtw_write_portbu_and_wait(_adapter *adapter, u32 addr, u32 cnt, u8 *pmem, int timeout_ms)
 {
 	int ret = _SUCCESS;
 	struct xmit_buf *pxmitbuf = (struct xmit_buf *)pmem;
 	struct submit_ctx sctx;
 
-	rtw_sctx_init(&sctx, timeout_ms);
+	rtw_sctx_initbu(&sctx, timeout_ms);
 	pxmitbuf->sctx = &sctx;
 
-	ret = _rtw_write_port(adapter, addr, cnt, pmem);
+	ret = _rtw_write_portbu(adapter, addr, cnt, pmem);
 
 	if (ret == _SUCCESS) {
-		ret = rtw_sctx_wait(&sctx, __func__);
+		ret = rtw_sctx_waitbu(&sctx, __func__);
 
 		if (ret != _SUCCESS)
 			pxmitbuf->sctx = NULL;
@@ -425,7 +425,7 @@ u32 _rtw_write_port_and_wait(_adapter *adapter, u32 addr, u32 cnt, u8 *pmem, int
 	return ret;
 }
 
-void _rtw_write_port_cancel(_adapter *adapter)
+void _rtw_write_portbu_cancel(_adapter *adapter)
 {
 	void (*_write_port_cancel)(struct intf_hdl *pintfhdl);
 	struct io_priv *pio_priv = &adapter->iopriv;
@@ -438,7 +438,7 @@ void _rtw_write_port_cancel(_adapter *adapter)
 	if (_write_port_cancel)
 		_write_port_cancel(pintfhdl);
 }
-int rtw_init_io_priv(_adapter *padapter, void (*set_intf_ops)(_adapter *padapter, struct _io_ops *pops))
+int rtw_init_io_privbu(_adapter *padapter, void (*set_intf_ops)(_adapter *padapter, struct _io_ops *pops))
 {
 	struct io_priv	*piopriv = &padapter->iopriv;
 	struct intf_hdl *pintf = &piopriv->intf;
@@ -460,12 +460,12 @@ int rtw_init_io_priv(_adapter *padapter, void (*set_intf_ops)(_adapter *padapter
 * @return _TRUE:
 * @return _FALSE:
 */
-int rtw_inc_and_chk_continual_io_error(struct dvobj_priv *dvobj)
+int rtw_inc_and_chk_continual_io_errorbu(struct dvobj_priv *dvobj)
 {
 	int ret = _FALSE;
 	int value;
 
-	value = ATOMIC_INC_RETURN(&dvobj->continual_io_error);
+	value = ATOMIC_INCbu_RETURN(&dvobj->continual_io_error);
 	if (value > MAX_CONTINUAL_IO_ERR) {
 		RTW_INFO("[dvobj:%p][ERROR] continual_io_error:%d > %d\n", dvobj, value, MAX_CONTINUAL_IO_ERR);
 		ret = _TRUE;
@@ -478,9 +478,9 @@ int rtw_inc_and_chk_continual_io_error(struct dvobj_priv *dvobj)
 /*
 * Set the continual_io_error of this @param dvobjprive to 0
 */
-void rtw_reset_continual_io_error(struct dvobj_priv *dvobj)
+void rtw_reset_continual_io_errorbu(struct dvobj_priv *dvobj)
 {
-	ATOMIC_SET(&dvobj->continual_io_error, 0);
+	ATOMIC_SETbu(&dvobj->continual_io_error, 0);
 }
 
 #ifdef DBG_IO
@@ -792,9 +792,9 @@ void dbg_rtw_reg_write_monitor(_adapter *adapter, u32 addr, u32 len, u32 val, co
 	}
 }
 
-u8 dbg_rtw_read8(_adapter *adapter, u32 addr, const char *caller, const int line)
+u8 dbg_rtw_read8bu(_adapter *adapter, u32 addr, const char *caller, const int line)
 {
-	u8 val = _rtw_read8(adapter, addr);
+	u8 val = _rtw_read8bu(adapter, addr);
 
 	if (match_read_sniff(adapter, addr, 1, val)) {
 		RTW_INFO("DBG_IO %s:%d rtw_read8(0x%04x) return 0x%02x\n"
@@ -804,9 +804,9 @@ u8 dbg_rtw_read8(_adapter *adapter, u32 addr, const char *caller, const int line
 	return val;
 }
 
-u16 dbg_rtw_read16(_adapter *adapter, u32 addr, const char *caller, const int line)
+u16 dbg_rtw_read16bu(_adapter *adapter, u32 addr, const char *caller, const int line)
 {
-	u16 val = _rtw_read16(adapter, addr);
+	u16 val = _rtw_read16bu(adapter, addr);
 
 	if (match_read_sniff(adapter, addr, 2, val)) {
 		RTW_INFO("DBG_IO %s:%d rtw_read16(0x%04x) return 0x%04x\n"
@@ -816,9 +816,9 @@ u16 dbg_rtw_read16(_adapter *adapter, u32 addr, const char *caller, const int li
 	return val;
 }
 
-u32 dbg_rtw_read32(_adapter *adapter, u32 addr, const char *caller, const int line)
+u32 dbg_rtw_read32bu(_adapter *adapter, u32 addr, const char *caller, const int line)
 {
-	u32 val = _rtw_read32(adapter, addr);
+	u32 val = _rtw_read32bu(adapter, addr);
 
 	if (match_read_sniff(adapter, addr, 4, val)) {
 		RTW_INFO("DBG_IO %s:%d rtw_read32(0x%04x) return 0x%08x\n"
@@ -828,41 +828,41 @@ u32 dbg_rtw_read32(_adapter *adapter, u32 addr, const char *caller, const int li
 	return val;
 }
 
-int dbg_rtw_write8(_adapter *adapter, u32 addr, u8 val, const char *caller, const int line)
+int dbg_rtw_write8bu(_adapter *adapter, u32 addr, u8 val, const char *caller, const int line)
 {
 	if (match_write_sniff(adapter, addr, 1, val)) {
 		RTW_INFO("DBG_IO %s:%d rtw_write8(0x%04x, 0x%02x)\n"
 			, caller, line, addr, val);
 	}
 
-	return _rtw_write8(adapter, addr, val);
+	return _rtw_write8bu(adapter, addr, val);
 }
-int dbg_rtw_write16(_adapter *adapter, u32 addr, u16 val, const char *caller, const int line)
+int dbg_rtw_write16bu(_adapter *adapter, u32 addr, u16 val, const char *caller, const int line)
 {
 	if (match_write_sniff(adapter, addr, 2, val)) {
 		RTW_INFO("DBG_IO %s:%d rtw_write16(0x%04x, 0x%04x)\n"
 			, caller, line, addr, val);
 	}
 
-	return _rtw_write16(adapter, addr, val);
+	return _rtw_write16bu(adapter, addr, val);
 }
-int dbg_rtw_write32(_adapter *adapter, u32 addr, u32 val, const char *caller, const int line)
+int dbg_rtw_write32bu(_adapter *adapter, u32 addr, u32 val, const char *caller, const int line)
 {
 	if (match_write_sniff(adapter, addr, 4, val)) {
 		RTW_INFO("DBG_IO %s:%d rtw_write32(0x%04x, 0x%08x)\n"
 			, caller, line, addr, val);
 	}
 
-	return _rtw_write32(adapter, addr, val);
+	return _rtw_write32bu(adapter, addr, val);
 }
-int dbg_rtw_writeN(_adapter *adapter, u32 addr , u32 length , u8 *data, const char *caller, const int line)
+int dbg_rtw_writeNbu(_adapter *adapter, u32 addr , u32 length , u8 *data, const char *caller, const int line)
 {
 	if (match_write_sniff(adapter, addr, length, 0)) {
 		RTW_INFO("DBG_IO %s:%d rtw_writeN(0x%04x, %u)\n"
 			, caller, line, addr, length);
 	}
 
-	return _rtw_writeN(adapter, addr, length, data);
+	return _rtw_writeNbu(adapter, addr, length, data);
 }
 
 #ifdef CONFIG_SDIO_HCI

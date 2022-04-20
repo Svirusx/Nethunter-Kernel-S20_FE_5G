@@ -146,7 +146,7 @@ void phydm_check_adaptivity(void *dm_void)
 		*dm->edcca_mode = PHYDM_EDCCA_ADAPT_MODE;
 }
 
-void phydm_set_l2h_th_ini_win(void *dm_void)
+void phydm_set_l2h_th_inibu_win(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
@@ -172,7 +172,7 @@ void phydm_set_l2h_th_ini_win(void *dm_void)
 }
 #endif
 
-void phydm_dig_up_bound_lmt_en(void *dm_void)
+void phydm_dig_up_bound_lmt_enbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct phydm_adaptivity_struct *adapt = &dm->adaptivity;
@@ -200,41 +200,41 @@ void phydm_dig_up_bound_lmt_en(void *dm_void)
 		  adapt->igi_up_bound_lmt_cnt);
 }
 
-void phydm_set_edcca_threshold(void *dm_void, s8 H2L, s8 L2H)
+void phydm_set_edcca_thresholdbu(void *dm_void, s8 H2L, s8 L2H)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
 	if (dm->support_ic_type & ODM_IC_JGR3_SERIES) {
-		odm_set_bb_reg(dm, R_0x84c, MASKBYTE2, (u8)L2H + 0x80);
-		odm_set_bb_reg(dm, R_0x84c, MASKBYTE3, (u8)H2L + 0x80);
+		odm_set_bb_regbu(dm, R_0x84c, MASKBYTE2, (u8)L2H + 0x80);
+		odm_set_bb_regbu(dm, R_0x84c, MASKBYTE3, (u8)H2L + 0x80);
 	} else if (dm->support_ic_type & ODM_IC_11N_SERIES) {
-		odm_set_bb_reg(dm, R_0xc4c, MASKBYTE0, (u8)L2H);
-		odm_set_bb_reg(dm, R_0xc4c, MASKBYTE2, (u8)H2L);
+		odm_set_bb_regbu(dm, R_0xc4c, MASKBYTE0, (u8)L2H);
+		odm_set_bb_regbu(dm, R_0xc4c, MASKBYTE2, (u8)H2L);
 	} else if (dm->support_ic_type & ODM_IC_11AC_SERIES) {
-		odm_set_bb_reg(dm, R_0x8a4, MASKBYTE0, (u8)L2H);
-		odm_set_bb_reg(dm, R_0x8a4, MASKBYTE1, (u8)H2L);
+		odm_set_bb_regbu(dm, R_0x8a4, MASKBYTE0, (u8)L2H);
+		odm_set_bb_regbu(dm, R_0x8a4, MASKBYTE1, (u8)H2L);
 	}
 }
 
-void phydm_mac_edcca_state(void *dm_void, enum phydm_mac_edcca_type state)
+void phydm_mac_edcca_statebu(void *dm_void, enum phydm_mac_edcca_type state)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
 	if (state == PHYDM_IGNORE_EDCCA) {
 		/*@ignore EDCCA*/
-		odm_set_mac_reg(dm, R_0x520, BIT(15), 1);
+		odm_set_mac_regbu(dm, R_0x520, BIT(15), 1);
 		/*@enable EDCCA count down*/
-		odm_set_mac_reg(dm, R_0x524, BIT(11), 0);
+		odm_set_mac_regbu(dm, R_0x524, BIT(11), 0);
 	} else { /*@don't set MAC ignore EDCCA signal*/
 		/*@don't ignore EDCCA*/
-		odm_set_mac_reg(dm, R_0x520, BIT(15), 0);
+		odm_set_mac_regbu(dm, R_0x520, BIT(15), 0);
 		/*@disable EDCCA count down*/
-		odm_set_mac_reg(dm, R_0x524, BIT(11), 1);
+		odm_set_mac_regbu(dm, R_0x524, BIT(11), 1);
 	}
 	PHYDM_DBG(dm, DBG_ADPTVTY, "EDCCA enable state = %d\n", state);
 }
 
-void phydm_search_pwdb_lower_bound(void *dm_void)
+void phydm_search_pwdb_lower_boundbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct phydm_adaptivity_struct *adapt = &dm->adaptivity;
@@ -246,37 +246,37 @@ void phydm_search_pwdb_lower_bound(void *dm_void)
 	s8 diff = 0;
 	s8 IGI = adapt->igi_base + 30 + dm->th_l2h_ini - dm->th_edcca_hl_diff;
 
-	halrf_rf_lna_setting(dm, HALRF_LNA_DISABLE);
+	halrf_rf_lna_settingbu(dm, HALRF_LNA_DISABLE);
 	diff = igi_target_dc - IGI;
 	th_l2h = dm->th_l2h_ini + diff;
 	if (th_l2h > 10)
 		th_l2h = 10;
 
 	th_h2l = th_l2h - dm->th_edcca_hl_diff;
-	phydm_set_edcca_threshold(dm, th_h2l, th_l2h);
-	ODM_delay_ms(30);
+	phydm_set_edcca_thresholdbu(dm, th_h2l, th_l2h);
+	ODM_delay_msbu(30);
 
 	while (is_adjust) {
 		/*@check CCA status*/
 		/*set debug port to 0x0*/
-		if (phydm_set_bb_dbg_port(dm, DBGPORT_PRI_1, 0x0)) {
-			reg_value32 = phydm_get_bb_dbg_port_val(dm);
+		if (phydm_set_bb_dbg_portbu(dm, DBGPORT_PRI_1, 0x0)) {
+			reg_value32 = phydm_get_bb_dbg_port_valbu(dm);
 
 			while (reg_value32 & BIT(3) && try_count < 3) {
-				ODM_delay_ms(3);
+				ODM_delay_msbu(3);
 				try_count = try_count + 1;
-				reg_value32 = phydm_get_bb_dbg_port_val(dm);
+				reg_value32 = phydm_get_bb_dbg_port_valbu(dm);
 			}
-			phydm_release_bb_dbg_port(dm);
+			phydm_release_bb_dbg_portbu(dm);
 			try_count = 0;
 		}
 
 		/*@count EDCCA signal = 1 times*/
 		for (cnt = 0; cnt < 20; cnt++) {
-			if (phydm_set_bb_dbg_port(dm, DBGPORT_PRI_1,
+			if (phydm_set_bb_dbg_portbu(dm, DBGPORT_PRI_1,
 						  adapt->adaptivity_dbg_port)) {
-				value32 = phydm_get_bb_dbg_port_val(dm);
-				phydm_release_bb_dbg_port(dm);
+				value32 = phydm_get_bb_dbg_port_valbu(dm);
+				phydm_release_bb_dbg_portbu(dm);
 			}
 
 			if (value32 & BIT(30) && dm->support_ic_type &
@@ -293,7 +293,7 @@ void phydm_search_pwdb_lower_bound(void *dm_void)
 				th_l2h = 10;
 
 			th_h2l = th_l2h - dm->th_edcca_hl_diff;
-			phydm_set_edcca_threshold(dm, th_h2l, th_l2h);
+			phydm_set_edcca_thresholdbu(dm, th_h2l, th_l2h);
 			tx_edcca1 = 0;
 			if (th_l2h == 10)
 				is_adjust = false;
@@ -307,11 +307,11 @@ void phydm_search_pwdb_lower_bound(void *dm_void)
 	adapt->h2l_lb = th_h2l + ADAPT_DC_BACKOFF;
 	adapt->l2h_lb = th_l2h + ADAPT_DC_BACKOFF;
 
-	halrf_rf_lna_setting(dm, HALRF_LNA_ENABLE);
-	phydm_set_edcca_threshold(dm, 0x7f, 0x7f); /*resume to no link state*/
+	halrf_rf_lna_settingbu(dm, HALRF_LNA_ENABLE);
+	phydm_set_edcca_thresholdbu(dm, 0x7f, 0x7f); /*resume to no link state*/
 }
 
-boolean phydm_re_search_condition(void *dm_void)
+boolean phydm_re_search_conditionbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct phydm_adaptivity_struct *adaptivity = &dm->adaptivity;
@@ -323,7 +323,7 @@ boolean phydm_re_search_condition(void *dm_void)
 		return false;
 }
 
-void phydm_set_l2h_th_ini(void *dm_void)
+void phydm_set_l2h_th_inibu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
@@ -347,7 +347,7 @@ void phydm_set_l2h_th_ini(void *dm_void)
 	}
 }
 
-void phydm_set_l2h_th_ini_carrier_sense(void *dm_void)
+void phydm_set_l2h_th_inibu_carrier_sense(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
@@ -357,7 +357,7 @@ void phydm_set_l2h_th_ini_carrier_sense(void *dm_void)
 		dm->th_l2h_ini = 10; /*@ -50dBm*/
 }
 
-void phydm_set_forgetting_factor(void *dm_void)
+void phydm_set_forgetting_factorbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
@@ -366,7 +366,7 @@ void phydm_set_forgetting_factor(void *dm_void)
 
 	if (dm->support_ic_type & (ODM_RTL8821C | ODM_RTL8822B | ODM_RTL8814A |
 				  ODM_RTL8195B))
-		odm_set_bb_reg(dm, R_0x8a0, BIT(1) | BIT(0), 0);
+		odm_set_bb_regbu(dm, R_0x8a0, BIT(1) | BIT(0), 0);
 }
 
 void phydm_edcca_decision_opt(void *dm_void)
@@ -377,14 +377,14 @@ void phydm_edcca_decision_opt(void *dm_void)
 		return;
 
 	if (dm->support_ic_type & ODM_RTL8822B)
-		odm_set_bb_reg(dm, R_0x8dc, BIT(5), 0x1);
+		odm_set_bb_regbu(dm, R_0x8dc, BIT(5), 0x1);
 	else if (dm->support_ic_type & (ODM_RTL8197F | ODM_RTL8192F))
-		odm_set_bb_reg(dm, R_0xce8, BIT(13), 0x1);
+		odm_set_bb_regbu(dm, R_0xce8, BIT(13), 0x1);
 	else if (dm->support_ic_type & ODM_IC_JGR3_SERIES)
-		odm_set_bb_reg(dm, R_0x844, BIT(30) | BIT(29), 0x0);
+		odm_set_bb_regbu(dm, R_0x844, BIT(30) | BIT(29), 0x0);
 }
 
-void phydm_adaptivity_debug(void *dm_void, char input[][16], u32 *_used,
+void phydm_adaptivity_debugbu(void *dm_void, char input[][16], u32 *_used,
 			    char *output, u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -433,15 +433,15 @@ void phydm_adaptivity_debug(void *dm_void, char input[][16], u32 *_used,
 			 (adaptivity->debug_mode ? "TRUE" : "FALSE"),
 			 dm->th_l2h_ini);
 		if (dm->support_ic_type & ODM_IC_JGR3_SERIES) {
-			reg_value32 = odm_get_bb_reg(dm, R_0x84c, MASKDWORD);
+			reg_value32 = odm_get_bb_regbu(dm, R_0x84c, MASKDWORD);
 			h2l_diff = (s8)((0x00ff0000 & reg_value32) >> 16) -
 				   (s8)((0xff000000 & reg_value32) >> 24);
 		} else if (dm->support_ic_type & ODM_IC_11N_SERIES) {
-			reg_value32 = odm_get_bb_reg(dm, R_0xc4c, MASKDWORD);
+			reg_value32 = odm_get_bb_regbu(dm, R_0xc4c, MASKDWORD);
 			h2l_diff = (s8)(0x000000ff & reg_value32) -
 				   (s8)((0x00ff0000 & reg_value32) >> 16);
 		} else if (dm->support_ic_type & ODM_IC_11AC_SERIES) {
-			reg_value32 = odm_get_bb_reg(dm, R_0x8a4, MASKDWORD);
+			reg_value32 = odm_get_bb_regbu(dm, R_0x8a4, MASKDWORD);
 			h2l_diff = (s8)(0x000000ff & reg_value32) -
 				   (s8)((0x0000ff00 & reg_value32) >> 8);
 		}
@@ -459,7 +459,7 @@ out:
 	*_out_len = out_len;
 }
 
-void phydm_set_edcca_val(void *dm_void, u32 *val_buf, u8 val_len)
+void phydm_set_edcca_valbu(void *dm_void, u32 *val_buf, u8 val_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
@@ -468,10 +468,10 @@ void phydm_set_edcca_val(void *dm_void, u32 *val_buf, u8 val_len)
 			  "[Error][adaptivity]Need val_len = 2\n");
 		return;
 	}
-	phydm_set_edcca_threshold(dm, (s8)val_buf[1], (s8)val_buf[0]);
+	phydm_set_edcca_thresholdbu(dm, (s8)val_buf[1], (s8)val_buf[0]);
 }
 
-boolean phydm_edcca_abort(void *dm_void)
+boolean phydm_edcca_abortbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct phydm_adaptivity_struct *adapt = &dm->adaptivity;
@@ -492,7 +492,7 @@ boolean phydm_edcca_abort(void *dm_void)
 	}
 
 #if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
-	((PADAPTER)adapter)->HalFunc.GetHwRegHandler(adapter,
+	((PADAPTER)adapter)->HalFunc.GetHwRegbuHandler(adapter,
 						      HW_VAR_FW_PSMODE_STATUS,
 						      (u8 *)(&is_fw_in_psmode));
 
@@ -529,7 +529,7 @@ void phydm_edcca_thre_calc_jgr3(void *dm_void)
 	adapt->th_l2h = th_l2h;
 	adapt->th_h2l = th_h2l;
 
-	phydm_set_edcca_threshold(dm, adapt->th_h2l, adapt->th_l2h);
+	phydm_set_edcca_thresholdbu(dm, adapt->th_h2l, adapt->th_l2h);
 }
 
 void phydm_edcca_thre_calc(void *dm_void)
@@ -545,14 +545,14 @@ void phydm_edcca_thre_calc(void *dm_void)
 		/*@fix EDCCA hang issue*/
 		if (dm->support_ic_type & ODM_RTL8812) {
 			/*@ADC_mask disable*/
-			odm_set_bb_reg(dm, R_0x800, BIT(10), 1);
+			odm_set_bb_regbu(dm, R_0x800, BIT(10), 1);
 			/*@ADC_mask enable*/
-			odm_set_bb_reg(dm, R_0x800, BIT(10), 0);
+			odm_set_bb_regbu(dm, R_0x800, BIT(10), 0);
 		}
 
 		if (*dm->edcca_mode == PHYDM_EDCCA_ADAPT_MODE) {
 			/*@Limit IGI upper bound for adaptivity*/
-			phydm_dig_up_bound_lmt_en(dm);
+			phydm_dig_up_bound_lmt_enbu(dm);
 			diff = igi_target - (s8)igi;
 			th_l2h = dm->th_l2h_ini + diff;
 			if (th_l2h > 10)
@@ -593,11 +593,11 @@ void phydm_edcca_thre_calc(void *dm_void)
 	adapt->th_l2h = th_l2h;
 	adapt->th_h2l = th_h2l;
 
-	phydm_set_edcca_threshold(dm, adapt->th_h2l, adapt->th_l2h);
+	phydm_set_edcca_thresholdbu(dm, adapt->th_h2l, adapt->th_l2h);
 }
 #endif
 
-void phydm_set_edcca_threshold_api(void *dm_void)
+void phydm_set_edcca_thresholdbu_api(void *dm_void)
 {
 #ifdef PHYDM_SUPPORT_ADAPTIVITY
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -617,7 +617,7 @@ void phydm_set_edcca_threshold_api(void *dm_void)
 #endif
 }
 
-void phydm_adaptivity_info_init(void *dm_void, enum phydm_adapinfo cmn_info,
+void phydm_adaptivity_info_initbu(void *dm_void, enum phydm_adapinfo cmn_info,
 				u32 value)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -644,7 +644,7 @@ void phydm_adaptivity_info_init(void *dm_void, enum phydm_adapinfo cmn_info,
 	}
 }
 
-void phydm_adaptivity_info_update(void *dm_void, enum phydm_adapinfo cmn_info,
+void phydm_adaptivity_info_updatebu(void *dm_void, enum phydm_adapinfo cmn_info,
 				  u32 value)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -663,7 +663,7 @@ void phydm_adaptivity_info_update(void *dm_void, enum phydm_adapinfo cmn_info,
 	}
 }
 
-void phydm_adaptivity_init(void *dm_void)
+void phydm_adaptivity_initbu(void *dm_void)
 {
 #ifdef PHYDM_SUPPORT_ADAPTIVITY
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -681,9 +681,9 @@ void phydm_adaptivity_init(void *dm_void)
 	if (!dm->carrier_sense_enable) {
 		if (dm->th_l2h_ini == 0 &&
 		    !adaptivity->switch_th_l2h_ini_in_band)
-			phydm_set_l2h_th_ini(dm);
+			phydm_set_l2h_th_inibu(dm);
 	} else {
-		phydm_set_l2h_th_ini_carrier_sense(dm);
+		phydm_set_l2h_th_inibu_carrier_sense(dm);
 	}
 
 	if (dm->th_edcca_hl_diff == 0)
@@ -699,9 +699,9 @@ void phydm_adaptivity_init(void *dm_void)
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE)
 	if (!dm->carrier_sense_enable) {
 		if (dm->th_l2h_ini == 0)
-			phydm_set_l2h_th_ini(dm);
+			phydm_set_l2h_th_inibu(dm);
 	} else {
-		phydm_set_l2h_th_ini_carrier_sense(dm);
+		phydm_set_l2h_th_inibu_carrier_sense(dm);
 	}
 
 	if (dm->th_edcca_hl_diff == 0)
@@ -711,7 +711,7 @@ void phydm_adaptivity_init(void *dm_void)
 		dm->support_ability &= ~ODM_BB_ADAPTIVITY;
 #elif (DM_ODM_SUPPORT_TYPE & ODM_AP)
 	if (dm->carrier_sense_enable) {
-		phydm_set_l2h_th_ini_carrier_sense(dm);
+		phydm_set_l2h_th_inibu_carrier_sense(dm);
 		dm->th_edcca_hl_diff = 7;
 	} else {
 		dm->th_l2h_ini = dm->TH_L2H_default; /*set by mib*/
@@ -720,9 +720,9 @@ void phydm_adaptivity_init(void *dm_void)
 #elif (DM_ODM_SUPPORT_TYPE & ODM_IOT)
 	if (!dm->carrier_sense_enable) {
 		if (dm->th_l2h_ini == 0)
-			phydm_set_l2h_th_ini(dm);
+			phydm_set_l2h_th_inibu(dm);
 	} else {
-		phydm_set_l2h_th_ini_carrier_sense(dm);
+		phydm_set_l2h_th_inibu_carrier_sense(dm);
 	}
 
 	if (dm->th_edcca_hl_diff == 0)
@@ -749,34 +749,34 @@ void phydm_adaptivity_init(void *dm_void)
 	    !(dm->support_ic_type & ODM_IC_PWDB_EDCCA)) {
 		if (dm->support_ic_type & (ODM_RTL8197F | ODM_RTL8192F)) {
 			/*set to page B1*/
-			odm_set_bb_reg(dm, R_0xe28, BIT(30), 0x1);
+			odm_set_bb_regbu(dm, R_0xe28, BIT(30), 0x1);
 			/*@0:rx_dfir, 1: dcnf_out, 2 :rx_iq, 3: rx_nbi_nf_out*/
-			odm_set_bb_reg(dm, R_0xbc0, BIT(27) | BIT(26), 0x1);
-			odm_set_bb_reg(dm, R_0xe28, BIT(30), 0x0);
+			odm_set_bb_regbu(dm, R_0xbc0, BIT(27) | BIT(26), 0x1);
+			odm_set_bb_regbu(dm, R_0xe28, BIT(30), 0x0);
 		} else {
 			/*@0:rx_dfir, 1: dcnf_out, 2 :rx_iq, 3: rx_nbi_nf_out*/
-			odm_set_bb_reg(dm, R_0xe24, BIT(21) | BIT(20), 0x1);
+			odm_set_bb_regbu(dm, R_0xe24, BIT(21) | BIT(20), 0x1);
 		}
 	} else if (dm->support_ic_type & ODM_IC_11AC_SERIES &&
 		   !(dm->support_ic_type & ODM_IC_PWDB_EDCCA)) {
 		/*@0:rx_dfir, 1: dcnf_out, 2 :rx_iq, 3: rx_nbi_nf_out*/
-		odm_set_bb_reg(dm, R_0x944, BIT(29) | BIT(28), 0x1);
+		odm_set_bb_regbu(dm, R_0x944, BIT(29) | BIT(28), 0x1);
 	}
 
 	if (dm->support_ic_type & ODM_IC_PWDB_EDCCA) {
-		phydm_search_pwdb_lower_bound(dm);
-		if (phydm_re_search_condition(dm))
-			phydm_search_pwdb_lower_bound(dm);
+		phydm_search_pwdb_lower_boundbu(dm);
+		if (phydm_re_search_conditionbu(dm))
+			phydm_search_pwdb_lower_boundbu(dm);
 	} else {
 		/*resume to no link state*/
-		phydm_set_edcca_threshold(dm, 0x7f, 0x7f);
+		phydm_set_edcca_thresholdbu(dm, 0x7f, 0x7f);
 	}
 
 	/*@whether to ignore EDCCA*/
-	phydm_mac_edcca_state(dm, PHYDM_DONT_IGNORE_EDCCA);
+	phydm_mac_edcca_statebu(dm, PHYDM_DONT_IGNORE_EDCCA);
 
 	/*@forgetting factor setting*/
-	phydm_set_forgetting_factor(dm);
+	phydm_set_forgetting_factorbu(dm);
 
 	/*@EDCCA behavior based on maximum or mean power*/
 	phydm_edcca_decision_opt(dm);
@@ -791,14 +791,14 @@ void phydm_adaptivity_init(void *dm_void)
 #endif
 }
 
-void phydm_adaptivity(void *dm_void)
+void phydm_adaptivitybu(void *dm_void)
 {
 #ifdef PHYDM_SUPPORT_ADAPTIVITY
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct phydm_adaptivity_struct *adapt = &dm->adaptivity;
 	struct phydm_dig_struct *dig_t = &dm->dm_dig_table;
 
-	if (phydm_edcca_abort(dm))
+	if (phydm_edcca_abortbu(dm))
 		return;
 
 #if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
@@ -807,7 +807,7 @@ void phydm_adaptivity(void *dm_void)
 	if (!dm->carrier_sense_enable &&
 	    !adapt->debug_mode &&
 	    adapt->switch_th_l2h_ini_in_band)
-		phydm_set_l2h_th_ini_win(dm);
+		phydm_set_l2h_th_inibu_win(dm);
 #endif
 
 	PHYDM_DBG(dm, DBG_ADPTVTY, "%s ====>\n", __func__);

@@ -15019,17 +15019,17 @@
 #define BIT_NOA_PARSER_EN_8822B BIT(15)
 #define BIT_BSSID_SEL_8822B BIT(14)
 
-#define BIT_SHIFT_P2P_OUI_TYPE_8822B 0
-#define BIT_MASK_P2P_OUI_TYPE_8822B 0xff
-#define BIT_P2P_OUI_TYPE_8822B(x)                                              \
-	(((x) & BIT_MASK_P2P_OUI_TYPE_8822B) << BIT_SHIFT_P2P_OUI_TYPE_8822B)
-#define BITS_P2P_OUI_TYPE_8822B                                                \
-	(BIT_MASK_P2P_OUI_TYPE_8822B << BIT_SHIFT_P2P_OUI_TYPE_8822B)
-#define BIT_CLEAR_P2P_OUI_TYPE_8822B(x) ((x) & (~BITS_P2P_OUI_TYPE_8822B))
-#define BIT_GET_P2P_OUI_TYPE_8822B(x)                                          \
-	(((x) >> BIT_SHIFT_P2P_OUI_TYPE_8822B) & BIT_MASK_P2P_OUI_TYPE_8822B)
-#define BIT_SET_P2P_OUI_TYPE_8822B(x, v)                                       \
-	(BIT_CLEAR_P2P_OUI_TYPE_8822B(x) | BIT_P2P_OUI_TYPE_8822B(v))
+#define BIT_SHIFT_P2P_OUIbu_TYPE_8822B 0
+#define BIT_MASK_P2P_OUIbu_TYPE_8822B 0xff
+#define BIT_P2P_OUIbu_TYPE_8822B(x)                                              \
+	(((x) & BIT_MASK_P2P_OUIbu_TYPE_8822B) << BIT_SHIFT_P2P_OUIbu_TYPE_8822B)
+#define BITS_P2P_OUIbu_TYPE_8822B                                                \
+	(BIT_MASK_P2P_OUIbu_TYPE_8822B << BIT_SHIFT_P2P_OUIbu_TYPE_8822B)
+#define BIT_CLEAR_P2P_OUIbu_TYPE_8822B(x) ((x) & (~BITS_P2P_OUIbu_TYPE_8822B))
+#define BIT_GET_P2P_OUIbu_TYPE_8822B(x)                                          \
+	(((x) >> BIT_SHIFT_P2P_OUIbu_TYPE_8822B) & BIT_MASK_P2P_OUIbu_TYPE_8822B)
+#define BIT_SET_P2P_OUIbu_TYPE_8822B(x, v)                                       \
+	(BIT_CLEAR_P2P_OUIbu_TYPE_8822B(x) | BIT_P2P_OUIbu_TYPE_8822B(v))
 
 /* 2 REG_ASSOCIATED_BFMER0_INFO_8822B (ASSOCIATED BEAMFORMER0 INFO REGISTER) */
 

@@ -15,10 +15,10 @@
 #ifndef __RTW_BTCOEX_WIFIONLY_H__
 #define __RTW_BTCOEX_WIFIONLY_H__
 
-void rtw_btcoex_wifionly_switchband_notify(PADAPTER padapter);
-void rtw_btcoex_wifionly_scan_notify(PADAPTER padapter);
-void rtw_btcoex_wifionly_connect_notify(PADAPTER padapter);
-void rtw_btcoex_wifionly_hw_config(PADAPTER padapter);
-void rtw_btcoex_wifionly_initialize(PADAPTER padapter);
-void rtw_btcoex_wifionly_AntInfoSetting(PADAPTER padapter);
+void rtw_btcoex_wifionly_switchband_notifybu(PADAPTER padapter);
+void rtw_btcoex_wifionly_scan_notifybu(PADAPTER padapter);
+void rtw_btcoex_wifionly_connect_notifybu(PADAPTER padapter);
+void rtw_btcoex_wifionly_hw_configbu(PADAPTER padapter);
+void rtw_btcoex_wifionly_initializebu(PADAPTER padapter);
+void rtw_btcoex_wifionly_AntInfoSettingbu(PADAPTER padapter);
 #endif

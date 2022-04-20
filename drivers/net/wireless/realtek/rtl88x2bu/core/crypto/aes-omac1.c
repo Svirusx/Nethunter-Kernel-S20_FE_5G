@@ -117,7 +117,7 @@ int omac1_aes_vector(const u8 *key, size_t key_len, size_t num_elem,
 
 
 /**
- * omac1_aes_128_vector - One-Key CBC MAC (OMAC1) hash with AES-128
+ * omac1_aes_128bu_vector - One-Key CBC MAC (OMAC1) hash with AES-128
  * @key: 128-bit key for the hash operation
  * @num_elem: Number of elements in the data vector
  * @addr: Pointers to the data areas
@@ -129,7 +129,7 @@ int omac1_aes_vector(const u8 *key, size_t key_len, size_t num_elem,
  * OMAC1 was standardized with the name CMAC by NIST in a Special Publication
  * (SP) 800-38B.
  */
-int omac1_aes_128_vector(const u8 *key, size_t num_elem,
+int omac1_aes_128bu_vector(const u8 *key, size_t num_elem,
 			 const u8 *addr[], const size_t *len, u8 *mac)
 {
 	return omac1_aes_vector(key, 16, num_elem, addr, len, mac);
@@ -137,7 +137,7 @@ int omac1_aes_128_vector(const u8 *key, size_t num_elem,
 
 
 /**
- * omac1_aes_128 - One-Key CBC MAC (OMAC1) hash with AES-128 (aka AES-CMAC)
+ * omac1_aes_128bu - One-Key CBC MAC (OMAC1) hash with AES-128 (aka AES-CMAC)
  * @key: 128-bit key for the hash operation
  * @data: Data buffer for which a MAC is determined
  * @data_len: Length of data buffer in bytes
@@ -148,9 +148,9 @@ int omac1_aes_128_vector(const u8 *key, size_t num_elem,
  * OMAC1 was standardized with the name CMAC by NIST in a Special Publication
  * (SP) 800-38B.
  */
-int omac1_aes_128(const u8 *key, const u8 *data, size_t data_len, u8 *mac)
+int omac1_aes_128bu(const u8 *key, const u8 *data, size_t data_len, u8 *mac)
 {
-	return omac1_aes_128_vector(key, 1, &data, &data_len, mac);
+	return omac1_aes_128bu_vector(key, 1, &data, &data_len, mac);
 }
 
 

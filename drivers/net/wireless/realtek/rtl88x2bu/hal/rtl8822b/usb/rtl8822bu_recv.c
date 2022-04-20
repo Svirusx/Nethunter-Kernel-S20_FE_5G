@@ -14,32 +14,32 @@
  *****************************************************************************/
 #define _RTL8822BU_RECV_C_
 
-#include <drv_types.h>			/* PADAPTER, rtw_xmit.h and etc. */
+#include <drv_types.h>			/* PADAPTER, rtw_xmitbu.h and etc. */
 #include <hal_data.h>			/* HAL_DATA_TYPE */
 #include "../../hal_halmac.h"		/* RX desc */
-#include "../rtl8822b.h"		/* rtl8822b_query_rx_desc, rtl8822b_c2h_handler_no_io() */
+#include "../rtl8822b.h"		/* rtl8822b_query_rx_desc, rtl8822b_c2h_handlerbu_no_io() */
 
 int rtl8822bu_init_recv_priv(PADAPTER padapter)
 {
-	return usb_init_recv_priv(padapter, INTERRUPT_MSG_FORMAT_LEN);
+	return usb_init_recv_privbu(padapter, INTERRUPT_MSG_FORMAT_LEN);
 }
 
 void rtl8822bu_free_recv_priv(PADAPTER padapter)
 {
-	usb_free_recv_priv(padapter, INTERRUPT_MSG_FORMAT_LEN);
+	usb_free_recv_privbu(padapter, INTERRUPT_MSG_FORMAT_LEN);
 }
 
-static u8 recvbuf2recvframe_proccess_c2h(PADAPTER padapter, u8 *pbuf, s32 transfer_len)
+static u8 recvbuf2recvframebu_proccess_c2h(PADAPTER padapter, u8 *pbuf, s32 transfer_len)
 {
 	u8 ret = _SUCCESS;
 
 	/* send rx desc + c2h content to halmac */
-	rtl8822b_c2h_handler_no_io(padapter, pbuf, transfer_len);
+	rtl8822b_c2h_handlerbu_no_io(padapter, pbuf, transfer_len);
 
 	return ret;
 }
 
-static u8 recvbuf2recvframe_proccess_normal_rx
+static u8 recvbuf2recvframebu_proccess_normal_rx
 (PADAPTER padapter, u8 *pbuf, struct rx_pkt_attrib *pattrib, union recv_frame *precvframe, _pkt *pskb)
 {
 	u8 ret = _SUCCESS;
@@ -53,23 +53,23 @@ static u8 recvbuf2recvframe_proccess_normal_rx
 	}
 #endif
 
-	if (rtw_os_alloc_recvframe(padapter, precvframe,
+	if (rtw_os_alloc_recvframebu(padapter, precvframe,
 		(pbuf + pattrib->shift_sz + pattrib->drvinfo_sz + RXDESC_SIZE), pskb) == _FAIL) {
 
-		rtw_free_recvframe(precvframe, pfree_recv_queue);
+		rtw_free_recvframebu(precvframe, pfree_recv_queue);
 		ret = _FAIL;
 		goto exit;
 	}
 
 	recvframe_put(precvframe, pattrib->pkt_len);
 
-	pre_recv_entry(precvframe, pattrib->physt ? (pbuf + RXDESC_OFFSET) : NULL);
+	pre_recv_entrybu(precvframe, pattrib->physt ? (pbuf + RXDESC_OFFSET) : NULL);
 
 exit:
 	return ret;
 }
 
-int recvbuf2recvframe(PADAPTER padapter, void *ptr)
+int recvbuf2recvframebu(PADAPTER padapter, void *ptr)
 {
 	u8 *pbuf;
 	u8 pkt_cnt = 0;
@@ -99,13 +99,13 @@ int recvbuf2recvframe(PADAPTER padapter, void *ptr)
 #endif
 
 	do {
-		precvframe = rtw_alloc_recvframe(pfree_recv_queue);
+		precvframe = rtw_alloc_recvframebu(pfree_recv_queue);
 		if (precvframe == NULL) {
-			RTW_INFO("%s()-%d: rtw_alloc_recvframe() failed! RX Drop!\n", __func__, __LINE__);
-			goto _exit_recvbuf2recvframe;
+			RTW_INFO("%s()-%d: rtw_alloc_recvframebu() failed! RX Drop!\n", __func__, __LINE__);
+			goto _exit_recvbuf2recvframebu;
 		}
 
-		_rtw_init_listhead(&precvframe->u.hdr.list);
+		_rtw_init_listheadbu(&precvframe->u.hdr.list);
 		precvframe->u.hdr.precvbuf = NULL;	/* can't access the precvbuf for new arch */
 		precvframe->u.hdr.len = 0;
 
@@ -116,8 +116,8 @@ int recvbuf2recvframe(PADAPTER padapter, void *ptr)
 		if ((padapter->registrypriv.mp_mode == 0) && ((pattrib->crc_err) || (pattrib->icv_err))) {
 			RTW_INFO("%s: RX Warning! crc_err=%d icv_err=%d, skip!\n", __func__, pattrib->crc_err, pattrib->icv_err);
 
-			rtw_free_recvframe(precvframe, pfree_recv_queue);
-			goto _exit_recvbuf2recvframe;
+			rtw_free_recvframebu(precvframe, pfree_recv_queue);
+			goto _exit_recvbuf2recvframebu;
 		}
 
 		pkt_offset = RXDESC_SIZE + pattrib->drvinfo_sz + pattrib->shift_sz + pattrib->pkt_len;
@@ -129,27 +129,27 @@ int recvbuf2recvframe(PADAPTER padapter, void *ptr)
 				RTW_INFO("%s()-%d: RX Warning!,RXDESC_SIZE(%d), drvinfo_sz(%d), shift_sz(%d),pkt_len(%d)\n"
 					, __func__, __LINE__, RXDESC_SIZE, pattrib->drvinfo_sz, pattrib->shift_sz, pattrib->pkt_len);
 
-			rtw_free_recvframe(precvframe, pfree_recv_queue);
-			goto _exit_recvbuf2recvframe;
+			rtw_free_recvframebu(precvframe, pfree_recv_queue);
+			goto _exit_recvbuf2recvframebu;
 		}
 
 		switch (pattrib->pkt_rpt_type) {
 		case C2H_PACKET:
 			/* C2H_PACKET doesn't use recvframe, so free it */
-			rtw_free_recvframe(precvframe, pfree_recv_queue);
-			if (recvbuf2recvframe_proccess_c2h(padapter, pbuf, transfer_len) == _FAIL)
-				goto _exit_recvbuf2recvframe;
+			rtw_free_recvframebu(precvframe, pfree_recv_queue);
+			if (recvbuf2recvframebu_proccess_c2h(padapter, pbuf, transfer_len) == _FAIL)
+				goto _exit_recvbuf2recvframebu;
 			break;
 		case TX_REPORT1:
 		case TX_REPORT2:
 		case HIS_REPORT:
 			RTW_INFO("%s: [WARNNING] RX type(%d) not be handled!\n", __func__, pattrib->pkt_rpt_type);
-			rtw_free_recvframe(precvframe, pfree_recv_queue);
+			rtw_free_recvframebu(precvframe, pfree_recv_queue);
 			break;
 		case NORMAL_RX:
 		default:
-			if (recvbuf2recvframe_proccess_normal_rx(padapter, pbuf, pattrib, precvframe, pskb) == _FAIL)
-				goto _exit_recvbuf2recvframe;
+			if (recvbuf2recvframebu_proccess_normal_rx(padapter, pbuf, pattrib, precvframe, pskb) == _FAIL)
+				goto _exit_recvbuf2recvframebu;
 			break;
 		}
 
@@ -164,7 +164,7 @@ int recvbuf2recvframe(PADAPTER padapter, void *ptr)
 
 	} while (transfer_len > 0);
 
-_exit_recvbuf2recvframe:
+_exit_recvbuf2recvframebu:
 
 	return _SUCCESS;
 }

@@ -195,5 +195,5 @@ void phydm_stop_adaptive_soml(void *dm_void);
 void phydm_adaptive_soml_para_set(void *dm_void, u8 train_num, u8 intvl,
 				  u8 period, u8 delay_time);
 #endif
-void phydm_init_soft_ml_setting(void *dm_void);
+void phydm_init_soft_ml_settingbu(void *dm_void);
 #endif /*@#ifndef	__PHYDMSOML_H__*/

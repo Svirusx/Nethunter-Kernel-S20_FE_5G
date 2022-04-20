@@ -27,7 +27,7 @@
 #define __ODM_RTL8822B_H__
 
 #ifdef DYN_ANT_WEIGHTING_SUPPORT
-void phydm_dynamic_ant_weighting_8822b(void *dm_void);
+void phydm_dynamic_ant_weightingbu_8822b(void *dm_void);
 #endif
 
 void phydm_1rcca_setting(struct dm_struct *dm, boolean enable_1rcca);

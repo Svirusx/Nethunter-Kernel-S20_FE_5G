@@ -101,7 +101,7 @@ u32 phy_get_tx_bb_swing_8812a(
 );
 
 void
-PHY_SetTxPowerIndex_8812A(
+PHY_SetTxPowerIndexbu_8812A(
 		PADAPTER		Adapter,
 		u32				PowerIndex,
 		enum rf_path		RFPath,

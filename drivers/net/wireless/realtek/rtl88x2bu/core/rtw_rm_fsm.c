@@ -42,12 +42,12 @@ void rm_timer_callback(void *data)
 	for (i=0;i<RM_TIMER_NUM;i++) {
 		pclock = &prmpriv->clock[i];
 		if (pclock->prm == NULL
-			||(ATOMIC_READ(&(pclock->counter)) == 0))
+			||(ATOMIC_READbu(&(pclock->counter)) == 0))
 			continue;
 
-		ATOMIC_DEC(&(pclock->counter));
+		ATOMIC_DECbu(&(pclock->counter));
 
-		if (ATOMIC_READ(&(pclock->counter)) == 0)
+		if (ATOMIC_READbu(&(pclock->counter)) == 0)
 			rm_post_event(pclock->prm->psta->padapter,
 				pclock->prm->rmid, prmpriv->clock[i].evid);
 	}
@@ -60,8 +60,8 @@ int rtw_init_rm(_adapter *padapter)
 
 
 	RTW_INFO("RM: %s\n",__func__);
-	_rtw_init_queue(&(prmpriv->rm_queue));
-	_rtw_init_queue(&(prmpriv->ev_queue));
+	_rtw_init_queuebu(&(prmpriv->rm_queue));
+	_rtw_init_queuebu(&(prmpriv->ev_queue));
 
 	/* bit 0-7 */
 	prmpriv->rm_en_cap_def[0] = 0
@@ -118,7 +118,7 @@ int rtw_init_rm(_adapter *padapter)
 	prmpriv->enable = _TRUE;
 
 	/* clock timer */
-	rtw_init_timer(&prmpriv->rm_timer,
+	rtw_init_timerbu(&prmpriv->rm_timer,
 		padapter, rm_timer_callback, padapter);
 	_set_timer(&prmpriv->rm_timer, CLOCK_UNIT);
 
@@ -144,8 +144,8 @@ int rtw_deinit_rm(_adapter *padapter)
 	while((prm = rm_dequeue_rm(&prmpriv->rm_queue)) != NULL)
 		rm_state_run(prm, RM_EV_cancel);
 
-	_rtw_deinit_queue(&(prmpriv->rm_queue));
-	_rtw_deinit_queue(&(prmpriv->ev_queue));
+	_rtw_deinit_queuebu(&(prmpriv->rm_queue));
+	_rtw_deinit_queuebu(&(prmpriv->ev_queue));
 
 	return _SUCCESS;
 }
@@ -166,9 +166,9 @@ static int rm_enqueue_ev(_queue *queue, struct rm_event *obj, bool to_head)
 	_enter_critical(&queue->lock, &irqL);
 
 	if (to_head)
-		rtw_list_insert_head(&obj->list, &queue->queue);
+		rtw_list_insert_headbu(&obj->list, &queue->queue);
 	else
-		rtw_list_insert_tail(&obj->list, &queue->queue);
+		rtw_list_insert_tailbu(&obj->list, &queue->queue);
 
 	_exit_critical(&queue->lock, &irqL);
 
@@ -177,7 +177,7 @@ static int rm_enqueue_ev(_queue *queue, struct rm_event *obj, bool to_head)
 
 static void rm_set_clock(struct rm_obj *prm, u32 ms, enum RM_EV_ID evid)
 {
-	ATOMIC_SET(&(prm->pclock->counter), (ms/CLOCK_UNIT));
+	ATOMIC_SETbu(&(prm->pclock->counter), (ms/CLOCK_UNIT));
 	prm->pclock->evid = evid;
 }
 
@@ -193,7 +193,7 @@ static struct rm_clock *rm_alloc_clock(_adapter *padapter, struct rm_obj *prm)
 
 		if (pclock->prm == NULL) {
 			pclock->prm = prm;
-			ATOMIC_SET(&(pclock->counter), 0);
+			ATOMIC_SETbu(&(pclock->counter), 0);
 			pclock->evid = RM_EV_max;
 			break;
 		}
@@ -203,14 +203,14 @@ static struct rm_clock *rm_alloc_clock(_adapter *padapter, struct rm_obj *prm)
 
 static void rm_cancel_clock(struct rm_obj *prm)
 {
-	ATOMIC_SET(&(prm->pclock->counter), 0);
+	ATOMIC_SETbu(&(prm->pclock->counter), 0);
 	prm->pclock->evid = RM_EV_max;
 }
 
 static void rm_free_clock(struct rm_clock *pclock)
 {
 	pclock->prm = NULL;
-	ATOMIC_SET(&(pclock->counter), 0);
+	ATOMIC_SETbu(&(pclock->counter), 0);
 	pclock->evid = RM_EV_max;
 }
 
@@ -246,7 +246,7 @@ struct rm_obj *rm_alloc_rmobj(_adapter *padapter)
 	if (prm == NULL)
 		return NULL;
 
-	_rtw_memset(prm, 0, sizeof(struct rm_obj));
+	_rtw_memsetbu(prm, 0, sizeof(struct rm_obj));
 
 	/* alloc timer */
 	if ((prm->pclock = rm_alloc_clock(padapter, prm)) == NULL) {
@@ -268,9 +268,9 @@ int rm_enqueue_rmobj(_adapter *padapter, struct rm_obj *prm, bool to_head)
 
 	_enter_critical(&queue->lock, &irqL);
 	if (to_head)
-		rtw_list_insert_head(&prm->list, &queue->queue);
+		rtw_list_insert_headbu(&prm->list, &queue->queue);
 	else
-		rtw_list_insert_tail(&prm->list, &queue->queue);
+		rtw_list_insert_tailbu(&prm->list, &queue->queue);
 	_exit_critical(&queue->lock, &irqL);
 
 	rm_state_initial(prm);
@@ -285,7 +285,7 @@ static struct rm_obj *rm_dequeue_rm(_queue *queue)
 
 
 	_enter_critical(&queue->lock, &irqL);
-	if (rtw_is_list_empty(&(queue->queue)))
+	if (rtw_is_list_emptybu(&(queue->queue)))
 		prm = NULL;
 	else {
 		prm = LIST_CONTAINOR(get_next(&(queue->queue)),
@@ -304,7 +304,7 @@ static struct rm_event *rm_dequeue_ev(_queue *queue)
 
 
 	_enter_critical(&queue->lock, &irqL);
-	if (rtw_is_list_empty(&(queue->queue)))
+	if (rtw_is_list_emptybu(&(queue->queue)))
 		ev = NULL;
 	else {
 		ev = LIST_CONTAINOR(get_next(&(queue->queue)),
@@ -330,7 +330,7 @@ static struct rm_obj *_rm_get_rmobj(_queue *queue, u32 rmid)
 
 	phead = get_list_head(queue);
 	plist = get_next(phead);
-	while ((rtw_end_of_queue_search(phead, plist)) == _FALSE) {
+	while ((rtw_end_of_queue_searchbu(phead, plist)) == _FALSE) {
 
 		prm = LIST_CONTAINOR(plist, struct rm_obj, list);
 		if (rmid == (prm->rmid)) {
@@ -389,7 +389,7 @@ u8 rtw_rm_post_envent_cmd(_adapter *padapter, u32 rmid, u8 evid)
 	pev->evid = evid;
 
 	init_h2fwcmd_w_parm_no_rsp(pcmd, pev, CMD_RM_POST_EVENT);
-	res = rtw_enqueue_cmd(pcmdpriv, pcmd);
+	res = rtw_enqueue_cmdbu(pcmdpriv, pcmd);
 exit:
 	return res;
 }
@@ -436,7 +436,7 @@ static void rm_bcast_aid_handler(_adapter *padapter, struct rm_event *pev)
 	_enter_critical(&queue->lock, &irqL);
 	phead = get_list_head(queue);
 	plist = get_next(phead);
-	while ((rtw_end_of_queue_search(phead, plist)) == _FALSE) {
+	while ((rtw_end_of_queue_searchbu(phead, plist)) == _FALSE) {
 
 		prm = LIST_CONTAINOR(plist, struct rm_obj, list);
 		plist = get_next(plist);
@@ -663,13 +663,13 @@ static int rm_state_do_meas(struct rm_obj *prm, enum RM_EV_ID evid)
 	case RM_EV_start_meas:
 		if (prm->q.action_code == RM_ACT_RADIO_MEAS_REQ) {
 			/* resotre measurement start time */
-			prm->meas_start_time = rtw_hal_get_tsftr_by_port(padapter
-									, rtw_hal_get_port(padapter));
+			prm->meas_start_time = rtw_hal_get_tsftr_by_portbu(padapter
+									, rtw_hal_get_portbu(padapter));
 
 			switch (prm->q.m_type) {
 			case bcn_req:
 				val8 = 1; /* Enable free run counter */
-				prm->free_run_counter_valid = rtw_hal_set_hwreg(
+				prm->free_run_counter_valid = rtw_hal_set_hwregbu(
 					padapter, HW_VAR_FREECNT, &val8);
 
 				rm_sitesurvey(prm);
@@ -749,11 +749,11 @@ static int rm_state_do_meas(struct rm_obj *prm, enum RM_EV_ID evid)
 	case RM_EV_state_out:
 		rm_cancel_clock(prm);
 		/* resotre measurement end time */
-		prm->meas_end_time = rtw_hal_get_tsftr_by_port(padapter
-								, rtw_hal_get_port(padapter));
+		prm->meas_end_time = rtw_hal_get_tsftr_by_portbu(padapter
+								, rtw_hal_get_portbu(padapter));
 
 		val8 = 0; /* Disable free run counter */
-		rtw_hal_set_hwreg(padapter, HW_VAR_FREECNT, &val8);
+		rtw_hal_set_hwregbu(padapter, HW_VAR_FREECNT, &val8);
 		break;
 	default:
 		break;
@@ -801,7 +801,7 @@ static int rm_state_send_report(struct rm_obj *prm, enum RM_EV_ID evid)
 		if (prm->q.action_code == RM_ACT_RADIO_MEAS_REQ) {
 			switch (prm->q.m_type) {
 			case bcn_req:
-				issue_beacon_rep(prm);
+				issue_beaconbu_rep(prm);
 				break;
 			case ch_load_req:
 			case noise_histo_req:

@@ -59,43 +59,43 @@ struct intf_priv {
 
 };
 
-struct dvobj_priv *devobj_init(void);
-void devobj_deinit(struct dvobj_priv *pdvobj);
+struct dvobj_priv *devobj_initbu(void);
+void devobj_deinitbu(struct dvobj_priv *pdvobj);
 
-u8 rtw_init_drv_sw(_adapter *padapter);
-u8 rtw_free_drv_sw(_adapter *padapter);
-u8 rtw_reset_drv_sw(_adapter *padapter);
-void rtw_dev_unload(PADAPTER padapter);
+u8 rtw_init_drv_swbu(_adapter *padapter);
+u8 rtw_free_drv_swbu(_adapter *padapter);
+u8 rtw_reset_drv_swbu(_adapter *padapter);
+void rtw_dev_unloadbu(PADAPTER padapter);
 
-u32 rtw_start_drv_threads(_adapter *padapter);
-void rtw_stop_drv_threads(_adapter *padapter);
+u32 rtw_start_drv_threadsbu(_adapter *padapter);
+void rtw_stop_drv_threadsbu(_adapter *padapter);
 #if defined(CONFIG_WOWLAN) || defined(CONFIG_AP_WOWLAN)
 void rtw_cancel_dynamic_chk_timer(_adapter *padapter);
 #endif
-void rtw_cancel_all_timer(_adapter *padapter);
+void rtw_cancel_all_timerbu(_adapter *padapter);
 
-uint loadparam(_adapter *adapter);
+uint loadparambu(_adapter *adapter);
 
 #ifdef PLATFORM_LINUX
-int rtw_ioctl(struct net_device *dev, struct ifreq *rq, int cmd);
+int rtw_ioctlbu(struct net_device *dev, struct ifreq *rq, int cmd);
 
-int rtw_init_netdev_name(struct net_device *pnetdev, const char *ifname);
-struct net_device *rtw_init_netdev(_adapter *padapter);
+int rtw_init_netdevbu_namebu(struct net_device *pnetdev, const char *ifnamebu);
+struct net_device *rtw_init_netdevbu(_adapter *padapter);
 
-void rtw_os_ndev_free(_adapter *adapter);
-int rtw_os_ndev_init(_adapter *adapter, const char *name);
-void rtw_os_ndev_deinit(_adapter *adapter);
-void rtw_os_ndev_unregister(_adapter *adapter);
-void rtw_os_ndevs_unregister(struct dvobj_priv *dvobj);
-int rtw_os_ndevs_init(struct dvobj_priv *dvobj);
-void rtw_os_ndevs_deinit(struct dvobj_priv *dvobj);
+void rtw_os_ndev_freebu(_adapter *adapter);
+int rtw_os_ndev_initbu(_adapter *adapter, const char *name);
+void rtw_os_ndev_deinitbu(_adapter *adapter);
+void rtw_os_ndev_unregisterbu(_adapter *adapter);
+void rtw_os_ndevs_unregisterbu(struct dvobj_priv *dvobj);
+int rtw_os_ndevs_initbu(struct dvobj_priv *dvobj);
+void rtw_os_ndevs_deinitbu(struct dvobj_priv *dvobj);
 
 u16 rtw_os_recv_select_queue(u8 *msdu, enum rtw_rx_llc_hdl llc_hdl);
 
-int rtw_ndev_notifier_register(void);
-void rtw_ndev_notifier_unregister(void);
-void rtw_inetaddr_notifier_register(void);
-void rtw_inetaddr_notifier_unregister(void);
+int rtw_ndev_notifier_registerbu(void);
+void rtw_ndev_notifier_unregisterbu(void);
+void rtw_inetaddr_notifier_registerbu(void);
+void rtw_inetaddr_notifier_unregisterbu(void);
 
 #include "../os_dep/linux/rtw_proc.h"
 #include "../os_dep/linux/nlrtw.h"
@@ -107,21 +107,21 @@ void rtw_inetaddr_notifier_unregister(void);
 	#include "../os_dep/linux/ioctl_cfg80211.h"
 #endif /* CONFIG_IOCTL_CFG80211 */
 
-u8 rtw_rtnl_lock_needed(struct dvobj_priv *dvobj);
-void rtw_set_rtnl_lock_holder(struct dvobj_priv *dvobj, _thread_hdl_ thd_hdl);
+u8 rtw_rtnl_lock_neededbu(struct dvobj_priv *dvobj);
+void rtw_set_rtnl_lock_holderbu(struct dvobj_priv *dvobj, _thread_hdl_ thd_hdl);
 
 #endif /* PLATFORM_LINUX */
 
 
 #ifdef PLATFORM_FREEBSD
-extern int rtw_ioctl(struct ifnet *ifp, u_long cmd, caddr_t data);
+extern int rtw_ioctlbu(struct ifnet *ifp, u_long cmd, caddr_t data);
 #endif
 
-void rtw_ips_dev_unload(_adapter *padapter);
+void rtw_ips_dev_unloadbu(_adapter *padapter);
 
 #ifdef CONFIG_IPS
-int rtw_ips_pwr_up(_adapter *padapter);
-void rtw_ips_pwr_down(_adapter *padapter);
+int rtw_ips_pwr_upbu(_adapter *padapter);
+void rtw_ips_pwr_downbu(_adapter *padapter);
 #endif
 
 #ifdef CONFIG_CONCURRENT_MODE
@@ -132,12 +132,12 @@ void rtw_drv_stop_vir_ifaces(struct dvobj_priv *dvobj);
 void rtw_drv_free_vir_ifaces(struct dvobj_priv *dvobj);
 #endif
 
-void rtw_ndev_destructor(_nic_hdl ndev);
+void rtw_ndev_destructorbu(_nic_hdl ndev);
 #ifdef CONFIG_ARP_KEEP_ALIVE
 int rtw_gw_addr_query(_adapter *padapter);
 #endif
 
-int rtw_suspend_common(_adapter *padapter);
-int rtw_resume_common(_adapter *padapter);
+int rtw_suspend_commonbu(_adapter *padapter);
+int rtw_resume_commonbu(_adapter *padapter);
 
 #endif /* _OSDEP_INTF_H_ */

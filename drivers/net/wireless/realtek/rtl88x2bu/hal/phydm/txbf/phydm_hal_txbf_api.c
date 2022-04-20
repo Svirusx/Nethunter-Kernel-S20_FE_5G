@@ -111,7 +111,7 @@ u8 phydm_get_mu_bfee_snding_decision(void *dm_void, u16 throughput)
 
 #endif
 #if (DM_ODM_SUPPORT_TYPE != ODM_AP)
-u8 beamforming_get_htndp_tx_rate(void *dm_void, u8 bfer_str_num)
+u8 beamforming_get_htndp_tx_ratebu(void *dm_void, u8 bfer_str_num)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u8 nr_index = 0;
@@ -147,7 +147,7 @@ u8 beamforming_get_htndp_tx_rate(void *dm_void, u8 bfer_str_num)
 	return ndp_tx_rate;
 }
 
-u8 beamforming_get_vht_ndp_tx_rate(void *dm_void, u8 bfer_str_num)
+u8 beamforming_get_vht_ndp_tx_ratebu(void *dm_void, u8 bfer_str_num)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u8 nr_index = 0;
@@ -198,55 +198,55 @@ void phydm_txbf_rfmode(void *dm_void, u8 su_bfee_cnt, u8 mu_bfee_cnt)
 		if (su_bfee_cnt > 0 || mu_bfee_cnt > 0) {
 			/*Path A ==================*/
 			/*RF mode table write enable*/
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0xef, BIT(19), 0x1);
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0xef, BIT(19), 0x1);
 			/*Select RX mode*/
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0x33, 0xF, 3);
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0x33, 0xF, 3);
 			/*Set Table data*/
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0x3e, 0x3, 0x2);
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3e, 0x3, 0x2);
 			/*Set Table data*/
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0x3f, 0xfffff,
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3f, 0xfffff,
 				       0x65AFF);
 			/*RF mode table write disable*/
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0xef, BIT(19), 0x0);
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0xef, BIT(19), 0x0);
 
 			/*Path B ==================*/
 			/*RF mode table write enable*/
-			odm_set_rf_reg(dm, RF_PATH_B, RF_0xef, BIT(19), 0x1);
+			odm_set_rf_regbu(dm, RF_PATH_B, RF_0xef, BIT(19), 0x1);
 			/*Select RX mode*/
-			odm_set_rf_reg(dm, RF_PATH_B, RF_0x33, 0xF, 3);
+			odm_set_rf_regbu(dm, RF_PATH_B, RF_0x33, 0xF, 3);
 			/*Set Table data*/
-			odm_set_rf_reg(dm, RF_PATH_B, RF_0x3f, 0xfffff,
+			odm_set_rf_regbu(dm, RF_PATH_B, RF_0x3f, 0xfffff,
 				       0x996BF);
 			/*Select Standby mode*/
-			odm_set_rf_reg(dm, RF_PATH_B, RF_0x33, 0xF, 1);
+			odm_set_rf_regbu(dm, RF_PATH_B, RF_0x33, 0xF, 1);
 			/*Set Table data*/
-			odm_set_rf_reg(dm, RF_PATH_B, RF_0x3f, 0xfffff,
+			odm_set_rf_regbu(dm, RF_PATH_B, RF_0x3f, 0xfffff,
 				       0x99230);
 			/*RF mode table write disable*/
-			odm_set_rf_reg(dm, RF_PATH_B, RF_0xef, BIT(19), 0x0);
+			odm_set_rf_regbu(dm, RF_PATH_B, RF_0xef, BIT(19), 0x0);
 		}
 
 		/*@if Nsts > Nc, don't apply V matrix*/
-		odm_set_bb_reg(dm, R_0x1e24, BIT(11), 1);
+		odm_set_bb_regbu(dm, R_0x1e24, BIT(11), 1);
 
 		if (su_bfee_cnt > 0 || mu_bfee_cnt > 0) {
 			/*@enable BB TxBF ant mapping register*/
-			odm_set_bb_reg(dm, R_0x1e24, BIT(28) | BIT29, 0x2);
-			odm_set_bb_reg(dm, R_0x1e24, BIT(30), 1);
+			odm_set_bb_regbu(dm, R_0x1e24, BIT(28) | BIT29, 0x2);
+			odm_set_bb_regbu(dm, R_0x1e24, BIT(30), 1);
 
 			/* logic mapping */
 			/* TX BF logic map and TX path en for Nsts = 1~2 */
-			odm_set_bb_reg(dm, R_0x820, 0xff, 0x33);
-			odm_set_bb_reg(dm, R_0x1e2c, 0xffff, 0x404);
-			odm_set_bb_reg(dm, R_0x820, 0xffff0000, 0x33);
-			odm_set_bb_reg(dm, R_0x1e30, 0xffff, 0x404);
+			odm_set_bb_regbu(dm, R_0x820, 0xff, 0x33);
+			odm_set_bb_regbu(dm, R_0x1e2c, 0xffff, 0x404);
+			odm_set_bb_regbu(dm, R_0x820, 0xffff0000, 0x33);
+			odm_set_bb_regbu(dm, R_0x1e30, 0xffff, 0x404);
 		} else {
 			/*@Disable BB TxBF ant mapping register*/
-			odm_set_bb_reg(dm, R_0x1e24, BIT(28) | BIT29, 0x0);
-			odm_set_bb_reg(dm, R_0x1e24, BIT(31), 0);
+			odm_set_bb_regbu(dm, R_0x1e24, BIT(28) | BIT29, 0x0);
+			odm_set_bb_regbu(dm, R_0x1e24, BIT(31), 0);
 			/*@1SS~2ss A, AB*/
-			odm_set_bb_reg(dm, R_0x820, 0xff, 0x31);
-			odm_set_bb_reg(dm, R_0x1e2c, 0xffff, 0x400);
+			odm_set_bb_regbu(dm, R_0x820, 0xff, 0x31);
+			odm_set_bb_regbu(dm, R_0x1e2c, 0xffff, 0x400);
 		}
 	}
 #endif
@@ -255,50 +255,50 @@ void phydm_txbf_rfmode(void *dm_void, u8 su_bfee_cnt, u8 mu_bfee_cnt)
 		if (su_bfee_cnt > 0 || mu_bfee_cnt > 0) {
 			/*Path A ==================*/
 			/*RF mode table write enable*/
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0xef, BIT(19), 0x1);
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0xef, BIT(19), 0x1);
 			/*Select RX mode*/
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0x33, 0xF, 3);
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0x33, 0xF, 3);
 			/*Set Table data*/
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0x3e, 0x3, 0x3);
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3e, 0x3, 0x3);
 			/*Set Table data*/
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0x3f, 0xfffff,
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3f, 0xfffff,
 				       0x61AFE);
 			/*RF mode table write disable*/
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0xef, BIT(19), 0x0);
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0xef, BIT(19), 0x0);
 
 			/*Path B ==================*/
 			/*RF mode table write enable*/
-			odm_set_rf_reg(dm, RF_PATH_B, RF_0xef, BIT(19), 0x1);
+			odm_set_rf_regbu(dm, RF_PATH_B, RF_0xef, BIT(19), 0x1);
 			/*Select RX mode*/
-			odm_set_rf_reg(dm, RF_PATH_B, RF_0x33, 0xF, 3);
+			odm_set_rf_regbu(dm, RF_PATH_B, RF_0x33, 0xF, 3);
 			/*Set Table data*/
-			odm_set_rf_reg(dm, RF_PATH_B, RF_0x3f, 0xfffff,
+			odm_set_rf_regbu(dm, RF_PATH_B, RF_0x3f, 0xfffff,
 				       0xD86BF);
 			/*RF mode table write disable*/
-			odm_set_rf_reg(dm, RF_PATH_B, RF_0xef, BIT(19), 0x0);
+			odm_set_rf_regbu(dm, RF_PATH_B, RF_0xef, BIT(19), 0x0);
 		}
 
 		/*@if Nsts > Nc, don't apply V matrix*/
-		odm_set_bb_reg(dm, R_0x1e24, BIT(11), 1);
+		odm_set_bb_regbu(dm, R_0x1e24, BIT(11), 1);
 
 		if (su_bfee_cnt > 0 || mu_bfee_cnt > 0) {
 			/*@enable BB TxBF ant mapping register*/
-			odm_set_bb_reg(dm, R_0x1e24, BIT(28) | BIT29, 0x2);
-			odm_set_bb_reg(dm, R_0x1e24, BIT(30), 1);
+			odm_set_bb_regbu(dm, R_0x1e24, BIT(28) | BIT29, 0x2);
+			odm_set_bb_regbu(dm, R_0x1e24, BIT(30), 1);
 
 			/* logic mapping */
 			/* TX BF logic map and TX path en for Nsts = 1~2 */
-			odm_set_bb_reg(dm, R_0x820, 0xff, 0x33);
-			odm_set_bb_reg(dm, R_0x1e2c, 0xffff, 0x404);
-			odm_set_bb_reg(dm, R_0x820, 0xffff0000, 0x33);
-			odm_set_bb_reg(dm, R_0x1e30, 0xffff, 0x404);
+			odm_set_bb_regbu(dm, R_0x820, 0xff, 0x33);
+			odm_set_bb_regbu(dm, R_0x1e2c, 0xffff, 0x404);
+			odm_set_bb_regbu(dm, R_0x820, 0xffff0000, 0x33);
+			odm_set_bb_regbu(dm, R_0x1e30, 0xffff, 0x404);
 		} else {
 			/*@Disable BB TxBF ant mapping register*/
-			odm_set_bb_reg(dm, R_0x1e24, BIT(28) | BIT29, 0x0);
-			odm_set_bb_reg(dm, R_0x1e24, BIT(31), 0);
+			odm_set_bb_regbu(dm, R_0x1e24, BIT(28) | BIT29, 0x0);
+			odm_set_bb_regbu(dm, R_0x1e24, BIT(31), 0);
 			/*@1SS~2ss A, AB*/
-			odm_set_bb_reg(dm, R_0x820, 0xff, 0x31);
-			odm_set_bb_reg(dm, R_0x1e2c, 0xffff, 0x400);
+			odm_set_bb_regbu(dm, R_0x820, 0xff, 0x31);
+			odm_set_bb_regbu(dm, R_0x1e2c, 0xffff, 0x400);
 		}
 	}
 #endif
@@ -307,51 +307,51 @@ void phydm_txbf_rfmode(void *dm_void, u8 su_bfee_cnt, u8 mu_bfee_cnt)
 		if (su_bfee_cnt > 0 || mu_bfee_cnt > 0) {
 			for (i = RF_PATH_A; i <= RF_PATH_D; i++) {
 				/*RF mode table write enable*/
-				odm_set_rf_reg(dm, (enum rf_path)i, RF_0xef,
+				odm_set_rf_regbu(dm, (enum rf_path)i, RF_0xef,
 					       BIT(19), 0x1);
 				/*Select RX mode*/
-				odm_set_rf_reg(dm, (enum rf_path)i, RF_0x33,
+				odm_set_rf_regbu(dm, (enum rf_path)i, RF_0x33,
 					       0xF, 2);
 				/*Set Table data*/
-				odm_set_rf_reg(dm, (enum rf_path)i, RF_0x3e,
+				odm_set_rf_regbu(dm, (enum rf_path)i, RF_0x3e,
 					       0xfffff, 0x3fc);
 				/*Set Table data*/
-				odm_set_rf_reg(dm, (enum rf_path)i, RF_0x3f,
+				odm_set_rf_regbu(dm, (enum rf_path)i, RF_0x3f,
 					       0xfffff, 0x280f7);
 				/*Select RX mode*/
-				odm_set_rf_reg(dm, (enum rf_path)i, RF_0x33,
+				odm_set_rf_regbu(dm, (enum rf_path)i, RF_0x33,
 					       0xF, 3);
 				/*Set Table data*/
-				odm_set_rf_reg(dm, (enum rf_path)i, RF_0x3e,
+				odm_set_rf_regbu(dm, (enum rf_path)i, RF_0x3e,
 					       0xfffff, 0x365);
 				/*Set Table data*/
-				odm_set_rf_reg(dm, (enum rf_path)i, RF_0x3f,
+				odm_set_rf_regbu(dm, (enum rf_path)i, RF_0x3f,
 					       0xfffff, 0xafcf7);
 				/*RF mode table write disable*/
-				odm_set_rf_reg(dm, (enum rf_path)i, RF_0xef,
+				odm_set_rf_regbu(dm, (enum rf_path)i, RF_0xef,
 					       BIT(19), 0x0);
 			}
 		}
 		/*@if Nsts > Nc, don't apply V matrix*/
-		odm_set_bb_reg(dm, R_0x1e24, BIT(11), 1);
+		odm_set_bb_regbu(dm, R_0x1e24, BIT(11), 1);
 
 		if (su_bfee_cnt > 0 || mu_bfee_cnt > 0) {
 			/*@enable BB TxBF ant mapping register*/
-			odm_set_bb_reg(dm, R_0x1e24, BIT(28) | BIT29, 0x2);
-			odm_set_bb_reg(dm, R_0x1e24, BIT(30), 1);
+			odm_set_bb_regbu(dm, R_0x1e24, BIT(28) | BIT29, 0x2);
+			odm_set_bb_regbu(dm, R_0x1e24, BIT(30), 1);
 
 			/* logic mapping */
 			/* TX BF logic map and TX path en for Nsts = 1~4 */
-			//odm_set_bb_reg(dm, R_0x820, 0xffff0000, 0xffff);
+			//odm_set_bb_regbu(dm, R_0x820, 0xffff0000, 0xffff);
 			/*verification path-AC*/
-			//odm_set_bb_reg(dm, R_0x1e30, 0xffffffff, 0xe4e4e4e4);
+			//odm_set_bb_regbu(dm, R_0x1e30, 0xffffffff, 0xe4e4e4e4);
 		} else {
 			/*@Disable BB TxBF ant mapping register*/
-			odm_set_bb_reg(dm, R_0x1e24, BIT(28) | BIT29, 0x0);
-			odm_set_bb_reg(dm, R_0x1e24, BIT(31), 0);
+			odm_set_bb_regbu(dm, R_0x1e24, BIT(28) | BIT29, 0x0);
+			odm_set_bb_regbu(dm, R_0x1e24, BIT(31), 0);
 			/*@1SS~4ss A, AB, ABC, ABCD*/
-			//odm_set_bb_reg(dm, R_0x820, 0xffff, 0xf731);
-			//odm_set_bb_reg(dm, R_0x1e2c, 0xffffffff, 0xe4240400);
+			//odm_set_bb_regbu(dm, R_0x820, 0xffff, 0xf731);
+			//odm_set_bb_regbu(dm, R_0x1e2c, 0xffffffff, 0xe4240400);
 		}
 	}
 #endif
@@ -360,41 +360,41 @@ void phydm_txbf_rfmode(void *dm_void, u8 su_bfee_cnt, u8 mu_bfee_cnt)
 		if (su_bfee_cnt > 0 || mu_bfee_cnt > 0) {
 			for (i = RF_PATH_A; i <= RF_PATH_D; i++) {
 				/*RF mode table write enable*/
-				odm_set_rf_reg(dm, (enum rf_path)i, RF_0xef,
+				odm_set_rf_regbu(dm, (enum rf_path)i, RF_0xef,
 					       BIT(19), 0x1);
 				/*Select RX mode*/
-				odm_set_rf_reg(dm, (enum rf_path)i, RF_0x30,
+				odm_set_rf_regbu(dm, (enum rf_path)i, RF_0x30,
 					       0xfffff, 0x18000);
 				/*Set Table data*/
-				odm_set_rf_reg(dm, (enum rf_path)i, RF_0x31,
+				odm_set_rf_regbu(dm, (enum rf_path)i, RF_0x31,
 					       0xfffff, 0x4f);
 				/*Select RX mode*/
-				odm_set_rf_reg(dm, (enum rf_path)i, RF_0x32,
+				odm_set_rf_regbu(dm, (enum rf_path)i, RF_0x32,
 					       0xfffff, 0x71fc0);
 				/*RF mode table write disable*/
-				odm_set_rf_reg(dm, (enum rf_path)i, RF_0xef,
+				odm_set_rf_regbu(dm, (enum rf_path)i, RF_0xef,
 					       BIT(19), 0x0);
 			}
 		}
 		/*@if Nsts > Nc, don't apply V matrix*/
-		odm_set_bb_reg(dm, R_0x1e24, BIT(11), 1);
+		odm_set_bb_regbu(dm, R_0x1e24, BIT(11), 1);
 
 		if (su_bfee_cnt > 0 || mu_bfee_cnt > 0) {
 			/*@enable BB TxBF ant mapping register*/
-			odm_set_bb_reg(dm, R_0x1e24, BIT(28) | BIT29, 0x2);
-			odm_set_bb_reg(dm, R_0x1e24, BIT(30), 1);
+			odm_set_bb_regbu(dm, R_0x1e24, BIT(28) | BIT29, 0x2);
+			odm_set_bb_regbu(dm, R_0x1e24, BIT(30), 1);
 
 			/* logic mapping */
 			/* TX BF logic map and TX path en for Nsts = 1~4 */
-			odm_set_bb_reg(dm, R_0x820, 0xffff0000, 0xffff);
-			odm_set_bb_reg(dm, R_0x1e30, 0xffffffff, 0xe4e4e4e4);
+			odm_set_bb_regbu(dm, R_0x820, 0xffff0000, 0xffff);
+			odm_set_bb_regbu(dm, R_0x1e30, 0xffffffff, 0xe4e4e4e4);
 		} else {
 			/*@Disable BB TxBF ant mapping register*/
-			odm_set_bb_reg(dm, R_0x1e24, BIT(28) | BIT29, 0x0);
-			odm_set_bb_reg(dm, R_0x1e24, BIT(31), 0);
+			odm_set_bb_regbu(dm, R_0x1e24, BIT(28) | BIT29, 0x0);
+			odm_set_bb_regbu(dm, R_0x1e24, BIT(31), 0);
 			/*@1SS~4ss A, AB, ABC, ABCD*/
-			odm_set_bb_reg(dm, R_0x820, 0xffff, 0xf731);
-			odm_set_bb_reg(dm, R_0x1e2c, 0xffffffff, 0xe4240400);
+			odm_set_bb_regbu(dm, R_0x820, 0xffff, 0xf731);
+			odm_set_bb_regbu(dm, R_0x1e2c, 0xffffffff, 0xe4240400);
 		}
 	}
 #endif
@@ -403,59 +403,59 @@ void phydm_txbf_rfmode(void *dm_void, u8 su_bfee_cnt, u8 mu_bfee_cnt)
 		if (su_bfee_cnt > 0 || mu_bfee_cnt > 0) {
 			/*Path A ==================*/
 			/*RF mode table write enable*/
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0xef, BIT(19), 0x1);
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0xef, BIT(19), 0x1);
 			/*Set RF Rx mode table*/
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0x30, 0xfffff,
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0x30, 0xfffff,
 				       0x18000);
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0x31, 0xfffff,
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0x31, 0xfffff,
 				       0x000cf);
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0x32, 0xfffff,
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0x32, 0xfffff,
 				       0x71fc2);
 			/*RF mode table write disable*/
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0xef, BIT(19), 0x0);
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0xef, BIT(19), 0x0);
 
 			/*Path B ==================*/
 			/*RF mode table write enable*/
-			odm_set_rf_reg(dm, RF_PATH_B, RF_0xef, BIT(19), 0x1);
+			odm_set_rf_regbu(dm, RF_PATH_B, RF_0xef, BIT(19), 0x1);
 			/*Set RF Rx mode table*/
-			odm_set_rf_reg(dm, RF_PATH_B, RF_0x30, 0xfffff,
+			odm_set_rf_regbu(dm, RF_PATH_B, RF_0x30, 0xfffff,
 				       0x18000);
-			odm_set_rf_reg(dm, RF_PATH_B, RF_0x31, 0xfffff,
+			odm_set_rf_regbu(dm, RF_PATH_B, RF_0x31, 0xfffff,
 				       0x000cf);
-			odm_set_rf_reg(dm, RF_PATH_B, RF_0x32, 0xfffff,
+			odm_set_rf_regbu(dm, RF_PATH_B, RF_0x32, 0xfffff,
 				       0x71fc2);
 			/*Set RF Standby mode table*/
-			odm_set_rf_reg(dm, RF_PATH_B, RF_0x30, 0xfffff,
+			odm_set_rf_regbu(dm, RF_PATH_B, RF_0x30, 0xfffff,
 				       0x18000);
-			odm_set_rf_reg(dm, RF_PATH_B, RF_0x31, 0xfffff,
+			odm_set_rf_regbu(dm, RF_PATH_B, RF_0x31, 0xfffff,
 				       0x000ef);
-			odm_set_rf_reg(dm, RF_PATH_B, RF_0x32, 0xfffff,
+			odm_set_rf_regbu(dm, RF_PATH_B, RF_0x32, 0xfffff,
 				       0x01042);
 			/*RF mode table write disable*/
-			odm_set_rf_reg(dm, RF_PATH_B, RF_0xef, BIT(19), 0x0);
+			odm_set_rf_regbu(dm, RF_PATH_B, RF_0xef, BIT(19), 0x0);
 		}
 
 		/*@if Nsts > Nc, don't apply V matrix*/
-		odm_set_bb_reg(dm, R_0x1e24, BIT(11), 1);
+		odm_set_bb_regbu(dm, R_0x1e24, BIT(11), 1);
 
 		if (su_bfee_cnt > 0 || mu_bfee_cnt > 0) {
 			/*@enable BB TxBF ant mapping register*/
-			odm_set_bb_reg(dm, R_0x1e24, BIT(28) | BIT29, 0x2);
-			odm_set_bb_reg(dm, R_0x1e24, BIT(30), 1);
+			odm_set_bb_regbu(dm, R_0x1e24, BIT(28) | BIT29, 0x2);
+			odm_set_bb_regbu(dm, R_0x1e24, BIT(30), 1);
 
 			/* logic mapping */
 			/* TX BF logic map and TX path en for Nsts = 1~2 */
-			odm_set_bb_reg(dm, R_0x820, 0xff, 0x33);
-			odm_set_bb_reg(dm, R_0x1e2c, 0xffff, 0x404);
-			odm_set_bb_reg(dm, R_0x820, 0xffff0000, 0x33);
-			odm_set_bb_reg(dm, R_0x1e30, 0xffff, 0x404);
+			odm_set_bb_regbu(dm, R_0x820, 0xff, 0x33);
+			odm_set_bb_regbu(dm, R_0x1e2c, 0xffff, 0x404);
+			odm_set_bb_regbu(dm, R_0x820, 0xffff0000, 0x33);
+			odm_set_bb_regbu(dm, R_0x1e30, 0xffff, 0x404);
 		} else {
 			/*@Disable BB TxBF ant mapping register*/
-			odm_set_bb_reg(dm, R_0x1e24, BIT(28) | BIT29, 0x0);
-			odm_set_bb_reg(dm, R_0x1e24, BIT(31), 0);
+			odm_set_bb_regbu(dm, R_0x1e24, BIT(28) | BIT29, 0x0);
+			odm_set_bb_regbu(dm, R_0x1e24, BIT(31), 0);
 			/*@1SS~2ss A, AB*/
-			odm_set_bb_reg(dm, R_0x820, 0xff, 0x31);
-			odm_set_bb_reg(dm, R_0x1e2c, 0xffff, 0x400);
+			odm_set_bb_regbu(dm, R_0x820, 0xff, 0x31);
+			odm_set_bb_regbu(dm, R_0x1e2c, 0xffff, 0x400);
 		}
 	}
 #endif
@@ -468,8 +468,8 @@ void phydm_mu_rsoml_reset(void *dm_void)
 
 	PHYDM_DBG(dm, DBG_TXBF, "[MU RSOML] %s cnt reset\n", __func__);
 
-	odm_memory_set(dm, &rateinfo->num_mu_vht_pkt[0], 0, VHT_RATE_NUM * 2);
-	odm_memory_set(dm, &rateinfo->num_qry_vht_pkt[0], 0, VHT_RATE_NUM * 2);
+	odm_memory_setbu(dm, &rateinfo->num_mu_vht_pkt[0], 0, VHT_RATE_NUM * 2);
+	odm_memory_setbu(dm, &rateinfo->num_qry_vht_pkt[0], 0, VHT_RATE_NUM * 2);
 }
 
 void phydm_mu_rsoml_init(void *dm_void)
@@ -481,11 +481,11 @@ void phydm_mu_rsoml_init(void *dm_void)
 	PHYDM_DBG(dm, DBG_TXBF, "[MU RSOML] %s\n", __func__);
 
 	/*OFDM Tx*/
-	val = odm_get_bb_reg(dm, R_0x820, MASKDWORD);
+	val = odm_get_bb_regbu(dm, R_0x820, MASKDWORD);
 	rateinfo->tx_path_en_ofdm_2sts = (u8)((val & 0xf0) >> 4);
 	rateinfo->tx_path_en_ofdm_1sts = (u8)(val & 0xf);
 	/*OFDM Rx*/
-	rateinfo->rx_path_en_ofdm = (u8)odm_get_bb_reg(dm, R_0x824, 0xf0000);
+	rateinfo->rx_path_en_ofdm = (u8)odm_get_bb_regbu(dm, R_0x824, 0xf0000);
 
 	rateinfo->enable = 1;
 	rateinfo->mu_ratio_th = 30;
@@ -544,10 +544,10 @@ void phydm_mu_rsoml_decision(void *dm_void)
 		 rateinfo->pre_mu_ratio <= rateinfo->mu_ratio_th) {
 		PHYDM_DBG(dm, DBG_TXBF, "[MU RSOML] RSOML status remain\n");
 	} else if (mu_ratio > rateinfo->mu_ratio_th) {
-		odm_set_bb_reg(dm, R_0xc00, BIT(26), 0);
+		odm_set_bb_regbu(dm, R_0xc00, BIT(26), 0);
 		PHYDM_DBG(dm, DBG_TXBF, "[MU RSOML] RSOML OFF\n");
 	} else {
-		odm_set_bb_reg(dm, R_0xc00, BIT(26), 1);
+		odm_set_bb_regbu(dm, R_0xc00, BIT(26), 1);
 		PHYDM_DBG(dm, DBG_TXBF, "[MU RSOML] RSOML ON\n");
 	}
 
@@ -566,7 +566,7 @@ void phydm_mu_rsoml_decision(void *dm_void)
 			rateinfo->mu_been_iot = 0;
 		}
 	} else if (rateinfo->mu_been_iot == 1) {
-		if (odm_get_bb_reg(dm, R_0x824, 0xf0000) == 1) {
+		if (odm_get_bb_regbu(dm, R_0x824, 0xf0000) == 1) {
 			phydm_api_trx_mode(dm, BB_PATH_AB, BB_PATH_AB,
 					   BB_PATH_AUTO);
 			PHYDM_DBG(dm, DBG_TXBF, "[MU IOT] 22C IOT Restore\n");
@@ -591,75 +591,75 @@ void phydm_txbf_80p80_rfmode(void *dm_void, u8 su_bfee_cnt, u8 mu_bfee_cnt)
 	if (su_bfee_cnt > 0 || mu_bfee_cnt > 0) {
 		for (i = RF_PATH_A; i <= RF_PATH_D; i += 3) {
 			/*RF mode table write enable*/
-			odm_set_rf_reg(dm, (enum rf_path)i, RF_0xef, BIT(19),
+			odm_set_rf_regbu(dm, (enum rf_path)i, RF_0xef, BIT(19),
 				       0x1);
 			/*Select RX mode*/
-			odm_set_rf_reg(dm, (enum rf_path)i, RF_0x33, 0xF, 2);
+			odm_set_rf_regbu(dm, (enum rf_path)i, RF_0x33, 0xF, 2);
 			/*Set Table data*/
-			odm_set_rf_reg(dm, (enum rf_path)i, RF_0x3e, 0xfffff,
+			odm_set_rf_regbu(dm, (enum rf_path)i, RF_0x3e, 0xfffff,
 				       0x3fc);
 			/*Set Table data*/
-			odm_set_rf_reg(dm, (enum rf_path)i, RF_0x3f, 0xfffff,
+			odm_set_rf_regbu(dm, (enum rf_path)i, RF_0x3f, 0xfffff,
 				       0x280f7);
 			/*Select RX mode*/
-			odm_set_rf_reg(dm, (enum rf_path)i, RF_0x33, 0xF, 3);
+			odm_set_rf_regbu(dm, (enum rf_path)i, RF_0x33, 0xF, 3);
 			/*Set Table data*/
-			odm_set_rf_reg(dm, (enum rf_path)i, RF_0x3e, 0xfffff,
+			odm_set_rf_regbu(dm, (enum rf_path)i, RF_0x3e, 0xfffff,
 				       0x365);
 			/*Set Table data*/
-			odm_set_rf_reg(dm, (enum rf_path)i, RF_0x3f, 0xfffff,
+			odm_set_rf_regbu(dm, (enum rf_path)i, RF_0x3f, 0xfffff,
 				       0xafcf7);
 			/*RF mode table write disable*/
-			odm_set_rf_reg(dm, (enum rf_path)i, RF_0xef, BIT(19),
+			odm_set_rf_regbu(dm, (enum rf_path)i, RF_0xef, BIT(19),
 				       0x0);
 		}
 		for (i = RF_PATH_B; i <= RF_PATH_C; i++) {
 			/*RF mode table write enable*/
-			odm_set_rf_reg(dm, (enum rf_path)i, RF_0xef, BIT(19),
+			odm_set_rf_regbu(dm, (enum rf_path)i, RF_0xef, BIT(19),
 				       0x1);
 			/*Select RX mode*/
-			odm_set_rf_reg(dm, (enum rf_path)i, RF_0x33, 0xF, 2);
+			odm_set_rf_regbu(dm, (enum rf_path)i, RF_0x33, 0xF, 2);
 			/*Set Table data*/
-			odm_set_rf_reg(dm, (enum rf_path)i, RF_0x3f, 0xfffff,
+			odm_set_rf_regbu(dm, (enum rf_path)i, RF_0x3f, 0xfffff,
 				       0x280c7);
 			/*Set Table data*/
-			odm_set_rf_reg(dm, (enum rf_path)i, RF_0x3f, 0xfffff,
+			odm_set_rf_regbu(dm, (enum rf_path)i, RF_0x3f, 0xfffff,
 				       0x280c7);
 			/*Select RX mode*/
-			odm_set_rf_reg(dm, (enum rf_path)i, RF_0x33, 0xF, 3);
+			odm_set_rf_regbu(dm, (enum rf_path)i, RF_0x33, 0xF, 3);
 			/*Set Table data*/
-			odm_set_rf_reg(dm, (enum rf_path)i, RF_0x3e, 0xfffff,
+			odm_set_rf_regbu(dm, (enum rf_path)i, RF_0x3e, 0xfffff,
 				       0x365);
 			/*Set Table data*/
-			odm_set_rf_reg(dm, (enum rf_path)i, RF_0x3f, 0xfffff,
+			odm_set_rf_regbu(dm, (enum rf_path)i, RF_0x3f, 0xfffff,
 				       0xafcc7);
 			/*RF mode table write disable*/
-			odm_set_rf_reg(dm, (enum rf_path)i, RF_0xef, BIT(19),
+			odm_set_rf_regbu(dm, (enum rf_path)i, RF_0xef, BIT(19),
 				       0x0);
 		}
 	}
 	/*@if Nsts > Nc, don't apply V matrix*/
-	odm_set_bb_reg(dm, R_0x1e24, BIT(11), 1);
+	odm_set_bb_regbu(dm, R_0x1e24, BIT(11), 1);
 
 	if (su_bfee_cnt > 0 || mu_bfee_cnt > 0) {
 		/*@enable BB TxBF ant mapping register*/
-		odm_set_bb_reg(dm, R_0x1e24, BIT(28) | BIT29, 0x2);
-		odm_set_bb_reg(dm, R_0x1e24, BIT(30), 1);
+		odm_set_bb_regbu(dm, R_0x1e24, BIT(28) | BIT29, 0x2);
+		odm_set_bb_regbu(dm, R_0x1e24, BIT(30), 1);
 
 		/* logic mapping */
 		/* TX BF logic map and TX path en for Nsts = 1~2 */
-		odm_set_bb_reg(dm, R_0x820, 0xff0000, 0x33); /*seg0*/
-		odm_set_bb_reg(dm, R_0x824, 0xff00, 0xcc); /*seg1*/
-		odm_set_bb_reg(dm, R_0x1e30, 0xffff, 0xe4e4);
+		odm_set_bb_regbu(dm, R_0x820, 0xff0000, 0x33); /*seg0*/
+		odm_set_bb_regbu(dm, R_0x824, 0xff00, 0xcc); /*seg1*/
+		odm_set_bb_regbu(dm, R_0x1e30, 0xffff, 0xe4e4);
 
 	} else {
 		/*@Disable BB TxBF ant mapping register*/
-		odm_set_bb_reg(dm, R_0x1e24, BIT(28) | BIT29, 0x0);
-		odm_set_bb_reg(dm, R_0x1e24, BIT(31), 0);
+		odm_set_bb_regbu(dm, R_0x1e24, BIT(28) | BIT29, 0x0);
+		odm_set_bb_regbu(dm, R_0x1e24, BIT(31), 0);
 		/*@1SS~2ss A, AB*/
-		odm_set_bb_reg(dm, R_0x820, 0xff, 0x31); /*seg0*/
-		odm_set_bb_reg(dm, R_0x824, 0xff, 0xc8); /*seg1*/
-		odm_set_bb_reg(dm, R_0x1e2c, 0xffff, 0xe420);
+		odm_set_bb_regbu(dm, R_0x820, 0xff, 0x31); /*seg0*/
+		odm_set_bb_regbu(dm, R_0x824, 0xff, 0xc8); /*seg1*/
+		odm_set_bb_regbu(dm, R_0x1e2c, 0xffff, 0xe420);
 	}
 }
 #endif
@@ -671,16 +671,16 @@ void phydm_txbf_avoid_hang(void *dm_void)
 	
 	/* avoid CCK CCA hang when the BF mode */
 #ifdef PHYDM_IC_JGR3_SERIES_SUPPORT	
-	odm_set_bb_reg(dm, R_0x1e6c, 0x100000, 0x1);
+	odm_set_bb_regbu(dm, R_0x1e6c, 0x100000, 0x1);
 #endif
 
 	/* avoid CCK CCA hang when the BFee mode for 92F */
 #if (RTL8192F_SUPPORT == 1)
-	odm_set_bb_reg(dm, R_0xa70, 0xffff0000, 0x80ff);
+	odm_set_bb_regbu(dm, R_0xa70, 0xffff0000, 0x80ff);
 #endif
 }
 
-void phydm_bf_debug(void *dm_void, char input[][16], u32 *_used, char *output,
+void phydm_bf_debugbu(void *dm_void, char input[][16], u32 *_used, char *output,
 		    u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;

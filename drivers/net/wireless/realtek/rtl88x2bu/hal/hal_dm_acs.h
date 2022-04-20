@@ -60,8 +60,8 @@ void rtw_acs_version_dump(void *sel, _adapter *adapter);
 extern void phydm_ccx_monitor_trigger(void *p_dm_void, u16 monitor_time);
 extern void phydm_ccx_monitor_result(void *p_dm_void);
 
-#define GET_ACS_STATE(padapter)					(ATOMIC_READ(&GET_HAL_DATA(padapter)->acs.state))
-#define SET_ACS_STATE(padapter, set_state)			(ATOMIC_SET(&GET_HAL_DATA(padapter)->acs.state, set_state))
+#define GET_ACS_STATE(padapter)					(ATOMIC_READbu(&GET_HAL_DATA(padapter)->acs.state))
+#define SET_ACS_STATE(padapter, set_state)			(ATOMIC_SETbu(&GET_HAL_DATA(padapter)->acs.state, set_state))
 #define IS_ACS_ENABLE(padapter)					((GET_ACS_STATE(padapter) == ACS_ENABLE) ? _TRUE : _FALSE)
 
 enum ACS_STATE {
@@ -148,8 +148,8 @@ u8 rtw_acs_get_rsni(_adapter *adapter, s8 rcpi, u8 ch);
 
 #ifdef CONFIG_BACKGROUND_NOISE_MONITOR
 #define RTK_NOISE_MONITOR_VERSION	3
-#define GET_NM_STATE(padapter)					(ATOMIC_READ(&GET_HAL_DATA(padapter)->nm.state))
-#define SET_NM_STATE(padapter, set_state)			(ATOMIC_SET(&GET_HAL_DATA(padapter)->nm.state, set_state))
+#define GET_NM_STATE(padapter)					(ATOMIC_READbu(&GET_HAL_DATA(padapter)->nm.state))
+#define SET_NM_STATE(padapter, set_state)			(ATOMIC_SETbu(&GET_HAL_DATA(padapter)->nm.state, set_state))
 #define IS_NM_ENABLE(padapter)					((GET_NM_STATE(padapter) == NM_ENABLE) ? _TRUE : _FALSE)
 
 enum NM_STATE {

@@ -17,10 +17,10 @@
 
 #define RTW_CHPLAN_UNSPECIFIED 0xFF
 
-u8 rtw_chplan_get_default_regd(u8 id);
-bool rtw_chplan_is_empty(u8 id);
+u8 rtw_chplan_get_default_regdbu(u8 id);
+bool rtw_chplan_is_emptybu(u8 id);
 bool rtw_is_channel_plan_valid(u8 id);
-bool rtw_regsty_is_excl_chs(struct registry_priv *regsty, u8 ch);
+bool rtw_regsty_is_excl_chsbu(struct registry_priv *regsty, u8 ch);
 
 enum regd_src_t {
 	REGD_SRC_RTK_PRIV = 0, /* Regulatory settings from Realtek framework (Realtek defined or customized) */
@@ -34,7 +34,7 @@ extern const char *_regd_src_str[];
 #define regd_src_str(src) ((src) >= REGD_SRC_NUM ? _regd_src_str[REGD_SRC_NUM] : _regd_src_str[src])
 
 struct _RT_CHANNEL_INFO;
-u8 init_channel_set(_adapter *adapter);
+u8 init_channel_setbu(_adapter *adapter);
 bool rtw_chset_is_dfs_range(struct _RT_CHANNEL_INFO *chset, u32 hi, u32 lo);
 bool rtw_chset_is_dfs_ch(struct _RT_CHANNEL_INFO *chset, u8 ch);
 bool rtw_chset_is_dfs_chbw(struct _RT_CHANNEL_INFO *chset, u8 ch, u8 bw, u8 offset);
@@ -65,8 +65,8 @@ enum rtw_dfs_regd {
 	RTW_DFS_REGD_AUTO	= 0xFF, /* follow channel plan */
 };
 
-extern const char *_rtw_dfs_regd_str[];
-#define rtw_dfs_regd_str(region) (((region) >= RTW_DFS_REGD_NUM) ? _rtw_dfs_regd_str[RTW_DFS_REGD_NONE] : _rtw_dfs_regd_str[(region)])
+extern const char *_rtw_dfs_regd_strbu[];
+#define rtw_dfs_regd_strbu(region) (((region) >= RTW_DFS_REGD_NUM) ? _rtw_dfs_regd_strbu[RTW_DFS_REGD_NONE] : _rtw_dfs_regd_strbu[(region)])
 
 struct country_chplan {
 	char alpha2[2]; /* "00" means worldwide */
@@ -82,14 +82,14 @@ struct country_chplan {
 #define COUNTRY_CHPLAN_EN_11AC(_ent) 0
 #endif
 
-const struct country_chplan *rtw_get_chplan_from_country(const char *country_code);
+const struct country_chplan *rtw_get_chplan_from_countrybu(const char *country_code);
 
-void dump_country_chplan(void *sel, const struct country_chplan *ent);
-void dump_country_chplan_map(void *sel);
-void dump_chplan_id_list(void *sel);
+void dump_country_chplanbu(void *sel, const struct country_chplan *ent);
+void dump_country_chplanbu_map(void *sel);
+void dump_chplan_id_listbu(void *sel);
 #ifdef CONFIG_RTW_DEBUG
-void dump_chplan_test(void *sel);
+void dump_chplan_testbu(void *sel);
 #endif
-void dump_chplan_ver(void *sel);
+void dump_chplan_verbu(void *sel);
 
 #endif /* __RTW_CHPLAN_H__ */

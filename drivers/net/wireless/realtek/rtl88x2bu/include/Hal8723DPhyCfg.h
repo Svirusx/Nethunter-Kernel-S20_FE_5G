@@ -77,14 +77,14 @@ int PHY_RFConfig8723D(PADAPTER	Adapter);
 s32 PHY_MACConfig8723D(PADAPTER padapter);
 
 int
-PHY_ConfigRFWithParaFile_8723D(
+PHY_ConfigRFWithParaFilebu_8723D(
 		PADAPTER			Adapter,
 		u8				*pFileName,
 	enum rf_path				eRFPath
 );
 
 void
-PHY_SetTxPowerIndex_8723D(
+PHY_SetTxPowerIndexbu_8723D(
 		PADAPTER			Adapter,
 		u32					PowerIndex,
 		enum rf_path			RFPath,

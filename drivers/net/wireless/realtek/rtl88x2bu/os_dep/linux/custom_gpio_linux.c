@@ -39,11 +39,11 @@
 #define GPIO_WIFI_PWDN -1
 #endif /* !GPIO_WIFI_RESET */
 #ifdef CONFIG_GSPI_HCI
-extern unsigned int oob_irq;
+extern unsigned int oob_irqbu;
 #endif /* CONFIG_GSPI_HCI */
 
 #ifdef CONFIG_SDIO_HCI
-extern int rtw_mp_mode;
+extern int rtw_mp_modebu;
 #else /* !CONFIG_SDIO_HCI */
 #endif /* !CONFIG_SDIO_HCI */
 
@@ -51,12 +51,12 @@ int rtw_wifi_gpio_init(void)
 {
 #ifdef CONFIG_GSPI_HCI
 	if (GPIO_WIFI_IRQ > 0) {
-		gpio_request(GPIO_WIFI_IRQ, "oob_irq");
+		gpio_request(GPIO_WIFI_IRQ, "oob_irqbu");
 		gpio_direction_input(GPIO_WIFI_IRQ);
 
-		oob_irq = gpio_to_irq(GPIO_WIFI_IRQ);
+		oob_irqbu = gpio_to_irq(GPIO_WIFI_IRQ);
 
-		RTW_INFO("%s oob_irq:%d\n", __func__, oob_irq);
+		RTW_INFO("%s oob_irqbu:%d\n", __func__, oob_irqbu);
 	}
 #endif
 	if (GPIO_WIFI_RESET > 0)
@@ -66,7 +66,7 @@ int rtw_wifi_gpio_init(void)
 
 #ifdef CONFIG_SDIO_HCI
 #if (defined(CONFIG_RTL8723B)) && (MP_DRIVER == 1)
-	if (rtw_mp_mode == 1) {
+	if (rtw_mp_modebu == 1) {
 		RTW_INFO("%s GPIO_BT_RESET pin special for mp_test\n", __func__);
 		if (GPIO_BT_RESET > 0)
 			gpio_request(GPIO_BT_RESET , "bt_rst");
@@ -89,7 +89,7 @@ int rtw_wifi_gpio_deinit(void)
 
 #ifdef CONFIG_SDIO_HCI
 #if (defined(CONFIG_RTL8723B)) && (MP_DRIVER == 1)
-	if (rtw_mp_mode == 1) {
+	if (rtw_mp_modebu == 1) {
 		RTW_INFO("%s GPIO_BT_RESET pin special for mp_test\n", __func__);
 		if (GPIO_BT_RESET > 0)
 			gpio_free(GPIO_BT_RESET);
@@ -129,7 +129,7 @@ void rtw_wifi_gpio_wlan_ctrl(int onoff)
 #ifdef CONFIG_SDIO_HCI
 #if (defined(CONFIG_RTL8723B)) && (MP_DRIVER == 1)
 	case WLAN_BT_PWDN_OFF:
-		if (rtw_mp_mode == 1) {
+		if (rtw_mp_modebu == 1) {
 			RTW_INFO("%s: call customer specific GPIO to set wifi power down pin to 0\n",
 				 __FUNCTION__);
 			if (GPIO_BT_RESET > 0)
@@ -138,7 +138,7 @@ void rtw_wifi_gpio_wlan_ctrl(int onoff)
 		break;
 
 	case WLAN_BT_PWDN_ON:
-		if (rtw_mp_mode == 1) {
+		if (rtw_mp_modebu == 1) {
 			RTW_INFO("%s: callc customer specific GPIO to set wifi power down pin to 1 %x\n",
 				 __FUNCTION__, GPIO_BT_RESET);
 
@@ -267,18 +267,18 @@ void rtw_wifi_gpio_wlan_ctrl(int onoff)
 #include <mach/iomux.h>
 
 #define GPIO_WIFI_IRQ		RK30_PIN2_PC2
-extern unsigned int oob_irq;
+extern unsigned int oob_irqbu;
 int rtw_wifi_gpio_init(void)
 {
 #ifdef CONFIG_GSPI_HCI
 	if (GPIO_WIFI_IRQ > 0) {
 		rk30_mux_api_set(GPIO2C2_LCDC1DATA18_SMCBLSN1_HSADCDATA5_NAME, GPIO2C_GPIO2C2);/* jacky_test */
-		gpio_request(GPIO_WIFI_IRQ, "oob_irq");
+		gpio_request(GPIO_WIFI_IRQ, "oob_irqbu");
 		gpio_direction_input(GPIO_WIFI_IRQ);
 
-		oob_irq = gpio_to_irq(GPIO_WIFI_IRQ);
+		oob_irqbu = gpio_to_irq(GPIO_WIFI_IRQ);
 
-		RTW_INFO("%s oob_irq:%d\n", __func__, oob_irq);
+		RTW_INFO("%s oob_irqbu:%d\n", __func__, oob_irqbu);
 	}
 #endif
 	return 0;

@@ -19,9 +19,9 @@
 #include "../rtl8822b.h"	/* rtl8822b_cal_txdesc_chksum() and etc. */
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2, 5, 0)) || (LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 18))
-#define usb_write_port_complete_not_xmitframe(purb, regs)	usb_write_port_complete_not_xmitframe(purb)
+#define usb_write_portbu_complete_not_xmitframe(purb, regs)	usb_write_portbu_complete_not_xmitframe(purb)
 #endif
-static void usb_write_port_complete_not_xmitframe(struct urb *purb, struct pt_regs *regs)
+static void usb_write_portbu_complete_not_xmitframe(struct urb *purb, struct pt_regs *regs)
 {
 
 	if (purb->status == 0) {
@@ -54,7 +54,7 @@ check_completion:
 	usb_free_urb(purb);
 }
 
-static u32 usb_write_port_not_xmitframe(struct dvobj_priv *d, u8 addr, u32 cnt, u8 *wmem)
+static u32 usb_write_portbu_not_xmitframe(struct dvobj_priv *d, u8 addr, u32 cnt, u8 *wmem)
 {
 	struct dvobj_priv *pobj = (struct dvobj_priv *)d;
 	PADAPTER padapter = dvobj_get_primary_adapter(pobj);
@@ -73,13 +73,13 @@ static u32 usb_write_port_not_xmitframe(struct dvobj_priv *d, u8 addr, u32 cnt, 
 	}
 
 	/* translate DMA FIFO addr to pipehandle */
-	pipe = ffaddr2pipehdl(pdvobj, addr);
+	pipe = ffaddr2pipehdlbu(pdvobj, addr);
 
 
 	usb_fill_bulk_urb(purb, pusbd, pipe,
 			  wmem,
 			  cnt,
-			  usb_write_port_complete_not_xmitframe,
+			  usb_write_portbu_complete_not_xmitframe,
 			  padapter);
 
 
@@ -104,7 +104,7 @@ static u32 usb_write_port_not_xmitframe(struct dvobj_priv *d, u8 addr, u32 cnt, 
 		}
 		#endif
 	} else {
-		RTW_INFO("usb_write_port, status=%d\n", status);
+		RTW_INFO("usb_write_portbu, status=%d\n", status);
 
 		switch (status) {
 		case -ENODEV:
@@ -152,9 +152,9 @@ static u8 usb_write_data_not_xmitframe(void *d, u8 *pBuf, u32 size, u8 qsel)
 			return _FALSE;
 
 		if (add_pkt_offset == 1)
-			_rtw_memcpy(buf + desclen + PACKET_OFFSET_SZ , pBuf, size);
+			_rtw_memcpybu(buf + desclen + PACKET_OFFSET_SZ , pBuf, size);
 		else
-			_rtw_memcpy(buf + desclen, pBuf, size);
+			_rtw_memcpybu(buf + desclen, pBuf, size);
 
 		SET_TX_DESC_TXPKTSIZE_8822B(buf, size);
 		if (add_pkt_offset == 1) {
@@ -169,7 +169,7 @@ static u8 usb_write_data_not_xmitframe(void *d, u8 *pBuf, u32 size, u8 qsel)
 		if (!buf)
 			return _FALSE;
 
-		_rtw_memcpy(buf + desclen, pBuf, size);
+		_rtw_memcpybu(buf + desclen, pBuf, size);
 
 		SET_TX_DESC_TXPKTSIZE_8822B(buf, size);
 	} else {
@@ -183,7 +183,7 @@ static u8 usb_write_data_not_xmitframe(void *d, u8 *pBuf, u32 size, u8 qsel)
 	rtl8822b_cal_txdesc_chksum(padapter, buf);
 
 	addr = rtw_halmac_usb_get_bulkout_id(d, buf, len);
-	ret = usb_write_port_not_xmitframe(d, addr, len , buf);
+	ret = usb_write_portbu_not_xmitframe(d, addr, len , buf);
 	if (_SUCCESS == ret) {
 		ret = _TRUE;
 	} else {
@@ -221,17 +221,17 @@ static u8 usb_write_data_rsvd_page_normal(void *d, u8 *pBuf, u32 size)
 
 	txdesoffset = TXDESC_OFFSET;
 	buf = pcmdframe->buf_addr;
-	_rtw_memcpy((buf + txdesoffset), pBuf, size); /* shift desclen */
+	_rtw_memcpybu((buf + txdesoffset), pBuf, size); /* shift desclen */
 
 	/* update attribute */
 	pattrib = &pcmdframe->attrib;
-	update_mgntframe_attrib(padapter, pattrib);
+	update_mgntframe_attribbu(padapter, pattrib);
 	pattrib->qsel = HALMAC_TXDESC_QSEL_BEACON;
 	pattrib->pktlen = size;
 	pattrib->last_txcmdsz = size;
 
-	/* fill tx desc in dump_mgntframe */
-	dump_mgntframe(padapter, pcmdframe);
+	/* fill tx desc in dump_mgntframebu */
+	dump_mgntframebu(padapter, pcmdframe);
 
 	return _TRUE;
 }
@@ -252,7 +252,7 @@ static u8 usb_write_data_h2c_normal(void *d, u8 *pBuf, u32 size)
 		return _FALSE;
 	}
 
-	pcmdframe = alloc_mgtxmitframe(pxmitpriv);
+	pcmdframe = alloc_mgtxmitframebu(pxmitpriv);
 
 	if (pcmdframe == NULL) {
 		RTW_INFO("%s: alloc cmd frame fail!\n", __func__);
@@ -261,17 +261,17 @@ static u8 usb_write_data_h2c_normal(void *d, u8 *pBuf, u32 size)
 
 	txdesoffset = TXDESC_SIZE;
 	buf = pcmdframe->buf_addr;
-	_rtw_memcpy(buf + txdesoffset, pBuf, size); /* shift desclen */
+	_rtw_memcpybu(buf + txdesoffset, pBuf, size); /* shift desclen */
 
 	/* update attribute */
 	pattrib = &pcmdframe->attrib;
-	update_mgntframe_attrib(padapter, pattrib);
+	update_mgntframe_attribbu(padapter, pattrib);
 	pattrib->qsel = HALMAC_TXDESC_QSEL_H2C_CMD;
 	pattrib->pktlen = size;
 	pattrib->last_txcmdsz = size;
 
-	/* fill tx desc in dump_mgntframe */
-	dump_mgntframe(padapter, pcmdframe);
+	/* fill tx desc in dump_mgntframebu */
+	dump_mgntframebu(padapter, pcmdframe);
 
 	return _TRUE;
 

@@ -15,7 +15,7 @@
 #ifndef _RTL8822BU_H_
 #define _RTL8822BU_H_
 
-#include <drv_types.h>		/* PADAPTER, basic_types.h, rtw_xmit.h and etc. */
+#include <drv_types.h>		/* PADAPTER, basic_types.h, rtw_xmitbu.h and etc. */
 
 #define USB_AGG_EN_8822B			BIT(7)
 

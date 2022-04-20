@@ -258,7 +258,7 @@ u8 rtw_hal_dl_mcc_fw_rsvd_page(_adapter *adapter, u8 *pframe, u16 *index
 	, u8 tx_desc, u32 page_size, u8 *total_page_num, RSVDPAGE_LOC *rsvd_page_loc, u8 *page_num);
 
 /* handle C2H */
-void rtw_hal_mcc_c2h_handler(PADAPTER padapter, u8 buflen, u8 *tmpBuf);
+void rtw_hal_mcc_c2h_handlerbu(PADAPTER padapter, u8 buflen, u8 *tmpBuf);
 
 /* switch channel successfully or not */
 void rtw_hal_mcc_sw_status_check(PADAPTER padapter);
@@ -279,13 +279,13 @@ u8 rtw_hal_set_mcc_setting_scan_start(PADAPTER padapter);
 
 u8 rtw_hal_set_mcc_setting_scan_complete(PADAPTER padapter);
 
-u8 rtw_hal_set_mcc_setting_start_bss_network(PADAPTER padapter, u8 chbw_grouped);
+u8 rtw_hal_set_mcc_setting_start_bss_networkbu(PADAPTER padapter, u8 chbw_grouped);
 
 u8 rtw_hal_set_mcc_setting_disconnect(PADAPTER padapter);
 
 u8 rtw_hal_set_mcc_setting_join_done_chk_ch(PADAPTER padapter);
 
-u8 rtw_hal_set_mcc_setting_chk_start_clnt_join(PADAPTER padapter, u8 *ch, u8 *bw, u8 *offset, u8 chbw_allow);
+u8 rtw_hal_set_mcc_setting_chk_start_clnt_joinbu(PADAPTER padapter, u8 *ch, u8 *bw, u8 *offset, u8 chbw_allow);
 
 void rtw_hal_dump_mcc_info(void *sel, struct dvobj_priv *dvobj);
 

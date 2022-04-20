@@ -51166,16 +51166,16 @@
 
 /* 2 REG_P2P_RX_BCN_NOA			(Offset 0x06E0) */
 
-#define BIT_SHIFT_P2P_OUI_TYPE 0
-#define BIT_MASK_P2P_OUI_TYPE 0xff
-#define BIT_P2P_OUI_TYPE(x)                                                    \
-	(((x) & BIT_MASK_P2P_OUI_TYPE) << BIT_SHIFT_P2P_OUI_TYPE)
-#define BITS_P2P_OUI_TYPE (BIT_MASK_P2P_OUI_TYPE << BIT_SHIFT_P2P_OUI_TYPE)
-#define BIT_CLEAR_P2P_OUI_TYPE(x) ((x) & (~BITS_P2P_OUI_TYPE))
-#define BIT_GET_P2P_OUI_TYPE(x)                                                \
-	(((x) >> BIT_SHIFT_P2P_OUI_TYPE) & BIT_MASK_P2P_OUI_TYPE)
-#define BIT_SET_P2P_OUI_TYPE(x, v)                                             \
-	(BIT_CLEAR_P2P_OUI_TYPE(x) | BIT_P2P_OUI_TYPE(v))
+#define BIT_SHIFT_P2P_OUIbu_TYPE 0
+#define BIT_MASK_P2P_OUIbu_TYPE 0xff
+#define BIT_P2P_OUIbu_TYPE(x)                                                    \
+	(((x) & BIT_MASK_P2P_OUIbu_TYPE) << BIT_SHIFT_P2P_OUIbu_TYPE)
+#define BITS_P2P_OUIbu_TYPE (BIT_MASK_P2P_OUIbu_TYPE << BIT_SHIFT_P2P_OUIbu_TYPE)
+#define BIT_CLEAR_P2P_OUIbu_TYPE(x) ((x) & (~BITS_P2P_OUIbu_TYPE))
+#define BIT_GET_P2P_OUIbu_TYPE(x)                                                \
+	(((x) >> BIT_SHIFT_P2P_OUIbu_TYPE) & BIT_MASK_P2P_OUIbu_TYPE)
+#define BIT_SET_P2P_OUIbu_TYPE(x, v)                                             \
+	(BIT_CLEAR_P2P_OUIbu_TYPE(x) | BIT_P2P_OUIbu_TYPE(v))
 
 #endif
 

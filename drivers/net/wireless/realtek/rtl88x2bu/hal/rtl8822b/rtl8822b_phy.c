@@ -74,12 +74,12 @@ u8 rtl8822b_phy_init_mac_register(PADAPTER adapter)
 
 	ret = _FALSE;
 #ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
-	res = phy_ConfigMACWithParaFile(adapter, PHY_FILE_MAC_REG);
+	res = phy_ConfigMACWithParaFilebu(adapter, PHY_FILE_MAC_REG);
 	if (_SUCCESS == res)
 		ret = _TRUE;
 #endif /* CONFIG_LOAD_PHY_PARA_FROM_FILE */
 	if (_FALSE == ret) {
-		status = odm_config_mac_with_header_file(&hal->odmpriv);
+		status = odm_config_mac_with_header_filebu(&hal->odmpriv);
 		if (HAL_STATUS_SUCCESS == status)
 			ret = _TRUE;
 	}
@@ -101,12 +101,12 @@ static u8 _init_bb_reg(PADAPTER Adapter)
 	 */
 	ret = _FALSE;
 #ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
-	res = phy_ConfigBBWithParaFile(Adapter, PHY_FILE_PHY_REG, CONFIG_BB_PHY_REG);
+	res = phy_ConfigBBWithParaFilebu(Adapter, PHY_FILE_PHY_REG, CONFIG_BB_PHY_REG);
 	if (_SUCCESS == res)
 		ret = _TRUE;
 #endif
 	if (_FALSE == ret) {
-		status = odm_config_bb_with_header_file(&hal->odmpriv, CONFIG_BB_PHY_REG);
+		status = odm_config_bb_with_header_filebu(&hal->odmpriv, CONFIG_BB_PHY_REG);
 		if (HAL_STATUS_SUCCESS == status)
 			ret = _TRUE;
 	}
@@ -128,7 +128,7 @@ static u8 _init_bb_reg(PADAPTER Adapter)
 			ret = _TRUE;
 #endif
 		if (_FALSE == ret) {
-			status = odm_config_bb_with_header_file(&hal->odmpriv, CONFIG_BB_PHY_REG_MP);
+			status = odm_config_bb_with_header_filebu(&hal->odmpriv, CONFIG_BB_PHY_REG_MP);
 			if (HAL_STATUS_SUCCESS == status)
 				ret = _TRUE;
 		}
@@ -144,12 +144,12 @@ static u8 _init_bb_reg(PADAPTER Adapter)
 	 */
 	ret = _FALSE;
 #ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
-	res = phy_ConfigBBWithParaFile(Adapter, PHY_FILE_AGC_TAB, CONFIG_BB_AGC_TAB);
+	res = phy_ConfigBBWithParaFilebu(Adapter, PHY_FILE_AGC_TAB, CONFIG_BB_AGC_TAB);
 	if (_SUCCESS == res)
 		ret = _TRUE;
 #endif
 	if (_FALSE == ret) {
-		status = odm_config_bb_with_header_file(&hal->odmpriv, CONFIG_BB_AGC_TAB);
+		status = odm_config_bb_with_header_filebu(&hal->odmpriv, CONFIG_BB_AGC_TAB);
 		if (HAL_STATUS_SUCCESS == status)
 			ret = _TRUE;
 	}
@@ -173,7 +173,7 @@ static u8 init_bb_reg(PADAPTER adapter)
 	 */
 	ret = _init_bb_reg(adapter);
 
-	if (rtw_phydm_set_crystal_cap(adapter, hal->crystal_cap) == _FALSE) {
+	if (rtw_phydm_set_crystal_capbu(adapter, hal->crystal_cap) == _FALSE) {
 		RTW_ERR("Init crystal_cap failed\n");
 		rtw_warn_on(1);
 		ret = _FALSE;
@@ -223,12 +223,12 @@ static u8 _init_rf_reg(PADAPTER adapter)
 
 		ret = _FALSE;
 #ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
-		res = PHY_ConfigRFWithParaFile(adapter, regfile, phydm_path);
+		res = PHY_ConfigRFWithParaFilebu(adapter, regfile, phydm_path);
 		if (_SUCCESS == res)
 			ret = _TRUE;
 #endif
 		if (_FALSE == ret) {
-			status = odm_config_rf_with_header_file(&hal->odmpriv, CONFIG_RF_RADIO, phydm_path);
+			status = odm_config_rf_with_header_filebu(&hal->odmpriv, CONFIG_RF_RADIO, phydm_path);
 			if (HAL_STATUS_SUCCESS != status)
 				goto exit;
 #if 0 /* Remove because coverity check fail */
@@ -242,12 +242,12 @@ static u8 _init_rf_reg(PADAPTER adapter)
 	 */
 	ret = _FALSE;
 #ifdef CONFIG_LOAD_PHY_PARA_FROM_FILE
-	res = PHY_ConfigRFWithTxPwrTrackParaFile(adapter, PHY_FILE_TXPWR_TRACK);
+	res = PHY_ConfigRFWithTxPwrTrackParaFilebu(adapter, PHY_FILE_TXPWR_TRACK);
 	if (_SUCCESS == res)
 		ret = _TRUE;
 #endif
 	if (_FALSE == ret) {
-		status = odm_config_rf_with_tx_pwr_track_header_file(&hal->odmpriv);
+		status = odm_config_rf_with_tx_pwr_track_header_filebu(&hal->odmpriv);
 		if (HAL_STATUS_SUCCESS != status) {
 			RTW_INFO("%s: Write PwrTrack Table Fail!\n", __FUNCTION__);
 			goto exit;
@@ -431,14 +431,14 @@ static void init_phydm_cominfo(PADAPTER adapter)
 	hal = GET_HAL_DATA(adapter);
 	p_dm_odm = &hal->odmpriv;
 
-	Init_ODM_ComInfo(adapter);
+	Init_ODM_ComInfobu(adapter);
 
-	odm_cmn_info_init(p_dm_odm, ODM_CMNINFO_PACKAGE_TYPE, hal->PackageType);
-	odm_cmn_info_init(p_dm_odm, ODM_CMNINFO_IC_TYPE, ODM_RTL8822B);
+	odm_cmn_info_initbu(p_dm_odm, ODM_CMNINFO_PACKAGE_TYPE, hal->PackageType);
+	odm_cmn_info_initbu(p_dm_odm, ODM_CMNINFO_IC_TYPE, ODM_RTL8822B);
 
 	RTW_INFO("%s: Fv=%d Cv=%d\n", __FUNCTION__, hal->version_id.VendorType, hal->version_id.CUTVersion);
-	odm_cmn_info_init(p_dm_odm, ODM_CMNINFO_FAB_VER, hal->version_id.VendorType);
-	odm_cmn_info_init(p_dm_odm, ODM_CMNINFO_CUT_VER, hal->version_id.CUTVersion);
+	odm_cmn_info_initbu(p_dm_odm, ODM_CMNINFO_FAB_VER, hal->version_id.VendorType);
+	odm_cmn_info_initbu(p_dm_odm, ODM_CMNINFO_CUT_VER, hal->version_id.CUTVersion);
 
 }
 
@@ -447,19 +447,19 @@ void rtl8822b_phy_init_dm_priv(PADAPTER adapter)
 	struct dm_struct *podmpriv = adapter_to_phydm(adapter);
 
 	init_phydm_cominfo(adapter);
-	odm_init_all_timers(podmpriv);
+	odm_init_all_timersbu(podmpriv);
 }
 
 void rtl8822b_phy_deinit_dm_priv(PADAPTER adapter)
 {
 	struct dm_struct *podmpriv = adapter_to_phydm(adapter);
 
-	odm_cancel_all_timers(podmpriv);
+	odm_cancel_all_timersbu(podmpriv);
 }
 
 void rtl8822b_phy_init_haldm(PADAPTER adapter)
 {
-	rtw_phydm_init(adapter);
+	rtw_phydm_initbu(adapter);
 }
 
 static void check_rxfifo_full(PADAPTER adapter)
@@ -504,7 +504,7 @@ void rtl8822b_phy_haldm_watchdog(PADAPTER adapter)
 
 #ifdef CONFIG_LPS
 	bFwCurrentInPSMode = adapter_to_pwrctl(adapter)->bFwCurrentInPSMode;
-	rtw_hal_get_hwreg(adapter, HW_VAR_FWLPS_RF_ON, &bFwPSAwake);
+	rtw_hal_get_hwregbu(adapter, HW_VAR_FWLPS_RF_ON, &bFwPSAwake);
 #endif /* CONFIG_LPS */
 
 #ifdef CONFIG_P2P_PS
@@ -531,7 +531,7 @@ void rtl8822b_phy_haldm_watchdog(PADAPTER adapter)
 
 		for (i = 0; i < dvobj->iface_nums; i++) {
 			iface = dvobj->padapters[i];
-			if (pwrpriv->current_lps_hw_port_id == rtw_hal_get_port(iface)) {
+			if (pwrpriv->current_lps_hw_port_id == rtw_hal_get_portbu(iface)) {
 				current_lps_iface = iface;
 				rtw_lps_rfon_ctrl(current_lps_iface, rf_on);
 				break;
@@ -557,7 +557,7 @@ void rtl8822b_phy_haldm_watchdog(PADAPTER adapter)
 	goto skip_dm;
 #endif
 
-	rtw_phydm_watchdog(adapter, in_lps);
+	rtw_phydm_watchdogbubu(adapter, in_lps);
 
 
 skip_dm:
@@ -652,19 +652,19 @@ void rtl8822b_write_rf_reg(PADAPTER adapter, enum rf_path path, u32 addr, u32 ma
 static void set_tx_power_level_by_path(PADAPTER adapter, u8 channel, u8 path)
 {
 	PHAL_DATA_TYPE hal = GET_HAL_DATA(adapter);
-	u8 under_survey_ch = phy_check_under_survey_ch(adapter);
+	u8 under_survey_ch = phy_check_under_survey_chbu(adapter);
 	u8 under_24g = (hal->current_band_type == BAND_ON_2_4G);
 
 	if (under_24g)
-		phy_set_tx_power_index_by_rate_section(adapter, path, channel, CCK);
+		phy_set_tx_power_index_by_rate_sectionbu(adapter, path, channel, CCK);
 
-	phy_set_tx_power_index_by_rate_section(adapter, path, channel, OFDM);
+	phy_set_tx_power_index_by_rate_sectionbu(adapter, path, channel, OFDM);
 
 	if (!under_survey_ch) {
-		phy_set_tx_power_index_by_rate_section(adapter, path, channel, HT_MCS0_MCS7);
-		phy_set_tx_power_index_by_rate_section(adapter, path, channel, HT_MCS8_MCS15);
-		phy_set_tx_power_index_by_rate_section(adapter, path, channel, VHT_1SSMCS0_1SSMCS9);
-		phy_set_tx_power_index_by_rate_section(adapter, path, channel, VHT_2SSMCS0_2SSMCS9);
+		phy_set_tx_power_index_by_rate_sectionbu(adapter, path, channel, HT_MCS0_MCS7);
+		phy_set_tx_power_index_by_rate_sectionbu(adapter, path, channel, HT_MCS8_MCS15);
+		phy_set_tx_power_index_by_rate_sectionbu(adapter, path, channel, VHT_1SSMCS0_1SSMCS9);
+		phy_set_tx_power_index_by_rate_sectionbu(adapter, path, channel, VHT_2SSMCS0_2SSMCS9);
 	}
 }
 
@@ -698,7 +698,7 @@ void rtl8822b_set_tx_power_index(PADAPTER adapter, u32 powerindex, enum rf_path 
 		goto exit;
 	}
 
-	rate = MRateToHwRate(rate);
+	rate = MRateToHwRatebu(rate);
 
 	/*
 	* For 8822B, phydm api use 4 bytes txagc value
@@ -962,9 +962,9 @@ void rtl8822b_switch_chnl_and_set_bw(PADAPTER adapter)
 			else
 				rtw_btcoex_switchband_notify(_FALSE, hal->current_band_type);
 		} else
-			rtw_btcoex_wifionly_switchband_notify(adapter);
+			rtw_btcoex_wifionly_switchband_notifybu(adapter);
 #else /* !CONFIG_BT_COEXIST */
-		rtw_btcoex_wifionly_switchband_notify(adapter);
+		rtw_btcoex_wifionly_switchband_notifybu(adapter);
 #endif /* CONFIG_BT_COEXIST */
 	}
 
@@ -980,11 +980,11 @@ void rtl8822b_switch_chnl_and_set_bw(PADAPTER adapter)
 	}
 #endif
 
-	phydm_config_kfree(p_dm_odm, hal->current_channel);
+	phydm_config_kfreebu(p_dm_odm, hal->current_channel);
 
 	/* TX Power Setting */
-	odm_clear_txpowertracking_state(p_dm_odm);
-	rtw_hal_set_tx_power_level(adapter, hal->current_channel);
+	odm_clear_txpowertracking_statebu(p_dm_odm);
+	rtw_hal_set_tx_power_levelbu(adapter, hal->current_channel);
 
 	/* IQK */
 	if ((hal->bNeedIQK == _TRUE)
@@ -1032,7 +1032,7 @@ void rtl8822b_handle_sw_chnl_and_set_bw(
 	/* skip switch channel operation for current channel & ChannelNum(will be switch) are the same */
 	if (bSwitchChannel) {
 		if (hal->current_channel != ChannelNum) {
-			if (HAL_IsLegalChannel(Adapter, ChannelNum))
+			if (HAL_IsLegalChannelbu(Adapter, ChannelNum))
 				hal->bSwChnl = _TRUE;
 			else
 				return;
@@ -1380,7 +1380,7 @@ static void _sounding_config_mu(PADAPTER adapter, struct beamformee_entry *bfee,
 
 			is_bitmap_ready = (val32 & BIT(15)) ? _TRUE : _FALSE;
 			i++;
-			rtw_udelay_os(5);
+			rtw_udelay_osbu(5);
 		} while ((_FALSE == is_bitmap_ready) && (i < 100));
 
 		bitmap = (u16)(val32 & 0x3FFF);
@@ -1791,7 +1791,7 @@ static void _config_beamformee_mu(PADAPTER adapter, struct beamformee_entry *bfe
 
 	/* <tynli_mark> <TODO> Need to set timer 2015.12.23 */
 	/* Special for plugfest */
-	rtw_mdelay_os(50); /* wait for 4-way handshake ending */
+	rtw_mdelay_osbu(50); /* wait for 4-way handshake ending */
 	rtw_bf_send_vht_gid_mgnt_packet(adapter, bfee->mac_addr, bfee->gid_valid, bfee->user_position);
 }
 
@@ -2118,8 +2118,8 @@ void rtl8822b_phy_bf_set_gid_table(PADAPTER adapter,
 		RTW_INFO("%s: Cannot find BFer entry!!\n", __func__);
 		return;
 	}
-	_rtw_memcpy(bfer->gid_valid, bfer_info->gid_valid, 8);
-	_rtw_memcpy(bfer->user_position, bfer_info->user_position, 16);
+	_rtw_memcpybu(bfer->gid_valid, bfer_info->gid_valid, 8);
+	_rtw_memcpybu(bfer->user_position, bfer_info->user_position, 16);
 
 	info = GET_BEAMFORM_INFO(adapter);
 	info->bSetBFHwConfigInProgess = _TRUE;

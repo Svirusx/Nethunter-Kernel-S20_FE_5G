@@ -43,14 +43,14 @@ void phydm_get_read_counter_8822b(struct dm_struct *dm)
 	u32 counter = 0x0, rf_reg;
 
 	while (1) {
-		rf_reg = odm_get_rf_reg(dm, RF_PATH_A, RF_0x8, MASK20BITS);
+		rf_reg = odm_get_rf_regbu(dm, RF_PATH_A, RF_0x8, MASK20BITS);
 		if (rf_reg == 0xabcde || counter > 20000)
 			break;
 		counter++;
-		ODM_delay_us(10);
+		ODM_delay_usbu(10);
 	}
 
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x8, MASK20BITS, 0x0);
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x8, MASK20BITS, 0x0);
 	RF_DBG(dm, DBG_RF_IQK, "[IQK]counter = %d\n", counter);
 }
 
@@ -64,7 +64,7 @@ void do_iqk_8822b(void *dm_void, u8 delta_thermal_index, u8 thermal_value,
 	struct dm_iqk_info *iqk = &dm->IQK_info;
 
 	dm->rf_calibrate_info.thermal_value_iqk = thermal_value;
-	halrf_segment_iqk_trigger(dm, true, iqk->segment_iqk);
+	halrf_segment_iqk_triggerbu(dm, true, iqk->segment_iqk);
 }
 #else
 /*Originally config->do_iqk is hooked phy_iq_calibrate_8822b*/
@@ -76,7 +76,7 @@ void do_iqk_8822b(void *dm_void, u8 delta_thermal_index, u8 thermal_value,
 	struct dm_iqk_info *iqk = &dm->IQK_info;
 	boolean is_recovery = (boolean)delta_thermal_index;
 
-	halrf_segment_iqk_trigger(dm, true, iqk->segment_iqk);
+	halrf_segment_iqk_triggerbu(dm, true, iqk->segment_iqk);
 }
 #endif
 
@@ -85,13 +85,13 @@ u32 _iqk_ltec_read_8822b(struct dm_struct *dm, u16 reg_addr)
 	u32 j = 0;
 
 	/*wait for ready bit before access 0x1700*/
-	odm_write_4byte(dm, 0x1700, 0x800f0000 | reg_addr);
+	odm_write_4bytebu(dm, 0x1700, 0x800f0000 | reg_addr);
 
 	do {
 		j++;
-	} while (((odm_read_1byte(dm, 0x1703) & BIT(5)) == 0) && (j < 30000));
+	} while (((odm_read_1bytebu(dm, 0x1703) & BIT(5)) == 0) && (j < 30000));
 
-	return odm_read_4byte(dm, 0x1708); /*get read data*/
+	return odm_read_4bytebu(dm, 0x1708); /*get read data*/
 }
 
 void _iqk_ltec_write_8822b(struct dm_struct *dm, u16 reg_addr, u32 bit_mask,
@@ -102,14 +102,14 @@ void _iqk_ltec_write_8822b(struct dm_struct *dm, u16 reg_addr, u32 bit_mask,
 	if (bit_mask == 0x0)
 		return;
 	if (bit_mask == 0xffffffff) {
-		odm_write_4byte(dm, 0x1704, reg_value); /*put write data*/
+		odm_write_4bytebu(dm, 0x1704, reg_value); /*put write data*/
 
 		/*wait for ready bit before access 0x1700*/
 		do {
 			j++;
-		} while (((odm_read_1byte(dm, 0x1703) & BIT(5)) == 0) && (j < 30000));
+		} while (((odm_read_1bytebu(dm, 0x1703) & BIT(5)) == 0) && (j < 30000));
 
-		odm_write_4byte(dm, 0x1700, 0xc00f0000 | reg_addr);
+		odm_write_4bytebu(dm, 0x1700, 0xc00f0000 | reg_addr);
 	} else {
 		for (i = 0; i <= 31; i++) {
 			if (((bit_mask >> i) & 0x1) == 0x1) {
@@ -122,14 +122,14 @@ void _iqk_ltec_write_8822b(struct dm_struct *dm, u16 reg_addr, u32 bit_mask,
 		val = _iqk_ltec_read_8822b(dm, reg_addr);
 		val = (val & (~bit_mask)) | (reg_value << bitpos);
 
-		odm_write_4byte(dm, 0x1704, val); /*put write data*/
+		odm_write_4bytebu(dm, 0x1704, val); /*put write data*/
 
 		/*wait for ready bit before access 0x1700*/
 		do {
 			j++;
-		} while (((odm_read_1byte(dm, 0x1703) & BIT(5)) == 0) && (j < 30000));
+		} while (((odm_read_1bytebu(dm, 0x1703) & BIT(5)) == 0) && (j < 30000));
 
-		odm_write_4byte(dm, 0x1700, 0xc00f0000 | reg_addr);
+		odm_write_4bytebu(dm, 0x1700, 0xc00f0000 | reg_addr);
 	}
 }
 
@@ -137,35 +137,35 @@ void _iqk_rf_set_check_8822b(struct dm_struct *dm, u8 path, u16 add, u32 data)
 {
 	u32 i;
 
-	odm_set_rf_reg(dm, (enum rf_path)path, add, MASK20BITS, data);
+	odm_set_rf_regbu(dm, (enum rf_path)path, add, MASK20BITS, data);
 
 	for (i = 0; i < 100; i++) {
-		if (odm_get_rf_reg(dm, (enum rf_path)path,
+		if (odm_get_rf_regbu(dm, (enum rf_path)path,
 				   add, MASK20BITS) == data)
 			break;
 
-		ODM_delay_us(10);
-		odm_set_rf_reg(dm, (enum rf_path)path, add, MASK20BITS, data);
+		ODM_delay_usbu(10);
+		odm_set_rf_regbu(dm, (enum rf_path)path, add, MASK20BITS, data);
 	}
 }
 
 void _iqk_rf0xb0_workaround_8822b(struct dm_struct *dm)
 {
 	/*add 0xb8 control for the bad phase noise after switching channel*/
-	odm_set_rf_reg(dm, (enum rf_path)0x0, RF_0xb8, MASK20BITS, 0x00a00);
-	odm_set_rf_reg(dm, (enum rf_path)0x0, RF_0xb8, MASK20BITS, 0x80a00);
+	odm_set_rf_regbu(dm, (enum rf_path)0x0, RF_0xb8, MASK20BITS, 0x00a00);
+	odm_set_rf_regbu(dm, (enum rf_path)0x0, RF_0xb8, MASK20BITS, 0x80a00);
 }
 
 void _iqk_0xc94_workaround_8822b(struct dm_struct *dm)
 {
-	if (odm_get_bb_reg(dm, R_0xc94, BIT(0)) == 0x1) {
-		odm_set_bb_reg(dm, R_0xc94, BIT(0), 0x0);
-		odm_set_bb_reg(dm, R_0xc94, BIT(0), 0x1);
+	if (odm_get_bb_regbu(dm, R_0xc94, BIT(0)) == 0x1) {
+		odm_set_bb_regbu(dm, R_0xc94, BIT(0), 0x0);
+		odm_set_bb_regbu(dm, R_0xc94, BIT(0), 0x1);
 	}
 
-	if (odm_get_bb_reg(dm, R_0xe94, BIT(0)) == 0x1) {
-		odm_set_bb_reg(dm, R_0xe94, BIT(0), 0x0);
-		odm_set_bb_reg(dm, R_0xe94, BIT(0), 0x1);
+	if (odm_get_bb_regbu(dm, R_0xe94, BIT(0)) == 0x1) {
+		odm_set_bb_regbu(dm, R_0xe94, BIT(0), 0x0);
+		odm_set_bb_regbu(dm, R_0xe94, BIT(0), 0x1);
 	}
 }
 
@@ -181,11 +181,11 @@ void _iqk_fill_iqk_report_8822b(void *dm_void, u8 ch)
 		tmp2 += ((iqk->iqk_fail_report[ch][i][RX_IQK] & 1) << (i + 4));
 		tmp3 += ((iqk->rxiqk_fail_code[ch][i] & 0x3) << (i * 2 + 8));
 	}
-	odm_write_4byte(dm, 0x1b00, 0xf8000008);
-	odm_set_bb_reg(dm, R_0x1bf0, 0x0000ffff, tmp1 | tmp2 | tmp3);
+	odm_write_4bytebu(dm, 0x1b00, 0xf8000008);
+	odm_set_bb_regbu(dm, R_0x1bf0, 0x0000ffff, tmp1 | tmp2 | tmp3);
 
 	data = (iqk->rxiqk_agc[ch][1] << 16) | iqk->rxiqk_agc[ch][0];
-	odm_write_4byte(dm, 0x1be8, data);
+	odm_write_4bytebu(dm, 0x1be8, data);
 }
 
 void _iqk_fail_count_8822b(void *dm_void)
@@ -195,14 +195,14 @@ void _iqk_fail_count_8822b(void *dm_void)
 	u8 i;
 
 	dm->n_iqk_cnt++;
-	if (odm_get_rf_reg(dm, RF_PATH_A, RF_0x1bf0, BIT(16)) == 1)
+	if (odm_get_rf_regbu(dm, RF_PATH_A, RF_0x1bf0, BIT(16)) == 1)
 		iqk->is_reload = true;
 	else
 		iqk->is_reload = false;
 
 	if (!iqk->is_reload) {
 		for (i = 0; i < 8; i++) {
-			if (odm_get_bb_reg(dm, R_0x1bf0, BIT(i)) == 1)
+			if (odm_get_bb_regbu(dm, R_0x1bf0, BIT(i)) == 1)
 				dm->n_iqk_fail_cnt++;
 		}
 	}
@@ -215,7 +215,7 @@ void _iqk_iqk_fail_report_8822b(struct dm_struct *dm)
 	u32 tmp1bf0 = 0x0;
 	u8 i;
 
-	tmp1bf0 = odm_read_4byte(dm, 0x1bf0);
+	tmp1bf0 = odm_read_4bytebu(dm, 0x1bf0);
 
 	for (i = 0; i < 4; i++) {
 		if (tmp1bf0 & (0x1 << i))
@@ -242,10 +242,10 @@ void _iqk_backup_mac_bb_8822b(struct dm_struct *dm, u32 *MAC_backup,
 	u32 i;
 
 	for (i = 0; i < MAC_REG_NUM_8822B; i++)
-		MAC_backup[i] = odm_read_4byte(dm, backup_mac_reg[i]);
+		MAC_backup[i] = odm_read_4bytebu(dm, backup_mac_reg[i]);
 
 	for (i = 0; i < BB_REG_NUM_8822B; i++)
-		BB_backup[i] = odm_read_4byte(dm, backup_bb_reg[i]);
+		BB_backup[i] = odm_read_4bytebu(dm, backup_bb_reg[i]);
 #if 0
 	/*	RF_DBG(dm, DBG_RF_IQK, "[IQK]BackupMacBB Success!!!!\n"); */
 #endif
@@ -258,9 +258,9 @@ void _iqk_backup_rf_8822b(struct dm_struct *dm, u32 RF_backup[][2],
 
 	for (i = 0; i < RF_REG_NUM_8822B; i++) {
 		RF_backup[i][RF_PATH_A] =
-			odm_get_rf_reg(dm, RF_PATH_A, bkup_reg[i], MASK20BITS);
+			odm_get_rf_regbu(dm, RF_PATH_A, bkup_reg[i], MASK20BITS);
 		RF_backup[i][RF_PATH_B] =
-			odm_get_rf_reg(dm, RF_PATH_B, bkup_reg[i], MASK20BITS);
+			odm_get_rf_regbu(dm, RF_PATH_B, bkup_reg[i], MASK20BITS);
 	}
 #if 0
 	/* RF_DBG(dm, DBG_RF_IQK, "[IQK]BackupRF Success!!!!\n"); */
@@ -270,10 +270,10 @@ void _iqk_backup_rf_8822b(struct dm_struct *dm, u32 RF_backup[][2],
 void _iqk_agc_bnd_int_8822b(struct dm_struct *dm)
 {
 	/*initialize RX AGC bnd, it must do after bbreset*/
-	odm_write_4byte(dm, 0x1b00, 0xf8000008);
-	odm_write_4byte(dm, 0x1b00, 0xf80a7008);
-	odm_write_4byte(dm, 0x1b00, 0xf8015008);
-	odm_write_4byte(dm, 0x1b00, 0xf8000008);
+	odm_write_4bytebu(dm, 0x1b00, 0xf8000008);
+	odm_write_4bytebu(dm, 0x1b00, 0xf80a7008);
+	odm_write_4bytebu(dm, 0x1b00, 0xf8015008);
+	odm_write_4bytebu(dm, 0x1b00, 0xf8000008);
 #if 0
 	/*RF_DBG(dm, DBG_RF_IQK, "[IQK]init. rx agc bnd\n");*/
 #endif
@@ -285,34 +285,34 @@ void _iqk_bb_reset_8822b(struct dm_struct *dm)
 	u32 count = 0;
 	u32 bit_mask = (BIT(27) | BIT(26) | BIT(25) | BIT(24));
 
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x0, MASK20BITS, 0x10000);
-	odm_set_rf_reg(dm, RF_PATH_B, RF_0x0, MASK20BITS, 0x10000);
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x0, MASK20BITS, 0x10000);
+	odm_set_rf_regbu(dm, RF_PATH_B, RF_0x0, MASK20BITS, 0x10000);
 	/*reset BB report*/
-	odm_set_bb_reg(dm, R_0x8f8, 0x0ff00000, 0x0);
+	odm_set_bb_regbu(dm, R_0x8f8, 0x0ff00000, 0x0);
 
 	while (1) {
-		odm_write_4byte(dm, 0x8fc, 0x0);
-		odm_set_bb_reg(dm, R_0x198c, 0x7, 0x7);
-		cca_ing = (boolean)odm_get_bb_reg(dm, R_0xfa0, BIT(3));
+		odm_write_4bytebu(dm, 0x8fc, 0x0);
+		odm_set_bb_regbu(dm, R_0x198c, 0x7, 0x7);
+		cca_ing = (boolean)odm_get_bb_regbu(dm, R_0xfa0, BIT(3));
 
 		if (count > 20000)
 			cca_ing = false;
 
 		if (cca_ing) {
-			ODM_delay_us(10);
+			ODM_delay_usbu(10);
 			count++;
 		} else {
 			/*RX ant off*/
-			odm_write_1byte(dm, 0x808, 0x0);
+			odm_write_1bytebu(dm, 0x808, 0x0);
 			/*CCK RX path off*/
-			odm_set_bb_reg(dm, R_0xa04, bit_mask, 0x0);
+			odm_set_bb_regbu(dm, R_0xa04, bit_mask, 0x0);
 
 			/*BBreset*/
-			odm_set_bb_reg(dm, R_0x0, BIT(16), 0x0);
-			odm_set_bb_reg(dm, R_0x0, BIT(16), 0x1);
+			odm_set_bb_regbu(dm, R_0x0, BIT(16), 0x0);
+			odm_set_bb_regbu(dm, R_0x0, BIT(16), 0x1);
 
-			if (odm_get_bb_reg(dm, R_0x660, BIT(16)))
-				odm_write_4byte(dm, 0x6b4, 0x89000006);
+			if (odm_get_bb_regbu(dm, R_0x660, BIT(16)))
+				odm_write_4bytebu(dm, 0x6b4, 0x89000006);
 #if 0
 			/*RF_DBG(dm, DBG_RF_IQK, "[IQK]BBreset!!!!\n");*/
 #endif
@@ -324,31 +324,31 @@ void _iqk_bb_reset_8822b(struct dm_struct *dm)
 void _iqk_afe_setting_8822b(struct dm_struct *dm, boolean do_iqk)
 {
 	if (do_iqk) {
-		odm_write_4byte(dm, 0xc60, 0x50000000);
-		odm_write_4byte(dm, 0xc60, 0x70070040);
-		odm_write_4byte(dm, 0xe60, 0x50000000);
-		odm_write_4byte(dm, 0xe60, 0x70070040);
-		odm_write_4byte(dm, 0xc58, 0xd8000402);
-		odm_write_4byte(dm, 0xc5c, 0xd1000120);
-		odm_write_4byte(dm, 0xc6c, 0x00000a15);
-		odm_write_4byte(dm, 0xe58, 0xd8000402);
-		odm_write_4byte(dm, 0xe5c, 0xd1000120);
-		odm_write_4byte(dm, 0xe6c, 0x00000a15);
+		odm_write_4bytebu(dm, 0xc60, 0x50000000);
+		odm_write_4bytebu(dm, 0xc60, 0x70070040);
+		odm_write_4bytebu(dm, 0xe60, 0x50000000);
+		odm_write_4bytebu(dm, 0xe60, 0x70070040);
+		odm_write_4bytebu(dm, 0xc58, 0xd8000402);
+		odm_write_4bytebu(dm, 0xc5c, 0xd1000120);
+		odm_write_4bytebu(dm, 0xc6c, 0x00000a15);
+		odm_write_4bytebu(dm, 0xe58, 0xd8000402);
+		odm_write_4bytebu(dm, 0xe5c, 0xd1000120);
+		odm_write_4bytebu(dm, 0xe6c, 0x00000a15);
 		_iqk_bb_reset_8822b(dm);
 #if 0
 		/* RF_DBG(dm, DBG_RF_IQK, "[IQK]AFE setting for IQK mode!!!!\n"); */
 #endif
 	} else {
-		odm_write_4byte(dm, 0xc60, 0x50000000);
-		odm_write_4byte(dm, 0xc60, 0x70038040);
-		odm_write_4byte(dm, 0xe60, 0x50000000);
-		odm_write_4byte(dm, 0xe60, 0x70038040);
+		odm_write_4bytebu(dm, 0xc60, 0x50000000);
+		odm_write_4bytebu(dm, 0xc60, 0x70038040);
+		odm_write_4bytebu(dm, 0xe60, 0x50000000);
+		odm_write_4bytebu(dm, 0xe60, 0x70038040);
 #if 0
 		/* RF_DBG(dm, DBG_RF_IQK, "[IQK]AFE setting for Normal mode!!!!\n"); */
 #endif
 	}
 	/*0x9a4[31]=0: Select da clock*/
-	odm_set_bb_reg(dm, R_0x9a4, BIT(31), 0x0);
+	odm_set_bb_regbu(dm, R_0x9a4, BIT(31), 0x0);
 }
 
 void _iqk_restore_mac_bb_8822b(struct dm_struct *dm, u32 *MAC_backup,
@@ -358,9 +358,9 @@ void _iqk_restore_mac_bb_8822b(struct dm_struct *dm, u32 *MAC_backup,
 	u32 i;
 
 	for (i = 0; i < MAC_REG_NUM_8822B; i++)
-		odm_write_4byte(dm, backup_mac_reg[i], MAC_backup[i]);
+		odm_write_4bytebu(dm, backup_mac_reg[i], MAC_backup[i]);
 	for (i = 0; i < BB_REG_NUM_8822B; i++)
-		odm_write_4byte(dm, backup_bb_reg[i], BB_backup[i]);
+		odm_write_4bytebu(dm, backup_bb_reg[i], BB_backup[i]);
 #if 0
 	/*	RF_DBG(dm, DBG_RF_IQK, "[IQK]RestoreMacBB Success!!!!\n"); */
 #endif
@@ -371,8 +371,8 @@ void _iqk_restore_rf_8822b(struct dm_struct *dm, u32 *backup_rf_reg,
 {
 	u32 i;
 
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0xef, MASK20BITS, 0x0);
-	odm_set_rf_reg(dm, RF_PATH_B, RF_0xef, MASK20BITS, 0x0);
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0xef, MASK20BITS, 0x0);
+	odm_set_rf_regbu(dm, RF_PATH_B, RF_0xef, MASK20BITS, 0x0);
 	/*0xdf[4]=0*/
 	_iqk_rf_set_check_8822b(dm, RF_PATH_A, 0xdf,
 				RF_backup[0][RF_PATH_A] & (~BIT(4)));
@@ -380,14 +380,14 @@ void _iqk_restore_rf_8822b(struct dm_struct *dm, u32 *backup_rf_reg,
 				RF_backup[0][RF_PATH_B] & (~BIT(4)));
 
 #if 0
-	/*odm_set_rf_reg(dm, RF_PATH_A, RF_0xdf, MASK20BITS, RF_backup[0][RF_PATH_A] & (~BIT(4)));*/
-	/*odm_set_rf_reg(dm, RF_PATH_B, RF_0xdf, MASK20BITS, RF_backup[0][RF_PATH_B] & (~BIT(4)));*/
+	/*odm_set_rf_regbu(dm, RF_PATH_A, RF_0xdf, MASK20BITS, RF_backup[0][RF_PATH_A] & (~BIT(4)));*/
+	/*odm_set_rf_regbu(dm, RF_PATH_B, RF_0xdf, MASK20BITS, RF_backup[0][RF_PATH_B] & (~BIT(4)));*/
 #endif
 
 	for (i = 1; i < RF_REG_NUM_8822B; i++) {
-		odm_set_rf_reg(dm, RF_PATH_A, backup_rf_reg[i], MASK20BITS,
+		odm_set_rf_regbu(dm, RF_PATH_A, backup_rf_reg[i], MASK20BITS,
 			       RF_backup[i][RF_PATH_A]);
-		odm_set_rf_reg(dm, RF_PATH_B, backup_rf_reg[i], MASK20BITS,
+		odm_set_rf_regbu(dm, RF_PATH_B, backup_rf_reg[i], MASK20BITS,
 			       RF_backup[i][RF_PATH_B]);
 	}
 #if 0
@@ -442,7 +442,7 @@ void _iqk_backup_iqk_8822b(struct dm_struct *dm, u8 step, u8 path)
 		iqk->iqk_channel[0] = iqk->rf_reg18;
 		break;
 	case 1: /*LOK backup*/
-		iqk->lok_idac[0][path] = odm_get_rf_reg(dm, (enum rf_path)path,
+		iqk->lok_idac[0][path] = odm_get_rf_regbu(dm, (enum rf_path)path,
 							RF_0x58, MASK20BITS);
 		break;
 	case 2: /*TXIQK backup*/
@@ -467,50 +467,50 @@ void _iqk_reload_iqk_setting_8822b(struct dm_struct *dm, u8 ch,
 	for (path = 0; path < SS_8822B; path++) {
 		if (reload_idx == 2) {
 #if 0
-			/*odm_set_rf_reg(dm, (enum rf_path)path, RF_0xdf, BIT(4), 0x1);*/
+			/*odm_set_rf_regbu(dm, (enum rf_path)path, RF_0xdf, BIT(4), 0x1);*/
 #endif
-			tmp = odm_get_rf_reg(dm, (enum rf_path)path,
+			tmp = odm_get_rf_regbu(dm, (enum rf_path)path,
 					     RF_0xdf, MASK20BITS) | BIT(4);
 			_iqk_rf_set_check_8822b(dm, (enum rf_path)path,
 						0xdf, tmp);
-			odm_set_rf_reg(dm, (enum rf_path)path, RF_0x58,
+			odm_set_rf_regbu(dm, (enum rf_path)path, RF_0x58,
 				       MASK20BITS, iqk->lok_idac[ch][path]);
 		}
 
 		for (idx = 0; idx < reload_idx; idx++) {
-			odm_set_bb_reg(dm, R_0x1b00, MASKDWORD,
+			odm_set_bb_regbu(dm, R_0x1b00, MASKDWORD,
 				       0xf8000008 | path << 1);
-			odm_set_bb_reg(dm, R_0x1b2c, MASKDWORD, 0x7);
-			odm_set_bb_reg(dm, R_0x1b38, MASKDWORD, 0x20000000);
-			odm_set_bb_reg(dm, R_0x1b3c, MASKDWORD, 0x20000000);
-			odm_set_bb_reg(dm, R_0x1bcc, MASKDWORD, 0x00000000);
+			odm_set_bb_regbu(dm, R_0x1b2c, MASKDWORD, 0x7);
+			odm_set_bb_regbu(dm, R_0x1b38, MASKDWORD, 0x20000000);
+			odm_set_bb_regbu(dm, R_0x1b3c, MASKDWORD, 0x20000000);
+			odm_set_bb_regbu(dm, R_0x1bcc, MASKDWORD, 0x00000000);
 			if (idx == 0)
-				odm_set_bb_reg(dm, R_0x1b0c, bmask13_12, 0x3);
+				odm_set_bb_regbu(dm, R_0x1b0c, bmask13_12, 0x3);
 			else
-				odm_set_bb_reg(dm, R_0x1b0c, bmask13_12, 0x1);
-			odm_set_bb_reg(dm, R_0x1bd4, bmask20_16, 0x10);
+				odm_set_bb_regbu(dm, R_0x1b0c, bmask13_12, 0x1);
+			odm_set_bb_regbu(dm, R_0x1bd4, bmask20_16, 0x10);
 			for (i = 0; i < 8; i++) {
 				data = ((0xc0000000 >> idx) + 0x3) + (i * 4) +
 					(iqk->iqk_cfir_real[ch][path][idx][i]
 					<< 9);
-				odm_write_4byte(dm, 0x1bd8, data);
+				odm_write_4bytebu(dm, 0x1bd8, data);
 				data = ((0xc0000000 >> idx) + 0x1) + (i * 4) +
 					(iqk->iqk_cfir_imag[ch][path][idx][i]
 					<< 9);
-				odm_write_4byte(dm, 0x1bd8, data);
+				odm_write_4bytebu(dm, 0x1bd8, data);
 			}
 			if (idx == 0) {
 				report = !(iqk->iqk_fail_report[ch][path][idx]);
-				odm_set_bb_reg(dm, iqk_apply[path],
+				odm_set_bb_regbu(dm, iqk_apply[path],
 					       BIT(0), report);
 			} else {
 				report = !(iqk->iqk_fail_report[ch][path][idx]);
-				odm_set_bb_reg(dm, iqk_apply[path],
+				odm_set_bb_regbu(dm, iqk_apply[path],
 					       BIT(10), report);
 			}
 		}
-		odm_set_bb_reg(dm, R_0x1bd8, MASKDWORD, 0x0);
-		odm_set_bb_reg(dm, R_0x1b0c, bmask13_12, 0x0);
+		odm_set_bb_regbu(dm, R_0x1bd8, MASKDWORD, 0x0);
+		odm_set_bb_regbu(dm, R_0x1b0c, bmask13_12, 0x0);
 	}
 }
 
@@ -526,7 +526,7 @@ _iqk_reload_iqk_8822b(struct dm_struct *dm, boolean reset)
 		for (i = 0; i < 2; i++)
 			iqk->iqk_channel[i] = 0x0;
 	} else {
-		iqk->rf_reg18 = odm_get_rf_reg(dm, RF_PATH_A,
+		iqk->rf_reg18 = odm_get_rf_regbu(dm, RF_PATH_A,
 					       RF_0x18, MASK20BITS);
 
 		for (i = 0; i < 2; i++) {
@@ -540,7 +540,7 @@ _iqk_reload_iqk_8822b(struct dm_struct *dm, boolean reset)
 		}
 	}
 	/*report*/
-	odm_set_bb_reg(dm, R_0x1bf0, BIT(16), (u8)iqk->is_reload);
+	odm_set_bb_regbu(dm, R_0x1bf0, BIT(16), (u8)iqk->is_reload);
 	return iqk->is_reload;
 }
 
@@ -548,26 +548,26 @@ void _iqk_rfe_setting_8822b(struct dm_struct *dm, boolean ext_pa_on)
 {
 	if (ext_pa_on) {
 		/*RFE setting*/
-		odm_write_4byte(dm, 0xcb0, 0x77777777);
-		odm_write_4byte(dm, 0xcb4, 0x00007777);
-		odm_write_4byte(dm, 0xcbc, 0x0000083B);
-		odm_write_4byte(dm, 0xeb0, 0x77777777);
-		odm_write_4byte(dm, 0xeb4, 0x00007777);
-		odm_write_4byte(dm, 0xebc, 0x0000083B);
+		odm_write_4bytebu(dm, 0xcb0, 0x77777777);
+		odm_write_4bytebu(dm, 0xcb4, 0x00007777);
+		odm_write_4bytebu(dm, 0xcbc, 0x0000083B);
+		odm_write_4bytebu(dm, 0xeb0, 0x77777777);
+		odm_write_4bytebu(dm, 0xeb4, 0x00007777);
+		odm_write_4bytebu(dm, 0xebc, 0x0000083B);
 #if 0
-		/*odm_write_4byte(dm, 0x1990, 0x00000c30);*/
+		/*odm_write_4bytebu(dm, 0x1990, 0x00000c30);*/
 #endif
 		RF_DBG(dm, DBG_RF_IQK, "[IQK]external PA on!!!!\n");
 	} else {
 		/*RFE setting*/
-		odm_write_4byte(dm, 0xcb0, 0x77777777);
-		odm_write_4byte(dm, 0xcb4, 0x00007777);
-		odm_write_4byte(dm, 0xcbc, 0x00000100);
-		odm_write_4byte(dm, 0xeb0, 0x77777777);
-		odm_write_4byte(dm, 0xeb4, 0x00007777);
-		odm_write_4byte(dm, 0xebc, 0x00000100);
+		odm_write_4bytebu(dm, 0xcb0, 0x77777777);
+		odm_write_4bytebu(dm, 0xcb4, 0x00007777);
+		odm_write_4bytebu(dm, 0xcbc, 0x00000100);
+		odm_write_4bytebu(dm, 0xeb0, 0x77777777);
+		odm_write_4bytebu(dm, 0xeb4, 0x00007777);
+		odm_write_4bytebu(dm, 0xebc, 0x00000100);
 #if 0
-		/*odm_write_4byte(dm, 0x1990, 0x00000c30);*/
+		/*odm_write_4bytebu(dm, 0x1990, 0x00000c30);*/
 		/*RF_DBG(dm, DBG_RF_IQK, "[IQK]external PA off!!!!\n");*/
 #endif
 	}
@@ -578,44 +578,44 @@ void _iqk_rf_setting_8822b(struct dm_struct *dm)
 	u8 path;
 	u32 tmp;
 
-	odm_write_4byte(dm, 0x1b00, 0xf8000008);
-	odm_write_4byte(dm, 0x1bb8, 0x00000000);
+	odm_write_4bytebu(dm, 0x1b00, 0xf8000008);
+	odm_write_4bytebu(dm, 0x1bb8, 0x00000000);
 
 	for (path = 0; path < SS_8822B; path++) {
 		/*0xdf:B11 = 1,B4 = 0, B1 = 1*/
-		tmp = odm_get_rf_reg(dm, (enum rf_path)path,
+		tmp = odm_get_rf_regbu(dm, (enum rf_path)path,
 				     RF_0xdf, MASK20BITS);
 		tmp = (tmp & (~BIT(4))) | BIT(1) | BIT(11);
 		_iqk_rf_set_check_8822b(dm, (enum rf_path)path, 0xdf, tmp);
 #if 0
-		/*odm_set_rf_reg(dm, (enum rf_path)path, RF_0xdf, MASK20BITS, tmp);*/
+		/*odm_set_rf_regbu(dm, (enum rf_path)path, RF_0xdf, MASK20BITS, tmp);*/
 #endif
 
 		/*release 0x56 TXBB*/
-		odm_set_rf_reg(dm, (enum rf_path)path, RF_0x65,
+		odm_set_rf_regbu(dm, (enum rf_path)path, RF_0x65,
 			       MASK20BITS, 0x09000);
 
 		if (*dm->band_type == ODM_BAND_5G) {
-			odm_set_rf_reg(dm, (enum rf_path)path,
+			odm_set_rf_regbu(dm, (enum rf_path)path,
 				       RF_0xef, BIT(19), 0x1);
-			odm_set_rf_reg(dm, (enum rf_path)path,
+			odm_set_rf_regbu(dm, (enum rf_path)path,
 				       RF_0x33, MASK20BITS, 0x00026);
-			odm_set_rf_reg(dm, (enum rf_path)path,
+			odm_set_rf_regbu(dm, (enum rf_path)path,
 				       RF_0x3e, MASK20BITS, 0x00037);
-			odm_set_rf_reg(dm, (enum rf_path)path,
+			odm_set_rf_regbu(dm, (enum rf_path)path,
 				       RF_0x3f, MASK20BITS, 0xdefce);
-			odm_set_rf_reg(dm, (enum rf_path)path,
+			odm_set_rf_regbu(dm, (enum rf_path)path,
 				       RF_0xef, BIT(19), 0x0);
 		} else {
-			odm_set_rf_reg(dm, (enum rf_path)path,
+			odm_set_rf_regbu(dm, (enum rf_path)path,
 				       RF_0xef, BIT(19), 0x1);
-			odm_set_rf_reg(dm, (enum rf_path)path,
+			odm_set_rf_regbu(dm, (enum rf_path)path,
 				       RF_0x33, MASK20BITS, 0x00026);
-			odm_set_rf_reg(dm, (enum rf_path)path,
+			odm_set_rf_regbu(dm, (enum rf_path)path,
 				       RF_0x3e, MASK20BITS, 0x00037);
-			odm_set_rf_reg(dm, (enum rf_path)path,
+			odm_set_rf_regbu(dm, (enum rf_path)path,
 				       RF_0x3f, MASK20BITS, 0x5efce);
-			odm_set_rf_reg(dm, (enum rf_path)path,
+			odm_set_rf_regbu(dm, (enum rf_path)path,
 				       RF_0xef, BIT(19), 0x0);
 		}
 	}
@@ -624,24 +624,24 @@ void _iqk_rf_setting_8822b(struct dm_struct *dm)
 void _iqk_configure_macbb_8822b(struct dm_struct *dm)
 {
 	/*MACBB register setting*/
-	odm_write_1byte(dm, 0x522, 0x7f);
-	odm_set_bb_reg(dm, R_0x550, BIT(11) | BIT(3), 0x0);
+	odm_write_1bytebu(dm, 0x522, 0x7f);
+	odm_set_bb_regbu(dm, R_0x550, BIT(11) | BIT(3), 0x0);
 	/*0x90c[15]=1: dac_buf reset selection*/
-	odm_set_bb_reg(dm, R_0x90c, BIT(15), 0x1);
+	odm_set_bb_regbu(dm, R_0x90c, BIT(15), 0x1);
 	/*0xc94[0]=1, 0xe94[0]=1: Let tx from IQK*/
-	odm_set_bb_reg(dm, R_0xc94, BIT(0), 0x1);
-	odm_set_bb_reg(dm, R_0xe94, BIT(0), 0x1);
-	odm_set_bb_reg(dm, R_0xc94, (BIT(11) | BIT(10)), 0x1);
-	odm_set_bb_reg(dm, R_0xe94, (BIT(11) | BIT(10)), 0x1);
+	odm_set_bb_regbu(dm, R_0xc94, BIT(0), 0x1);
+	odm_set_bb_regbu(dm, R_0xe94, BIT(0), 0x1);
+	odm_set_bb_regbu(dm, R_0xc94, (BIT(11) | BIT(10)), 0x1);
+	odm_set_bb_regbu(dm, R_0xe94, (BIT(11) | BIT(10)), 0x1);
 	/* 3-wire off*/
-	odm_write_4byte(dm, 0xc00, 0x00000004);
-	odm_write_4byte(dm, 0xe00, 0x00000004);
+	odm_write_4bytebu(dm, 0xc00, 0x00000004);
+	odm_write_4bytebu(dm, 0xe00, 0x00000004);
 	/*disable PMAC*/
-	odm_set_bb_reg(dm, R_0xb00, BIT(8), 0x0);
+	odm_set_bb_regbu(dm, R_0xb00, BIT(8), 0x0);
 	/*disable CCK block*/
-	odm_set_bb_reg(dm, R_0x808, BIT(28), 0x0);
+	odm_set_bb_regbu(dm, R_0x808, BIT(28), 0x0);
 	/*disable OFDM CCA*/
-	odm_set_bb_reg(dm, R_0x838, BIT(3) | BIT(2) | BIT(1), 0x7);
+	odm_set_bb_regbu(dm, R_0x838, BIT(3) | BIT(2) | BIT(1), 0x7);
 #if 0
 	/*RF_DBG(dm, DBG_RF_IQK, "[IQK]Set MACBB setting for IQK!!!!\n");*/
 #endif
@@ -649,32 +649,32 @@ void _iqk_configure_macbb_8822b(struct dm_struct *dm)
 
 void _iqk_lok_setting_8822b(struct dm_struct *dm, u8 path)
 {
-	odm_write_4byte(dm, 0x1b00, 0xf8000008 | path << 1);
-	odm_write_4byte(dm, 0x1bcc, 0x9);
-	odm_write_1byte(dm, 0x1b23, 0x00);
+	odm_write_4bytebu(dm, 0x1b00, 0xf8000008 | path << 1);
+	odm_write_4bytebu(dm, 0x1bcc, 0x9);
+	odm_write_1bytebu(dm, 0x1b23, 0x00);
 
 	switch (*dm->band_type) {
 	case ODM_BAND_2_4G:
-		odm_write_1byte(dm, 0x1b2b, 0x00);
-		odm_set_rf_reg(dm, (enum rf_path)path,
+		odm_write_1bytebu(dm, 0x1b2b, 0x00);
+		odm_set_rf_regbu(dm, (enum rf_path)path,
 			       RF_0x56, MASK20BITS, 0x50df2);
-		odm_set_rf_reg(dm, (enum rf_path)path,
+		odm_set_rf_regbu(dm, (enum rf_path)path,
 			       RF_0x8f, MASK20BITS, 0xadc00);
 		/* WE_LUT_TX_LOK*/
-		odm_set_rf_reg(dm, (enum rf_path)path,
+		odm_set_rf_regbu(dm, (enum rf_path)path,
 			       RF_0xef, BIT(4), 0x1);
-		odm_set_rf_reg(dm, (enum rf_path)path,
+		odm_set_rf_regbu(dm, (enum rf_path)path,
 			       RF_0x33, BIT(1) | BIT(0), 0x0);
 		break;
 	case ODM_BAND_5G:
-		odm_write_1byte(dm, 0x1b2b, 0x80);
-		odm_set_rf_reg(dm, (enum rf_path)path,
+		odm_write_1bytebu(dm, 0x1b2b, 0x80);
+		odm_set_rf_regbu(dm, (enum rf_path)path,
 			       RF_0x56, MASK20BITS, 0x5086c);
-		odm_set_rf_reg(dm, (enum rf_path)path,
+		odm_set_rf_regbu(dm, (enum rf_path)path,
 			       RF_0x8f, MASK20BITS, 0xa9c00);
 		/* WE_LUT_TX_LOK*/
-		odm_set_rf_reg(dm, (enum rf_path)path, RF_0xef, BIT(4), 0x1);
-		odm_set_rf_reg(dm, (enum rf_path)path, RF_0x33,
+		odm_set_rf_regbu(dm, (enum rf_path)path, RF_0xef, BIT(4), 0x1);
+		odm_set_rf_regbu(dm, (enum rf_path)path, RF_0x33,
 			       BIT(1) | BIT(0), 0x1);
 		break;
 	}
@@ -685,30 +685,30 @@ void _iqk_lok_setting_8822b(struct dm_struct *dm, u8 path)
 
 void _iqk_txk_setting_8822b(struct dm_struct *dm, u8 path)
 {
-	odm_write_4byte(dm, 0x1b00, 0xf8000008 | path << 1);
-	odm_write_4byte(dm, 0x1bcc, 0x9);
-	odm_write_4byte(dm, 0x1b20, 0x01440008);
+	odm_write_4bytebu(dm, 0x1b00, 0xf8000008 | path << 1);
+	odm_write_4bytebu(dm, 0x1bcc, 0x9);
+	odm_write_4bytebu(dm, 0x1b20, 0x01440008);
 
 	if (path == 0x0)
-		odm_write_4byte(dm, 0x1b00, 0xf800000a);
+		odm_write_4bytebu(dm, 0x1b00, 0xf800000a);
 	else
-		odm_write_4byte(dm, 0x1b00, 0xf8000008);
-	odm_write_4byte(dm, 0x1bcc, 0x3f);
+		odm_write_4bytebu(dm, 0x1b00, 0xf8000008);
+	odm_write_4bytebu(dm, 0x1bcc, 0x3f);
 
 	switch (*dm->band_type) {
 	case ODM_BAND_2_4G:
-		odm_set_rf_reg(dm, (enum rf_path)path,
+		odm_set_rf_regbu(dm, (enum rf_path)path,
 			       RF_0x56, MASK20BITS, 0x50df2);
-		odm_set_rf_reg(dm, (enum rf_path)path,
+		odm_set_rf_regbu(dm, (enum rf_path)path,
 			       RF_0x8f, MASK20BITS, 0xadc00);
-		odm_write_1byte(dm, 0x1b2b, 0x00);
+		odm_write_1bytebu(dm, 0x1b2b, 0x00);
 		break;
 	case ODM_BAND_5G:
-		odm_set_rf_reg(dm, (enum rf_path)path,
+		odm_set_rf_regbu(dm, (enum rf_path)path,
 			       RF_0x56, MASK20BITS, 0x500ef);
-		odm_set_rf_reg(dm, (enum rf_path)path,
+		odm_set_rf_regbu(dm, (enum rf_path)path,
 			       RF_0x8f, MASK20BITS, 0xa9c00);
-		odm_write_1byte(dm, 0x1b2b, 0x80);
+		odm_write_1bytebu(dm, 0x1b2b, 0x80);
 		break;
 	}
 #if 0
@@ -718,27 +718,27 @@ void _iqk_txk_setting_8822b(struct dm_struct *dm, u8 path)
 
 void _iqk_rxk1_setting_8822b(struct dm_struct *dm, u8 path)
 {
-	odm_write_4byte(dm, 0x1b00, 0xf8000008 | path << 1);
+	odm_write_4bytebu(dm, 0x1b00, 0xf8000008 | path << 1);
 
 	switch (*dm->band_type) {
 	case ODM_BAND_2_4G:
-		odm_write_1byte(dm, 0x1bcc, 0x9);
-		odm_write_1byte(dm, 0x1b2b, 0x00);
-		odm_write_4byte(dm, 0x1b20, 0x01450008);
-		odm_write_4byte(dm, 0x1b24, 0x01460c88);
-		odm_set_rf_reg(dm, (enum rf_path)path,
+		odm_write_1bytebu(dm, 0x1bcc, 0x9);
+		odm_write_1bytebu(dm, 0x1b2b, 0x00);
+		odm_write_4bytebu(dm, 0x1b20, 0x01450008);
+		odm_write_4bytebu(dm, 0x1b24, 0x01460c88);
+		odm_set_rf_regbu(dm, (enum rf_path)path,
 			       RF_0x56, MASK20BITS, 0x510e0);
-		odm_set_rf_reg(dm, (enum rf_path)path,
+		odm_set_rf_regbu(dm, (enum rf_path)path,
 			       RF_0x8f, MASK20BITS, 0xacc00);
 		break;
 	case ODM_BAND_5G:
-		odm_write_1byte(dm, 0x1bcc, 0x09);
-		odm_write_1byte(dm, 0x1b2b, 0x80);
-		odm_write_4byte(dm, 0x1b20, 0x00850008);
-		odm_write_4byte(dm, 0x1b24, 0x00460048);
-		odm_set_rf_reg(dm, (enum rf_path)path,
+		odm_write_1bytebu(dm, 0x1bcc, 0x09);
+		odm_write_1bytebu(dm, 0x1b2b, 0x80);
+		odm_write_4bytebu(dm, 0x1b20, 0x00850008);
+		odm_write_4bytebu(dm, 0x1b24, 0x00460048);
+		odm_set_rf_regbu(dm, (enum rf_path)path,
 			       RF_0x56, MASK20BITS, 0x510e0);
-		odm_set_rf_reg(dm, (enum rf_path)path,
+		odm_set_rf_regbu(dm, (enum rf_path)path,
 			       RF_0x8f, MASK20BITS, 0xadc00);
 		break;
 	}
@@ -751,19 +751,19 @@ void _iqk_rxk2_setting_8822b(struct dm_struct *dm, u8 path, boolean is_gs)
 {
 	struct dm_iqk_info *iqk = &dm->IQK_info;
 
-	odm_write_4byte(dm, 0x1b00, 0xf8000008 | path << 1);
+	odm_write_4bytebu(dm, 0x1b00, 0xf8000008 | path << 1);
 
 	switch (*dm->band_type) {
 	case ODM_BAND_2_4G:
 		if (is_gs)
 			iqk->tmp1bcc = 0x12;
-		odm_write_1byte(dm, 0x1bcc, iqk->tmp1bcc);
-		odm_write_1byte(dm, 0x1b2b, 0x00);
-		odm_write_4byte(dm, 0x1b20, 0x01450008);
-		odm_write_4byte(dm, 0x1b24, 0x01460848);
-		odm_set_rf_reg(dm, (enum rf_path)path,
+		odm_write_1bytebu(dm, 0x1bcc, iqk->tmp1bcc);
+		odm_write_1bytebu(dm, 0x1b2b, 0x00);
+		odm_write_4bytebu(dm, 0x1b20, 0x01450008);
+		odm_write_4bytebu(dm, 0x1b24, 0x01460848);
+		odm_set_rf_regbu(dm, (enum rf_path)path,
 			       RF_0x56, MASK20BITS, 0x510e0);
-		odm_set_rf_reg(dm, (enum rf_path)path,
+		odm_set_rf_regbu(dm, (enum rf_path)path,
 			       RF_0x8f, MASK20BITS, 0xa9c00);
 		break;
 	case ODM_BAND_5G:
@@ -773,13 +773,13 @@ void _iqk_rxk2_setting_8822b(struct dm_struct *dm, u8 path, boolean is_gs)
 			else
 				iqk->tmp1bcc = 0x09;
 		}
-		odm_write_1byte(dm, 0x1bcc, iqk->tmp1bcc);
-		odm_write_1byte(dm, 0x1b2b, 0x80);
-		odm_write_4byte(dm, 0x1b20, 0x00850008);
-		odm_write_4byte(dm, 0x1b24, 0x00460848);
-		odm_set_rf_reg(dm, (enum rf_path)path,
+		odm_write_1bytebu(dm, 0x1bcc, iqk->tmp1bcc);
+		odm_write_1bytebu(dm, 0x1b2b, 0x80);
+		odm_write_4bytebu(dm, 0x1b20, 0x00850008);
+		odm_write_4bytebu(dm, 0x1b24, 0x00460848);
+		odm_set_rf_regbu(dm, (enum rf_path)path,
 			       RF_0x56, MASK20BITS, 0x51060);
-		odm_set_rf_reg(dm, (enum rf_path)path,
+		odm_set_rf_regbu(dm, (enum rf_path)path,
 			       RF_0x8f, MASK20BITS, 0xa9c00);
 		break;
 	}
@@ -793,11 +793,11 @@ void halrf_iqk_set_rf0x8(struct dm_struct *dm, u8 path)
 	u16 c = 0x0;
 
 	while (c < 30000) {
-		odm_set_rf_reg(dm, (enum rf_path)path,
+		odm_set_rf_regbu(dm, (enum rf_path)path,
 			       RF_0xef, MASK20BITS, 0x0);
-		odm_set_rf_reg(dm, (enum rf_path)path,
+		odm_set_rf_regbu(dm, (enum rf_path)path,
 			       RF_0x8, MASK20BITS, 0x0);
-		if (odm_get_rf_reg(dm, (enum rf_path)path, RF_0x8, MASK20BITS)
+		if (odm_get_rf_regbu(dm, (enum rf_path)path, RF_0x8, MASK20BITS)
 			== 0x0)
 			break;
 		c++;
@@ -808,7 +808,7 @@ void halrf_iqk_check_if_reload(struct dm_struct *dm)
 {
 	struct dm_iqk_info *iqk = &dm->IQK_info;
 
-	iqk->is_reload = (boolean)odm_get_bb_reg(dm, R_0x1bf0, BIT(16));
+	iqk->is_reload = (boolean)odm_get_bb_regbu(dm, R_0x1bf0, BIT(16));
 }
 
 boolean
@@ -818,16 +818,16 @@ _iqk_check_cal_8822b(struct dm_struct *dm, u8 path, u8 cmd)
 	u32 delay_count = 0x0;
 
 	while (notready) {
-		if (odm_get_rf_reg(dm, (enum rf_path)path, RF_0x8, MASK20BITS)
+		if (odm_get_rf_regbu(dm, (enum rf_path)path, RF_0x8, MASK20BITS)
 			== 0x12345) {
 			if (cmd == 0x0) /*LOK*/
 				fail = false;
 			else
 				fail = (boolean)
-					odm_get_bb_reg(dm, R_0x1b08, BIT(26));
+					odm_get_bb_regbu(dm, R_0x1b08, BIT(26));
 			notready = false;
 		} else {
-			ODM_delay_us(10);
+			ODM_delay_usbu(10);
 			delay_count++;
 		}
 
@@ -859,9 +859,9 @@ _iqk_rxk_gsearch_fail_8822b(struct dm_struct *dm, u8 path, u8 step)
 		RF_DBG(dm, DBG_RF_IQK, "[IQK]S%d GS%d_Trigger = 0x%x\n", path,
 		       step, IQK_CMD);
 		_iqk_ltec_write_8822b(dm, 0x38, 0xffff,0x7700);
-		odm_write_4byte(dm, 0x1b00, IQK_CMD);
-		odm_write_4byte(dm, 0x1b00, IQK_CMD + 0x1);
-		ODM_delay_us(10);
+		odm_write_4bytebu(dm, 0x1b00, IQK_CMD);
+		odm_write_4bytebu(dm, 0x1b00, IQK_CMD + 0x1);
+		ODM_delay_usbu(10);
 		fail = _iqk_check_cal_8822b(dm, path, 0x1);
 		_iqk_ltec_write_8822b(dm, 0x38, MASKDWORD, iqk->tmp_gntwl);
 	} else if (step == RXIQK2) {
@@ -873,27 +873,27 @@ _iqk_rxk_gsearch_fail_8822b(struct dm_struct *dm, u8 path, u8 step)
 			RF_DBG(dm, DBG_RF_IQK, "[IQK] rx_gs overflow\n");
 			return fail;
 		}
-		odm_write_4byte(dm, 0x1b00, 0xf8000008 | path << 1);
-		odm_write_4byte(dm, 0x1bcc, iqk->tmp1bcc);
+		odm_write_4bytebu(dm, 0x1b00, 0xf8000008 | path << 1);
+		odm_write_4bytebu(dm, 0x1bcc, iqk->tmp1bcc);
 
 		IQK_CMD = 0xf8000308 | (1 << (path + 4));
 		RF_DBG(dm, DBG_RF_IQK, "[IQK]S%d GS%d_Trigger = 0x%x\n", path,
 		       step, IQK_CMD);
 
 		_iqk_ltec_write_8822b(dm, 0x38, 0xffff,0x7700);
-		odm_write_4byte(dm, 0x1b00, IQK_CMD);
-		odm_write_4byte(dm, 0x1b00, IQK_CMD + 0x1);
-		ODM_delay_us(10);
+		odm_write_4bytebu(dm, 0x1b00, IQK_CMD);
+		odm_write_4bytebu(dm, 0x1b00, IQK_CMD + 0x1);
+		ODM_delay_usbu(10);
 		fail = _iqk_check_cal_8822b(dm, path, 0x1);
 		_iqk_ltec_write_8822b(dm, 0x38, MASKDWORD, iqk->tmp_gntwl);
 
-		rf_reg0 = odm_get_rf_reg(dm, (enum rf_path)path,
+		rf_reg0 = odm_get_rf_regbu(dm, (enum rf_path)path,
 					 RF_0x0, MASK20BITS);
-		odm_write_4byte(dm, 0x1b00, 0xf8000008 | path << 1);
+		odm_write_4bytebu(dm, 0x1b00, 0xf8000008 | path << 1);
 		RF_DBG(dm, DBG_RF_IQK,
 		       "[IQK]S%d RF0x0=0x%x tmp1bcc=0x%x idx=%d 0x1b3c=0x%x\n",
 		       path, rf_reg0, iqk->tmp1bcc, idx,
-		       odm_read_4byte(dm, 0x1b3c));
+		       odm_read_4bytebu(dm, 0x1b3c));
 		tmp = (rf_reg0 & 0x1fe0) >> 5;
 		iqk->lna_idx = tmp >> 5;
 		bb_idx = tmp & 0x1f;
@@ -924,10 +924,10 @@ _iqk_rxk_gsearch_fail_8822b(struct dm_struct *dm, u8 path, u8 step)
 		iqk->tmp1bcc = IQMUX[idx];
 
 		if (fail) {
-			odm_write_4byte(dm, 0x1b00, 0xf8000008 | path << 1);
-			tmp = (odm_read_4byte(dm, 0x1b24) & 0xffffe3ff) |
+			odm_write_4bytebu(dm, 0x1b00, 0xf8000008 | path << 1);
+			tmp = (odm_read_4bytebu(dm, 0x1b24) & 0xffffe3ff) |
 				(iqk->lna_idx << 10);
-			odm_write_4byte(dm, 0x1b24, tmp);
+			odm_write_4bytebu(dm, 0x1b24, tmp);
 		}
 	}
 	return fail;
@@ -947,11 +947,11 @@ _lok_one_shot_8822b(void *dm_void, u8 path)
 	RF_DBG(dm, DBG_RF_IQK, "[IQK]LOK_Trigger = 0x%x\n", IQK_CMD);
 
 	_iqk_ltec_write_8822b(dm, 0x38, 0xffff,0x7700);
-	odm_write_4byte(dm, 0x1b00, IQK_CMD);
-	odm_write_4byte(dm, 0x1b00, IQK_CMD + 1);
+	odm_write_4bytebu(dm, 0x1b00, IQK_CMD);
+	odm_write_4bytebu(dm, 0x1b00, IQK_CMD + 1);
 	/*LOK: CMD ID = 0	{0xf8000018, 0xf8000028}*/
 	/*LOK: CMD ID = 0	{0xf8000019, 0xf8000029}*/
-	ODM_delay_us(10);
+	ODM_delay_usbu(10);
 	LOK_notready = _iqk_check_cal_8822b(dm, path, 0x0);
 	_iqk_ltec_write_8822b(dm, 0x38, MASKDWORD, iqk->tmp_gntwl);
 
@@ -959,7 +959,7 @@ _lok_one_shot_8822b(void *dm_void, u8 path)
 		_iqk_backup_iqk_8822b(dm, 0x1, path);
 	if (DBG_RF_IQK) {
 		if (!LOK_notready) {
-			LOK_temp = odm_get_rf_reg(dm, (enum rf_path)path,
+			LOK_temp = odm_get_rf_regbu(dm, (enum rf_path)path,
 						  RF_0x58, MASK20BITS);
 			RF_DBG(dm, DBG_RF_IQK, "[IQK]0x58 = 0x%x\n", LOK_temp);
 		} else {
@@ -1016,54 +1016,54 @@ _iqk_one_shot_8822b(void *dm_void, u8 path, u8 idx)
 		/*{0xf8000918, 0xf800092a} ==> 20 WBRXK (CMD = 9)*/
 		/*{0xf8000a18, 0xf8000a2a} ==> 40 WBRXK (CMD = 10)*/
 		/*{0xf8000b18, 0xf8000b2a} ==> 80 WBRXK (CMD = 11)*/
-		odm_write_4byte(dm, 0x1b00, 0xf8000008 | path << 1);
-		tmp = (odm_read_4byte(dm, 0x1b24) & 0xffffe3ff) |
+		odm_write_4bytebu(dm, 0x1b00, 0xf8000008 | path << 1);
+		tmp = (odm_read_4bytebu(dm, 0x1b24) & 0xffffe3ff) |
 			((iqk->lna_idx & 0x7) << 10);
-		odm_write_4byte(dm, 0x1b24, tmp);
+		odm_write_4bytebu(dm, 0x1b24, tmp);
 	}
 	_iqk_ltec_write_8822b(dm, 0x38, 0xffff,0x7700);
-	odm_write_4byte(dm, 0x1b00, IQK_CMD);
-	odm_write_4byte(dm, 0x1b00, IQK_CMD + 0x1);
-	ODM_delay_us(10);
+	odm_write_4bytebu(dm, 0x1b00, IQK_CMD);
+	odm_write_4bytebu(dm, 0x1b00, IQK_CMD + 0x1);
+	ODM_delay_usbu(10);
 	fail = _iqk_check_cal_8822b(dm, path, 0x1);
 	_iqk_ltec_write_8822b(dm, 0x38, MASKDWORD, iqk->tmp_gntwl);
 
 	if (dm->debug_components & DBG_RF_IQK) {
-		odm_write_4byte(dm, 0x1b00, 0xf8000008 | path << 1);
+		odm_write_4bytebu(dm, 0x1b00, 0xf8000008 | path << 1);
 		RF_DBG(dm, DBG_RF_IQK,
 		       "[IQK]S%d ==> 0x1b00 = 0x%x, 0x1b08 = 0x%x\n", path,
-		       odm_read_4byte(dm, 0x1b00), odm_read_4byte(dm, 0x1b08));
+		       odm_read_4bytebu(dm, 0x1b00), odm_read_4bytebu(dm, 0x1b08));
 		RF_DBG(dm, DBG_RF_IQK, "[IQK]S%d ==> delay_count = 0x%x\n",
 		       path, delay_count);
 		if (idx != TXIQK)
 			RF_DBG(dm, DBG_RF_IQK,
 			       "[IQK]S%d ==> RF0x0 = 0x%x, RF0x56 = 0x%x\n",
 			       path,
-			       odm_get_rf_reg(dm, (enum rf_path)path, RF_0x0,
+			       odm_get_rf_regbu(dm, (enum rf_path)path, RF_0x0,
 					      MASK20BITS),
-			       odm_get_rf_reg(dm, (enum rf_path)path, RF_0x56,
+			       odm_get_rf_regbu(dm, (enum rf_path)path, RF_0x56,
 					      MASK20BITS));
 	}
 
-	odm_write_4byte(dm, 0x1b00, 0xf8000008 | path << 1);
+	odm_write_4bytebu(dm, 0x1b00, 0xf8000008 | path << 1);
 
 	if (idx == TXIQK) {
 		if (fail)
-			odm_set_bb_reg(dm, iqk_apply[path], BIT(0), 0x0);
+			odm_set_bb_regbu(dm, iqk_apply[path], BIT(0), 0x0);
 		else
 			_iqk_backup_iqk_8822b(dm, 0x2, path);
 	}
 
 	if (idx == RXIQK2) {
 		iqk->rxiqk_agc[0][path] =
-			(u16)(((odm_get_rf_reg(dm, (enum rf_path)path,
+			(u16)(((odm_get_rf_regbu(dm, (enum rf_path)path,
 			      RF_0x0, MASK20BITS) >> 5) & 0xff) |
 			      (iqk->tmp1bcc << 8));
 
-		odm_write_4byte(dm, 0x1b38, 0x20000000);
+		odm_write_4bytebu(dm, 0x1b38, 0x20000000);
 
 		if (fail)
-			odm_set_bb_reg(dm, iqk_apply[path],
+			odm_set_bb_regbu(dm, iqk_apply[path],
 				       (BIT(11) | BIT(10)), 0x0);
 		else
 			_iqk_backup_iqk_8822b(dm, 0x3, path);
@@ -1299,11 +1299,11 @@ void _iqk_iqk_by_path_8822b(void *dm_void, boolean segment_iqk)
 			       iqk->gs_retry_count[0][RF_PATH_B][0],
 			       iqk->gs_retry_count[0][RF_PATH_B][1]);
 			for (i = 0; i < SS_8822B; i++) {
-				odm_write_4byte(dm, 0x1b00,
+				odm_write_4bytebu(dm, 0x1b00,
 						0xf8000008 | i << 1);
-				odm_write_4byte(dm, 0x1b2c, 0x7);
-				odm_write_4byte(dm, 0x1bcc, 0x0);
-				odm_write_4byte(dm, 0x1b38, 0x20000000);
+				odm_write_4bytebu(dm, 0x1b2c, 0x7);
+				odm_write_4bytebu(dm, 0x1bcc, 0x0);
+				odm_write_4bytebu(dm, 0x1b38, 0x20000000);
 			}
 			break;
 		}
@@ -1319,13 +1319,13 @@ void _iqk_start_iqk_8822b(struct dm_struct *dm, boolean segment_iqk)
 	u32 tmp;
 
 	/*GNT_WL = 1*/
-	tmp = odm_get_rf_reg(dm, RF_PATH_A, RF_0x1, MASK20BITS);
+	tmp = odm_get_rf_regbu(dm, RF_PATH_A, RF_0x1, MASK20BITS);
 	tmp = tmp | BIT(5) | BIT(0);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x1, MASK20BITS, tmp);
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x1, MASK20BITS, tmp);
 
-	tmp = odm_get_rf_reg(dm, RF_PATH_B, RF_0x1, MASK20BITS);
+	tmp = odm_get_rf_regbu(dm, RF_PATH_B, RF_0x1, MASK20BITS);
 	tmp = tmp | BIT(5) | BIT(0);
-	odm_set_rf_reg(dm, RF_PATH_B, RF_0x1, MASK20BITS, tmp);
+	odm_set_rf_regbu(dm, RF_PATH_B, RF_0x1, MASK20BITS, tmp);
 
 	_iqk_iqk_by_path_8822b(dm, segment_iqk);
 }
@@ -1374,7 +1374,7 @@ void _iq_calibrate_8822b_init(struct dm_struct *dm)
 	}
 	/*parameters init.*/
 	/*cu_distance (IQK result variation)=111*/
-	odm_write_4byte(dm, 0x1b10, 0x88011c00);
+	odm_write_4bytebu(dm, 0x1b10, 0x88011c00);
 }
 
 boolean
@@ -1383,17 +1383,17 @@ _iqk_rximr_rxk1_test_8822b(struct dm_struct *dm, u8 path, u32 tone_index)
 	boolean fail = true;
 	u32 IQK_CMD, reg_1b20, reg_1b24;
 
-	odm_write_4byte(dm, 0x1b00, 0xf8000008 | path << 1);
-	reg_1b20 = (odm_read_4byte(dm, 0x1b20) & 0x000fffff);
-	odm_write_4byte(dm, 0x1b20, reg_1b20 | ((tone_index & 0xfff) << 20));
-	reg_1b24 = (odm_read_4byte(dm, 0x1b24) & 0x000fffff);
-	odm_write_4byte(dm, 0x1b24, reg_1b24 | ((tone_index & 0xfff) << 20));
+	odm_write_4bytebu(dm, 0x1b00, 0xf8000008 | path << 1);
+	reg_1b20 = (odm_read_4bytebu(dm, 0x1b20) & 0x000fffff);
+	odm_write_4bytebu(dm, 0x1b20, reg_1b20 | ((tone_index & 0xfff) << 20));
+	reg_1b24 = (odm_read_4bytebu(dm, 0x1b24) & 0x000fffff);
+	odm_write_4bytebu(dm, 0x1b24, reg_1b24 | ((tone_index & 0xfff) << 20));
 
 	IQK_CMD = 0xf8000208 | (1 << (path + 4));
-	odm_write_4byte(dm, 0x1b00, IQK_CMD);
-	odm_write_4byte(dm, 0x1b00, IQK_CMD + 0x1);
+	odm_write_4bytebu(dm, 0x1b00, IQK_CMD);
+	odm_write_4bytebu(dm, 0x1b00, IQK_CMD + 0x1);
 
-	ODM_delay_ms(GS_delay_8822B);
+	ODM_delay_msbu(GS_delay_8822B);
 	fail = _iqk_check_cal_8822b(dm, path, 0x1);
 	return fail;
 }
@@ -1408,47 +1408,47 @@ u32 _iqk_tximr_selfcheck_8822b(void *dm_void, u8 tone_index, u8 path)
 
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	/*backup*/
-	odm_write_4byte(dm, 0x1b00, 0xf8000008 | path << 1);
-	odm_write_4byte(dm, 0x1bc8, 0x80000000);
-	odm_write_4byte(dm, 0x8f8, 0x41400080);
-	tmp1 = odm_read_4byte(dm, 0x1b0c);
-	tmp2 = odm_read_4byte(dm, 0x1b14);
-	tmp3 = odm_read_4byte(dm, 0x1b1c);
-	tmp4 = odm_read_4byte(dm, 0x1b20);
-	tmp5 = odm_read_4byte(dm, 0x1b24);
+	odm_write_4bytebu(dm, 0x1b00, 0xf8000008 | path << 1);
+	odm_write_4bytebu(dm, 0x1bc8, 0x80000000);
+	odm_write_4bytebu(dm, 0x8f8, 0x41400080);
+	tmp1 = odm_read_4bytebu(dm, 0x1b0c);
+	tmp2 = odm_read_4bytebu(dm, 0x1b14);
+	tmp3 = odm_read_4bytebu(dm, 0x1b1c);
+	tmp4 = odm_read_4bytebu(dm, 0x1b20);
+	tmp5 = odm_read_4bytebu(dm, 0x1b24);
 	/*setup*/
-	odm_write_4byte(dm, 0x1b0c, 0x00003000);
-	odm_write_4byte(dm, 0x1b1c, 0xA2193C32);
-	odm_write_1byte(dm, 0x1b15, 0x00);
-	odm_write_4byte(dm, 0x1b20, (u32)(tone_index << 20 | 0x00040008));
-	odm_write_4byte(dm, 0x1b24, (u32)(tone_index << 20 | 0x00060008));
-	odm_write_4byte(dm, 0x1b2c, 0x07);
-	odm_write_4byte(dm, 0x1b38, 0x20000000);
-	odm_write_4byte(dm, 0x1b3c, 0x20000000);
+	odm_write_4bytebu(dm, 0x1b0c, 0x00003000);
+	odm_write_4bytebu(dm, 0x1b1c, 0xA2193C32);
+	odm_write_1bytebu(dm, 0x1b15, 0x00);
+	odm_write_4bytebu(dm, 0x1b20, (u32)(tone_index << 20 | 0x00040008));
+	odm_write_4bytebu(dm, 0x1b24, (u32)(tone_index << 20 | 0x00060008));
+	odm_write_4bytebu(dm, 0x1b2c, 0x07);
+	odm_write_4bytebu(dm, 0x1b38, 0x20000000);
+	odm_write_4bytebu(dm, 0x1b3c, 0x20000000);
 	/* ======derive pwr1========*/
 	for (i = 0; i < SS_8822B; i++) {
-		odm_write_4byte(dm, 0x1b00, 0xf8000008 | path << 1);
+		odm_write_4bytebu(dm, 0x1b00, 0xf8000008 | path << 1);
 		if (i == 0)
-			odm_write_4byte(dm, 0x1bcc, 0x0f);
+			odm_write_4bytebu(dm, 0x1bcc, 0x0f);
 		else
-			odm_write_4byte(dm, 0x1bcc, 0x09);
+			odm_write_4bytebu(dm, 0x1bcc, 0x09);
 		/* One Shot*/
 		IQK_CMD = 0x00000800;
-		odm_write_4byte(dm, 0x1b34, IQK_CMD + 1);
-		odm_write_4byte(dm, 0x1b34, IQK_CMD);
-		ODM_delay_ms(1);
-		odm_write_4byte(dm, 0x1bd4, 0x00040001);
-		tx_ini_power_H[i] = odm_read_4byte(dm, 0x1bfc);
-		odm_write_4byte(dm, 0x1bd4, 0x000C0001);
-		tx_ini_power_L[i] = odm_read_4byte(dm, 0x1bfc);
+		odm_write_4bytebu(dm, 0x1b34, IQK_CMD + 1);
+		odm_write_4bytebu(dm, 0x1b34, IQK_CMD);
+		ODM_delay_msbu(1);
+		odm_write_4bytebu(dm, 0x1bd4, 0x00040001);
+		tx_ini_power_H[i] = odm_read_4bytebu(dm, 0x1bfc);
+		odm_write_4bytebu(dm, 0x1bd4, 0x000C0001);
+		tx_ini_power_L[i] = odm_read_4bytebu(dm, 0x1bfc);
 	}
 	/*restore*/
-	odm_write_4byte(dm, 0x1b00, 0xf8000008 | path << 1);
-	odm_write_4byte(dm, 0x1b0c, tmp1);
-	odm_write_4byte(dm, 0x1b14, tmp2);
-	odm_write_4byte(dm, 0x1b1c, tmp3);
-	odm_write_4byte(dm, 0x1b20, tmp4);
-	odm_write_4byte(dm, 0x1b24, tmp5);
+	odm_write_4bytebu(dm, 0x1b00, 0xf8000008 | path << 1);
+	odm_write_4bytebu(dm, 0x1b0c, tmp1);
+	odm_write_4bytebu(dm, 0x1b14, tmp2);
+	odm_write_4bytebu(dm, 0x1b1c, tmp3);
+	odm_write_4bytebu(dm, 0x1b20, tmp4);
+	odm_write_4bytebu(dm, 0x1b24, tmp5);
 
 	if (tx_ini_power_H[1] == tx_ini_power_H[0])
 		tximr = (3 * (halrf_psd_log2base(tx_ini_power_L[0] << 2) -
@@ -1492,55 +1492,55 @@ u32 _iqk_rximr_selfcheck_8822b(void *dm_void, u32 tone_index, u8 path,
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
 	/*backup*/
-	odm_write_4byte(dm, 0x1b00, 0xf8000008 | path << 1);
-	tmp1 = odm_read_4byte(dm, 0x1b0c);
-	tmp2 = odm_read_4byte(dm, 0x1b14);
-	tmp3 = odm_read_4byte(dm, 0x1b1c);
-	tmp4 = odm_read_4byte(dm, 0x1b20);
-	tmp5 = odm_read_4byte(dm, 0x1b24);
+	odm_write_4bytebu(dm, 0x1b00, 0xf8000008 | path << 1);
+	tmp1 = odm_read_4bytebu(dm, 0x1b0c);
+	tmp2 = odm_read_4bytebu(dm, 0x1b14);
+	tmp3 = odm_read_4bytebu(dm, 0x1b1c);
+	tmp4 = odm_read_4bytebu(dm, 0x1b20);
+	tmp5 = odm_read_4bytebu(dm, 0x1b24);
 
-	odm_write_4byte(dm, 0x1b0c, 0x00001000);
-	odm_write_1byte(dm, 0x1b15, 0x00);
-	odm_write_4byte(dm, 0x1b1c, 0x82193d31);
-	odm_write_4byte(dm, 0x1b20, (u32)(tone_index << 20 | 0x00040008));
-	odm_write_4byte(dm, 0x1b24, (u32)(tone_index << 20 | 0x00060048));
-	odm_write_4byte(dm, 0x1b2c, 0x07);
-	odm_write_4byte(dm, 0x1b38, tmp1b38);
-	odm_write_4byte(dm, 0x1b3c, 0x20000000);
+	odm_write_4bytebu(dm, 0x1b0c, 0x00001000);
+	odm_write_1bytebu(dm, 0x1b15, 0x00);
+	odm_write_4bytebu(dm, 0x1b1c, 0x82193d31);
+	odm_write_4bytebu(dm, 0x1b20, (u32)(tone_index << 20 | 0x00040008));
+	odm_write_4bytebu(dm, 0x1b24, (u32)(tone_index << 20 | 0x00060048));
+	odm_write_4bytebu(dm, 0x1b2c, 0x07);
+	odm_write_4bytebu(dm, 0x1b38, tmp1b38);
+	odm_write_4bytebu(dm, 0x1b3c, 0x20000000);
 
 	for (i = 0; i < 2; i++) {
 		if (i == 0)
-			odm_write_4byte(dm, 0x1b1c, 0x82193d31);
+			odm_write_4bytebu(dm, 0x1b1c, 0x82193d31);
 		else
-			odm_write_4byte(dm, 0x1b1c, 0xa2193d31);
+			odm_write_4bytebu(dm, 0x1b1c, 0xa2193d31);
 		IQK_CMD = 0x00000800;
-		odm_write_4byte(dm, 0x1b34, IQK_CMD + 1);
-		odm_write_4byte(dm, 0x1b34, IQK_CMD);
-		ODM_delay_ms(2);
-		odm_write_1byte(dm, 0x1bd6, 0xb);
+		odm_write_4bytebu(dm, 0x1b34, IQK_CMD + 1);
+		odm_write_4bytebu(dm, 0x1b34, IQK_CMD);
+		ODM_delay_msbu(2);
+		odm_write_1bytebu(dm, 0x1bd6, 0xb);
 		while (count < 100) {
 			count++;
-			if (odm_get_bb_reg(dm, R_0x1bfc, BIT(1)) == 1)
+			if (odm_get_bb_regbu(dm, R_0x1bfc, BIT(1)) == 1)
 				break;
 
-			ODM_delay_ms(1);
+			ODM_delay_msbu(1);
 		}
 		if (1) {
-			odm_write_1byte(dm, 0x1bd6, 0x5);
-			rx_ini_power_H[i] = odm_read_4byte(dm, 0x1bfc);
-			odm_write_1byte(dm, 0x1bd6, 0xe);
-			rx_ini_power_L[i] = odm_read_4byte(dm, 0x1bfc);
+			odm_write_1bytebu(dm, 0x1bd6, 0x5);
+			rx_ini_power_H[i] = odm_read_4bytebu(dm, 0x1bfc);
+			odm_write_1bytebu(dm, 0x1bd6, 0xe);
+			rx_ini_power_L[i] = odm_read_4bytebu(dm, 0x1bfc);
 		} else {
 			rx_ini_power_H[i] = 0x0;
 			rx_ini_power_L[i] = 0x0;
 		}
 	}
 	/*restore*/
-	odm_write_4byte(dm, 0x1b0c, tmp1);
-	odm_write_4byte(dm, 0x1b14, tmp2);
-	odm_write_4byte(dm, 0x1b1c, tmp3);
-	odm_write_4byte(dm, 0x1b20, tmp4);
-	odm_write_4byte(dm, 0x1b24, tmp5);
+	odm_write_4bytebu(dm, 0x1b0c, tmp1);
+	odm_write_4bytebu(dm, 0x1b14, tmp2);
+	odm_write_4bytebu(dm, 0x1b1c, tmp3);
+	odm_write_4bytebu(dm, 0x1b20, tmp4);
+	odm_write_4bytebu(dm, 0x1b24, tmp5);
 	for (i = 0; i < 2; i++)
 		rx_ini_power_H[i] = (rx_ini_power_H[i] & 0xf8000000) >> 27;
 
@@ -1631,12 +1631,12 @@ boolean _iqk_get_rxk1_8822b(struct dm_struct *dm, u8 path, u8 imr_limit,
 					       tone_index);
 				}
 			} else {
-				odm_write_4byte(dm, 0x1b00, 0xf8000008 |
+				odm_write_4bytebu(dm, 0x1b00, 0xf8000008 |
 					path << 1);
-				odm_write_4byte(dm, 0x1b1c, 0xa2193c32);
-				odm_write_4byte(dm, 0x1b14, 0xe5);
-				odm_write_4byte(dm, 0x1b14, 0x0);
-				temp[side][i] = odm_read_4byte(dm, 0x1b38);
+				odm_write_4bytebu(dm, 0x1b1c, 0xa2193c32);
+				odm_write_4bytebu(dm, 0x1b14, 0xe5);
+				odm_write_4bytebu(dm, 0x1b14, 0x0);
+				temp[side][i] = odm_read_4bytebu(dm, 0x1b38);
 				RF_DBG(dm,
 				       DBG_RF_IQK,
 				       "[IQK]path = 0x%x", path);
@@ -1735,8 +1735,8 @@ void _iqk_rximr_test_8822b(struct dm_struct *dm, u8 path, u8 imr_limit)
 			}
 			break;
 		case 3: /*get RXK1 IQC*/
-			odm_write_4byte(dm, 0x1b00, cmd | path << 1);
-			temp = odm_read_4byte(dm, 0x1b1c);
+			odm_write_4bytebu(dm, 0x1b00, cmd | path << 1);
+			temp = odm_read_4bytebu(dm, 0x1b1c);
 			for (side = 0; side < 2; side++) {
 				kfail = _iqk_get_rxk1_8822b(dm,
 							    path,
@@ -1753,9 +1753,9 @@ void _iqk_rximr_test_8822b(struct dm_struct *dm, u8 path, u8 imr_limit)
 			for (side = 0; side < 2; side++) {
 				_iqk_get_rxk2_8822b(dm, path, imr_limit, side,
 						    temp1b38);
-				odm_write_4byte(dm, 0x1b00, cmd | path << 1);
-				odm_write_4byte(dm, 0x1b1c, temp);
-				odm_write_4byte(dm, 0x1b38, 0x20000000);
+				odm_write_4bytebu(dm, 0x1b00, cmd | path << 1);
+				odm_write_4bytebu(dm, 0x1b1c, temp);
+				odm_write_4bytebu(dm, 0x1b38, 0x20000000);
 			}
 			break;
 		}
@@ -1856,7 +1856,7 @@ void _phy_iq_calibrate_8822b(struct dm_struct *dm, boolean reset,
 		iqk->kcount = 0;
 		RF_DBG(dm, DBG_RF_IQK, "[IQK]delay 50ms!!!\n");
 		for (i = 0; i < 5000; i++)
-			ODM_delay_us(10);
+			ODM_delay_usbu(10);
 	};
 	if (segment_iqk)
 		_iqk_reload_iqk_setting_8822b(dm, 0x0, 0x1);
@@ -1884,7 +1884,7 @@ void _phy_iq_calibrate_by_fw_8822b(void *dm_void, u8 clear, u8 segment_iqk)
 #endif
 
 	iqk->iqk_times++;
-	status = odm_iq_calibrate_by_fw(dm, clear, segment_iqk);
+	status = odm_iq_calibratebu_by_fwbu(dm, clear, segment_iqk);
 
 	if (status == HAL_STATUS_SUCCESS)
 		RF_DBG(dm, DBG_RF_IQK, "[IQK]FWIQK OK!!!\n");
@@ -1902,7 +1902,7 @@ void phy_iq_calibrate_8822b(void *dm_void, boolean clear, boolean segment_iqk)
 	if (dm->fw_offload_ability & PHYDM_RF_IQK_OFFLOAD) {
 		_phy_iq_calibrate_by_fw_8822b(dm, clear, (u8)(segment_iqk));
 		for (i = 0; i < 100; i++)
-			ODM_delay_us(10);
+			ODM_delay_usbu(10);
 		phydm_get_read_counter_8822b(dm);
 		halrf_iqk_check_if_reload(dm);
 	} else {
@@ -1975,21 +1975,21 @@ void phy_get_iqk_cfir_8822b(void *dm_void, u8 idx, u8 path, boolean debug)
 	else
 		ch = 0;
 
-	odm_set_bb_reg(dm, R_0x1b00, MASKDWORD, 0xf8000008 | path << 1);
+	odm_set_bb_regbu(dm, R_0x1b00, MASKDWORD, 0xf8000008 | path << 1);
 	if (idx == 0)
-		odm_set_bb_reg(dm, R_0x1b0c, BIT(13) | BIT(12), 0x3);
+		odm_set_bb_regbu(dm, R_0x1b0c, BIT(13) | BIT(12), 0x3);
 	else
-		odm_set_bb_reg(dm, R_0x1b0c, BIT(13) | BIT(12), 0x1);
-	odm_set_bb_reg(dm, R_0x1bd4, bit_mask_20_16, 0x10);
+		odm_set_bb_regbu(dm, R_0x1b0c, BIT(13) | BIT(12), 0x1);
+	odm_set_bb_regbu(dm, R_0x1bd4, bit_mask_20_16, 0x10);
 	for (i = 0; i < 8; i++) {
-		odm_set_bb_reg(dm, R_0x1bd8, MASKDWORD, 0xe0000001 + (i * 4));
-		tmp = odm_get_bb_reg(dm, R_0x1bfc, MASKDWORD);
+		odm_set_bb_regbu(dm, R_0x1bd8, MASKDWORD, 0xe0000001 + (i * 4));
+		tmp = odm_get_bb_regbu(dm, R_0x1bfc, MASKDWORD);
 		iqk_info->iqk_cfir_real[ch][path][idx][i] =
 						(u16)((tmp & 0x0fff0000) >> 16);
 		iqk_info->iqk_cfir_imag[ch][path][idx][i] = (u16)tmp & 0xfff;
 	}
-	odm_set_bb_reg(dm, R_0x1bd8, MASKDWORD, 0x0);
-	odm_set_bb_reg(dm, R_0x1b0c, BIT(13) | BIT(12), 0x0);
+	odm_set_bb_regbu(dm, R_0x1bd8, MASKDWORD, 0x0);
+	odm_set_bb_regbu(dm, R_0x1b0c, BIT(13) | BIT(12), 0x0);
 }
 
 void phy_iqk_dbg_cfir_backup_8822b(void *dm_void)
@@ -2041,34 +2041,34 @@ void phy_iqk_dbg_cfir_backup_update_8822b(void *dm_void)
 	}
 	for (path = 0; path < SS_8822B; path++) {
 		for (idx = 0; idx < 2; idx++) {
-			odm_set_bb_reg(dm, R_0x1b00, MASKDWORD,
+			odm_set_bb_regbu(dm, R_0x1b00, MASKDWORD,
 				       0xf8000008 | path << 1);
-			odm_set_bb_reg(dm, R_0x1b2c, MASKDWORD, 0x7);
-			odm_set_bb_reg(dm, R_0x1b38, MASKDWORD, 0x20000000);
-			odm_set_bb_reg(dm, R_0x1b3c, MASKDWORD, 0x20000000);
-			odm_set_bb_reg(dm, R_0x1bcc, MASKDWORD, 0x00000000);
+			odm_set_bb_regbu(dm, R_0x1b2c, MASKDWORD, 0x7);
+			odm_set_bb_regbu(dm, R_0x1b38, MASKDWORD, 0x20000000);
+			odm_set_bb_regbu(dm, R_0x1b3c, MASKDWORD, 0x20000000);
+			odm_set_bb_regbu(dm, R_0x1bcc, MASKDWORD, 0x00000000);
 			if (idx == 0)
-				odm_set_bb_reg(dm, R_0x1b0c, bmask13_12, 0x3);
+				odm_set_bb_regbu(dm, R_0x1b0c, bmask13_12, 0x3);
 			else
-				odm_set_bb_reg(dm, R_0x1b0c, bmask13_12, 0x1);
-			odm_set_bb_reg(dm, R_0x1bd4, bmask20_16, 0x10);
+				odm_set_bb_regbu(dm, R_0x1b0c, bmask13_12, 0x1);
+			odm_set_bb_regbu(dm, R_0x1bd4, bmask20_16, 0x10);
 			for (i = 0; i < 8; i++) {
 				data = ((0xc0000000 >> idx) + 0x3) + (i * 4) +
 					(iqk->iqk_cfir_real[2][path][idx][i]
 					<< 9);
-				odm_write_4byte(dm, 0x1bd8, data);
+				odm_write_4bytebu(dm, 0x1bd8, data);
 				data = ((0xc0000000 >> idx) + 0x1) + (i * 4) +
 					(iqk->iqk_cfir_imag[2][path][idx][i]
 					<< 9);
-				odm_write_4byte(dm, 0x1bd8, data);
+				odm_write_4bytebu(dm, 0x1bd8, data);
 #if 0
-				/*odm_write_4byte(dm, 0x1bd8, iqk->iqk_cfir_real[2][path][idx][i]);*/
-				/*odm_write_4byte(dm, 0x1bd8, iqk->iqk_cfir_imag[2][path][idx][i]);*/
+				/*odm_write_4bytebu(dm, 0x1bd8, iqk->iqk_cfir_real[2][path][idx][i]);*/
+				/*odm_write_4bytebu(dm, 0x1bd8, iqk->iqk_cfir_imag[2][path][idx][i]);*/
 #endif
 			}
 		}
-		odm_set_bb_reg(dm, R_0x1bd8, MASKDWORD, 0x0);
-		odm_set_bb_reg(dm, R_0x1b0c, bmask13_12, 0x0);
+		odm_set_bb_regbu(dm, R_0x1bd8, MASKDWORD, 0x0);
+		odm_set_bb_regbu(dm, R_0x1b0c, bmask13_12, 0x0);
 	}
 	RF_DBG(dm, DBG_RF_IQK, "[IQK]%-20s\n", "update new CFIR");
 }
@@ -2088,34 +2088,34 @@ void phy_iqk_dbg_cfir_reload_8822b(void *dm_void)
 	}
 	for (path = 0; path < SS_8822B; path++) {
 		for (idx = 0; idx < 2; idx++) {
-			odm_set_bb_reg(dm, R_0x1b00, MASKDWORD,
+			odm_set_bb_regbu(dm, R_0x1b00, MASKDWORD,
 				       0xf8000008 | path << 1);
-			odm_set_bb_reg(dm, R_0x1b2c, MASKDWORD, 0x7);
-			odm_set_bb_reg(dm, R_0x1b38, MASKDWORD, 0x20000000);
-			odm_set_bb_reg(dm, R_0x1b3c, MASKDWORD, 0x20000000);
-			odm_set_bb_reg(dm, R_0x1bcc, MASKDWORD, 0x00000000);
+			odm_set_bb_regbu(dm, R_0x1b2c, MASKDWORD, 0x7);
+			odm_set_bb_regbu(dm, R_0x1b38, MASKDWORD, 0x20000000);
+			odm_set_bb_regbu(dm, R_0x1b3c, MASKDWORD, 0x20000000);
+			odm_set_bb_regbu(dm, R_0x1bcc, MASKDWORD, 0x00000000);
 			if (idx == 0)
-				odm_set_bb_reg(dm, R_0x1b0c, bmask13_12, 0x3);
+				odm_set_bb_regbu(dm, R_0x1b0c, bmask13_12, 0x3);
 			else
-				odm_set_bb_reg(dm, R_0x1b0c, bmask13_12, 0x1);
-			odm_set_bb_reg(dm, R_0x1bd4, bmask20_16, 0x10);
+				odm_set_bb_regbu(dm, R_0x1b0c, bmask13_12, 0x1);
+			odm_set_bb_regbu(dm, R_0x1bd4, bmask20_16, 0x10);
 			for (i = 0; i < 8; i++) {
 #if 0
-				/*odm_write_4byte(dm, 0x1bd8, iqk->iqk_cfir_real[0][path][idx][i]);*/
-				/*odm_write_4byte(dm, 0x1bd8, iqk->iqk_cfir_imag[0][path][idx][i]);*/
+				/*odm_write_4bytebu(dm, 0x1bd8, iqk->iqk_cfir_real[0][path][idx][i]);*/
+				/*odm_write_4bytebu(dm, 0x1bd8, iqk->iqk_cfir_imag[0][path][idx][i]);*/
 #endif
 				data = ((0xc0000000 >> idx) + 0x3) + (i * 4) +
 					(iqk->iqk_cfir_real[0][path][idx][i]
 					<< 9);
-				odm_write_4byte(dm, 0x1bd8, data);
+				odm_write_4bytebu(dm, 0x1bd8, data);
 				data = ((0xc0000000 >> idx) + 0x1) + (i * 4) +
 					(iqk->iqk_cfir_imag[0][path][idx][i]
 					<< 9);
-				odm_write_4byte(dm, 0x1bd8, data);
+				odm_write_4bytebu(dm, 0x1bd8, data);
 			}
 		}
-		odm_set_bb_reg(dm, R_0x1bd8, MASKDWORD, 0x0);
-		odm_set_bb_reg(dm, R_0x1b0c, bmask13_12, 0x0);
+		odm_set_bb_regbu(dm, R_0x1bd8, MASKDWORD, 0x0);
+		odm_set_bb_regbu(dm, R_0x1b0c, bmask13_12, 0x0);
 	}
 	RF_DBG(dm, DBG_RF_IQK, "[IQK]%-20s\n", "write CFIR with default value");
 }

@@ -14,25 +14,25 @@
 /* #define FULL_UNROLL */
 #define AES_SMALL_TABLES
 
-extern const u32 Te0[256];
+extern const u32 Te0bu[256];
 extern const u32 Te1[256];
 extern const u32 Te2[256];
 extern const u32 Te3[256];
 extern const u32 Te4[256];
-extern const u32 Td0[256];
+extern const u32 Td0bu[256];
 extern const u32 Td1[256];
 extern const u32 Td2[256];
 extern const u32 Td3[256];
 extern const u32 Td4[256];
 extern const u32 rcon[10];
-extern const u8 Td4s[256];
-extern const u8 rcons[10];
+extern const u8 Td4sbu[256];
+extern const u8 rconsbu[10];
 
 #ifndef AES_SMALL_TABLES
 
 #define RCON(i) rcon[(i)]
 
-#define TE0(i) Te0[((i) >> 24) & 0xff]
+#define TE0(i) Te0bu[((i) >> 24) & 0xff]
 #define TE1(i) Te1[((i) >> 16) & 0xff]
 #define TE2(i) Te2[((i) >> 8) & 0xff]
 #define TE3(i) Te3[(i) & 0xff]
@@ -50,7 +50,7 @@ extern const u8 rcons[10];
 #define TE444(i) (Te4[(i) & 0xff] & 0x000000ff)
 #define TE4(i) (Te4[(i)] & 0x000000ff)
 
-#define TD0(i) Td0[((i) >> 24) & 0xff]
+#define TD0(i) Td0bu[((i) >> 24) & 0xff]
 #define TD1(i) Td1[((i) >> 16) & 0xff]
 #define TD2(i) Td2[((i) >> 8) & 0xff]
 #define TD3(i) Td3[(i) & 0xff]
@@ -58,50 +58,50 @@ extern const u8 rcons[10];
 #define TD42(i) (Td4[((i) >> 16) & 0xff] & 0x00ff0000)
 #define TD43(i) (Td4[((i) >> 8) & 0xff] & 0x0000ff00)
 #define TD44(i) (Td4[(i) & 0xff] & 0x000000ff)
-#define TD0_(i) Td0[(i) & 0xff]
+#define TD0_(i) Td0bu[(i) & 0xff]
 #define TD1_(i) Td1[(i) & 0xff]
 #define TD2_(i) Td2[(i) & 0xff]
 #define TD3_(i) Td3[(i) & 0xff]
 
 #else /* AES_SMALL_TABLES */
 
-#define RCON(i) (rcons[(i)] << 24)
+#define RCON(i) (rconsbu[(i)] << 24)
 
 static inline u32 rotr(u32 val, int bits)
 {
 	return (val >> bits) | (val << (32 - bits));
 }
 
-#define TE0(i) Te0[((i) >> 24) & 0xff]
-#define TE1(i) rotr(Te0[((i) >> 16) & 0xff], 8)
-#define TE2(i) rotr(Te0[((i) >> 8) & 0xff], 16)
-#define TE3(i) rotr(Te0[(i) & 0xff], 24)
-#define TE41(i) ((Te0[((i) >> 24) & 0xff] << 8) & 0xff000000)
-#define TE42(i) (Te0[((i) >> 16) & 0xff] & 0x00ff0000)
-#define TE43(i) (Te0[((i) >> 8) & 0xff] & 0x0000ff00)
-#define TE44(i) ((Te0[(i) & 0xff] >> 8) & 0x000000ff)
-#define TE421(i) ((Te0[((i) >> 16) & 0xff] << 8) & 0xff000000)
-#define TE432(i) (Te0[((i) >> 8) & 0xff] & 0x00ff0000)
-#define TE443(i) (Te0[(i) & 0xff] & 0x0000ff00)
-#define TE414(i) ((Te0[((i) >> 24) & 0xff] >> 8) & 0x000000ff)
-#define TE411(i) ((Te0[((i) >> 24) & 0xff] << 8) & 0xff000000)
-#define TE422(i) (Te0[((i) >> 16) & 0xff] & 0x00ff0000)
-#define TE433(i) (Te0[((i) >> 8) & 0xff] & 0x0000ff00)
-#define TE444(i) ((Te0[(i) & 0xff] >> 8) & 0x000000ff)
-#define TE4(i) ((Te0[(i)] >> 8) & 0x000000ff)
+#define TE0(i) Te0bu[((i) >> 24) & 0xff]
+#define TE1(i) rotr(Te0bu[((i) >> 16) & 0xff], 8)
+#define TE2(i) rotr(Te0bu[((i) >> 8) & 0xff], 16)
+#define TE3(i) rotr(Te0bu[(i) & 0xff], 24)
+#define TE41(i) ((Te0bu[((i) >> 24) & 0xff] << 8) & 0xff000000)
+#define TE42(i) (Te0bu[((i) >> 16) & 0xff] & 0x00ff0000)
+#define TE43(i) (Te0bu[((i) >> 8) & 0xff] & 0x0000ff00)
+#define TE44(i) ((Te0bu[(i) & 0xff] >> 8) & 0x000000ff)
+#define TE421(i) ((Te0bu[((i) >> 16) & 0xff] << 8) & 0xff000000)
+#define TE432(i) (Te0bu[((i) >> 8) & 0xff] & 0x00ff0000)
+#define TE443(i) (Te0bu[(i) & 0xff] & 0x0000ff00)
+#define TE414(i) ((Te0bu[((i) >> 24) & 0xff] >> 8) & 0x000000ff)
+#define TE411(i) ((Te0bu[((i) >> 24) & 0xff] << 8) & 0xff000000)
+#define TE422(i) (Te0bu[((i) >> 16) & 0xff] & 0x00ff0000)
+#define TE433(i) (Te0bu[((i) >> 8) & 0xff] & 0x0000ff00)
+#define TE444(i) ((Te0bu[(i) & 0xff] >> 8) & 0x000000ff)
+#define TE4(i) ((Te0bu[(i)] >> 8) & 0x000000ff)
 
-#define TD0(i) Td0[((i) >> 24) & 0xff]
-#define TD1(i) rotr(Td0[((i) >> 16) & 0xff], 8)
-#define TD2(i) rotr(Td0[((i) >> 8) & 0xff], 16)
-#define TD3(i) rotr(Td0[(i) & 0xff], 24)
-#define TD41(i) (Td4s[((i) >> 24) & 0xff] << 24)
-#define TD42(i) (Td4s[((i) >> 16) & 0xff] << 16)
-#define TD43(i) (Td4s[((i) >> 8) & 0xff] << 8)
-#define TD44(i) (Td4s[(i) & 0xff])
-#define TD0_(i) Td0[(i) & 0xff]
-#define TD1_(i) rotr(Td0[(i) & 0xff], 8)
-#define TD2_(i) rotr(Td0[(i) & 0xff], 16)
-#define TD3_(i) rotr(Td0[(i) & 0xff], 24)
+#define TD0(i) Td0bu[((i) >> 24) & 0xff]
+#define TD1(i) rotr(Td0bu[((i) >> 16) & 0xff], 8)
+#define TD2(i) rotr(Td0bu[((i) >> 8) & 0xff], 16)
+#define TD3(i) rotr(Td0bu[(i) & 0xff], 24)
+#define TD41(i) (Td4sbu[((i) >> 24) & 0xff] << 24)
+#define TD42(i) (Td4sbu[((i) >> 16) & 0xff] << 16)
+#define TD43(i) (Td4sbu[((i) >> 8) & 0xff] << 8)
+#define TD44(i) (Td4sbu[(i) & 0xff])
+#define TD0_(i) Td0bu[(i) & 0xff]
+#define TD1_(i) rotr(Td0bu[(i) & 0xff], 8)
+#define TD2_(i) rotr(Td0bu[(i) & 0xff], 16)
+#define TD3_(i) rotr(Td0bu[(i) & 0xff], 24)
 
 #endif /* AES_SMALL_TABLES */
 

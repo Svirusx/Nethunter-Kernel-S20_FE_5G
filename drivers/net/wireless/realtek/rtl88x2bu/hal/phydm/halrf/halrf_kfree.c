@@ -32,7 +32,7 @@
 /*@<YuChen, 150720> Add for KFree Feature Requested by RF David.*/
 /*@This is a phydm API*/
 
-void phydm_set_kfree_to_rf_8814a(void *dm_void, u8 e_rf_path, u8 data)
+void phydm_set_kfree_to_rfbu_8814abu(void *dm_void, u8 e_rf_path, u8 data)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct dm_rf_calibration_struct *cali_info = &dm->rf_calibrate_info;
@@ -41,68 +41,68 @@ void phydm_set_kfree_to_rf_8814a(void *dm_void, u8 e_rf_path, u8 data)
 
 	if ((data % 2) != 0) { /*odd->positive*/
 		data = data - 1;
-		odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(19), 1);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(19), 1);
 		is_odd = true;
 	} else { /*even->negative*/
-		odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(19), 0);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(19), 0);
 		is_odd = false;
 	}
 	RF_DBG(dm, DBG_RF_MP, "phy_ConfigKFree8814A(): RF_0x55[19]= %d\n",
 	       is_odd);
 	switch (data) {
 	case 0:
-		odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(14), 0);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x55, tx_gain_bitmask, 0);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(14), 0);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x55, tx_gain_bitmask, 0);
 		cali_info->kfree_offset[e_rf_path] = 0;
 		break;
 	case 2:
-		odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(14), 1);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x55, tx_gain_bitmask, 0);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(14), 1);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x55, tx_gain_bitmask, 0);
 		cali_info->kfree_offset[e_rf_path] = 0;
 		break;
 	case 4:
-		odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(14), 0);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x55, tx_gain_bitmask, 1);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(14), 0);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x55, tx_gain_bitmask, 1);
 		cali_info->kfree_offset[e_rf_path] = 1;
 		break;
 	case 6:
-		odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(14), 1);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x55, tx_gain_bitmask, 1);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(14), 1);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x55, tx_gain_bitmask, 1);
 		cali_info->kfree_offset[e_rf_path] = 1;
 		break;
 	case 8:
-		odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(14), 0);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x55, tx_gain_bitmask, 2);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(14), 0);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x55, tx_gain_bitmask, 2);
 		cali_info->kfree_offset[e_rf_path] = 2;
 		break;
 	case 10:
-		odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(14), 1);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x55, tx_gain_bitmask, 2);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(14), 1);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x55, tx_gain_bitmask, 2);
 		cali_info->kfree_offset[e_rf_path] = 2;
 		break;
 	case 12:
-		odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(14), 0);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x55, tx_gain_bitmask, 3);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(14), 0);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x55, tx_gain_bitmask, 3);
 		cali_info->kfree_offset[e_rf_path] = 3;
 		break;
 	case 14:
-		odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(14), 1);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x55, tx_gain_bitmask, 3);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(14), 1);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x55, tx_gain_bitmask, 3);
 		cali_info->kfree_offset[e_rf_path] = 3;
 		break;
 	case 16:
-		odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(14), 0);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x55, tx_gain_bitmask, 4);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(14), 0);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x55, tx_gain_bitmask, 4);
 		cali_info->kfree_offset[e_rf_path] = 4;
 		break;
 	case 18:
-		odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(14), 1);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x55, tx_gain_bitmask, 4);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(14), 1);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x55, tx_gain_bitmask, 4);
 		cali_info->kfree_offset[e_rf_path] = 4;
 		break;
 	case 20:
-		odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(14), 0);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x55, tx_gain_bitmask, 5);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(14), 0);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x55, tx_gain_bitmask, 5);
 		cali_info->kfree_offset[e_rf_path] = 5;
 		break;
 
@@ -124,14 +124,14 @@ void phydm_set_kfree_to_rf_8814a(void *dm_void, u8 e_rf_path, u8 data)
 	}
 }
 
-void phydm_get_thermal_trim_offset_8821c(void *dm_void)
+void phydm_get_thermal_trim_offsetbu_8821cbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_power_trim_data *power_trim_info = &dm->power_trim_data;
 
 	u8 pg_therm = 0xff;
 
-	odm_efuse_one_byte_read(dm, PPG_THERMAL_OFFSET_21C, &pg_therm, false);
+	odm_efuse_one_byte_readbu(dm, PPG_THERMAL_OFFSET_21C, &pg_therm, false);
 
 	if (pg_therm != 0xff) {
 		pg_therm = pg_therm & 0x1f;
@@ -151,26 +151,26 @@ void phydm_get_thermal_trim_offset_8821c(void *dm_void)
 		       power_trim_info->thermal);
 }
 
-void phydm_get_power_trim_offset_8821c(void *dm_void)
+void phydm_get_power_trim_offsetbu_8821cbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_power_trim_data *power_trim_info = &dm->power_trim_data;
 
 	u8 pg_power = 0xff, i;
 
-	odm_efuse_one_byte_read(dm, PPG_2G_TXAB_21C, &pg_power, false);
+	odm_efuse_one_byte_readbu(dm, PPG_2G_TXAB_21C, &pg_power, false);
 
 	if (pg_power != 0xff) {
 		power_trim_info->bb_gain[0][0] = pg_power;
-		odm_efuse_one_byte_read(dm, PPG_5GL1_TXA_21C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GL1_TXA_21C, &pg_power, false);
 		power_trim_info->bb_gain[1][0] = pg_power;
-		odm_efuse_one_byte_read(dm, PPG_5GL2_TXA_21C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GL2_TXA_21C, &pg_power, false);
 		power_trim_info->bb_gain[2][0] = pg_power;
-		odm_efuse_one_byte_read(dm, PPG_5GM1_TXA_21C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GM1_TXA_21C, &pg_power, false);
 		power_trim_info->bb_gain[3][0] = pg_power;
-		odm_efuse_one_byte_read(dm, PPG_5GM2_TXA_21C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GM2_TXA_21C, &pg_power, false);
 		power_trim_info->bb_gain[4][0] = pg_power;
-		odm_efuse_one_byte_read(dm, PPG_5GH1_TXA_21C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GH1_TXA_21C, &pg_power, false);
 		power_trim_info->bb_gain[5][0] = pg_power;
 		power_trim_info->flag =
 			power_trim_info->flag | KFREE_FLAG_ON |
@@ -188,7 +188,7 @@ void phydm_get_power_trim_offset_8821c(void *dm_void)
 	}
 }
 
-void phydm_set_kfree_to_rf_8821c(void *dm_void, u8 e_rf_path, boolean wlg_btg,
+void phydm_set_kfree_to_rfbu_8821cbu(void *dm_void, u8 e_rf_path, boolean wlg_btg,
 				 u8 data)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -197,69 +197,69 @@ void phydm_set_kfree_to_rf_8821c(void *dm_void, u8 e_rf_path, boolean wlg_btg,
 	u32 s_gain_bmask = (BIT(19) | BIT(18) | BIT(17) |
 			    BIT(16) | BIT(15) | BIT(14));
 
-	odm_set_rf_reg(dm, e_rf_path, RF_0xde, BIT(0), 1);
-	odm_set_rf_reg(dm, e_rf_path, RF_0xde, BIT(5), 1);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(6), 1);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x65, BIT(6), 1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xde, BIT(0), 1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xde, BIT(5), 1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(6), 1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x65, BIT(6), 1);
 
 	if (wlg_btg) {
 		wlg = data & 0xf;
 		btg = (data & 0xf0) >> 4;
 
-		odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(19), (wlg & BIT(0)));
-		odm_set_rf_reg(dm, e_rf_path, RF_0x55, gain_bmask, (wlg >> 1));
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(19), (wlg & BIT(0)));
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x55, gain_bmask, (wlg >> 1));
 
-		odm_set_rf_reg(dm, e_rf_path, RF_0x65, BIT(19), (btg & BIT(0)));
-		odm_set_rf_reg(dm, e_rf_path, RF_0x65, gain_bmask, (btg >> 1));
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x65, BIT(19), (btg & BIT(0)));
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x65, gain_bmask, (btg >> 1));
 	} else {
-		odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(19), data & BIT(0));
-		odm_set_rf_reg(dm, e_rf_path, RF_0x55, gain_bmask,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(19), data & BIT(0));
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x55, gain_bmask,
 			       ((data & 0x1f) >> 1));
 	}
 
 	RF_DBG(dm, DBG_RF_MP,
 	       "[kfree] 8821c 0x55[19:14]=0x%X 0x65[19:14]=0x%X\n",
-	       odm_get_rf_reg(dm, e_rf_path, RF_0x55, s_gain_bmask),
-	       odm_get_rf_reg(dm, e_rf_path, RF_0x65, s_gain_bmask));
+	       odm_get_rf_regbu(dm, e_rf_path, RF_0x55, s_gain_bmask),
+	       odm_get_rf_regbu(dm, e_rf_path, RF_0x65, s_gain_bmask));
 }
 
-void phydm_clear_kfree_to_rf_8821c(void *dm_void, u8 e_rf_path, u8 data)
+void phydm_clear_kfree_to_rfbu_8821cbu(void *dm_void, u8 e_rf_path, u8 data)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 gain_bmask = (BIT(18) | BIT(17) | BIT(16) | BIT(15) | BIT(14));
 	u32 s_gain_bmask = (BIT(19) | BIT(18) | BIT(17) |
 			    BIT(16) | BIT(15) | BIT(14));
 
-	odm_set_rf_reg(dm, e_rf_path, RF_0xde, BIT(0), 1);
-	odm_set_rf_reg(dm, e_rf_path, RF_0xde, BIT(5), 1);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(6), 1);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x65, BIT(6), 1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xde, BIT(0), 1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xde, BIT(5), 1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(6), 1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x65, BIT(6), 1);
 
-	odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(19), (data & BIT(0)));
-	odm_set_rf_reg(dm, e_rf_path, RF_0x55, gain_bmask, (data >> 1));
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(19), (data & BIT(0)));
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x55, gain_bmask, (data >> 1));
 
-	odm_set_rf_reg(dm, e_rf_path, RF_0x65, BIT(19), (data & BIT(0)));
-	odm_set_rf_reg(dm, e_rf_path, RF_0x65, gain_bmask, (data >> 1));
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x65, BIT(19), (data & BIT(0)));
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x65, gain_bmask, (data >> 1));
 
-	odm_set_rf_reg(dm, e_rf_path, RF_0xde, BIT(0), 0);
-	odm_set_rf_reg(dm, e_rf_path, RF_0xde, BIT(5), 0);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(6), 0);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x65, BIT(6), 0);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xde, BIT(0), 0);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xde, BIT(5), 0);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(6), 0);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x65, BIT(6), 0);
 
 	RF_DBG(dm, DBG_RF_MP,
 	       "[kfree] 8821c 0x55[19:14]=0x%X 0x65[19:14]=0x%X\n",
-	       odm_get_rf_reg(dm, e_rf_path, RF_0x55, s_gain_bmask),
-	       odm_get_rf_reg(dm, e_rf_path, RF_0x65, s_gain_bmask));
+	       odm_get_rf_regbu(dm, e_rf_path, RF_0x55, s_gain_bmask),
+	       odm_get_rf_regbu(dm, e_rf_path, RF_0x65, s_gain_bmask));
 }
 
-void phydm_get_thermal_trim_offset_8822b(void *dm_void)
+void phydm_get_thermal_trim_offsetbu_8822bbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_power_trim_data *power_trim_info = &dm->power_trim_data;
 
 	u8 pg_therm = 0xff;
 
-	odm_efuse_one_byte_read(dm, PPG_THERMAL_OFFSET_22B, &pg_therm, false);
+	odm_efuse_one_byte_readbu(dm, PPG_THERMAL_OFFSET_22B, &pg_therm, false);
 
 	if (pg_therm != 0xff) {
 		pg_therm = pg_therm & 0x1f;
@@ -279,53 +279,53 @@ void phydm_get_thermal_trim_offset_8822b(void *dm_void)
 		       power_trim_info->thermal);
 }
 
-void phydm_get_power_trim_offset_8822b(void *dm_void)
+void phydm_get_power_trim_offsetbu_8822bbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_power_trim_data *power_trim_info = &dm->power_trim_data;
 
 	u8 pg_power = 0xff, i, j;
 
-	odm_efuse_one_byte_read(dm, PPG_2G_TXAB_22B, &pg_power, false);
+	odm_efuse_one_byte_readbu(dm, PPG_2G_TXAB_22B, &pg_power, false);
 
 	if (pg_power != 0xff) {
 		/*Path A*/
-		odm_efuse_one_byte_read(dm, PPG_2G_TXAB_22B, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_2G_TXAB_22B, &pg_power, false);
 		power_trim_info->bb_gain[0][0] = (pg_power & 0xf);
 
 		/*Path B*/
-		odm_efuse_one_byte_read(dm, PPG_2G_TXAB_22B, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_2G_TXAB_22B, &pg_power, false);
 		power_trim_info->bb_gain[0][1] = ((pg_power & 0xf0) >> 4);
 
 		power_trim_info->flag |= KFREE_FLAG_ON_2G;
 		power_trim_info->flag |= KFREE_FLAG_ON;
 	}
 
-	odm_efuse_one_byte_read(dm, PPG_5GL1_TXA_22B, &pg_power, false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GL1_TXA_22B, &pg_power, false);
 
 	if (pg_power != 0xff) {
 		/*Path A*/
-		odm_efuse_one_byte_read(dm, PPG_5GL1_TXA_22B, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GL1_TXA_22B, &pg_power, false);
 		power_trim_info->bb_gain[1][0] = pg_power;
-		odm_efuse_one_byte_read(dm, PPG_5GL2_TXA_22B, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GL2_TXA_22B, &pg_power, false);
 		power_trim_info->bb_gain[2][0] = pg_power;
-		odm_efuse_one_byte_read(dm, PPG_5GM1_TXA_22B, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GM1_TXA_22B, &pg_power, false);
 		power_trim_info->bb_gain[3][0] = pg_power;
-		odm_efuse_one_byte_read(dm, PPG_5GM2_TXA_22B, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GM2_TXA_22B, &pg_power, false);
 		power_trim_info->bb_gain[4][0] = pg_power;
-		odm_efuse_one_byte_read(dm, PPG_5GH1_TXA_22B, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GH1_TXA_22B, &pg_power, false);
 		power_trim_info->bb_gain[5][0] = pg_power;
 
 		/*Path B*/
-		odm_efuse_one_byte_read(dm, PPG_5GL1_TXB_22B, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GL1_TXB_22B, &pg_power, false);
 		power_trim_info->bb_gain[1][1] = pg_power;
-		odm_efuse_one_byte_read(dm, PPG_5GL2_TXB_22B, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GL2_TXB_22B, &pg_power, false);
 		power_trim_info->bb_gain[2][1] = pg_power;
-		odm_efuse_one_byte_read(dm, PPG_5GM1_TXB_22B, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GM1_TXB_22B, &pg_power, false);
 		power_trim_info->bb_gain[3][1] = pg_power;
-		odm_efuse_one_byte_read(dm, PPG_5GM2_TXB_22B, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GM2_TXB_22B, &pg_power, false);
 		power_trim_info->bb_gain[4][1] = pg_power;
-		odm_efuse_one_byte_read(dm, PPG_5GH1_TXB_22B, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GH1_TXB_22B, &pg_power, false);
 		power_trim_info->bb_gain[5][1] = pg_power;
 
 		power_trim_info->flag |= KFREE_FLAG_ON_5G;
@@ -346,14 +346,14 @@ void phydm_get_power_trim_offset_8822b(void *dm_void)
 	}
 }
 
-void phydm_set_pa_bias_to_rf_8822b(void *dm_void, u8 e_rf_path, s8 tx_pa_bias)
+void phydm_set_pa_bias_to_rf_8822bbu(void *dm_void, u8 e_rf_path, s8 tx_pa_bias)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 rf_reg_51 = 0, rf_reg_52 = 0, rf_reg_3f = 0;
 	u32 tx_pa_bias_bmask = (BIT(12) | BIT(11) | BIT(10) | BIT(9));
 
-	rf_reg_51 = odm_get_rf_reg(dm, e_rf_path, RF_0x51, RFREGOFFSETMASK);
-	rf_reg_52 = odm_get_rf_reg(dm, e_rf_path, RF_0x52, RFREGOFFSETMASK);
+	rf_reg_51 = odm_get_rf_regbu(dm, e_rf_path, RF_0x51, RFREGOFFSETMASK);
+	rf_reg_52 = odm_get_rf_regbu(dm, e_rf_path, RF_0x52, RFREGOFFSETMASK);
 
 	RF_DBG(dm, DBG_RF_MP,
 	       "[kfree] 8822b 2g rf(0x51)=0x%X rf(0x52)=0x%X path=%d\n",
@@ -387,25 +387,25 @@ void phydm_set_pa_bias_to_rf_8822b(void *dm_void, u8 e_rf_path, s8 tx_pa_bias)
 	       PPG_PABIAS_2GA_22B, PPG_PABIAS_2GB_22B,
 	       tx_pa_bias, rf_reg_3f, e_rf_path);
 
-	odm_set_rf_reg(dm, e_rf_path, RF_0xef, BIT(10), 0x1);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x0);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK, rf_reg_3f);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x33, BIT(0), 0x1);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK, rf_reg_3f);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x33, BIT(1), 0x1);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK, rf_reg_3f);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x33, (BIT(1) | BIT(0)), 0x3);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK, rf_reg_3f);
-	odm_set_rf_reg(dm, e_rf_path, RF_0xef, BIT(10), 0x0);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xef, BIT(10), 0x1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x0);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK, rf_reg_3f);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x33, BIT(0), 0x1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK, rf_reg_3f);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x33, BIT(1), 0x1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK, rf_reg_3f);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x33, (BIT(1) | BIT(0)), 0x3);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK, rf_reg_3f);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xef, BIT(10), 0x0);
 
 	RF_DBG(dm, DBG_RF_MP,
 	       "[kfree] 8822b 2g tx pa bias rf_0x3f(0x%X) path=%d\n",
-	       odm_get_rf_reg(dm, e_rf_path, RF_0x3f,
+	       odm_get_rf_regbu(dm, e_rf_path, RF_0x3f,
 			      (BIT(12) | BIT(11) | BIT(10) | BIT(9))),
 			      e_rf_path);
 }
 
-void phydm_get_pa_bias_offset_8822b(void *dm_void)
+void phydm_get_pa_bias_offsetbu_8822bbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_power_trim_data *power_trim_info = &dm->power_trim_data;
@@ -413,11 +413,11 @@ void phydm_get_pa_bias_offset_8822b(void *dm_void)
 	u8 pg_pa_bias = 0xff, e_rf_path = 0;
 	s8 tx_pa_bias[2] = {0};
 
-	odm_efuse_one_byte_read(dm, PPG_PABIAS_2GA_22B, &pg_pa_bias, false);
+	odm_efuse_one_byte_readbu(dm, PPG_PABIAS_2GA_22B, &pg_pa_bias, false);
 
 	if (pg_pa_bias != 0xff) {
 		/*paht a*/
-		odm_efuse_one_byte_read(dm, PPG_PABIAS_2GA_22B,
+		odm_efuse_one_byte_readbu(dm, PPG_PABIAS_2GA_22B,
 					&pg_pa_bias, false);
 		pg_pa_bias = pg_pa_bias & 0xf;
 
@@ -427,7 +427,7 @@ void phydm_get_pa_bias_offset_8822b(void *dm_void)
 			tx_pa_bias[0] = (pg_pa_bias >> 1);
 
 		/*paht b*/
-		odm_efuse_one_byte_read(dm, PPG_PABIAS_2GB_22B,
+		odm_efuse_one_byte_readbu(dm, PPG_PABIAS_2GB_22B,
 					&pg_pa_bias, false);
 		pg_pa_bias = pg_pa_bias & 0xf;
 
@@ -441,7 +441,7 @@ void phydm_get_pa_bias_offset_8822b(void *dm_void)
 		       tx_pa_bias[0], tx_pa_bias[1]);
 
 		for (e_rf_path = RF_PATH_A; e_rf_path < 2; e_rf_path++)
-			phydm_set_pa_bias_to_rf_8822b(dm, e_rf_path,
+			phydm_set_pa_bias_to_rf_8822bbu(dm, e_rf_path,
 						      tx_pa_bias[e_rf_path]);
 
 		power_trim_info->pa_bias_flag |= PA_BIAS_FLAG_ON;
@@ -450,61 +450,61 @@ void phydm_get_pa_bias_offset_8822b(void *dm_void)
 	}
 }
 
-void phydm_set_kfree_to_rf_8822b(void *dm_void, u8 e_rf_path, u8 data)
+void phydm_set_kfree_to_rfbu_8822bbu(void *dm_void, u8 e_rf_path, u8 data)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 gain_bmask = (BIT(18) | BIT(17) | BIT(16) | BIT(15) | BIT(14));
 
-	odm_set_rf_reg(dm, e_rf_path, RF_0xde, BIT(0), 1);
-	odm_set_rf_reg(dm, e_rf_path, RF_0xde, BIT(4), 1);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x65, MASKLWORD, 0x9000);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(5), 1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xde, BIT(0), 1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xde, BIT(4), 1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x65, MASKLWORD, 0x9000);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(5), 1);
 
-	odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(19), (data & BIT(0)));
-	odm_set_rf_reg(dm, e_rf_path, RF_0x55, gain_bmask,
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(19), (data & BIT(0)));
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x55, gain_bmask,
 		       ((data & 0x1f) >> 1));
 
 	RF_DBG(dm, DBG_RF_MP, "[kfree] 8822b 0x55[19:14]=0x%X path=%d\n",
-	       odm_get_rf_reg(dm, e_rf_path, RF_0x55,
+	       odm_get_rf_regbu(dm, e_rf_path, RF_0x55,
 			      (BIT(19) | BIT(18) | BIT(17) | BIT(16) |
 			      BIT(15) | BIT(14))), e_rf_path);
 }
 
-void phydm_clear_kfree_to_rf_8822b(void *dm_void, u8 e_rf_path, u8 data)
+void phydm_clear_kfree_to_rfbu_8822bbu(void *dm_void, u8 e_rf_path, u8 data)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 gain_bmask = (BIT(18) | BIT(17) | BIT(16) | BIT(15) | BIT(14));
 
-	odm_set_rf_reg(dm, e_rf_path, RF_0xde, BIT(0), 1);
-	odm_set_rf_reg(dm, e_rf_path, RF_0xde, BIT(4), 1);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x65, MASKLWORD, 0x9000);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(5), 1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xde, BIT(0), 1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xde, BIT(4), 1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x65, MASKLWORD, 0x9000);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(5), 1);
 
-	odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(19), (data & BIT(0)));
-	odm_set_rf_reg(dm, e_rf_path, RF_0x55, gain_bmask,
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(19), (data & BIT(0)));
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x55, gain_bmask,
 		       ((data & 0x1f) >> 1));
 
-	odm_set_rf_reg(dm, e_rf_path, RF_0xde, BIT(0), 0);
-	odm_set_rf_reg(dm, e_rf_path, RF_0xde, BIT(4), 1);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x65, MASKLWORD, 0x9000);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(5), 0);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(7), 0);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xde, BIT(0), 0);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xde, BIT(4), 1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x65, MASKLWORD, 0x9000);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(5), 0);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(7), 0);
 
 	RF_DBG(dm, DBG_RF_MP,
 	       "[kfree] 8822b clear power trim 0x55[19:14]=0x%X path=%d\n",
-	       odm_get_rf_reg(dm, e_rf_path, RF_0x55,
+	       odm_get_rf_regbu(dm, e_rf_path, RF_0x55,
 			      (BIT(19) | BIT(18) | BIT(17) | BIT(16) |
 			      BIT(15) | BIT(14))), e_rf_path);
 }
 
-void phydm_get_thermal_trim_offset_8710b(void *dm_void)
+void phydm_get_thermal_trim_offsetbu_8710bbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_power_trim_data *power_trim_info = &dm->power_trim_data;
 
 	u8 pg_therm = 0xff;
 
-	odm_efuse_one_byte_read(dm, 0x0EF, &pg_therm, false);
+	odm_efuse_one_byte_readbu(dm, 0x0EF, &pg_therm, false);
 
 	if (pg_therm != 0xff) {
 		pg_therm = pg_therm & 0x1f;
@@ -524,18 +524,18 @@ void phydm_get_thermal_trim_offset_8710b(void *dm_void)
 		       power_trim_info->thermal);
 }
 
-void phydm_get_power_trim_offset_8710b(void *dm_void)
+void phydm_get_power_trim_offsetbu_8710bbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_power_trim_data *power_trim_info = &dm->power_trim_data;
 
 	u8 pg_power = 0xff;
 
-	odm_efuse_one_byte_read(dm, 0xEE, &pg_power, false);
+	odm_efuse_one_byte_readbu(dm, 0xEE, &pg_power, false);
 
 	if (pg_power != 0xff) {
 		/*Path A*/
-		odm_efuse_one_byte_read(dm, 0xEE, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, 0xEE, &pg_power, false);
 		power_trim_info->bb_gain[0][0] = (pg_power & 0xf);
 
 		power_trim_info->flag |= KFREE_FLAG_ON_2G;
@@ -551,44 +551,44 @@ void phydm_get_power_trim_offset_8710b(void *dm_void)
 		       power_trim_info->bb_gain[0][0]);
 }
 
-void phydm_set_kfree_to_rf_8710b(void *dm_void, u8 e_rf_path, u8 data)
+void phydm_set_kfree_to_rfbu_8710bbu(void *dm_void, u8 e_rf_path, u8 data)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 gain_bmask = (BIT(18) | BIT(17) | BIT(16) | BIT(15));
 
-	odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(19), (data & BIT(0)));
-	odm_set_rf_reg(dm, e_rf_path, RF_0x55, gain_bmask, ((data & 0xf) >> 1));
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(19), (data & BIT(0)));
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x55, gain_bmask, ((data & 0xf) >> 1));
 
 	RF_DBG(dm, DBG_RF_MP, "[kfree] 8710b 0x55[19:14]=0x%X path=%d\n",
-	       odm_get_rf_reg(dm, e_rf_path, RF_0x55,
+	       odm_get_rf_regbu(dm, e_rf_path, RF_0x55,
 			      (BIT(19) | BIT(18) | BIT(17) | BIT(16) |
 			      BIT(15) | BIT(14))), e_rf_path);
 }
 
-void phydm_clear_kfree_to_rf_8710b(void *dm_void, u8 e_rf_path, u8 data)
+void phydm_clear_kfree_to_rfbu_8710bbu(void *dm_void, u8 e_rf_path, u8 data)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 gain_bmask = (BIT(18) | BIT(17) | BIT(16) | BIT(15) | BIT(14));
 
-	odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(19), (data & BIT(0)));
-	odm_set_rf_reg(dm, e_rf_path, RF_0x55, gain_bmask,
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(19), (data & BIT(0)));
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x55, gain_bmask,
 		       ((data & 0x1f) >> 1));
 
 	RF_DBG(dm, DBG_RF_MP,
 	       "[kfree] 8710b clear power trim 0x55[19:14]=0x%X path=%d\n",
-	       odm_get_rf_reg(dm, e_rf_path, RF_0x55,
+	       odm_get_rf_regbu(dm, e_rf_path, RF_0x55,
 			      (BIT(19) | BIT(18) | BIT(17) | BIT(16) |
 			      BIT(15) | BIT(14))), e_rf_path);
 }
 
-void phydm_get_thermal_trim_offset_8192f(void *dm_void)
+void phydm_get_thermal_trim_offsetbu_8192fbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_power_trim_data *power_trim_info = &dm->power_trim_data;
 
 	u8 pg_therm = 0xff;
 
-	odm_efuse_one_byte_read(dm, 0x1EF, &pg_therm, false);
+	odm_efuse_one_byte_readbu(dm, 0x1EF, &pg_therm, false);
 
 	if (pg_therm != 0xff) {
 		pg_therm = pg_therm & 0x1f;
@@ -608,35 +608,35 @@ void phydm_get_thermal_trim_offset_8192f(void *dm_void)
 		       power_trim_info->thermal);
 }
 
-void phydm_get_power_trim_offset_8192f(void *dm_void)
+void phydm_get_power_trim_offsetbu_8192fbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_power_trim_data *power_trim_info = &dm->power_trim_data;
 
 	u8 pg_power1 = 0xff, pg_power2 = 0xff, pg_power3 = 0xff, i, j;
 
-	odm_efuse_one_byte_read(dm, 0x1EE, &pg_power1, false); /*CH4-9*/
+	odm_efuse_one_byte_readbu(dm, 0x1EE, &pg_power1, false); /*CH4-9*/
 
 	if (pg_power1 != 0xff) {
 		/*Path A*/
-		odm_efuse_one_byte_read(dm, 0x1EE, &pg_power1, false);
+		odm_efuse_one_byte_readbu(dm, 0x1EE, &pg_power1, false);
 		power_trim_info->bb_gain[1][0] = (pg_power1 & 0xf);
 		/*Path B*/
-		odm_efuse_one_byte_read(dm, 0x1EE, &pg_power1, false);
+		odm_efuse_one_byte_readbu(dm, 0x1EE, &pg_power1, false);
 		power_trim_info->bb_gain[1][1] = ((pg_power1 & 0xf0) >> 4);
 
 		power_trim_info->flag |= KFREE_FLAG_ON_2G;
 		power_trim_info->flag |= KFREE_FLAG_ON;
 	}
 
-	odm_efuse_one_byte_read(dm, 0x1EC, &pg_power2, false); /*CH1-3*/
+	odm_efuse_one_byte_readbu(dm, 0x1EC, &pg_power2, false); /*CH1-3*/
 
 	if (pg_power2 != 0xff) {
 		/*Path A*/
-		odm_efuse_one_byte_read(dm, 0x1EC, &pg_power2, false);
+		odm_efuse_one_byte_readbu(dm, 0x1EC, &pg_power2, false);
 		power_trim_info->bb_gain[0][0] = (pg_power2 & 0xf);
 		/*Path B*/
-		odm_efuse_one_byte_read(dm, 0x1EC, &pg_power2, false);
+		odm_efuse_one_byte_readbu(dm, 0x1EC, &pg_power2, false);
 		power_trim_info->bb_gain[0][1] = ((pg_power2 & 0xf0) >> 4);
 
 		power_trim_info->flag |= KFREE_FLAG_ON_2G;
@@ -646,14 +646,14 @@ void phydm_get_power_trim_offset_8192f(void *dm_void)
 		power_trim_info->bb_gain[0][1] = ((pg_power1 & 0xf0) >> 4);
 	}
 
-	odm_efuse_one_byte_read(dm, 0x1EA, &pg_power3, false); /*CH10-14*/
+	odm_efuse_one_byte_readbu(dm, 0x1EA, &pg_power3, false); /*CH10-14*/
 
 	if (pg_power3 != 0xff) {
 		/*Path A*/
-		odm_efuse_one_byte_read(dm, 0x1EA, &pg_power3, false);
+		odm_efuse_one_byte_readbu(dm, 0x1EA, &pg_power3, false);
 		power_trim_info->bb_gain[2][0] = (pg_power3 & 0xf);
 		/*Path B*/
-		odm_efuse_one_byte_read(dm, 0x1EA, &pg_power3, false);
+		odm_efuse_one_byte_readbu(dm, 0x1EA, &pg_power3, false);
 		power_trim_info->bb_gain[2][1] = ((pg_power3 & 0xf0) >> 4);
 
 		power_trim_info->flag |= KFREE_FLAG_ON_2G;
@@ -677,102 +677,102 @@ void phydm_get_power_trim_offset_8192f(void *dm_void)
 	}
 }
 
-void phydm_set_kfree_to_rf_8192f(void *dm_void, u8 e_rf_path, u8 channel_idx,
+void phydm_set_kfree_to_rfbu_8192fbu(void *dm_void, u8 e_rf_path, u8 channel_idx,
 				 u8 data)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
 	/*power_trim based on 55[19:14]*/
-	odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(5), 1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(5), 1);
 	/*enable 55[14] for 0.5db step*/
-	odm_set_rf_reg(dm, e_rf_path, RF_0xf5, BIT(18), 1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xf5, BIT(18), 1);
 	/*enter power_trim debug mode*/
-	odm_set_rf_reg(dm, e_rf_path, RF_0xdf, BIT(7), 1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xdf, BIT(7), 1);
 	/*write enable*/
-	odm_set_rf_reg(dm, e_rf_path, RF_0xef, BIT(7), 1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xef, BIT(7), 1);
 
 	if (e_rf_path == 0) {
 		if (channel_idx == 0) {
-			odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x70000, 0);
-			odm_set_rf_reg(dm, e_rf_path, 0x33, 0x3F, data);
+			odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x70000, 0);
+			odm_set_rf_regbu(dm, e_rf_path, 0x33, 0x3F, data);
 
-			odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x70000, 1);
-			odm_set_rf_reg(dm, e_rf_path, 0x33, 0x3F, data);
+			odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x70000, 1);
+			odm_set_rf_regbu(dm, e_rf_path, 0x33, 0x3F, data);
 
 		} else if (channel_idx == 1) {
-			odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x70000, 2);
-			odm_set_rf_reg(dm, e_rf_path, 0x33, 0x3F, data);
+			odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x70000, 2);
+			odm_set_rf_regbu(dm, e_rf_path, 0x33, 0x3F, data);
 
-			odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x70000, 3);
-			odm_set_rf_reg(dm, e_rf_path, 0x33, 0x3F, data);
+			odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x70000, 3);
+			odm_set_rf_regbu(dm, e_rf_path, 0x33, 0x3F, data);
 		} else if (channel_idx == 2) {
-			odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x70000, 4);
-			odm_set_rf_reg(dm, e_rf_path, 0x33, 0x3F, data);
+			odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x70000, 4);
+			odm_set_rf_regbu(dm, e_rf_path, 0x33, 0x3F, data);
 
-			odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x70000, 5);
-			odm_set_rf_reg(dm, e_rf_path, 0x33, 0x3F, data);
+			odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x70000, 5);
+			odm_set_rf_regbu(dm, e_rf_path, 0x33, 0x3F, data);
 		}
 	} else if (e_rf_path == 1) {
 		if (channel_idx == 0) {
-			odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x70000, 0);
-			odm_set_rf_reg(dm, e_rf_path, 0x33, 0x3F, data);
+			odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x70000, 0);
+			odm_set_rf_regbu(dm, e_rf_path, 0x33, 0x3F, data);
 
-			odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x70000, 1);
-			odm_set_rf_reg(dm, e_rf_path, 0x33, 0x3F, data);
+			odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x70000, 1);
+			odm_set_rf_regbu(dm, e_rf_path, 0x33, 0x3F, data);
 		} else if (channel_idx == 1) {
-			odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x70000, 2);
-			odm_set_rf_reg(dm, e_rf_path, 0x33, 0x3F, data);
+			odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x70000, 2);
+			odm_set_rf_regbu(dm, e_rf_path, 0x33, 0x3F, data);
 
-			odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x70000, 3);
-			odm_set_rf_reg(dm, e_rf_path, 0x33, 0x3F, data);
+			odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x70000, 3);
+			odm_set_rf_regbu(dm, e_rf_path, 0x33, 0x3F, data);
 		} else if (channel_idx == 2) {
-			odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x70000, 4);
-			odm_set_rf_reg(dm, e_rf_path, 0x33, 0x3F, data);
+			odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x70000, 4);
+			odm_set_rf_regbu(dm, e_rf_path, 0x33, 0x3F, data);
 
-			odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x70000, 5);
-			odm_set_rf_reg(dm, e_rf_path, 0x33, 0x3F, data);
+			odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x70000, 5);
+			odm_set_rf_regbu(dm, e_rf_path, 0x33, 0x3F, data);
 		}
 	}
 
 	/*leave power_trim debug mode*/
-	odm_set_rf_reg(dm, e_rf_path, RF_0xdf, BIT(7), 0);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xdf, BIT(7), 0);
 	/*write disable*/
-	odm_set_rf_reg(dm, e_rf_path, RF_0xef, BIT(7), 0);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xef, BIT(7), 0);
 
 	RF_DBG(dm, DBG_RF_MP,
 	       "[kfree] 8192F 0x55[19:14]=0x%X path=%d channel=%d\n",
-	       odm_get_rf_reg(dm, e_rf_path, RF_0x55,
+	       odm_get_rf_regbu(dm, e_rf_path, RF_0x55,
 			      (BIT(19) | BIT(18) | BIT(17) | BIT(16) |
 			      BIT(15) | BIT(14))), e_rf_path, channel_idx);
 }
 
 #if 0
 /*
-void phydm_clear_kfree_to_rf_8192f(void *dm_void, u8 e_rf_path, u8 data)
+void phydm_clear_kfree_to_rfbu_8192f(void *dm_void, u8 e_rf_path, u8 data)
 {
 	struct dm_struct		*dm = (struct dm_struct *)dm_void;
 	struct dm_rf_calibration_struct	*cali_info = &dm->rf_calibrate_info;
 
-	odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(19), (data & BIT(0)));
-	odm_set_rf_reg(dm, e_rf_path, RF_0x55, (BIT(18) | BIT(17) | BIT(16) | BIT(15) | BIT(14)), ((data & 0x1f) >> 1));
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(19), (data & BIT(0)));
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x55, (BIT(18) | BIT(17) | BIT(16) | BIT(15) | BIT(14)), ((data & 0x1f) >> 1));
 
 	RF_DBG(dm, DBG_RF_MP,
 		"[kfree] 8192F clear power trim 0x55[19:14]=0x%X path=%d\n",
-		odm_get_rf_reg(dm, e_rf_path, RF_0x55, (BIT(19) | BIT(18) | BIT(17) | BIT(16) | BIT(15) | BIT(14))),
+		odm_get_rf_regbu(dm, e_rf_path, RF_0x55, (BIT(19) | BIT(18) | BIT(17) | BIT(16) | BIT(15) | BIT(14))),
 		e_rf_path
 		);
 }
 */
 #endif
 
-void phydm_get_thermal_trim_offset_8198f(void *dm_void)
+void phydm_get_thermal_trim_offsetbu_8198fbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_power_trim_data *power_trim_info = &dm->power_trim_data;
 
 	u8 pg_therm = 0;
 
-	odm_efuse_one_byte_read(dm, PPG_THERMAL_OFFSET_98F, &pg_therm, false);
+	odm_efuse_one_byte_readbu(dm, PPG_THERMAL_OFFSET_98F, &pg_therm, false);
 
 	RF_DBG(dm, DBG_RF_MP, "[kfree] 8198f efuse thermal trim 0x%X=0x%X\n",
 		PPG_THERMAL_OFFSET_98F, pg_therm);
@@ -795,7 +795,7 @@ void phydm_get_thermal_trim_offset_8198f(void *dm_void)
 		       power_trim_info->thermal);
 }
 
-void phydm_get_power_trim_offset_8198f(void *dm_void)
+void phydm_get_power_trim_offsetbu_8198fbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_power_trim_data *power_trim_info = &dm->power_trim_data;
@@ -803,12 +803,12 @@ void phydm_get_power_trim_offset_8198f(void *dm_void)
 	u8 i, j;
 	u8 power_trim[6] = {0};
 
-	odm_efuse_one_byte_read(dm, PPG_2GL_TXAB_98F, &power_trim[0], false);
-	odm_efuse_one_byte_read(dm, PPG_2GL_TXCD_98F, &power_trim[1], false);
-	odm_efuse_one_byte_read(dm, PPG_2GM_TXAB_98F, &power_trim[2], false);
-	odm_efuse_one_byte_read(dm, PPG_2GM_TXCD_98F, &power_trim[3], false);
-	odm_efuse_one_byte_read(dm, PPG_2GH_TXAB_98F, &power_trim[4], false);
-	odm_efuse_one_byte_read(dm, PPG_2GH_TXCD_98F, &power_trim[5], false);
+	odm_efuse_one_byte_readbu(dm, PPG_2GL_TXAB_98F, &power_trim[0], false);
+	odm_efuse_one_byte_readbu(dm, PPG_2GL_TXCD_98F, &power_trim[1], false);
+	odm_efuse_one_byte_readbu(dm, PPG_2GM_TXAB_98F, &power_trim[2], false);
+	odm_efuse_one_byte_readbu(dm, PPG_2GM_TXCD_98F, &power_trim[3], false);
+	odm_efuse_one_byte_readbu(dm, PPG_2GH_TXAB_98F, &power_trim[4], false);
+	odm_efuse_one_byte_readbu(dm, PPG_2GH_TXCD_98F, &power_trim[5], false);
 
 	RF_DBG(dm, DBG_RF_MP, "[kfree] 8198f efuse Power Trim 0x%X=0x%X 0x%X=0x%X 0x%X=0x%X 0x%X=0x%X 0x%X=0x%X 0x%X=0x%X\n",
 		PPG_2GL_TXAB_98F, power_trim[0],
@@ -864,7 +864,7 @@ void phydm_get_power_trim_offset_8198f(void *dm_void)
 	}
 }
 
-void phydm_get_pa_bias_offset_8198f(void *dm_void)
+void phydm_get_pa_bias_offsetbu_8198f(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_power_trim_data *power_trim_info = &dm->power_trim_data;
@@ -873,8 +873,8 @@ void phydm_get_pa_bias_offset_8198f(void *dm_void)
 	u8 pa_bias[2] = {0};
 	u8 tx_pa_bias[4] = {0};
 
-	odm_efuse_one_byte_read(dm, PPG_PABIAS_2GAB_98F, &pa_bias[0], false);
-	odm_efuse_one_byte_read(dm, PPG_PABIAS_2GCD_98F, &pa_bias[1], false);
+	odm_efuse_one_byte_readbu(dm, PPG_PABIAS_2GAB_98F, &pa_bias[0], false);
+	odm_efuse_one_byte_readbu(dm, PPG_PABIAS_2GCD_98F, &pa_bias[1], false);
 
 	RF_DBG(dm, DBG_RF_MP, "[kfree] 8198f efuse Tx PA Bias 0x%X=0x%X 0x%X=0x%X\n",
 		PPG_PABIAS_2GAB_98F, pa_bias[0], PPG_PABIAS_2GCD_98F, pa_bias[1]);
@@ -912,7 +912,7 @@ void phydm_get_pa_bias_offset_8198f(void *dm_void)
 		       tx_pa_bias[2], tx_pa_bias[3]);
 
 		for (i = RF_PATH_A; i < 4; i++)
-			odm_set_rf_reg(dm, i, 0x60, 0x0000f000, tx_pa_bias[i]);
+			odm_set_rf_regbu(dm, i, 0x60, 0x0000f000, tx_pa_bias[i]);
 
 		power_trim_info->pa_bias_flag |= PA_BIAS_FLAG_ON;
 	}
@@ -928,10 +928,10 @@ void phydm_get_set_lna_offset_8198f(void *dm_void)
 	u8 cg[4] = {0}, cs[4] = {0};
 	u32 rf_reg;
 
-	odm_efuse_one_byte_read(dm, PPG_LNA_2GA_98F, &lna_trim[0], false);
-	odm_efuse_one_byte_read(dm, PPG_LNA_2GB_98F, &lna_trim[1], false);
-	odm_efuse_one_byte_read(dm, PPG_LNA_2GC_98F, &lna_trim[2], false);
-	odm_efuse_one_byte_read(dm, PPG_LNA_2GD_98F, &lna_trim[3], false);
+	odm_efuse_one_byte_readbu(dm, PPG_LNA_2GA_98F, &lna_trim[0], false);
+	odm_efuse_one_byte_readbu(dm, PPG_LNA_2GB_98F, &lna_trim[1], false);
+	odm_efuse_one_byte_readbu(dm, PPG_LNA_2GC_98F, &lna_trim[2], false);
+	odm_efuse_one_byte_readbu(dm, PPG_LNA_2GD_98F, &lna_trim[3], false);
 
 	RF_DBG(dm, DBG_RF_MP, "[kfree] 8198f efuse LNA Trim 0x%X=0x%X 0x%X=0x%X 0x%X=0x%X 0x%X=0x%X\n",
 		PPG_LNA_2GA_98F, lna_trim[0],
@@ -959,23 +959,23 @@ void phydm_get_set_lna_offset_8198f(void *dm_void)
 			RF_DBG(dm, DBG_RF_MP,
 				"[kfree] 8198f lna cg[%d]=0x%x cs[%d]=0x%x\n",
 				i, cg[i], i, cs[i]);
-			odm_set_rf_reg(dm, i, 0xdf, RFREGOFFSETMASK, 0x2);
+			odm_set_rf_regbu(dm, i, 0xdf, RFREGOFFSETMASK, 0x2);
 
 			if (cg[i] == 0x3) {
-				rf_reg = odm_get_rf_reg(dm, i, 0x86, (BIT(19) | BIT(18)));
+				rf_reg = odm_get_rf_regbu(dm, i, 0x86, (BIT(19) | BIT(18)));
 				rf_reg = rf_reg + 1;
 				if (rf_reg >= 0x3)
 					rf_reg = 0x3;
-				odm_set_rf_reg(dm, i, 0x86, (BIT(19) | BIT(18)), rf_reg);
+				odm_set_rf_regbu(dm, i, 0x86, (BIT(19) | BIT(18)), rf_reg);
 				RF_DBG(dm, DBG_RF_MP,
 					"[kfree] 8198f lna CG set rf 0x86 [19:18]=0x%x path=%d\n", rf_reg, i);
 			}
 			if (cs[i] == 0x3) {
-				rf_reg = odm_get_rf_reg(dm, i, 0x86, (BIT(17) | BIT(16)));
+				rf_reg = odm_get_rf_regbu(dm, i, 0x86, (BIT(17) | BIT(16)));
 				rf_reg = rf_reg + 1;
 				if (rf_reg >= 0x3)
 					rf_reg = 0x3;
-				odm_set_rf_reg(dm, i, 0x86, (BIT(17) | BIT(16)), rf_reg);
+				odm_set_rf_regbu(dm, i, 0x86, (BIT(17) | BIT(16)), rf_reg);
 				RF_DBG(dm, DBG_RF_MP,
 					"[kfree] 8198f lna CS set rf 0x86 [17:16]=0x%x path=%d\n", rf_reg, i);
 			}	
@@ -986,7 +986,7 @@ void phydm_get_set_lna_offset_8198f(void *dm_void)
 }
 
 
-void phydm_set_kfree_to_rf_8198f(void *dm_void, u8 e_rf_path, u8 data)
+void phydm_set_kfree_to_rfbu_8198fbu(void *dm_void, u8 e_rf_path, u8 data)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_power_trim_data *power_trim_info = &dm->power_trim_data;
@@ -997,38 +997,38 @@ void phydm_set_kfree_to_rf_8198f(void *dm_void, u8 e_rf_path, u8 data)
 		   "[kfree] %s:Set kfree to rf 0x33\n", __func__);
 
 	/*power_trim based on 55[19:14]*/
-	odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(5), 1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(5), 1);
 	/*enable 55[14] for 0.5db step*/
-	odm_set_rf_reg(dm, e_rf_path, RF_0xf5, BIT(18), 1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xf5, BIT(18), 1);
 	/*enter power_trim debug mode*/
-	odm_set_rf_reg(dm, e_rf_path, RF_0xdf, BIT(7), 0);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xdf, BIT(7), 0);
 	/*write enable*/
-	odm_set_rf_reg(dm, e_rf_path, RF_0xef, BIT(7), 1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xef, BIT(7), 1);
 
 	for (i =0; i < 3; i++)
 		pwr_offset[i] = power_trim_info->bb_gain[i][e_rf_path];
 
-	odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x70000, 0);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x3F, pwr_offset[0]);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x70000, 1);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x3F, pwr_offset[0]);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x70000, 2);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x3F, pwr_offset[1]);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x70000, 3);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x3F, pwr_offset[1]);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x70000, 4);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x3F, pwr_offset[2]);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x70000, 5);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x3F, pwr_offset[2]);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x70000, 0);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x3F, pwr_offset[0]);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x70000, 1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x3F, pwr_offset[0]);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x70000, 2);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x3F, pwr_offset[1]);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x70000, 3);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x3F, pwr_offset[1]);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x70000, 4);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x3F, pwr_offset[2]);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x70000, 5);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x3F, pwr_offset[2]);
 
 	/*leave power_trim debug mode*/
-	/*odm_set_rf_reg(dm, e_rf_path, RF_0xdf, BIT(7), 0);*/
+	/*odm_set_rf_regbu(dm, e_rf_path, RF_0xdf, BIT(7), 0);*/
 	/*write disable*/
-	odm_set_rf_reg(dm, e_rf_path, RF_0xef, BIT(7), 0);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xef, BIT(7), 0);
 
 }
 
-void phydm_clear_kfree_to_rf_8198f(void *dm_void, u8 e_rf_path, u8 data)
+void phydm_clear_kfree_to_rfbu_8198fbu(void *dm_void, u8 e_rf_path, u8 data)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 #if 0
@@ -1037,49 +1037,49 @@ void phydm_clear_kfree_to_rf_8198f(void *dm_void, u8 e_rf_path, u8 data)
 		   "[kfree] %s:Clear kfree to rf 0x55\n", __func__);
 
 	/*power_trim based on 55[19:14]*/
-	odm_set_rf_reg(dm, e_rf_path, RF_0x55, BIT(5), 1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x55, BIT(5), 1);
 	/*enable 55[14] for 0.5db step*/
-	odm_set_rf_reg(dm, e_rf_path, RF_0xf5, BIT(18), 1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xf5, BIT(18), 1);
 	/*enter power_trim debug mode*/
-	odm_set_rf_reg(dm, e_rf_path, RF_0xdf, BIT(7), 0);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xdf, BIT(7), 0);
 	/*write enable*/
-	odm_set_rf_reg(dm, e_rf_path, RF_0xef, BIT(7), 1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xef, BIT(7), 1);
 
-	odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x70000, 0);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x3F, data);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x70000, 1);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x3F, data);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x70000, 2);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x3F, data);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x70000, 3);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x3F, data);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x70000, 4);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x3F, data);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x70000, 5);
-	odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x3F, data);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x70000, 0);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x3F, data);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x70000, 1);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x3F, data);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x70000, 2);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x3F, data);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x70000, 3);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x3F, data);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x70000, 4);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x3F, data);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x70000, 5);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x3F, data);
 
 	/*leave power_trim debug mode*/
-	odm_set_rf_reg(dm, e_rf_path, RF_0xdf, BIT(7), 0);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xdf, BIT(7), 0);
 	/*enable 55[14] for 0.5db step*/
-	odm_set_rf_reg(dm, e_rf_path, RF_0xf5, BIT(18), 0);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xf5, BIT(18), 0);
 	/*write disable*/
-	odm_set_rf_reg(dm, e_rf_path, RF_0xef, BIT(7), 0);
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xef, BIT(7), 0);
 
-	odm_set_rf_reg(dm, e_rf_path, RF_0xdf, BIT(7), 1);
-	/*odm_set_rf_reg(dm, e_rf_path, RF_0xf5, BIT(18), 0);*/
+	odm_set_rf_regbu(dm, e_rf_path, RF_0xdf, BIT(7), 1);
+	/*odm_set_rf_regbu(dm, e_rf_path, RF_0xf5, BIT(18), 0);*/
 
 #endif
 
 }
 
-void phydm_get_set_thermal_trim_offset_8822c(void *dm_void)
+void phydm_get_set_thermal_trim_offset_8822cbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_power_trim_data *power_trim_info = &dm->power_trim_data;
 
 	u8 pg_therm = 0xff, thermal[2] = {0};
 
-	odm_efuse_one_byte_read(dm, PPG_THERMAL_A_OFFSET_22C, &pg_therm, false);
+	odm_efuse_one_byte_readbu(dm, PPG_THERMAL_A_OFFSET_22C, &pg_therm, false);
 
 	if (pg_therm != 0xff) {
 		/*s0*/
@@ -1088,16 +1088,16 @@ void phydm_get_set_thermal_trim_offset_8822c(void *dm_void)
 		thermal[RF_PATH_A] =
 			((pg_therm & 0x1) << 3) | ((pg_therm >> 1) & 0x7);
 
-		odm_set_rf_reg(dm, RF_PATH_A, RF_0x43, 0x000f0000, thermal[RF_PATH_A]);
+		odm_set_rf_regbu(dm, RF_PATH_A, RF_0x43, 0x000f0000, thermal[RF_PATH_A]);
 
 		/*s1*/
-		odm_efuse_one_byte_read(dm, PPG_THERMAL_B_OFFSET_22C, &pg_therm, false);
+		odm_efuse_one_byte_readbu(dm, PPG_THERMAL_B_OFFSET_22C, &pg_therm, false);
 
 		pg_therm = pg_therm & 0x1f;
 
 		thermal[RF_PATH_B] = ((pg_therm & 0x1) << 3) | ((pg_therm >> 1) & 0x7);
 
-		odm_set_rf_reg(dm, RF_PATH_B, RF_0x43, 0x000f0000, thermal[RF_PATH_B]);
+		odm_set_rf_regbu(dm, RF_PATH_B, RF_0x43, 0x000f0000, thermal[RF_PATH_B]);
 
 		power_trim_info->flag |= KFREE_FLAG_THERMAL_K_ON;
 
@@ -1112,7 +1112,7 @@ void phydm_get_set_thermal_trim_offset_8822c(void *dm_void)
 			thermal[RF_PATH_B]);	
 }
 
-void phydm_set_power_trim_offset_8822c(void *dm_void)
+void phydm_set_power_trim_offset_8822cbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_power_trim_data *power_trim_info = &dm->power_trim_data;
@@ -1120,55 +1120,55 @@ void phydm_set_power_trim_offset_8822c(void *dm_void)
 
 	for (e_rf_path = RF_PATH_A; e_rf_path < 2; e_rf_path++)
 	{
-		odm_set_rf_reg(dm, e_rf_path, RF_0xee, BIT(19), 1);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0xee, BIT(19), 1);
 
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x0);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x0);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[0][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x1);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x1);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[1][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x2);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x2);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[2][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x3);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x3);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[2][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x4);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x4);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[3][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x5);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x5);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[4][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x6);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x6);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[5][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x7);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x7);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[6][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x8);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x8);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[7][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x9);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x9);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[3][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xa);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xa);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[4][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xb);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xb);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[5][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xc);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xc);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[6][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xd);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xd);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[7][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xe);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xe);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[7][e_rf_path]);
 
-		odm_set_rf_reg(dm, e_rf_path, RF_0xee, BIT(19), 0);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0xee, BIT(19), 0);
 	}
 }
 
@@ -1180,73 +1180,73 @@ void phydm_get_set_power_trim_offset_8822c(void *dm_void)
 	u8 pg_power = 0xff, i, j;
 	u8 pg_power1, pg_power2 , pg_power3, pg_power4, pg_power5;
 
-	odm_efuse_one_byte_read(dm, PPG_2GL_TXAB_22C, &pg_power1, false);
-	odm_efuse_one_byte_read(dm, PPG_2GM_TXAB_22C, &pg_power2, false);
-	odm_efuse_one_byte_read(dm, PPG_2GH_TXAB_22C, &pg_power3, false);
-	odm_efuse_one_byte_read(dm, PPG_5GL1_TXA_22C, &pg_power4, false);
-	odm_efuse_one_byte_read(dm, PPG_5GL1_TXB_22C, &pg_power5, false);
+	odm_efuse_one_byte_readbu(dm, PPG_2GL_TXAB_22C, &pg_power1, false);
+	odm_efuse_one_byte_readbu(dm, PPG_2GM_TXAB_22C, &pg_power2, false);
+	odm_efuse_one_byte_readbu(dm, PPG_2GH_TXAB_22C, &pg_power3, false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GL1_TXA_22C, &pg_power4, false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GL1_TXB_22C, &pg_power5, false);
 
 	if (pg_power1 != 0xff || pg_power2 != 0xff || pg_power3 != 0xff ||
 		pg_power4 != 0xff || pg_power5 != 0xff) {
-		odm_efuse_one_byte_read(dm, PPG_2GL_TXAB_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_2GL_TXAB_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[0][0] = pg_power & 0xf;
 		power_trim_info->bb_gain[0][1] = (pg_power & 0xf0) >> 4;
 
-		odm_efuse_one_byte_read(dm, PPG_2GM_TXAB_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_2GM_TXAB_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[1][0] = pg_power & 0xf;
 		power_trim_info->bb_gain[1][1] = (pg_power & 0xf0) >> 4;
 
-		odm_efuse_one_byte_read(dm, PPG_2GH_TXAB_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_2GH_TXAB_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[2][0] = pg_power & 0xf;
 		power_trim_info->bb_gain[2][1] = (pg_power & 0xf0) >> 4;
 
-		odm_efuse_one_byte_read(dm, PPG_5GL1_TXA_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GL1_TXA_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[3][0] = pg_power & 0x1f;
-		odm_efuse_one_byte_read(dm, PPG_5GL1_TXB_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GL1_TXB_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[3][1] = pg_power & 0x1f;
 
-		odm_efuse_one_byte_read(dm, PPG_5GL2_TXA_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GL2_TXA_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[4][0] = pg_power & 0x1f;
-		odm_efuse_one_byte_read(dm, PPG_5GL2_TXB_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GL2_TXB_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[4][1] = pg_power & 0x1f;
 
-		odm_efuse_one_byte_read(dm, PPG_5GM1_TXA_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GM1_TXA_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[5][0] = pg_power & 0x1f;
-		odm_efuse_one_byte_read(dm, PPG_5GM1_TXB_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GM1_TXB_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[5][1] = pg_power & 0x1f;
 
-		odm_efuse_one_byte_read(dm, PPG_5GM2_TXA_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GM2_TXA_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[6][0] = pg_power & 0x1f;
-		odm_efuse_one_byte_read(dm, PPG_5GM2_TXB_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GM2_TXB_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[6][1] = pg_power & 0x1f;
 
-		odm_efuse_one_byte_read(dm, PPG_5GH1_TXA_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GH1_TXA_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[7][0] = pg_power & 0x1f;
-		odm_efuse_one_byte_read(dm, PPG_5GH1_TXB_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GH1_TXB_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[7][1] = pg_power & 0x1f;
@@ -1256,7 +1256,7 @@ void phydm_get_set_power_trim_offset_8822c(void *dm_void)
 						KFREE_FLAG_ON_2G |
 						KFREE_FLAG_ON_5G;
 
-		phydm_set_power_trim_offset_8822c(dm);
+		phydm_set_power_trim_offset_8822cbu(dm);
 	}
 
 	RF_DBG(dm, DBG_RF_MP, "[kfree] 8822c power trim flag:0x%02x\n",
@@ -1281,22 +1281,22 @@ void phydm_get_tssi_trim_offset_8822c(void *dm_void)
 	u8 i, j;
 	u8 pg_power[16] = {0};
 
-	odm_efuse_one_byte_read(dm, TSSI_2GM_TXA_22C, &pg_power[0], false);
-	odm_efuse_one_byte_read(dm, TSSI_2GM_TXB_22C, &pg_power[1], false);
-	odm_efuse_one_byte_read(dm, TSSI_2GH_TXA_22C, &pg_power[2], false);
-	odm_efuse_one_byte_read(dm, TSSI_2GH_TXB_22C, &pg_power[3], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GL1_TXA_22C, &pg_power[4], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GL1_TXB_22C, &pg_power[5], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GL2_TXA_22C, &pg_power[6], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GL2_TXB_22C, &pg_power[7], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GM1_TXA_22C, &pg_power[8], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GM1_TXB_22C, &pg_power[9], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GM2_TXA_22C, &pg_power[10], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GM2_TXB_22C, &pg_power[11], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GH1_TXA_22C, &pg_power[12], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GH1_TXB_22C, &pg_power[13], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GH2_TXA_22C, &pg_power[14], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GH2_TXB_22C, &pg_power[15], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_2GM_TXA_22C, &pg_power[0], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_2GM_TXB_22C, &pg_power[1], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_2GH_TXA_22C, &pg_power[2], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_2GH_TXB_22C, &pg_power[3], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GL1_TXA_22C, &pg_power[4], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GL1_TXB_22C, &pg_power[5], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GL2_TXA_22C, &pg_power[6], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GL2_TXB_22C, &pg_power[7], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GM1_TXA_22C, &pg_power[8], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GM1_TXB_22C, &pg_power[9], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GM2_TXA_22C, &pg_power[10], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GM2_TXB_22C, &pg_power[11], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GH1_TXA_22C, &pg_power[12], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GH1_TXB_22C, &pg_power[13], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GH2_TXA_22C, &pg_power[14], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GH2_TXB_22C, &pg_power[15], false);
 
 	j = 0;
 	for (i = 0; i < 16; i++) {
@@ -1377,7 +1377,7 @@ s8 phydm_get_tssi_trim_de_8822c(void *dm_void, u8 path)
 
 
 
-void phydm_get_set_pa_bias_offset_8822c(void *dm_void)
+void phydm_get_set_pa_bias_offset_8822cbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_power_trim_data *power_trim_info = &dm->power_trim_data;
@@ -1386,44 +1386,44 @@ void phydm_get_set_pa_bias_offset_8822c(void *dm_void)
 
 	RF_DBG(dm, DBG_RF_MP, "======>%s\n", __func__);
 
-	odm_efuse_one_byte_read(dm, PPG_PABIAS_2GA_22C, &pg_pa_bias, false);
+	odm_efuse_one_byte_readbu(dm, PPG_PABIAS_2GA_22C, &pg_pa_bias, false);
 
 	if (pg_pa_bias != 0xff) {
 		/*2G s0*/
-		odm_efuse_one_byte_read(dm, PPG_PABIAS_2GA_22C,
+		odm_efuse_one_byte_readbu(dm, PPG_PABIAS_2GA_22C,
 					&pg_pa_bias, false);
 		pg_pa_bias = pg_pa_bias & 0xf;
 
 		RF_DBG(dm, DBG_RF_MP, "[kfree] 2G s0 pa_bias=0x%x\n", pg_pa_bias);
 
-		odm_set_rf_reg(dm, RF_PATH_A, 0x60, 0x0000f000, pg_pa_bias);
+		odm_set_rf_regbu(dm, RF_PATH_A, 0x60, 0x0000f000, pg_pa_bias);
 
 		/*2G s1*/
-		odm_efuse_one_byte_read(dm, PPG_PABIAS_2GB_22C,
+		odm_efuse_one_byte_readbu(dm, PPG_PABIAS_2GB_22C,
 					&pg_pa_bias, false);
 		pg_pa_bias = pg_pa_bias & 0xf;
 
 		RF_DBG(dm, DBG_RF_MP, "[kfree] 2G s1 pa_bias=0x%x\n", pg_pa_bias);
 
-		odm_set_rf_reg(dm, RF_PATH_B, 0x60, 0x0000f000, pg_pa_bias);
+		odm_set_rf_regbu(dm, RF_PATH_B, 0x60, 0x0000f000, pg_pa_bias);
 
 		/*5G s0*/
-		odm_efuse_one_byte_read(dm, PPG_PABIAS_5GA_22C,
+		odm_efuse_one_byte_readbu(dm, PPG_PABIAS_5GA_22C,
 					&pg_pa_bias, false);
 		pg_pa_bias = pg_pa_bias & 0xf;
 
 		RF_DBG(dm, DBG_RF_MP, "[kfree] 5G s0 pa_bias=0x%x\n", pg_pa_bias);
 
-		odm_set_rf_reg(dm, RF_PATH_A, 0x60, 0x000f0000, pg_pa_bias);
+		odm_set_rf_regbu(dm, RF_PATH_A, 0x60, 0x000f0000, pg_pa_bias);
 
 		/*5G s1*/
-		odm_efuse_one_byte_read(dm, PPG_PABIAS_5GB_22C,
+		odm_efuse_one_byte_readbu(dm, PPG_PABIAS_5GB_22C,
 					&pg_pa_bias, false);
 		pg_pa_bias = pg_pa_bias & 0xf;
 
 		RF_DBG(dm, DBG_RF_MP, "[kfree] 5G s1 pa_bias=0x%x\n", pg_pa_bias);
 
-		odm_set_rf_reg(dm, RF_PATH_B, 0x60, 0x000f0000, pg_pa_bias);
+		odm_set_rf_regbu(dm, RF_PATH_B, 0x60, 0x000f0000, pg_pa_bias);
 
 		power_trim_info->pa_bias_flag |= PA_BIAS_FLAG_ON;
 	} else {
@@ -1439,7 +1439,7 @@ void phydm_get_set_thermal_trim_offset_8812f(void *dm_void)
 
 	u8 pg_therm = 0xff, thermal[2] = {0};
 
-	odm_efuse_one_byte_read(dm, PPG_THERMAL_A_OFFSET_22C, &pg_therm, false);
+	odm_efuse_one_byte_readbu(dm, PPG_THERMAL_A_OFFSET_22C, &pg_therm, false);
 
 	if (pg_therm != 0xff && pg_therm != 0x0) {
 		/*s0*/
@@ -1448,16 +1448,16 @@ void phydm_get_set_thermal_trim_offset_8812f(void *dm_void)
 		thermal[RF_PATH_A] =
 			((pg_therm & 0x1) << 3) | ((pg_therm >> 1) & 0x7);
 
-		odm_set_rf_reg(dm, RF_PATH_A, RF_0x43, 0x000f0000, thermal[RF_PATH_A]);
+		odm_set_rf_regbu(dm, RF_PATH_A, RF_0x43, 0x000f0000, thermal[RF_PATH_A]);
 
 		/*s1*/
-		odm_efuse_one_byte_read(dm, PPG_THERMAL_B_OFFSET_22C, &pg_therm, false);
+		odm_efuse_one_byte_readbu(dm, PPG_THERMAL_B_OFFSET_22C, &pg_therm, false);
 
 		pg_therm = pg_therm & 0x1f;
 
 		thermal[RF_PATH_B] = ((pg_therm & 0x1) << 3) | ((pg_therm >> 1) & 0x7);
 
-		odm_set_rf_reg(dm, RF_PATH_B, RF_0x43, 0x000f0000, thermal[RF_PATH_B]);
+		odm_set_rf_regbu(dm, RF_PATH_B, RF_0x43, 0x000f0000, thermal[RF_PATH_B]);
 
 		power_trim_info->flag |= KFREE_FLAG_THERMAL_K_ON;
 
@@ -1480,57 +1480,57 @@ void phydm_set_power_trim_offset_8812f(void *dm_void)
 
 	for (e_rf_path = RF_PATH_A; e_rf_path < 2; e_rf_path++)
 	{
-		odm_set_rf_reg(dm, e_rf_path, RF_0xee, BIT(19), 1);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0xee, BIT(19), 1);
 
 #if 0
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x0);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x0);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[0][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x1);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x1);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[1][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x2);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x2);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[2][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x3);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x3);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[2][e_rf_path]);
 #endif
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x4);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x4);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[3][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x5);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x5);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[4][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x6);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x6);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[5][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x7);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x7);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[6][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x8);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x8);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[7][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x9);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x9);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[3][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xa);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xa);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[4][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xb);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xb);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[5][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xc);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xc);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[6][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xd);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xd);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[7][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xe);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xe);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x3f, RFREGOFFSETMASK,
 			power_trim_info->bb_gain[7][e_rf_path]);
 
-		odm_set_rf_reg(dm, e_rf_path, RF_0xee, BIT(19), 0);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0xee, BIT(19), 0);
 	}
 }
 
@@ -1543,76 +1543,76 @@ void phydm_get_set_power_trim_offset_8812f(void *dm_void)
 	u8 pg_power1 = 0, pg_power2 = 0, pg_power3 = 0;
 	u8 pg_power4 = 0, pg_power5 = 0;
 
-	odm_efuse_one_byte_read(dm, PPG_5GL1_TXA_22C, &pg_power1, false);
-	odm_efuse_one_byte_read(dm, PPG_5GL1_TXB_22C, &pg_power2, false);
-	odm_efuse_one_byte_read(dm, PPG_5GL2_TXA_22C, &pg_power3, false);
-	odm_efuse_one_byte_read(dm, PPG_5GL2_TXB_22C, &pg_power4, false);
-	odm_efuse_one_byte_read(dm, PPG_5GM1_TXA_22C, &pg_power5, false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GL1_TXA_22C, &pg_power1, false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GL1_TXB_22C, &pg_power2, false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GL2_TXA_22C, &pg_power3, false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GL2_TXB_22C, &pg_power4, false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GM1_TXA_22C, &pg_power5, false);
 
 	if ((pg_power1 != 0xff || pg_power2 != 0xff || pg_power3 != 0xff ||
 		pg_power4 != 0xff || pg_power5 != 0xff) &&
 		(pg_power1 != 0x0 || pg_power2 != 0x0 || pg_power3 != 0x0 ||
 		pg_power4 != 0x0 || pg_power5 != 0x0)) {
 #if 0
-		odm_efuse_one_byte_read(dm, PPG_2GL_TXAB_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_2GL_TXAB_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[0][0] = pg_power & 0xf;
 		power_trim_info->bb_gain[0][1] = (pg_power & 0xf0) >> 4;
 
-		odm_efuse_one_byte_read(dm, PPG_2GM_TXAB_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_2GM_TXAB_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[1][0] = pg_power & 0xf;
 		power_trim_info->bb_gain[1][1] = (pg_power & 0xf0) >> 4;
 
-		odm_efuse_one_byte_read(dm, PPG_2GH_TXAB_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_2GH_TXAB_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[2][0] = pg_power & 0xf;
 		power_trim_info->bb_gain[2][1] = (pg_power & 0xf0) >> 4;
 #endif
-		odm_efuse_one_byte_read(dm, PPG_5GL1_TXA_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GL1_TXA_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[3][0] = pg_power & 0x1f;
-		odm_efuse_one_byte_read(dm, PPG_5GL1_TXB_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GL1_TXB_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[3][1] = pg_power & 0x1f;
 
-		odm_efuse_one_byte_read(dm, PPG_5GL2_TXA_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GL2_TXA_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[4][0] = pg_power & 0x1f;
-		odm_efuse_one_byte_read(dm, PPG_5GL2_TXB_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GL2_TXB_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[4][1] = pg_power & 0x1f;
 
-		odm_efuse_one_byte_read(dm, PPG_5GM1_TXA_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GM1_TXA_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[5][0] = pg_power & 0x1f;
-		odm_efuse_one_byte_read(dm, PPG_5GM1_TXB_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GM1_TXB_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[5][1] = pg_power & 0x1f;
 
-		odm_efuse_one_byte_read(dm, PPG_5GM2_TXA_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GM2_TXA_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[6][0] = pg_power & 0x1f;
-		odm_efuse_one_byte_read(dm, PPG_5GM2_TXB_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GM2_TXB_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[6][1] = pg_power & 0x1f;
 
-		odm_efuse_one_byte_read(dm, PPG_5GH1_TXA_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GH1_TXA_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[7][0] = pg_power & 0x1f;
-		odm_efuse_one_byte_read(dm, PPG_5GH1_TXB_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GH1_TXB_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[7][1] = pg_power & 0x1f;
@@ -1646,23 +1646,23 @@ void phydm_get_tssi_trim_offset_8812f(void *dm_void)
 	u8 pg_power[16] = {0};
 
 #if 0
-	odm_efuse_one_byte_read(dm, TSSI_2GM_TXA_22C, &pg_power[0], false);
-	odm_efuse_one_byte_read(dm, TSSI_2GM_TXB_22C, &pg_power[1], false);
-	odm_efuse_one_byte_read(dm, TSSI_2GH_TXA_22C, &pg_power[2], false);
-	odm_efuse_one_byte_read(dm, TSSI_2GH_TXB_22C, &pg_power[3], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_2GM_TXA_22C, &pg_power[0], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_2GM_TXB_22C, &pg_power[1], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_2GH_TXA_22C, &pg_power[2], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_2GH_TXB_22C, &pg_power[3], false);
 #endif
-	odm_efuse_one_byte_read(dm, TSSI_5GL1_TXA_22C, &pg_power[4], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GL1_TXB_22C, &pg_power[5], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GL2_TXA_22C, &pg_power[6], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GL2_TXB_22C, &pg_power[7], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GM1_TXA_22C, &pg_power[8], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GM1_TXB_22C, &pg_power[9], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GM2_TXA_22C, &pg_power[10], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GM2_TXB_22C, &pg_power[11], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GH1_TXA_22C, &pg_power[12], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GH1_TXB_22C, &pg_power[13], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GH2_TXA_22C, &pg_power[14], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GH2_TXB_22C, &pg_power[15], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GL1_TXA_22C, &pg_power[4], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GL1_TXB_22C, &pg_power[5], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GL2_TXA_22C, &pg_power[6], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GL2_TXB_22C, &pg_power[7], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GM1_TXA_22C, &pg_power[8], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GM1_TXB_22C, &pg_power[9], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GM2_TXA_22C, &pg_power[10], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GM2_TXB_22C, &pg_power[11], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GH1_TXA_22C, &pg_power[12], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GH1_TXB_22C, &pg_power[13], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GH2_TXA_22C, &pg_power[14], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GH2_TXB_22C, &pg_power[15], false);
 
 	j = 0;
 	for (i = 4; i < 16; i++) {
@@ -1752,46 +1752,46 @@ void phydm_get_set_pa_bias_offset_8812f(void *dm_void)
 
 	RF_DBG(dm, DBG_RF_MP, "======>%s\n", __func__);
 
-	odm_efuse_one_byte_read(dm, PPG_PABIAS_5GA_22C, &pg_pa_bias, false);
+	odm_efuse_one_byte_readbu(dm, PPG_PABIAS_5GA_22C, &pg_pa_bias, false);
 
 	if (pg_pa_bias != 0xff && pg_pa_bias != 0x0) {
 #if 0
 		/*2G s0*/
-		odm_efuse_one_byte_read(dm, PPG_PABIAS_2GA_22C,
+		odm_efuse_one_byte_readbu(dm, PPG_PABIAS_2GA_22C,
 					&pg_pa_bias, false);
 		pg_pa_bias = pg_pa_bias & 0xf;
 
 		RF_DBG(dm, DBG_RF_MP, "[kfree] 2G s0 pa_bias=0x%x\n", pg_pa_bias);
 
-		odm_set_rf_reg(dm, RF_PATH_A, 0x60, 0x0000f000, pg_pa_bias);
+		odm_set_rf_regbu(dm, RF_PATH_A, 0x60, 0x0000f000, pg_pa_bias);
 
 		/*2G s1*/
-		odm_efuse_one_byte_read(dm, PPG_PABIAS_2GB_22C,
+		odm_efuse_one_byte_readbu(dm, PPG_PABIAS_2GB_22C,
 					&pg_pa_bias, false);
 		pg_pa_bias = pg_pa_bias & 0xf;
 
 		RF_DBG(dm, DBG_RF_MP, "[kfree] 2G s1 pa_bias=0x%x\n", pg_pa_bias);
 
-		odm_set_rf_reg(dm, RF_PATH_B, 0x60, 0x0000f000, pg_pa_bias);
+		odm_set_rf_regbu(dm, RF_PATH_B, 0x60, 0x0000f000, pg_pa_bias);
 #endif
 
 		/*5G s0*/
-		odm_efuse_one_byte_read(dm, PPG_PABIAS_5GA_22C,
+		odm_efuse_one_byte_readbu(dm, PPG_PABIAS_5GA_22C,
 					&pg_pa_bias, false);
 		pg_pa_bias = pg_pa_bias & 0xf;
 
 		RF_DBG(dm, DBG_RF_MP, "[kfree] 5G s0 pa_bias=0x%x\n", pg_pa_bias);
 
-		odm_set_rf_reg(dm, RF_PATH_A, 0x60, 0x000f0000, pg_pa_bias);
+		odm_set_rf_regbu(dm, RF_PATH_A, 0x60, 0x000f0000, pg_pa_bias);
 
 		/*5G s1*/
-		odm_efuse_one_byte_read(dm, PPG_PABIAS_5GB_22C,
+		odm_efuse_one_byte_readbu(dm, PPG_PABIAS_5GB_22C,
 					&pg_pa_bias, false);
 		pg_pa_bias = pg_pa_bias & 0xf;
 
 		RF_DBG(dm, DBG_RF_MP, "[kfree] 5G s1 pa_bias=0x%x\n", pg_pa_bias);
 
-		odm_set_rf_reg(dm, RF_PATH_B, 0x60, 0x000f0000, pg_pa_bias);
+		odm_set_rf_regbu(dm, RF_PATH_B, 0x60, 0x000f0000, pg_pa_bias);
 
 		power_trim_info->pa_bias_flag |= PA_BIAS_FLAG_ON;
 	} else {
@@ -1800,14 +1800,14 @@ void phydm_get_set_pa_bias_offset_8812f(void *dm_void)
 
 }
 
-void phydm_get_thermal_trim_offset_8195b(void *dm_void)
+void phydm_get_thermal_trim_offsetbu_8195b(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_power_trim_data *power_trim_info = &dm->power_trim_data;
 
 	u8 pg_therm = 0xff;
 
-	odm_efuse_one_byte_read(dm, PPG_THERMAL_OFFSET_95B, &pg_therm, false);
+	odm_efuse_one_byte_readbu(dm, PPG_THERMAL_OFFSET_95B, &pg_therm, false);
 
 	if (pg_therm != 0xff) {
 		pg_therm = pg_therm & 0x1f;
@@ -1836,42 +1836,42 @@ void phydm_set_power_trim_rf_8195b(void *dm_void)
 		   "[kfree] %s:Set kfree to rf 0x33\n", __func__);
 
 	if (power_trim_info->flag & KFREE_FLAG_ON) { 
-		odm_set_rf_reg(dm, RF_PATH_A, RF_0xee, BIT(19), 1);
+		odm_set_rf_regbu(dm, RF_PATH_A, RF_0xee, BIT(19), 1);
 
 		if (power_trim_info->flag & KFREE_FLAG_ON_2G) {
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x0);
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x0);
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
 				power_trim_info->bb_gain[0][RF_PATH_A]);
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x1);
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x1);
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
 				power_trim_info->bb_gain[1][RF_PATH_A]);
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x2);
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x2);
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
 				power_trim_info->bb_gain[2][RF_PATH_A]);
 		}
 
 		if (power_trim_info->flag & KFREE_FLAG_ON_5G) {
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x4);
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x4);
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
 				power_trim_info->bb_gain[3][RF_PATH_A]);
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x5);
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x5);
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
 				power_trim_info->bb_gain[4][RF_PATH_A]);
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x6);
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x6);
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
 				power_trim_info->bb_gain[5][RF_PATH_A]);
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x7);
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x7);
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
 				power_trim_info->bb_gain[6][RF_PATH_A]);
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x8);
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x8);
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
 				power_trim_info->bb_gain[7][RF_PATH_A]);
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0xe);
-			odm_set_rf_reg(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0xe);
+			odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
 				power_trim_info->bb_gain[7][RF_PATH_A]);
 		}
 
-		odm_set_rf_reg(dm, RF_PATH_A, RF_0xee, BIT(19), 0);
+		odm_set_rf_regbu(dm, RF_PATH_A, RF_0xee, BIT(19), 0);
 	}
 
 }
@@ -1883,16 +1883,16 @@ void phydm_get_set_power_trim_offset_8195b(void *dm_void)
 
 	u8 pg_power = 0xff, i, j;
 
-	odm_efuse_one_byte_read(dm, PPG_2GL_TXA_95B, &pg_power, false);
+	odm_efuse_one_byte_readbu(dm, PPG_2GL_TXA_95B, &pg_power, false);
 
 	if (pg_power != 0xff) {
-		odm_efuse_one_byte_read(dm, PPG_2GL_TXA_95B, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_2GL_TXA_95B, &pg_power, false);
 		power_trim_info->bb_gain[0][0] = pg_power & 0xf;
 
-		odm_efuse_one_byte_read(dm, PPG_2GM_TXA_95B, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_2GM_TXA_95B, &pg_power, false);
 		power_trim_info->bb_gain[1][0] = pg_power & 0xf;
 
-		odm_efuse_one_byte_read(dm, PPG_2GH_TXA_95B, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_2GH_TXA_95B, &pg_power, false);
 		power_trim_info->bb_gain[2][0] = pg_power & 0xf;
 
 		power_trim_info->flag =
@@ -1901,22 +1901,22 @@ void phydm_get_set_power_trim_offset_8195b(void *dm_void)
 
 	pg_power = 0xff;
 
-	odm_efuse_one_byte_read(dm, PPG_5GL1_TXA_95B, &pg_power, false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GL1_TXA_95B, &pg_power, false);
 
 	if (pg_power != 0xff) {
-		odm_efuse_one_byte_read(dm, PPG_5GL1_TXA_95B, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GL1_TXA_95B, &pg_power, false);
 		power_trim_info->bb_gain[3][0] = pg_power & 0x1f;
 
-		odm_efuse_one_byte_read(dm, PPG_5GL2_TXA_95B, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GL2_TXA_95B, &pg_power, false);
 		power_trim_info->bb_gain[4][0] = pg_power & 0x1f;
 
-		odm_efuse_one_byte_read(dm, PPG_5GM1_TXA_95B, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GM1_TXA_95B, &pg_power, false);
 		power_trim_info->bb_gain[5][0] = pg_power & 0x1f;
 
-		odm_efuse_one_byte_read(dm, PPG_5GM2_TXA_95B, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GM2_TXA_95B, &pg_power, false);
 		power_trim_info->bb_gain[6][0] = pg_power & 0x1f;
 
-		odm_efuse_one_byte_read(dm, PPG_5GH1_TXA_95B, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GH1_TXA_95B, &pg_power, false);
 		power_trim_info->bb_gain[7][0] = pg_power & 0x1f;
 
 		power_trim_info->flag =
@@ -1949,16 +1949,16 @@ void phydm_get_set_pa_bias_offset_8195b(void *dm_void)
 	RF_DBG(dm, DBG_RF_MP, "======>%s\n", __func__);
 
 	/*2G*/
-	odm_efuse_one_byte_read(dm, PPG_PABIAS_2GA_95B, &pg_pa_bias, false);
+	odm_efuse_one_byte_readbu(dm, PPG_PABIAS_2GA_95B, &pg_pa_bias, false);
 
 	if (pg_pa_bias != 0xff) {
-		odm_efuse_one_byte_read(dm, PPG_PABIAS_2GA_95B,
+		odm_efuse_one_byte_readbu(dm, PPG_PABIAS_2GA_95B,
 					&pg_pa_bias, false);
 		pg_pa_bias = pg_pa_bias & 0xf;
 
 		RF_DBG(dm, DBG_RF_MP, "[kfree] 2G pa_bias=0x%x\n", pg_pa_bias);
 
-		odm_set_rf_reg(dm, RF_PATH_A, 0x60, 0x0000f000, pg_pa_bias);
+		odm_set_rf_regbu(dm, RF_PATH_A, 0x60, 0x0000f000, pg_pa_bias);
 	} else {
 		RF_DBG(dm, DBG_RF_MP, "[kfree] 8195b 2G tx pa bias no pg\n");
 	}
@@ -1966,16 +1966,16 @@ void phydm_get_set_pa_bias_offset_8195b(void *dm_void)
 	/*5G*/
 	pg_pa_bias = 0xff;
 
-	odm_efuse_one_byte_read(dm, PPG_PABIAS_5GA_95B, &pg_pa_bias, false);
+	odm_efuse_one_byte_readbu(dm, PPG_PABIAS_5GA_95B, &pg_pa_bias, false);
 
 	if (pg_pa_bias != 0xff) {
-		odm_efuse_one_byte_read(dm, PPG_PABIAS_5GA_95B,
+		odm_efuse_one_byte_readbu(dm, PPG_PABIAS_5GA_95B,
 					&pg_pa_bias, false);
 		pg_pa_bias = pg_pa_bias & 0xf;
 
 		RF_DBG(dm, DBG_RF_MP, "[kfree] 5G pa_bias=0x%x\n", pg_pa_bias);
 
-		odm_set_rf_reg(dm, RF_PATH_A, 0x60, 0x000f0000, pg_pa_bias);
+		odm_set_rf_regbu(dm, RF_PATH_A, 0x60, 0x000f0000, pg_pa_bias);
 
 		power_trim_info->pa_bias_flag |= PA_BIAS_FLAG_ON;
 	} else {
@@ -1983,14 +1983,14 @@ void phydm_get_set_pa_bias_offset_8195b(void *dm_void)
 	}
 }
 
-void phydm_get_thermal_trim_offset_8721d(void *dm_void)
+void phydm_get_thermal_trim_offsetbu_8721d(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_power_trim_data *power_trim_info = &dm->power_trim_data;
 
 	u8 pg_therm = 0xff;
 
-	odm_efuse_one_byte_read(dm, PPG_THERMAL_OFFSET_8721D, &pg_therm, false);
+	odm_efuse_one_byte_readbu(dm, PPG_THERMAL_OFFSET_8721D, &pg_therm, false);
 
 	if (pg_therm != 0xff) {
 		pg_therm = pg_therm & 0x1f;
@@ -2017,55 +2017,55 @@ void phydm_set_power_trim_rf_8721d(void *dm_void)
 
 	RF_DBG(dm, DBG_RF_MP, "[kfree] %s:Set kfree to rf 0x33\n", __func__);
 
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0xee, BIT(19), 1);
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0xee, BIT(19), 1);
 
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x0);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x0);
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
 		       power_trim_info->bb_gain[0][RF_PATH_A]);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x1);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x1);
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
 		       power_trim_info->bb_gain[1][RF_PATH_A]);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x2);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x2);
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
 		       power_trim_info->bb_gain[2][RF_PATH_A]);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x3);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x3);
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
 		       power_trim_info->bb_gain[2][RF_PATH_A]);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x4);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x4);
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
 		       power_trim_info->bb_gain[3][RF_PATH_A]);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x5);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x5);
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
 		       power_trim_info->bb_gain[4][RF_PATH_A]);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x6);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x6);
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
 		       power_trim_info->bb_gain[5][RF_PATH_A]);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x7);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x7);
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
 		       power_trim_info->bb_gain[6][RF_PATH_A]);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x8);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x8);
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3f, 0x0000003f,
 		       power_trim_info->bb_gain[7][RF_PATH_A]);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x9);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x3f, RFREGOFFSETMASK,
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0x9);
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3f, RFREGOFFSETMASK,
 		       power_trim_info->bb_gain[3][RF_PATH_A]);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0xa);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x3f, RFREGOFFSETMASK,
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0xa);
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3f, RFREGOFFSETMASK,
 		       power_trim_info->bb_gain[4][RF_PATH_A]);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0xb);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x3f, RFREGOFFSETMASK,
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0xb);
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3f, RFREGOFFSETMASK,
 		       power_trim_info->bb_gain[5][RF_PATH_A]);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0xc);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x3f, RFREGOFFSETMASK,
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0xc);
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3f, RFREGOFFSETMASK,
 		       power_trim_info->bb_gain[6][RF_PATH_A]);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0xd);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x3f, RFREGOFFSETMASK,
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0xd);
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3f, RFREGOFFSETMASK,
 		       power_trim_info->bb_gain[7][RF_PATH_A]);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0xe);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x3f, RFREGOFFSETMASK,
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0xe);
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3f, RFREGOFFSETMASK,
 		       power_trim_info->bb_gain[7][RF_PATH_A]);
 
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0xee, BIT(19), 0);
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0xee, BIT(19), 0);
 }
 
 void phydm_get_set_power_trim_offset_8721d(void *dm_void)
@@ -2076,47 +2076,47 @@ void phydm_get_set_power_trim_offset_8721d(void *dm_void)
 	u8 pg_power = 0xff, i, j;
 	u8 pg_power1, pg_power2, pg_power3, pg_power4, pg_power5, pg_power6;
 
-	odm_efuse_one_byte_read(dm, PPG_2G_TXA_8721D, &pg_power1, false);
-	odm_efuse_one_byte_read(dm, PPG_5GL1_TXA_8721D, &pg_power2, false);
-	odm_efuse_one_byte_read(dm, PPG_5GL2_TXA_8721D, &pg_power3, false);
-	odm_efuse_one_byte_read(dm, PPG_5GM1_TXA_8721D, &pg_power4, false);
-	odm_efuse_one_byte_read(dm, PPG_5GM2_TXA_8721D, &pg_power5, false);
-	odm_efuse_one_byte_read(dm, PPG_5GH1_TXA_8721D, &pg_power6, false);
+	odm_efuse_one_byte_readbu(dm, PPG_2G_TXA_8721D, &pg_power1, false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GL1_TXA_8721D, &pg_power2, false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GL2_TXA_8721D, &pg_power3, false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GM1_TXA_8721D, &pg_power4, false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GM2_TXA_8721D, &pg_power5, false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GH1_TXA_8721D, &pg_power6, false);
 
 	if (pg_power1 != 0xff || pg_power2 != 0xff || pg_power3 != 0xff ||
 	    pg_power4 != 0xff || pg_power5 != 0xff || pg_power6 != 0xff) {
-		odm_efuse_one_byte_read(dm, PPG_2G_TXA_8721D, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_2G_TXA_8721D, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[0][0] = pg_power & 0xf;
 		power_trim_info->bb_gain[1][0] = pg_power & 0xf;
 		power_trim_info->bb_gain[2][0] = pg_power & 0xf;
 
-		odm_efuse_one_byte_read(dm, PPG_5GL1_TXA_8721D,
+		odm_efuse_one_byte_readbu(dm, PPG_5GL1_TXA_8721D,
 					&pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[3][0] = pg_power & 0x1f;
 
-		odm_efuse_one_byte_read(dm, PPG_5GL2_TXA_8721D,
+		odm_efuse_one_byte_readbu(dm, PPG_5GL2_TXA_8721D,
 					&pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[4][0] = pg_power & 0x1f;
 
-		odm_efuse_one_byte_read(dm, PPG_5GM1_TXA_8721D,
+		odm_efuse_one_byte_readbu(dm, PPG_5GM1_TXA_8721D,
 					&pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[5][0] = pg_power & 0x1f;
 
-		odm_efuse_one_byte_read(dm, PPG_5GM2_TXA_8721D,
+		odm_efuse_one_byte_readbu(dm, PPG_5GM2_TXA_8721D,
 					&pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[6][0] = pg_power & 0x1f;
 
-		odm_efuse_one_byte_read(dm, PPG_5GH1_TXA_8721D,
+		odm_efuse_one_byte_readbu(dm, PPG_5GH1_TXA_8721D,
 					&pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
@@ -2154,26 +2154,26 @@ void phydm_get_set_pa_bias_offset_8721d(void *dm_void)
 
 	RF_DBG(dm, DBG_RF_MP, "======>%s\n", __func__);
 
-	odm_efuse_one_byte_read(dm, PPG_PABIAS_2GA_95B, &pg_pa_bias, false);
+	odm_efuse_one_byte_readbu(dm, PPG_PABIAS_2GA_95B, &pg_pa_bias, false);
 
 	if (pg_pa_bias != 0xff) {
 		/*2G*/
-		odm_efuse_one_byte_read(dm, PPG_PABIAS_2GA_95B,
+		odm_efuse_one_byte_readbu(dm, PPG_PABIAS_2GA_95B,
 					&pg_pa_bias, false);
 		pg_pa_bias = pg_pa_bias & 0xf;
 
 		RF_DBG(dm, DBG_RF_MP, "[kfree] 2G pa_bias=0x%x\n", pg_pa_bias);
 
-		odm_set_rf_reg(dm, RF_PATH_A, 0x60, 0x0000f000, pg_pa_bias);
+		odm_set_rf_regbu(dm, RF_PATH_A, 0x60, 0x0000f000, pg_pa_bias);
 
 		/*5G*/
-		odm_efuse_one_byte_read(dm, PPG_PABIAS_5GA_95B,
+		odm_efuse_one_byte_readbu(dm, PPG_PABIAS_5GA_95B,
 					&pg_pa_bias, false);
 		pg_pa_bias = pg_pa_bias & 0xf;
 
 		RF_DBG(dm, DBG_RF_MP, "[kfree] 5G pa_bias=0x%x\n", pg_pa_bias);
 
-		odm_set_rf_reg(dm, RF_PATH_A, 0x60, 0x000f0000, pg_pa_bias);
+		odm_set_rf_regbu(dm, RF_PATH_A, 0x60, 0x000f0000, pg_pa_bias);
 
 		power_trim_info->pa_bias_flag |= PA_BIAS_FLAG_ON;
 	} else {
@@ -2182,21 +2182,21 @@ void phydm_get_set_pa_bias_offset_8721d(void *dm_void)
 #endif
 }
 
-void phydm_get_thermal_trim_offset_8197g(void *dm_void)
+void phydm_get_thermal_trim_offsetbu_8197g(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_power_trim_data *power_trim_info = &dm->power_trim_data;
 
 	u8 pg_therm = 0xff, i;
 
-	odm_efuse_one_byte_read(dm, PPG_THERMAL_A_OFFSET_97G, &pg_therm, false);
+	odm_efuse_one_byte_readbu(dm, PPG_THERMAL_A_OFFSET_97G, &pg_therm, false);
 
 	if (pg_therm != 0x0) {
 		for (i = 0; i < 2; i++) {
 			if (i == 0)
-				odm_efuse_one_byte_read(dm, PPG_THERMAL_A_OFFSET_97G, &pg_therm, false);
+				odm_efuse_one_byte_readbu(dm, PPG_THERMAL_A_OFFSET_97G, &pg_therm, false);
 			else if (i == 1)
-				odm_efuse_one_byte_read(dm, PPG_THERMAL_B_OFFSET_97G, &pg_therm, false);
+				odm_efuse_one_byte_readbu(dm, PPG_THERMAL_B_OFFSET_97G, &pg_therm, false);
 
 			RF_DBG(dm, DBG_RF_MP, "[kfree] 8197g Efuse thermal S%d:0x%x\n", i, pg_therm);
 
@@ -2228,28 +2228,28 @@ void phydm_set_power_trim_offset_8197g(void *dm_void)
 
 	for (e_rf_path = RF_PATH_A; e_rf_path < 2; e_rf_path++)
 	{
-		odm_set_rf_reg(dm, e_rf_path, RF_0xef, BIT(7), 1);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0xef, BIT(7), 1);
 
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x1c000, 0);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x3F,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x1c000, 0);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x3F,
 			power_trim_info->bb_gain[0][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x1c000, 1);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x3F,
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x1c000, 1);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x3F,
 			power_trim_info->bb_gain[0][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x1c000, 2);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x3F, 
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x1c000, 2);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x3F, 
 			power_trim_info->bb_gain[1][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x1c000, 3);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x3F, 
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x1c000, 3);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x3F, 
 			power_trim_info->bb_gain[1][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x1c000, 4);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x3F, 
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x1c000, 4);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x3F, 
 			power_trim_info->bb_gain[2][e_rf_path]);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x1c000, 5);
-		odm_set_rf_reg(dm, e_rf_path, RF_0x33, 0x3F, 
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x1c000, 5);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0x33, 0x3F, 
 			power_trim_info->bb_gain[2][e_rf_path]);
 
-		odm_set_rf_reg(dm, e_rf_path, RF_0xef, BIT(7), 0);
+		odm_set_rf_regbu(dm, e_rf_path, RF_0xef, BIT(7), 0);
 	}
 
 }
@@ -2261,17 +2261,17 @@ void phydm_get_set_power_trim_offset_8197g(void *dm_void)
 
 	u8 pg_power = 0, i, j;
 
-	odm_efuse_one_byte_read(dm, PPG_2GL_TXAB_97G, &pg_power, false);
+	odm_efuse_one_byte_readbu(dm, PPG_2GL_TXAB_97G, &pg_power, false);
 
 	if (pg_power != 0) {
 		power_trim_info->bb_gain[0][0] = pg_power & 0xf;
 		power_trim_info->bb_gain[0][1] = (pg_power & 0xf0) >> 4;
 
-		odm_efuse_one_byte_read(dm, PPG_2GM_TXAB_97G, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_2GM_TXAB_97G, &pg_power, false);
 		power_trim_info->bb_gain[1][0] = pg_power & 0xf;
 		power_trim_info->bb_gain[1][1] = (pg_power & 0xf0) >> 4;
 
-		odm_efuse_one_byte_read(dm, PPG_2GH_TXAB_97G, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_2GH_TXAB_97G, &pg_power, false);
 		power_trim_info->bb_gain[2][0] = pg_power & 0xf;
 		power_trim_info->bb_gain[2][1] = (pg_power & 0xf0) >> 4;
 
@@ -2303,10 +2303,10 @@ void phydm_get_tssi_trim_offset_8197g(void *dm_void)
 	u8 i, j;
 	u8 pg_power[4] = {0};
 
-	odm_efuse_one_byte_read(dm, TSSI_2GL_TXA_97G, &pg_power[0], false);
-	odm_efuse_one_byte_read(dm, TSSI_2GL_TXB_97G, &pg_power[1], false);
-	odm_efuse_one_byte_read(dm, TSSI_2GH_TXA_97G, &pg_power[2], false);
-	odm_efuse_one_byte_read(dm, TSSI_2GH_TXB_97G, &pg_power[3], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_2GL_TXA_97G, &pg_power[0], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_2GL_TXB_97G, &pg_power[1], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_2GH_TXA_97G, &pg_power[2], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_2GH_TXB_97G, &pg_power[3], false);
 
 	j = 0;
 	for (i = 0; i < 4; i++) {
@@ -2367,11 +2367,11 @@ void phydm_get_set_pa_bias_offset_8197g(void *dm_void)
 	u8 pg_pa_bias = 0xff, i;
 	u8 tx_pa_bias[4] = {0};
 
-	odm_efuse_one_byte_read(dm, PPG_PABIAS_2GAB_97G, &pg_pa_bias, false);
+	odm_efuse_one_byte_readbu(dm, PPG_PABIAS_2GAB_97G, &pg_pa_bias, false);
 
 	if (pg_pa_bias != 0x0) {
 		/*paht ab*/
-		odm_efuse_one_byte_read(dm, PPG_PABIAS_2GAB_97G,
+		odm_efuse_one_byte_readbu(dm, PPG_PABIAS_2GAB_97G,
 					&pg_pa_bias, false);
 		tx_pa_bias[0] = pg_pa_bias & 0xf;
 		tx_pa_bias[1] = ((pg_pa_bias & 0xf0) >> 4);
@@ -2381,7 +2381,7 @@ void phydm_get_set_pa_bias_offset_8197g(void *dm_void)
 		       tx_pa_bias[0], tx_pa_bias[1]);
 
 		for (i = RF_PATH_A; i < 2; i++)
-			odm_set_rf_reg(dm, i, 0x60, 0x0000f000, tx_pa_bias[i]);
+			odm_set_rf_regbu(dm, i, 0x60, 0x0000f000, tx_pa_bias[i]);
 
 		power_trim_info->pa_bias_flag |= PA_BIAS_FLAG_ON;
 	} else {
@@ -2397,23 +2397,23 @@ void phydm_get_set_lna_offset_8197g(void *dm_void)
 	u8 pg_lna[2] = {0}, i, pg_lna_tmp = 0;
 	u32 lna_trim_addr[2] = {0x1884, 0x4184};
 
-	odm_efuse_one_byte_read(dm, PPG_LNA_2GA_97G, &pg_lna_tmp, false);
+	odm_efuse_one_byte_readbu(dm, PPG_LNA_2GA_97G, &pg_lna_tmp, false);
 
 	if (pg_lna_tmp != 0) {
-		odm_efuse_one_byte_read(dm, PPG_LNA_2GA_97G,
+		odm_efuse_one_byte_readbu(dm, PPG_LNA_2GA_97G,
 					&pg_lna[RF_PATH_A], false);
 		power_trim_info->lna_trim[RF_PATH_A] = (s8)pg_lna[RF_PATH_A];
 
-		odm_efuse_one_byte_read(dm, PPG_LNA_2GB_97G,
+		odm_efuse_one_byte_readbu(dm, PPG_LNA_2GB_97G,
 					&pg_lna[RF_PATH_B], false);
 		power_trim_info->lna_trim[RF_PATH_B] = (s8)pg_lna[RF_PATH_B];
 
 		for (i = RF_PATH_A; i < 2; i++) {
-			if (odm_get_bb_reg(dm, lna_trim_addr[i], 0x00c00000) == 0x2) {
-				odm_set_rf_reg(dm, i, 0x88, 0x00000f00, (pg_lna[i] & 0xf));
+			if (odm_get_bb_regbu(dm, lna_trim_addr[i], 0x00c00000) == 0x2) {
+				odm_set_rf_regbu(dm, i, 0x88, 0x00000f00, (pg_lna[i] & 0xf));
 				RF_DBG(dm, DBG_RF_MP, "[kfree] 8197g lna trim CG 0x%x path=%d\n", (pg_lna[i] & 0xf), i);
-			} else if (odm_get_bb_reg(dm, lna_trim_addr[i], 0x00c00000) == 0x3) {
-				odm_set_rf_reg(dm, i, 0x88, 0x00000f00, ((pg_lna[i] & 0xf0) >> 4));
+			} else if (odm_get_bb_regbu(dm, lna_trim_addr[i], 0x00c00000) == 0x3) {
+				odm_set_rf_regbu(dm, i, 0x88, 0x00000f00, ((pg_lna[i] & 0xf0) >> 4));
 				RF_DBG(dm, DBG_RF_MP, "[kfree] 8197g lna trim CS 0x%x path=%d\n", ((pg_lna[i] & 0xf0) >> 4), i);
 			}
 		}
@@ -2433,7 +2433,7 @@ void phydm_set_lna_trim_offset_8197g(void *dm_void, u8 path, u8 cg_cs, u8 enable
 
 	if (enable == 0) {
 		for (i = RF_PATH_A; i < 2; i++) {
-			odm_set_rf_reg(dm, i, 0x88, 0x00000f00, 0x0);
+			odm_set_rf_regbu(dm, i, 0x88, 0x00000f00, 0x0);
 			RF_DBG(dm, DBG_RF_MP, "[kfree] 8197g diversity lna trim disable\n");
 		}
 		return;
@@ -2441,25 +2441,25 @@ void phydm_set_lna_trim_offset_8197g(void *dm_void, u8 path, u8 cg_cs, u8 enable
 
 	/*cg*/
 	if (cg_cs == 0) {
-		odm_set_rf_reg(dm, path, 0x88, 0x00000f00, (trim->lna_trim[path] & 0xf));
+		odm_set_rf_regbu(dm, path, 0x88, 0x00000f00, (trim->lna_trim[path] & 0xf));
 		RF_DBG(dm, DBG_RF_MP, "[kfree] 8197g diversity lna trim CG 0x%x path=%d\n",
 			(trim->lna_trim[path] & 0xf), path);
 	} else if (cg_cs == 1) {	/*cs*/
-		odm_set_rf_reg(dm, path, 0x88, 0x00000f00, ((trim->lna_trim[path] & 0xf0) >> 4));
+		odm_set_rf_regbu(dm, path, 0x88, 0x00000f00, ((trim->lna_trim[path] & 0xf0) >> 4));
 		RF_DBG(dm, DBG_RF_MP, "[kfree] 8197g diversity lna trim CS 0x%x path=%d\n",
 			((trim->lna_trim[path] & 0xf0) >> 4), path);
 	}
 }
 
 
-void phydm_get_thermal_trim_offset_8710c(void *dm_void)
+void phydm_get_thermal_trim_offsetbu_8710c(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_power_trim_data *power_trim_info = &dm->power_trim_data;
 
 	u8 pg_therm = 0;
 
-	odm_efuse_one_byte_read(dm, PPG_THERMAL_OFFSET_10C, &pg_therm, false);
+	odm_efuse_one_byte_readbu(dm, PPG_THERMAL_OFFSET_10C, &pg_therm, false);
 	RF_DBG(dm, DBG_RF_MP, "[kfree] 8710c Efuse thermal:0x%x\n", pg_therm);
 
 	if (pg_therm != 0xff) {
@@ -2485,19 +2485,19 @@ void phydm_set_power_trim_offset_8710c(void *dm_void)
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_power_trim_data *power_trim_info = &dm->power_trim_data;
 
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0xef, BIT(18), 1);
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0xef, BIT(18), 1);
 
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x3f, 0x3f,
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 0);
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3f, 0x3f,
 		power_trim_info->bb_gain[0][RF_PATH_A]);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 1);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x3f, 0x3f,
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 1);
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3f, 0x3f,
 		power_trim_info->bb_gain[1][RF_PATH_A]);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 2);
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0x3f, 0x3f, 
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x33, RFREGOFFSETMASK, 2);
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0x3f, 0x3f, 
 		power_trim_info->bb_gain[2][RF_PATH_A]);
 
-	odm_set_rf_reg(dm, RF_PATH_A, RF_0xef, BIT(18), 0);
+	odm_set_rf_regbu(dm, RF_PATH_A, RF_0xef, BIT(18), 0);
 }
 
 void phydm_get_set_power_trim_offset_8710c(void *dm_void)
@@ -2507,15 +2507,15 @@ void phydm_get_set_power_trim_offset_8710c(void *dm_void)
 
 	u8 pg_power = 0, i, j;
 
-	odm_efuse_one_byte_read(dm, PPG_2GL_TX_10C, &pg_power, false);
+	odm_efuse_one_byte_readbu(dm, PPG_2GL_TX_10C, &pg_power, false);
 
 	if (pg_power != 0xff) {
 		power_trim_info->bb_gain[0][RF_PATH_A] = pg_power & 0xf;
 
-		odm_efuse_one_byte_read(dm, PPG_2GM_TX_10C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_2GM_TX_10C, &pg_power, false);
 		power_trim_info->bb_gain[1][RF_PATH_A] = pg_power & 0xf;
 
-		odm_efuse_one_byte_read(dm, PPG_2GH_TX_10C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_2GH_TX_10C, &pg_power, false);
 		power_trim_info->bb_gain[2][RF_PATH_A] = pg_power & 0xf;
 
 		phydm_set_power_trim_offset_8710c(dm);
@@ -2546,7 +2546,7 @@ void phydm_get_set_pa_bias_offset_8710c(void *dm_void)
 	u8 pg_pa_bias = 0xff;
 	u8 tx_pa_bias = 0;
 
-	odm_efuse_one_byte_read(dm, PPG_PABIAS_10C, &pg_pa_bias, false);
+	odm_efuse_one_byte_readbu(dm, PPG_PABIAS_10C, &pg_pa_bias, false);
 
 	if (pg_pa_bias != 0xff) {
 		tx_pa_bias = pg_pa_bias & 0xf;
@@ -2554,7 +2554,7 @@ void phydm_get_set_pa_bias_offset_8710c(void *dm_void)
 		RF_DBG(dm, DBG_RF_MP,
 		       "[kfree] 8710c PathA_pa_bias:0x%x\n", tx_pa_bias);
 
-		odm_set_rf_reg(dm, RF_PATH_A, 0x60, 0x0000f000, tx_pa_bias);
+		odm_set_rf_regbu(dm, RF_PATH_A, 0x60, 0x0000f000, tx_pa_bias);
 
 		power_trim_info->pa_bias_flag |= PA_BIAS_FLAG_ON;
 	} else {
@@ -2571,60 +2571,60 @@ void phydm_set_power_trim_offset_8814b(void *dm_void)
 	for (e_rf_path = RF_PATH_A; e_rf_path < MAX_PATH_NUM_8814B; e_rf_path++)
 	{
 		if (power_trim_info->flag & KFREE_FLAG_ON) {
-			odm_set_rf_reg(dm, e_rf_path, RF_0xee, BIT(19), 1);
+			odm_set_rf_regbu(dm, e_rf_path, RF_0xee, BIT(19), 1);
 
 			if (power_trim_info->flag & KFREE_FLAG_ON_2G) {
-				odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x0);
-				odm_set_rf_reg(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x0);
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
 					power_trim_info->bb_gain[0][e_rf_path]);
-				odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x1);
-				odm_set_rf_reg(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x1);
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
 					power_trim_info->bb_gain[0][e_rf_path]);
-				odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x2);
-				odm_set_rf_reg(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x2);
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
 					power_trim_info->bb_gain[0][e_rf_path]);
-				odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x3);
-				odm_set_rf_reg(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x3);
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
 					power_trim_info->bb_gain[0][e_rf_path]);
 			}
 
 			if (power_trim_info->flag & KFREE_FLAG_ON_5G) {
-				odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x4);
-				odm_set_rf_reg(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x4);
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
 					power_trim_info->bb_gain[3][e_rf_path]);
-				odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x5);
-				odm_set_rf_reg(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x5);
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
 					power_trim_info->bb_gain[4][e_rf_path]);
-				odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x6);
-				odm_set_rf_reg(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x6);
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
 					power_trim_info->bb_gain[5][e_rf_path]);
-				odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x7);
-				odm_set_rf_reg(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x7);
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
 					power_trim_info->bb_gain[6][e_rf_path]);
-				odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x8);
-				odm_set_rf_reg(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x8);
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
 					power_trim_info->bb_gain[7][e_rf_path]);
-				odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x9);
-				odm_set_rf_reg(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0x9);
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
 					power_trim_info->bb_gain[3][e_rf_path]);
-				odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xa);
-				odm_set_rf_reg(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xa);
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
 					power_trim_info->bb_gain[4][e_rf_path]);
-				odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xb);
-				odm_set_rf_reg(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xb);
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
 					power_trim_info->bb_gain[5][e_rf_path]);
-				odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xc);
-				odm_set_rf_reg(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xc);
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
 					power_trim_info->bb_gain[6][e_rf_path]);
-				odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xd);
-				odm_set_rf_reg(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xd);
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
 					power_trim_info->bb_gain[7][e_rf_path]);
-				odm_set_rf_reg(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xe);
-				odm_set_rf_reg(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x33, RFREGOFFSETMASK, 0xe);
+				odm_set_rf_regbu(dm, e_rf_path, RF_0x30, RFREGOFFSETMASK,
 					power_trim_info->bb_gain[7][e_rf_path]);
 			}
 
-			odm_set_rf_reg(dm, e_rf_path, RF_0xee, BIT(19), 0);
+			odm_set_rf_regbu(dm, e_rf_path, RF_0xee, BIT(19), 0);
 		}
 	}
 }
@@ -2638,8 +2638,8 @@ void phydm_get_set_power_trim_offset_8814b(void *dm_void)
 	u8 pg_power1, pg_power2;
 	u8 pg_power_2g[2] = {0}, pg_power_5g[20] = {0};
 
-	odm_efuse_one_byte_read(dm, PPG_2GL_TXAB_14B, &pg_power_2g[0], false);
-	odm_efuse_one_byte_read(dm, PPG_2GL_TXCD_14B, &pg_power_2g[1], false);
+	odm_efuse_one_byte_readbu(dm, PPG_2GL_TXAB_14B, &pg_power_2g[0], false);
+	odm_efuse_one_byte_readbu(dm, PPG_2GL_TXCD_14B, &pg_power_2g[1], false);
 
 	j = 0;
 	for (i = 0; i < 2; i++) {
@@ -2660,26 +2660,26 @@ void phydm_get_set_power_trim_offset_8814b(void *dm_void)
 			power_trim_info->flag | KFREE_FLAG_ON | KFREE_FLAG_ON_2G;
 	}
 
-	odm_efuse_one_byte_read(dm, PPG_5GL1_TXA_14B, &pg_power_5g[0], false);
-	odm_efuse_one_byte_read(dm, PPG_5GL1_TXB_14B, &pg_power_5g[1], false);
-	odm_efuse_one_byte_read(dm, PPG_5GL1_TXC_14B, &pg_power_5g[2], false);
-	odm_efuse_one_byte_read(dm, PPG_5GL1_TXD_14B, &pg_power_5g[3], false);
-	odm_efuse_one_byte_read(dm, PPG_5GL2_TXA_14B, &pg_power_5g[4], false);
-	odm_efuse_one_byte_read(dm, PPG_5GL2_TXB_14B, &pg_power_5g[5], false);
-	odm_efuse_one_byte_read(dm, PPG_5GL2_TXC_14B, &pg_power_5g[6], false);
-	odm_efuse_one_byte_read(dm, PPG_5GL2_TXD_14B, &pg_power_5g[7], false);
-	odm_efuse_one_byte_read(dm, PPG_5GM1_TXA_14B, &pg_power_5g[8], false);
-	odm_efuse_one_byte_read(dm, PPG_5GM1_TXB_14B, &pg_power_5g[9], false);
-	odm_efuse_one_byte_read(dm, PPG_5GM1_TXC_14B, &pg_power_5g[10], false);
-	odm_efuse_one_byte_read(dm, PPG_5GM1_TXD_14B, &pg_power_5g[11], false);
-	odm_efuse_one_byte_read(dm, PPG_5GM2_TXA_14B, &pg_power_5g[12], false);
-	odm_efuse_one_byte_read(dm, PPG_5GM2_TXB_14B, &pg_power_5g[13], false);
-	odm_efuse_one_byte_read(dm, PPG_5GM2_TXC_14B, &pg_power_5g[14], false);
-	odm_efuse_one_byte_read(dm, PPG_5GM2_TXD_14B, &pg_power_5g[15], false);
-	odm_efuse_one_byte_read(dm, PPG_5GH1_TXA_14B, &pg_power_5g[16], false);
-	odm_efuse_one_byte_read(dm, PPG_5GH1_TXB_14B, &pg_power_5g[17], false);
-	odm_efuse_one_byte_read(dm, PPG_5GH1_TXC_14B, &pg_power_5g[18], false);
-	odm_efuse_one_byte_read(dm, PPG_5GH1_TXD_14B, &pg_power_5g[19], false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GL1_TXA_14B, &pg_power_5g[0], false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GL1_TXB_14B, &pg_power_5g[1], false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GL1_TXC_14B, &pg_power_5g[2], false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GL1_TXD_14B, &pg_power_5g[3], false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GL2_TXA_14B, &pg_power_5g[4], false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GL2_TXB_14B, &pg_power_5g[5], false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GL2_TXC_14B, &pg_power_5g[6], false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GL2_TXD_14B, &pg_power_5g[7], false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GM1_TXA_14B, &pg_power_5g[8], false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GM1_TXB_14B, &pg_power_5g[9], false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GM1_TXC_14B, &pg_power_5g[10], false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GM1_TXD_14B, &pg_power_5g[11], false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GM2_TXA_14B, &pg_power_5g[12], false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GM2_TXB_14B, &pg_power_5g[13], false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GM2_TXC_14B, &pg_power_5g[14], false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GM2_TXD_14B, &pg_power_5g[15], false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GH1_TXA_14B, &pg_power_5g[16], false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GH1_TXB_14B, &pg_power_5g[17], false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GH1_TXC_14B, &pg_power_5g[18], false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GH1_TXD_14B, &pg_power_5g[19], false);
 
 	j = 0;
 	for (i = 0; i < 20; i++) {
@@ -2744,14 +2744,14 @@ void phydm_get_tssi_trim_offset_8814b(void *dm_void)
 	u8 i, j;
 	u8 tssi_trim_2g[8] = {0}, tssi_trim_5g[24] = {0};
 
-	odm_efuse_one_byte_read(dm, TSSI_2GM_TXA_14B, &tssi_trim_2g[0], false);
-	odm_efuse_one_byte_read(dm, TSSI_2GM_TXB_14B, &tssi_trim_2g[1], false);
-	odm_efuse_one_byte_read(dm, TSSI_2GM_TXC_14B, &tssi_trim_2g[2], false);
-	odm_efuse_one_byte_read(dm, TSSI_2GM_TXD_14B, &tssi_trim_2g[3], false);
-	odm_efuse_one_byte_read(dm, TSSI_2GH_TXA_14B, &tssi_trim_2g[4], false);
-	odm_efuse_one_byte_read(dm, TSSI_2GH_TXB_14B, &tssi_trim_2g[5], false);
-	odm_efuse_one_byte_read(dm, TSSI_2GH_TXC_14B, &tssi_trim_2g[6], false);
-	odm_efuse_one_byte_read(dm, TSSI_2GH_TXD_14B, &tssi_trim_2g[7], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_2GM_TXA_14B, &tssi_trim_2g[0], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_2GM_TXB_14B, &tssi_trim_2g[1], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_2GM_TXC_14B, &tssi_trim_2g[2], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_2GM_TXD_14B, &tssi_trim_2g[3], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_2GH_TXA_14B, &tssi_trim_2g[4], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_2GH_TXB_14B, &tssi_trim_2g[5], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_2GH_TXC_14B, &tssi_trim_2g[6], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_2GH_TXD_14B, &tssi_trim_2g[7], false);
 
 	j = 0;
 	for (i = 0; i < 8; i++) {
@@ -2787,30 +2787,30 @@ void phydm_get_tssi_trim_offset_8814b(void *dm_void)
 		}
 	}
 
-	odm_efuse_one_byte_read(dm, TSSI_5GL1_TXA_14B, &tssi_trim_5g[0], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GL1_TXB_14B, &tssi_trim_5g[1], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GL1_TXC_14B, &tssi_trim_5g[2], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GL1_TXD_14B, &tssi_trim_5g[3], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GL2_TXA_14B, &tssi_trim_5g[4], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GL2_TXB_14B, &tssi_trim_5g[5], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GL2_TXC_14B, &tssi_trim_5g[6], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GL2_TXD_14B, &tssi_trim_5g[7], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GM1_TXA_14B, &tssi_trim_5g[8], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GM1_TXB_14B, &tssi_trim_5g[9], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GM1_TXC_14B, &tssi_trim_5g[10], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GM1_TXD_14B, &tssi_trim_5g[11], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GM2_TXA_14B, &tssi_trim_5g[12], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GM2_TXB_14B, &tssi_trim_5g[13], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GM2_TXC_14B, &tssi_trim_5g[14], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GM2_TXD_14B, &tssi_trim_5g[15], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GH1_TXA_14B, &tssi_trim_5g[16], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GH1_TXB_14B, &tssi_trim_5g[17], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GH1_TXC_14B, &tssi_trim_5g[18], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GH1_TXD_14B, &tssi_trim_5g[19], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GH2_TXA_14B, &tssi_trim_5g[20], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GH2_TXB_14B, &tssi_trim_5g[21], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GH2_TXC_14B, &tssi_trim_5g[22], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GH2_TXD_14B, &tssi_trim_5g[23], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GL1_TXA_14B, &tssi_trim_5g[0], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GL1_TXB_14B, &tssi_trim_5g[1], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GL1_TXC_14B, &tssi_trim_5g[2], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GL1_TXD_14B, &tssi_trim_5g[3], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GL2_TXA_14B, &tssi_trim_5g[4], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GL2_TXB_14B, &tssi_trim_5g[5], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GL2_TXC_14B, &tssi_trim_5g[6], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GL2_TXD_14B, &tssi_trim_5g[7], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GM1_TXA_14B, &tssi_trim_5g[8], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GM1_TXB_14B, &tssi_trim_5g[9], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GM1_TXC_14B, &tssi_trim_5g[10], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GM1_TXD_14B, &tssi_trim_5g[11], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GM2_TXA_14B, &tssi_trim_5g[12], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GM2_TXB_14B, &tssi_trim_5g[13], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GM2_TXC_14B, &tssi_trim_5g[14], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GM2_TXD_14B, &tssi_trim_5g[15], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GH1_TXA_14B, &tssi_trim_5g[16], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GH1_TXB_14B, &tssi_trim_5g[17], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GH1_TXC_14B, &tssi_trim_5g[18], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GH1_TXD_14B, &tssi_trim_5g[19], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GH2_TXA_14B, &tssi_trim_5g[20], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GH2_TXB_14B, &tssi_trim_5g[21], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GH2_TXC_14B, &tssi_trim_5g[22], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GH2_TXD_14B, &tssi_trim_5g[23], false);
 
 	j = 0;
 	for (i = 0; i < 24; i++) {
@@ -2908,9 +2908,9 @@ void phydm_set_pabias_bandedge_2g_rf_8814b(void *dm_void)
 	/*rf3f == rf53*/
 #endif
 	for (i = 0; i < MAX_PATH_NUM_8814B; i++) {
-		rf_reg_51 = odm_get_rf_reg(dm, i, RF_0x51, RFREGOFFSETMASK);
-		rf_reg_52 = odm_get_rf_reg(dm, i, RF_0x52, RFREGOFFSETMASK);
-		rf_reg_53 = odm_get_rf_reg(dm, i, RF_0x53, RFREGOFFSETMASK);
+		rf_reg_51 = odm_get_rf_regbu(dm, i, RF_0x51, RFREGOFFSETMASK);
+		rf_reg_52 = odm_get_rf_regbu(dm, i, RF_0x52, RFREGOFFSETMASK);
+		rf_reg_53 = odm_get_rf_regbu(dm, i, RF_0x53, RFREGOFFSETMASK);
 
 		RF_DBG(dm, DBG_RF_MP,
 		       "[kfree] 8814b 2g rf(0x51)=0x%X rf(0x52)=0x%X rf(0x53)=0x%X path=%d\n",
@@ -2941,15 +2941,15 @@ void phydm_set_pabias_bandedge_2g_rf_8814b(void *dm_void)
 		rf_reg_3f = ((rf_reg_3f & 0xffff0) | reg_tmp);
 		rf_reg_3f = ((rf_reg_3f & 0x0ffff) | 0x10000);
 
-		odm_set_rf_reg(dm, i, RF_0xef, BIT(10), 0x1);
+		odm_set_rf_regbu(dm, i, RF_0xef, BIT(10), 0x1);
 		for (j = 0; j <= 0xf; j++) {
-			odm_set_rf_reg(dm, i, RF_0x30, RFREGOFFSETMASK, (j << 16));
-			odm_set_rf_reg(dm, i, RF_0x3f, RFREGOFFSETMASK, rf_reg_3f);
+			odm_set_rf_regbu(dm, i, RF_0x30, RFREGOFFSETMASK, (j << 16));
+			odm_set_rf_regbu(dm, i, RF_0x3f, RFREGOFFSETMASK, rf_reg_3f);
 			RF_DBG(dm, DBG_RF_MP,
 			       "[kfree] 8814b 2G pa bias write RF_0x30=0x%05x  RF_0x3f=0x%x path=%d\n",
 			       (j << 16), rf_reg_3f, i);
 		}
-		odm_set_rf_reg(dm, i, RF_0xef, BIT(10), 0x0);
+		odm_set_rf_regbu(dm, i, RF_0xef, BIT(10), 0x0);
 
 #if 0
 		/*2.4G bandedge*/
@@ -3007,18 +3007,18 @@ void phydm_set_pabias_bandedge_2g_rf_8814b(void *dm_void)
 		       "[kfree] 8814b 2G bandedge RF_0x30=0x%05X  RF_0x3f=0x%x path=%d\n",
 		       0x0002a, rf_reg_3f, i);
 
-		odm_set_rf_reg(dm, i, RF_0xef, BIT(8), 0x1);
-		odm_set_rf_reg(dm, i, RF_0x33, RFREGOFFSETMASK, 0x00001);
-		odm_set_rf_reg(dm, i, RF_0x3f, RFREGOFFSETMASK, rf_reg_3f);
-		odm_set_rf_reg(dm, i, RF_0x33, RFREGOFFSETMASK, 0x0000b);
-		odm_set_rf_reg(dm, i, RF_0x3f, RFREGOFFSETMASK, rf_reg_3f);
-		odm_set_rf_reg(dm, i, RF_0x33, RFREGOFFSETMASK, 0x00023);
-		odm_set_rf_reg(dm, i, RF_0x3f, RFREGOFFSETMASK, rf_reg_3f);
-		odm_set_rf_reg(dm, i, RF_0x33, RFREGOFFSETMASK, 0x00029);
-		odm_set_rf_reg(dm, i, RF_0x3f, RFREGOFFSETMASK, rf_reg_3f);
-		odm_set_rf_reg(dm, i, RF_0x33, RFREGOFFSETMASK, 0x0002a);
-		odm_set_rf_reg(dm, i, RF_0x3f, RFREGOFFSETMASK, rf_reg_3f);
-		odm_set_rf_reg(dm, i, RF_0xef, BIT(8), 0x0);
+		odm_set_rf_regbu(dm, i, RF_0xef, BIT(8), 0x1);
+		odm_set_rf_regbu(dm, i, RF_0x33, RFREGOFFSETMASK, 0x00001);
+		odm_set_rf_regbu(dm, i, RF_0x3f, RFREGOFFSETMASK, rf_reg_3f);
+		odm_set_rf_regbu(dm, i, RF_0x33, RFREGOFFSETMASK, 0x0000b);
+		odm_set_rf_regbu(dm, i, RF_0x3f, RFREGOFFSETMASK, rf_reg_3f);
+		odm_set_rf_regbu(dm, i, RF_0x33, RFREGOFFSETMASK, 0x00023);
+		odm_set_rf_regbu(dm, i, RF_0x3f, RFREGOFFSETMASK, rf_reg_3f);
+		odm_set_rf_regbu(dm, i, RF_0x33, RFREGOFFSETMASK, 0x00029);
+		odm_set_rf_regbu(dm, i, RF_0x3f, RFREGOFFSETMASK, rf_reg_3f);
+		odm_set_rf_regbu(dm, i, RF_0x33, RFREGOFFSETMASK, 0x0002a);
+		odm_set_rf_regbu(dm, i, RF_0x3f, RFREGOFFSETMASK, rf_reg_3f);
+		odm_set_rf_regbu(dm, i, RF_0xef, BIT(8), 0x0);
 
 	}
 #endif
@@ -3041,17 +3041,17 @@ void phydm_set_pabias_bandedge_5g_rf_8814b(void *dm_void)
 
 
 	for (i = 0; i < MAX_PATH_NUM_8814B; i++) {
-		rf_reg_18[i] = odm_get_rf_reg(dm, i, RF_0x18, RFREGOFFSETMASK);
+		rf_reg_18[i] = odm_get_rf_regbu(dm, i, RF_0x18, RFREGOFFSETMASK);
 
 		for (j = 0; j < 3; j++) {
 			if (j == 0)
-				odm_set_rf_reg(dm, i, RF_0x18, RFREGOFFSETMASK, 0x10d24);
+				odm_set_rf_regbu(dm, i, RF_0x18, RFREGOFFSETMASK, 0x10d24);
 			else if (j == 1)
-				odm_set_rf_reg(dm, i, RF_0x18, RFREGOFFSETMASK, 0x30d64);
+				odm_set_rf_regbu(dm, i, RF_0x18, RFREGOFFSETMASK, 0x30d64);
 			else if (j == 2)
-				odm_set_rf_reg(dm, i, RF_0x18, RFREGOFFSETMASK, 0x50da9);
+				odm_set_rf_regbu(dm, i, RF_0x18, RFREGOFFSETMASK, 0x50da9);
 
-			rf_reg_62[j][i] = odm_get_rf_reg(dm, i, 0x62, RFREGOFFSETMASK);
+			rf_reg_62[j][i] = odm_get_rf_regbu(dm, i, 0x62, RFREGOFFSETMASK);
 
 #if 0
 			/*5G bias*/
@@ -3066,38 +3066,38 @@ void phydm_set_pabias_bandedge_5g_rf_8814b(void *dm_void)
 
 		for (j = 0; j < 15; j++) {
 			if (j == 0)
-				odm_set_rf_reg(dm, i, RF_0x18, RFREGOFFSETMASK, 0x10d24);/*ch36*/
+				odm_set_rf_regbu(dm, i, RF_0x18, RFREGOFFSETMASK, 0x10d24);/*ch36*/
 			else if (j == 1)
-				odm_set_rf_reg(dm, i, RF_0x18, RFREGOFFSETMASK, 0x11926);/*ch38*/
+				odm_set_rf_regbu(dm, i, RF_0x18, RFREGOFFSETMASK, 0x11926);/*ch38*/
 			else if (j == 2)
-				odm_set_rf_reg(dm, i, RF_0x18, RFREGOFFSETMASK, 0x1252a);/*ch42*/
+				odm_set_rf_regbu(dm, i, RF_0x18, RFREGOFFSETMASK, 0x1252a);/*ch42*/
 			else if (j == 3)
-				odm_set_rf_reg(dm, i, RF_0x18, RFREGOFFSETMASK, 0x1253a);/*ch58*/
+				odm_set_rf_regbu(dm, i, RF_0x18, RFREGOFFSETMASK, 0x1253a);/*ch58*/
 			else if (j == 4)
-				odm_set_rf_reg(dm, i, RF_0x18, RFREGOFFSETMASK, 0x1193e);/*ch62*/
+				odm_set_rf_regbu(dm, i, RF_0x18, RFREGOFFSETMASK, 0x1193e);/*ch62*/
 			else if (j == 5)
-				odm_set_rf_reg(dm, i, RF_0x18, RFREGOFFSETMASK, 0x10d40);/*ch64*/
+				odm_set_rf_regbu(dm, i, RF_0x18, RFREGOFFSETMASK, 0x10d40);/*ch64*/
 			else if (j == 6)
-				odm_set_rf_reg(dm, i, RF_0x18, RFREGOFFSETMASK, 0x30d64);/*ch100*/
+				odm_set_rf_regbu(dm, i, RF_0x18, RFREGOFFSETMASK, 0x30d64);/*ch100*/
 			else if (j == 7)
-				odm_set_rf_reg(dm, i, RF_0x18, RFREGOFFSETMASK, 0x31966);/*ch102*/
+				odm_set_rf_regbu(dm, i, RF_0x18, RFREGOFFSETMASK, 0x31966);/*ch102*/
 			else if (j == 8)
-				odm_set_rf_reg(dm, i, RF_0x18, RFREGOFFSETMASK, 0x3256a);/*ch106*/
+				odm_set_rf_regbu(dm, i, RF_0x18, RFREGOFFSETMASK, 0x3256a);/*ch106*/
 			else if (j == 9)
-				odm_set_rf_reg(dm, i, RF_0x18, RFREGOFFSETMASK, 0x3257a);/*ch122*/
+				odm_set_rf_regbu(dm, i, RF_0x18, RFREGOFFSETMASK, 0x3257a);/*ch122*/
 			else if (j == 10)
-				odm_set_rf_reg(dm, i, RF_0x18, RFREGOFFSETMASK, 0x31986);/*ch134*/
+				odm_set_rf_regbu(dm, i, RF_0x18, RFREGOFFSETMASK, 0x31986);/*ch134*/
 			else if (j == 11)
-				odm_set_rf_reg(dm, i, RF_0x18, RFREGOFFSETMASK, 0x30d8c);/*ch140*/
+				odm_set_rf_regbu(dm, i, RF_0x18, RFREGOFFSETMASK, 0x30d8c);/*ch140*/
 			else if (j == 12)
-				odm_set_rf_reg(dm, i, RF_0x18, RFREGOFFSETMASK, 0x50d95);/*ch149*/
+				odm_set_rf_regbu(dm, i, RF_0x18, RFREGOFFSETMASK, 0x50d95);/*ch149*/
 			else if (j == 13)
-				odm_set_rf_reg(dm, i, RF_0x18, RFREGOFFSETMASK, 0x51997);/*ch151*/
+				odm_set_rf_regbu(dm, i, RF_0x18, RFREGOFFSETMASK, 0x51997);/*ch151*/
 			else if (j == 14)
-				odm_set_rf_reg(dm, i, RF_0x18, RFREGOFFSETMASK, 0x5259b);/*ch155*/
+				odm_set_rf_regbu(dm, i, RF_0x18, RFREGOFFSETMASK, 0x5259b);/*ch155*/
 				
 
-			rf_reg_61[j][i] = odm_get_rf_reg(dm, i, RF_0x61, RFREGOFFSETMASK);
+			rf_reg_61[j][i] = odm_get_rf_regbu(dm, i, RF_0x61, RFREGOFFSETMASK);
 #if 0
 			/*5G bandedge*/
 			/*rf61[11:8] == rf30[11:8]*/
@@ -3107,7 +3107,7 @@ void phydm_set_pabias_bandedge_5g_rf_8814b(void *dm_void)
 			bandedge[j][i] = rf_reg_61[j][i] & 0xfff;
 		}
 
-		odm_set_rf_reg(dm, i, RF_0x18, RFREGOFFSETMASK, rf_reg_18[i]);
+		odm_set_rf_regbu(dm, i, RF_0x18, RFREGOFFSETMASK, rf_reg_18[i]);
 	}
 
 	for (i = 0; i < MAX_PATH_NUM_8814B; i++) {
@@ -3126,7 +3126,7 @@ void phydm_set_pabias_bandedge_5g_rf_8814b(void *dm_void)
 
 	/*5G bias*/
 	for (i = 0; i < MAX_PATH_NUM_8814B; i++) {
-		odm_set_rf_reg(dm, i, RF_0xee, BIT(8), 0x1);
+		odm_set_rf_regbu(dm, i, RF_0xee, BIT(8), 0x1);
 		for (j = 0; j <= 0xb; j++) {
 			
 			if (j >= 0 && j <= 3)
@@ -3163,14 +3163,14 @@ void phydm_set_pabias_bandedge_5g_rf_8814b(void *dm_void)
 				       "[kfree] 8814b write RF_0x30=0x%05x path=%d\n",
 				       reg_tmp, i);
 
-			odm_set_rf_reg(dm, i, RF_0x30, RFREGOFFSETMASK, reg_tmp);
+			odm_set_rf_regbu(dm, i, RF_0x30, RFREGOFFSETMASK, reg_tmp);
 		}
-		odm_set_rf_reg(dm, i, RF_0xee, BIT(8), 0x0);
+		odm_set_rf_regbu(dm, i, RF_0xee, BIT(8), 0x0);
 	}
 
 	/*5G bandedge*/
 	for (i = 0; i < MAX_PATH_NUM_8814B; i++) {
-		odm_set_rf_reg(dm, i, RF_0xee, BIT(9), 0x1);
+		odm_set_rf_regbu(dm, i, RF_0xee, BIT(9), 0x1);
 		for (j = 0; j <= 0xe; j++) {
 			reg_tmp = bandedge[j][i] + power_trim_info->pa_bias_trim[1][i];
 
@@ -3195,16 +3195,16 @@ void phydm_set_pabias_bandedge_5g_rf_8814b(void *dm_void)
 				       "[kfree] 8814b write RF_0x30=0x%05x path=%d\n",
 				       reg_tmp, i);
 
-			odm_set_rf_reg(dm, i, RF_0x30, RFREGOFFSETMASK, reg_tmp);
+			odm_set_rf_regbu(dm, i, RF_0x30, RFREGOFFSETMASK, reg_tmp);
 		}
-		odm_set_rf_reg(dm, i, RF_0xee, BIT(9), 0x0);
+		odm_set_rf_regbu(dm, i, RF_0xee, BIT(9), 0x0);
 	}
 
 #endif
 }
 
 
-void phydm_get_pa_bias_offset_8814b(void *dm_void)
+void phydm_get_pa_bias_offsetbu_8814b(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_power_trim_data *power_trim_info = &dm->power_trim_data;
@@ -3212,8 +3212,8 @@ void phydm_get_pa_bias_offset_8814b(void *dm_void)
 	u8 i, j, k;
 	u8 tssi_pa_bias_2g[2] = {0}, tssi_pa_bias_5g[2] = {0};
 
-	odm_efuse_one_byte_read(dm, PPG_PABIAS_2GAC_14B, &tssi_pa_bias_2g[0], false);
-	odm_efuse_one_byte_read(dm, PPG_PABIAS_2GBD_14B, &tssi_pa_bias_2g[1], false);
+	odm_efuse_one_byte_readbu(dm, PPG_PABIAS_2GAC_14B, &tssi_pa_bias_2g[0], false);
+	odm_efuse_one_byte_readbu(dm, PPG_PABIAS_2GBD_14B, &tssi_pa_bias_2g[1], false);
 
 	j = 0;
 	for (i = 0; i < 2; i++) {
@@ -3232,7 +3232,7 @@ void phydm_get_pa_bias_offset_8814b(void *dm_void)
 		for (k = 0; k < MAX_PATH_NUM_8814B; k++) {
 			RF_DBG(dm, DBG_RF_MP, "[kfree] 8814b 2g PA Bias K efuse:0x%x path=%d\n",
 				power_trim_info->pa_bias_trim[0][k], k);
-			odm_set_rf_reg(dm, k, 0x60, 0x0000f000, power_trim_info->pa_bias_trim[0][k]);
+			odm_set_rf_regbu(dm, k, 0x60, 0x0000f000, power_trim_info->pa_bias_trim[0][k]);
 		}
 
 #if 0
@@ -3250,8 +3250,8 @@ void phydm_get_pa_bias_offset_8814b(void *dm_void)
 #endif	
 	}
 	
-	odm_efuse_one_byte_read(dm, PPG_PABIAS_5GAC_14B, &tssi_pa_bias_5g[0], false);
-	odm_efuse_one_byte_read(dm, PPG_PABIAS_5GBD_14B, &tssi_pa_bias_5g[1], false);
+	odm_efuse_one_byte_readbu(dm, PPG_PABIAS_5GAC_14B, &tssi_pa_bias_5g[0], false);
+	odm_efuse_one_byte_readbu(dm, PPG_PABIAS_5GBD_14B, &tssi_pa_bias_5g[1], false);
 
 	j = 0;
 	for (i = 0; i < 2; i++) {
@@ -3271,7 +3271,7 @@ void phydm_get_pa_bias_offset_8814b(void *dm_void)
 			RF_DBG(dm, DBG_RF_MP, "[kfree] 8814b 5g PA Bias K efuse:0x%x path=%d\n",
 				power_trim_info->pa_bias_trim[1][k], k);
 
-			odm_set_rf_reg(dm, k, 0x60, 0x000f0000, power_trim_info->pa_bias_trim[1][k]);
+			odm_set_rf_regbu(dm, k, 0x60, 0x000f0000, power_trim_info->pa_bias_trim[1][k]);
 		}
 #if 0
 		for (k = 0; k < MAX_PATH_NUM_8814B; k++) {
@@ -3291,25 +3291,25 @@ void phydm_get_pa_bias_offset_8814b(void *dm_void)
 	
 }
 
-void phydm_get_thermal_trim_offset_8814b(void *dm_void)
+void phydm_get_thermal_trim_offsetbu_8814b(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_power_trim_data *power_trim_info = &dm->power_trim_data;
 
 	u8 pg_therm = 0xff, i;
 
-	odm_efuse_one_byte_read(dm, PPG_THERMAL_A_OFFSET_14B, &pg_therm, false);
+	odm_efuse_one_byte_readbu(dm, PPG_THERMAL_A_OFFSET_14B, &pg_therm, false);
 
 	if (pg_therm != 0xff) {
 		for (i = 0; i < MAX_PATH_NUM_8814B; i++) {
 			if (i == 0)
-				odm_efuse_one_byte_read(dm, PPG_THERMAL_A_OFFSET_14B, &pg_therm, false);
+				odm_efuse_one_byte_readbu(dm, PPG_THERMAL_A_OFFSET_14B, &pg_therm, false);
 			else if (i == 1)
-				odm_efuse_one_byte_read(dm, PPG_THERMAL_B_OFFSET_14B, &pg_therm, false);
+				odm_efuse_one_byte_readbu(dm, PPG_THERMAL_B_OFFSET_14B, &pg_therm, false);
 			else if (i == 2)
-				odm_efuse_one_byte_read(dm, PPG_THERMAL_C_OFFSET_14B, &pg_therm, false);
+				odm_efuse_one_byte_readbu(dm, PPG_THERMAL_C_OFFSET_14B, &pg_therm, false);
 			else if (i == 3)
-				odm_efuse_one_byte_read(dm, PPG_THERMAL_D_OFFSET_14B, &pg_therm, false);
+				odm_efuse_one_byte_readbu(dm, PPG_THERMAL_D_OFFSET_14B, &pg_therm, false);
 
 			RF_DBG(dm, DBG_RF_MP, "[kfree] 8814b Efuse thermal S%d:0x%x\n", i, pg_therm);
 			pg_therm = pg_therm & 0x1f;
@@ -3332,13 +3332,13 @@ void phydm_get_thermal_trim_offset_8814b(void *dm_void)
 	}
 }
 
-void phydm_get_thermal_trim_offset_8723f(void *dm_void)
+void phydm_get_thermal_trim_offsetbu_8723f(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_power_trim_data *power_trim_info = &dm->power_trim_data;
 	u8 pg_therm = 0xff, thermal[2] = {0};
 #if 0
-	odm_efuse_one_byte_read(dm, PPG_THERMAL_A_OFFSET_22C, &pg_therm, false);
+	odm_efuse_one_byte_readbu(dm, PPG_THERMAL_A_OFFSET_22C, &pg_therm, false);
 
 	if (pg_therm != 0xff) {
 		/*s0*/
@@ -3347,16 +3347,16 @@ void phydm_get_thermal_trim_offset_8723f(void *dm_void)
 		thermal[RF_PATH_A] =
 			((pg_therm & 0x1) << 3) | ((pg_therm >> 1) & 0x7);
 
-		odm_set_rf_reg(dm, RF_PATH_A, RF_0x43, 0x000f0000, thermal[RF_PATH_A]);
+		odm_set_rf_regbu(dm, RF_PATH_A, RF_0x43, 0x000f0000, thermal[RF_PATH_A]);
 
 		/*s1*/
-		odm_efuse_one_byte_read(dm, PPG_THERMAL_B_OFFSET_22C, &pg_therm, false);
+		odm_efuse_one_byte_readbu(dm, PPG_THERMAL_B_OFFSET_22C, &pg_therm, false);
 
 		pg_therm = pg_therm & 0x1f;
 
 		thermal[RF_PATH_B] = ((pg_therm & 0x1) << 3) | ((pg_therm >> 1) & 0x7);
 
-		odm_set_rf_reg(dm, RF_PATH_B, RF_0x43, 0x000f0000, thermal[RF_PATH_B]);
+		odm_set_rf_regbu(dm, RF_PATH_B, RF_0x43, 0x000f0000, thermal[RF_PATH_B]);
 
 		power_trim_info->flag |= KFREE_FLAG_THERMAL_K_ON;
 
@@ -3379,73 +3379,73 @@ void phydm_get_set_power_trim_offset_8723f(void *dm_void)
 	u8 pg_power = 0xff, i, j;
 	u8 pg_power1, pg_power2 , pg_power3, pg_power4, pg_power5;
 #if 0	
-	odm_efuse_one_byte_read(dm, PPG_2GL_TXAB_22C, &pg_power1, false);
-	odm_efuse_one_byte_read(dm, PPG_2GM_TXAB_22C, &pg_power2, false);
-	odm_efuse_one_byte_read(dm, PPG_2GH_TXAB_22C, &pg_power3, false);
-	odm_efuse_one_byte_read(dm, PPG_5GL1_TXA_22C, &pg_power4, false);
-	odm_efuse_one_byte_read(dm, PPG_5GL1_TXB_22C, &pg_power5, false);
+	odm_efuse_one_byte_readbu(dm, PPG_2GL_TXAB_22C, &pg_power1, false);
+	odm_efuse_one_byte_readbu(dm, PPG_2GM_TXAB_22C, &pg_power2, false);
+	odm_efuse_one_byte_readbu(dm, PPG_2GH_TXAB_22C, &pg_power3, false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GL1_TXA_22C, &pg_power4, false);
+	odm_efuse_one_byte_readbu(dm, PPG_5GL1_TXB_22C, &pg_power5, false);
 	
 	if (pg_power1 != 0xff || pg_power2 != 0xff || pg_power3 != 0xff ||
 		pg_power4 != 0xff || pg_power5 != 0xff) {
-		odm_efuse_one_byte_read(dm, PPG_2GL_TXAB_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_2GL_TXAB_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[0][0] = pg_power & 0xf;
 		power_trim_info->bb_gain[0][1] = (pg_power & 0xf0) >> 4;
 	
-		odm_efuse_one_byte_read(dm, PPG_2GM_TXAB_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_2GM_TXAB_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[1][0] = pg_power & 0xf;
 		power_trim_info->bb_gain[1][1] = (pg_power & 0xf0) >> 4;
 	
-		odm_efuse_one_byte_read(dm, PPG_2GH_TXAB_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_2GH_TXAB_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[2][0] = pg_power & 0xf;
 		power_trim_info->bb_gain[2][1] = (pg_power & 0xf0) >> 4;
 	
-		odm_efuse_one_byte_read(dm, PPG_5GL1_TXA_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GL1_TXA_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[3][0] = pg_power & 0x1f;
-		odm_efuse_one_byte_read(dm, PPG_5GL1_TXB_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GL1_TXB_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[3][1] = pg_power & 0x1f;
 	
-		odm_efuse_one_byte_read(dm, PPG_5GL2_TXA_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GL2_TXA_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[4][0] = pg_power & 0x1f;
-		odm_efuse_one_byte_read(dm, PPG_5GL2_TXB_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GL2_TXB_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[4][1] = pg_power & 0x1f;
 	
-		odm_efuse_one_byte_read(dm, PPG_5GM1_TXA_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GM1_TXA_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[5][0] = pg_power & 0x1f;
-		odm_efuse_one_byte_read(dm, PPG_5GM1_TXB_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GM1_TXB_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[5][1] = pg_power & 0x1f;
 	
-		odm_efuse_one_byte_read(dm, PPG_5GM2_TXA_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GM2_TXA_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[6][0] = pg_power & 0x1f;
-		odm_efuse_one_byte_read(dm, PPG_5GM2_TXB_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GM2_TXB_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[6][1] = pg_power & 0x1f;
 	
-		odm_efuse_one_byte_read(dm, PPG_5GH1_TXA_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GH1_TXA_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[7][0] = pg_power & 0x1f;
-		odm_efuse_one_byte_read(dm, PPG_5GH1_TXB_22C, &pg_power, false);
+		odm_efuse_one_byte_readbu(dm, PPG_5GH1_TXB_22C, &pg_power, false);
 		if (pg_power == 0xff)
 			pg_power = 0;
 		power_trim_info->bb_gain[7][1] = pg_power & 0x1f;
@@ -3455,7 +3455,7 @@ void phydm_get_set_power_trim_offset_8723f(void *dm_void)
 						KFREE_FLAG_ON_2G |
 						KFREE_FLAG_ON_5G;
 	
-		phydm_set_power_trim_offset_8822c(dm);
+		phydm_set_power_trim_offset_8822cbu(dm);
 	}
 	
 	RF_DBG(dm, DBG_RF_MP, "[kfree] 8822c power trim flag:0x%02x\n",
@@ -3483,22 +3483,22 @@ void phydm_get_tssi_trim_offset_8723f(void *dm_void)
 			   0xff, 0xff, 0xff, 0xff,
 			   0xff, 0xff, 0xff, 0xff};
 #if 1
-	odm_efuse_one_byte_read(dm, TSSI_2GM_TXA_22C, &pg_power[0], false);
-	odm_efuse_one_byte_read(dm, TSSI_2GM_TXB_22C, &pg_power[1], false);
-	odm_efuse_one_byte_read(dm, TSSI_2GH_TXA_22C, &pg_power[2], false);
-	odm_efuse_one_byte_read(dm, TSSI_2GH_TXB_22C, &pg_power[3], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GL1_TXA_22C, &pg_power[4], false);
-	//odm_efuse_one_byte_read(dm, TSSI_5GL1_TXB_22C, &pg_power[5], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GL2_TXA_22C, &pg_power[6], false);
-	//odm_efuse_one_byte_read(dm, TSSI_5GL2_TXB_22C, &pg_power[7], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GM1_TXA_22C, &pg_power[8], false);
-	//odm_efuse_one_byte_read(dm, TSSI_5GM1_TXB_22C, &pg_power[9], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GM2_TXA_22C, &pg_power[10], false);
-	//odm_efuse_one_byte_read(dm, TSSI_5GM2_TXB_22C, &pg_power[11], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GH1_TXA_22C, &pg_power[12], false);
-	//odm_efuse_one_byte_read(dm, TSSI_5GH1_TXB_22C, &pg_power[13], false);
-	odm_efuse_one_byte_read(dm, TSSI_5GH2_TXA_22C, &pg_power[14], false);
-	//odm_efuse_one_byte_read(dm, TSSI_5GH2_TXB_22C, &pg_power[15], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_2GM_TXA_22C, &pg_power[0], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_2GM_TXB_22C, &pg_power[1], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_2GH_TXA_22C, &pg_power[2], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_2GH_TXB_22C, &pg_power[3], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GL1_TXA_22C, &pg_power[4], false);
+	//odm_efuse_one_byte_readbu(dm, TSSI_5GL1_TXB_22C, &pg_power[5], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GL2_TXA_22C, &pg_power[6], false);
+	//odm_efuse_one_byte_readbu(dm, TSSI_5GL2_TXB_22C, &pg_power[7], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GM1_TXA_22C, &pg_power[8], false);
+	//odm_efuse_one_byte_readbu(dm, TSSI_5GM1_TXB_22C, &pg_power[9], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GM2_TXA_22C, &pg_power[10], false);
+	//odm_efuse_one_byte_readbu(dm, TSSI_5GM2_TXB_22C, &pg_power[11], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GH1_TXA_22C, &pg_power[12], false);
+	//odm_efuse_one_byte_readbu(dm, TSSI_5GH1_TXB_22C, &pg_power[13], false);
+	odm_efuse_one_byte_readbu(dm, TSSI_5GH2_TXA_22C, &pg_power[14], false);
+	//odm_efuse_one_byte_readbu(dm, TSSI_5GH2_TXB_22C, &pg_power[15], false);
 
 	j = 0;
 	for (i = 0; i < 16; i++) {
@@ -3595,14 +3595,14 @@ s8 phydm_get_tssi_trim_de(void *dm_void, u8 path)
 		return 0;
 }
 
-void phydm_do_new_kfree(void *dm_void)
+void phydm_do_new_kfreebu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
 	if (dm->support_ic_type & ODM_RTL8822C) {
-		phydm_get_set_thermal_trim_offset_8822c(dm);
+		phydm_get_set_thermal_trim_offset_8822cbu(dm);
 		phydm_get_set_power_trim_offset_8822c(dm);
-		phydm_get_set_pa_bias_offset_8822c(dm);
+		phydm_get_set_pa_bias_offset_8822cbu(dm);
 		phydm_get_tssi_trim_offset_8822c(dm);
 	}
 
@@ -3614,24 +3614,24 @@ void phydm_do_new_kfree(void *dm_void)
 	}
 
 	if (dm->support_ic_type & ODM_RTL8195B) {
-		phydm_get_thermal_trim_offset_8195b(dm);
+		phydm_get_thermal_trim_offsetbu_8195b(dm);
 		phydm_get_set_power_trim_offset_8195b(dm);
 		phydm_get_set_pa_bias_offset_8195b(dm);
 	}
 
 	if (dm->support_ic_type & ODM_RTL8721D) {
-		phydm_get_thermal_trim_offset_8721d(dm);
+		phydm_get_thermal_trim_offsetbu_8721d(dm);
 		phydm_get_set_power_trim_offset_8721d(dm);
 		/*phydm_get_set_pa_bias_offset_8721d(dm);*/
 	}
 
 	if (dm->support_ic_type & ODM_RTL8198F) {
-		phydm_get_pa_bias_offset_8198f(dm);
+		phydm_get_pa_bias_offsetbu_8198f(dm);
 		phydm_get_set_lna_offset_8198f(dm);
 	}
 
 	if (dm->support_ic_type & ODM_RTL8197G) {
-		phydm_get_thermal_trim_offset_8197g(dm);
+		phydm_get_thermal_trim_offsetbu_8197g(dm);
 		phydm_get_set_power_trim_offset_8197g(dm);
 		phydm_get_set_pa_bias_offset_8197g(dm);
 		phydm_get_tssi_trim_offset_8197g(dm);
@@ -3639,63 +3639,63 @@ void phydm_do_new_kfree(void *dm_void)
 	}
 
 	if (dm->support_ic_type & ODM_RTL8710C) {
-		phydm_get_thermal_trim_offset_8710c(dm);
+		phydm_get_thermal_trim_offsetbu_8710c(dm);
 		phydm_get_set_power_trim_offset_8710c(dm);
 		phydm_get_set_pa_bias_offset_8710c(dm);
 	}
 
 	if (dm->support_ic_type & ODM_RTL8814B) {
-		phydm_get_thermal_trim_offset_8814b(dm);
+		phydm_get_thermal_trim_offsetbu_8814b(dm);
 		phydm_get_set_power_trim_offset_8814b(dm);
-		phydm_get_pa_bias_offset_8814b(dm);
+		phydm_get_pa_bias_offsetbu_8814b(dm);
 		phydm_get_tssi_trim_offset_8814b(dm);
 	}
 	if (dm->support_ic_type & ODM_RTL8723F) {
-		phydm_get_thermal_trim_offset_8723f(dm);
+		phydm_get_thermal_trim_offsetbu_8723f(dm);
 		phydm_get_set_power_trim_offset_8723f(dm);
 		//phydm_get_set_pa_bias_offset_8723f(dm);
 		phydm_get_tssi_trim_offset_8723f(dm);
 	}
 }
 
-void phydm_set_kfree_to_rf(void *dm_void, u8 e_rf_path, u8 data)
+void phydm_set_kfree_to_rfbu(void *dm_void, u8 e_rf_path, u8 data)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
 	if (dm->support_ic_type & ODM_RTL8814A)
-		phydm_set_kfree_to_rf_8814a(dm, e_rf_path, data);
+		phydm_set_kfree_to_rfbu_8814abu(dm, e_rf_path, data);
 
 	if ((dm->support_ic_type & ODM_RTL8821C) &&
 	    (*dm->band_type == ODM_BAND_2_4G))
-		phydm_set_kfree_to_rf_8821c(dm, e_rf_path, true, data);
+		phydm_set_kfree_to_rfbu_8821cbu(dm, e_rf_path, true, data);
 	else if (dm->support_ic_type & ODM_RTL8821C)
-		phydm_set_kfree_to_rf_8821c(dm, e_rf_path, false, data);
+		phydm_set_kfree_to_rfbu_8821cbu(dm, e_rf_path, false, data);
 
 	if (dm->support_ic_type & ODM_RTL8822B)
-		phydm_set_kfree_to_rf_8822b(dm, e_rf_path, data);
+		phydm_set_kfree_to_rfbu_8822bbu(dm, e_rf_path, data);
 
 	if (dm->support_ic_type & ODM_RTL8710B)
-		phydm_set_kfree_to_rf_8710b(dm, e_rf_path, data);
+		phydm_set_kfree_to_rfbu_8710bbu(dm, e_rf_path, data);
 
 	if (dm->support_ic_type & ODM_RTL8198F)
-		phydm_set_kfree_to_rf_8198f(dm, e_rf_path, data);
+		phydm_set_kfree_to_rfbu_8198fbu(dm, e_rf_path, data);
 }
 
-void phydm_clear_kfree_to_rf(void *dm_void, u8 e_rf_path, u8 data)
+void phydm_clear_kfree_to_rfbu(void *dm_void, u8 e_rf_path, u8 data)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
 	if (dm->support_ic_type & ODM_RTL8822B)
-		phydm_clear_kfree_to_rf_8822b(dm, e_rf_path, 1);
+		phydm_clear_kfree_to_rfbu_8822bbu(dm, e_rf_path, 1);
 
 	if (dm->support_ic_type & ODM_RTL8821C)
-		phydm_clear_kfree_to_rf_8821c(dm, e_rf_path, 1);
+		phydm_clear_kfree_to_rfbu_8821cbu(dm, e_rf_path, 1);
 
 	if (dm->support_ic_type & ODM_RTL8198F)
-		phydm_clear_kfree_to_rf_8198f(dm, e_rf_path, 0);
+		phydm_clear_kfree_to_rfbu_8198fbu(dm, e_rf_path, 0);
 }
 
-void phydm_get_thermal_trim_offset(void *dm_void)
+void phydm_get_thermal_trim_offsetbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
@@ -3710,18 +3710,18 @@ void phydm_get_thermal_trim_offset(void *dm_void)
 #endif
 
 	if (dm->support_ic_type & ODM_RTL8821C)
-		phydm_get_thermal_trim_offset_8821c(dm_void);
+		phydm_get_thermal_trim_offsetbu_8821cbu(dm_void);
 	else if (dm->support_ic_type & ODM_RTL8822B)
-		phydm_get_thermal_trim_offset_8822b(dm_void);
+		phydm_get_thermal_trim_offsetbu_8822bbu(dm_void);
 	else if (dm->support_ic_type & ODM_RTL8710B)
-		phydm_get_thermal_trim_offset_8710b(dm_void);
+		phydm_get_thermal_trim_offsetbu_8710bbu(dm_void);
 	else if (dm->support_ic_type & ODM_RTL8192F)
-		phydm_get_thermal_trim_offset_8192f(dm_void);
+		phydm_get_thermal_trim_offsetbu_8192fbu(dm_void);
 	else if (dm->support_ic_type & ODM_RTL8198F)
-		phydm_get_thermal_trim_offset_8198f(dm_void);
+		phydm_get_thermal_trim_offsetbu_8198fbu(dm_void);
 }
 
-void phydm_get_power_trim_offset(void *dm_void)
+void phydm_get_power_trim_offsetbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
@@ -3736,18 +3736,18 @@ void phydm_get_power_trim_offset(void *dm_void)
 #endif
 
 	if (dm->support_ic_type & ODM_RTL8821C)
-		phydm_get_power_trim_offset_8821c(dm_void);
+		phydm_get_power_trim_offsetbu_8821cbu(dm_void);
 	else if (dm->support_ic_type & ODM_RTL8822B)
-		phydm_get_power_trim_offset_8822b(dm_void);
+		phydm_get_power_trim_offsetbu_8822bbu(dm_void);
 	else if (dm->support_ic_type & ODM_RTL8710B)
-		phydm_get_power_trim_offset_8710b(dm_void);
+		phydm_get_power_trim_offsetbu_8710bbu(dm_void);
 	else if (dm->support_ic_type & ODM_RTL8192F)
-		phydm_get_power_trim_offset_8192f(dm_void);
+		phydm_get_power_trim_offsetbu_8192fbu(dm_void);
 	else if (dm->support_ic_type & ODM_RTL8198F)
-		phydm_get_power_trim_offset_8198f(dm_void);
+		phydm_get_power_trim_offsetbu_8198fbu(dm_void);
 }
 
-void phydm_get_pa_bias_offset(void *dm_void)
+void phydm_get_pa_bias_offsetbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
@@ -3762,10 +3762,10 @@ void phydm_get_pa_bias_offset(void *dm_void)
 #endif
 
 	if (dm->support_ic_type & ODM_RTL8822B)
-		phydm_get_pa_bias_offset_8822b(dm_void);
+		phydm_get_pa_bias_offsetbu_8822bbu(dm_void);
 }
 
-s8 phydm_get_thermal_offset(void *dm_void)
+s8 phydm_get_thermal_offsetbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_power_trim_data *power_trim_info = &dm->power_trim_data;
@@ -3787,7 +3787,7 @@ s8 phydm_get_multi_thermal_offset(void *dm_void, u8 path)
 		return 0;
 }
 
-void phydm_do_kfree(void *dm_void, u8 channel_to_sw)
+void phydm_do_kfreebu(void *dm_void, u8 channel_to_sw)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_power_trim_data *pwrtrim = &dm->power_trim_data;
@@ -3833,7 +3833,7 @@ void phydm_do_kfree(void *dm_void, u8 channel_to_sw)
 				       __func__, channel_to_sw, rfpath,
 				       pwrtrim->bb_gain[channel_idx][rfpath]);
 				bb_gain = pwrtrim->bb_gain[channel_idx][rfpath];
-				phydm_set_kfree_to_rf(dm, rfpath, bb_gain);
+				phydm_set_kfree_to_rfbu(dm, rfpath, bb_gain);
 			}
 		} else if (dm->support_ic_type & ODM_RTL8192F) {
 			if (channel_to_sw >= 1 && channel_to_sw <= 3)
@@ -3848,7 +3848,7 @@ void phydm_do_kfree(void *dm_void, u8 channel_to_sw)
 				       __func__, channel_to_sw, rfpath,
 				       pwrtrim->bb_gain[channel_idx][rfpath]);
 				bb_gain = pwrtrim->bb_gain[channel_idx][rfpath];
-				phydm_set_kfree_to_rf_8192f(dm, rfpath,
+				phydm_set_kfree_to_rfbu_8192fbu(dm, rfpath,
 							    channel_idx,
 							    bb_gain);
 			}
@@ -3872,14 +3872,14 @@ void phydm_do_kfree(void *dm_void, u8 channel_to_sw)
 			       __func__, channel_to_sw, rfpath,
 			       pwrtrim->bb_gain[channel_idx][rfpath]);
 			bb_gain = pwrtrim->bb_gain[channel_idx][rfpath];
-			phydm_set_kfree_to_rf(dm, rfpath, bb_gain);
+			phydm_set_kfree_to_rfbu(dm, rfpath, bb_gain);
 		}
 	} else {
 		RF_DBG(dm, DBG_RF_MP, "[kfree] Set default Register\n");
 		if (!(dm->support_ic_type & ODM_RTL8192F)) {
 			for (rfpath = RF_PATH_A; rfpath < max_path; rfpath++) {
 				bb_gain = pwrtrim->bb_gain[channel_idx][rfpath];
-				phydm_clear_kfree_to_rf(dm, rfpath, bb_gain);
+				phydm_clear_kfree_to_rfbu(dm, rfpath, bb_gain);
 			}
 		}
 #if 0
@@ -3891,13 +3891,13 @@ void phydm_do_kfree(void *dm_void, u8 channel_to_sw)
 			if (channel_to_sw >= 9 && channel_to_sw <= 14)
 				channel_idx = 2;
 			for (rfpath = RF_PATH_A;  rfpath < max_path; rfpath++)
-				phydm_clear_kfree_to_rf_8192f(dm, rfpath, pwrtrim->bb_gain[channel_idx][rfpath]);
+				phydm_clear_kfree_to_rfbu_8192f(dm, rfpath, pwrtrim->bb_gain[channel_idx][rfpath]);
 		}*/
 #endif
 	}
 }
 
-void phydm_config_new_kfree(void *dm_void)
+void phydm_config_new_kfreebu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct dm_rf_calibration_struct *cali_info = &dm->rf_calibrate_info;
@@ -3912,11 +3912,11 @@ void phydm_config_new_kfree(void *dm_void)
 		RF_DBG(dm, DBG_RF_MP,
 		       "[kfree] %s: reg_rf_kfree_enable == true\n", __func__);
 	
-		phydm_do_new_kfree(dm);
+		phydm_do_new_kfreebu(dm);
 	}
 }
 
-void phydm_config_kfree(void *dm_void, u8 channel_to_sw)
+void phydm_config_kfreebu(void *dm_void, u8 channel_to_sw)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct dm_rf_calibration_struct *cali_info = &dm->rf_calibrate_info;
@@ -3943,7 +3943,7 @@ void phydm_config_kfree(void *dm_void, u8 channel_to_sw)
 #if 0
 		/*if kfree_table[0] == 0xff, means no Kfree*/
 #endif
-		phydm_do_kfree(dm, channel_to_sw);
+		phydm_do_kfreebu(dm, channel_to_sw);
 	}
 	RF_DBG(dm, DBG_RF_MP, "<===[kfree] phy_ConfigKFree()\n");
 }

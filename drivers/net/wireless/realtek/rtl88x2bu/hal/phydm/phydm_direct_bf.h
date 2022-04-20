@@ -34,10 +34,10 @@
  * function prototype
  * ============================================================
  */
-void phydm_iq_gen_en(void *dm_void);
-void phydm_dis_cdd(void *dm_void);
-void phydm_pathb_q_matrix_rotate_en(void *dm_void);
-void phydm_pathb_q_matrix_rotate(void *dm_void, u16 idx);
+void phydm_iq_gen_enbu(void *dm_void);
+void phydm_dis_cddbu(void *dm_void);
+void phydm_pathb_q_matrix_rotatebu_enbu(void *dm_void);
+void phydm_pathb_q_matrix_rotatebu(void *dm_void, u16 idx);
 void phydm_set_direct_bfer(void *dm_void, u16 phs_idx, u8 su_idx);
 void phydm_set_direct_bfer_txdesc_en(void *dm_void, u8 enable);
 #endif

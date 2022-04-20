@@ -22,7 +22,7 @@
  *	0:	power on successfully
  *	others:	power on failed
  */
-int platform_wifi_power_on(void)
+int platform_wifi_power_onbu(void)
 {
 	int ret = 0;
 
@@ -46,7 +46,7 @@ int platform_wifi_power_on(void)
 	return ret;
 }
 
-void platform_wifi_power_off(void)
+void platform_wifi_power_offbu(void)
 {
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3, 14, 0))
 	wifi_teardown_dt();

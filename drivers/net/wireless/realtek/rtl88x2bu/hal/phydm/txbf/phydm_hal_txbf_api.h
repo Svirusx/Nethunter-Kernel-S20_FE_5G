@@ -37,9 +37,9 @@
 #define tx_bf_nr(a, b) ((a > b) ? (b) : (a))
 #endif
 
-u8 beamforming_get_htndp_tx_rate(void *dm_void, u8 bfer_str_num);
+u8 beamforming_get_htndp_tx_ratebu(void *dm_void, u8 bfer_str_num);
 
-u8 beamforming_get_vht_ndp_tx_rate(void *dm_void, u8 bfer_str_num);
+u8 beamforming_get_vht_ndp_tx_ratebu(void *dm_void, u8 bfer_str_num);
 
 #endif
 
@@ -83,7 +83,7 @@ void phydm_txbf_80p80_rfmode(void *dm_void, u8 su_bfee_cnt, u8 mu_bfee_cnt);
 #endif
 
 #endif /*#PHYDM_IC_JGR3_SERIES_SUPPORT*/
-void phydm_bf_debug(void *dm_void, char input[][16], u32 *_used, char *output,
+void phydm_bf_debugbu(void *dm_void, char input[][16], u32 *_used, char *output,
 		    u32 *_out_len);
 #endif
 #endif

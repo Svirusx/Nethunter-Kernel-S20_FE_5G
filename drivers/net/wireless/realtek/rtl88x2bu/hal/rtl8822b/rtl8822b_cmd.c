@@ -65,7 +65,7 @@ s32 rtl8822b_fillh2ccmd(PADAPTER adapter, u8 id, u32 buf_len, u8 *pbuf)
 #endif /* CONFIG_RTW_DEBUG */
 
 	h2c[0] = id;
-	_rtw_memcpy(h2c + 1, pbuf, buf_len);
+	_rtw_memcpybu(h2c + 1, pbuf, buf_len);
 
 	err = rtw_halmac_send_h2c(adapter_to_dvobj(adapter), h2c);
 	if (!err)
@@ -118,7 +118,7 @@ void _rtl8822b_set_FwPwrMode_cmd(PADAPTER adapter, u8 psmode, u8 rfon_ctrl)
 #ifdef CONFIG_P2P
 	struct wifidirect_info *wdinfo = &adapter->wdinfo;
 #endif /* CONFIG_P2P */
-	u8 hw_port = rtw_hal_get_port(adapter);
+	u8 hw_port = rtw_hal_get_portbu(adapter);
 
 	if (pwrpriv->pwr_mode != psmode) {
 		if (pwrpriv->dtim > 0)
@@ -330,7 +330,7 @@ void rtl8822b_set_usb_config_offload(PADAPTER padapter)
 	s32 ret;
 
 	SET_H2CCMD_BT_UNKNOWN_DEVICE_WA_HANG_CHK_EN(h2c_data_bt_unknown, 1);
-	ret = rtw_hal_fill_h2c_cmd(padapter, H2C_BT_UNKNOWN_DEVICE_WA,
+	ret = rtw_hal_fill_h2c_cmdbu(padapter, H2C_BT_UNKNOWN_DEVICE_WA,
 			H2C_BT_UNKNOWN_DEVICE_WA_LEN, h2c_data_bt_unknown);
 	if (ret != _SUCCESS)
 		RTW_ERR("%s(): H2C failed\n", __func__);
@@ -388,9 +388,9 @@ static void c2h_ccx_rpt(PADAPTER adapter, u8 *pdata)
 
 	/* 0 means success, 1 means retry drop */
 	if (tx_state == 0)
-		rtw_ack_tx_done(&adapter->xmitpriv, RTW_SCTX_DONE_SUCCESS);
+		rtw_ack_tx_donebu(&adapter->xmitpriv, RTW_SCTX_DONE_SUCCESS);
 	else
-		rtw_ack_tx_done(&adapter->xmitpriv, RTW_SCTX_DONE_CCX_PKT_FAIL);
+		rtw_ack_tx_donebu(&adapter->xmitpriv, RTW_SCTX_DONE_CCX_PKT_FAIL);
 #endif /* CONFIG_XMIT_ACK */
 }
 
@@ -415,13 +415,13 @@ C2HTxRPTHandler_8822b(
 		return;
 	}
 	
-	adapter_ognl = rtw_get_iface_by_id(GET_PRIMARY_ADAPTER(Adapter), pstapriv->c2h_adapter_id);
+	adapter_ognl = rtw_get_iface_by_idbu(GET_PRIMARY_ADAPTER(Adapter), pstapriv->c2h_adapter_id);
 	if(!adapter_ognl) {
 		RTW_WARN("%s: No adapter!\n", __FUNCTION__);
 		return;
 	}
 
-	psta = rtw_get_stainfo(&adapter_ognl->stapriv, pstapriv->c2h_sta_mac);
+	psta = rtw_get_stainfobu(&adapter_ognl->stapriv, pstapriv->c2h_sta_mac);
 	if (!psta) {
 		RTW_WARN("%s: No corresponding sta_info!\n", __FUNCTION__);
 		return;
@@ -451,7 +451,7 @@ C2HSPC_STAT_8822b(
 	_irqL	 irqL;
 	struct sta_priv *pstapriv = &(GET_PRIMARY_ADAPTER(Adapter))->stapriv;
 	struct sta_info *psta = NULL;
-	struct sta_info *pbcmc_stainfo = rtw_get_bcmc_stainfo(Adapter);
+	struct sta_info *pbcmc_stainfo = rtw_get_bcmc_stainfobu(Adapter);
 	_list	*plist, *phead;
 	u8 idx = C2H_SPECIAL_STATISTICS_GET_STATISTICS_IDX(CmdBuf);
 	PADAPTER	adapter_ognl = NULL;
@@ -461,19 +461,19 @@ C2HSPC_STAT_8822b(
 		return;
 	}
 	
-	adapter_ognl = rtw_get_iface_by_id(GET_PRIMARY_ADAPTER(Adapter), pstapriv->c2h_adapter_id);
+	adapter_ognl = rtw_get_iface_by_idbu(GET_PRIMARY_ADAPTER(Adapter), pstapriv->c2h_adapter_id);
 	if(!adapter_ognl) {
 		RTW_WARN("%s: No adapter!\n", __FUNCTION__);
 		return;
 	}
 
-	psta = rtw_get_stainfo(&adapter_ognl->stapriv, pstapriv->c2h_sta_mac);
+	psta = rtw_get_stainfobu(&adapter_ognl->stapriv, pstapriv->c2h_sta_mac);
 	if (!psta) {
 		RTW_WARN("%s: No corresponding sta_info!\n", __FUNCTION__);
 		return;
 	}
 	psta->sta_stats.tx_retry_cnt = (C2H_SPECIAL_STATISTICS_GET_DATA3(CmdBuf) << 8) | C2H_SPECIAL_STATISTICS_GET_DATA2(CmdBuf);
-	rtw_sctx_done(&pstapriv->gotc2h);
+	rtw_sctx_donebu(&pstapriv->gotc2h);
 }
 #ifdef CONFIG_FW_HANDLE_TXBCN
 #define C2H_SUB_CMD_ID_FW_TBTT_RPT  0X23
@@ -556,7 +556,7 @@ static void process_c2h_event(PADAPTER adapter, u8 *c2h, u32 size)
 #ifdef CONFIG_BEAMFORMING
 	case CMD_ID_C2H_SND_TXBF:
 		RTW_INFO("%s: [CMD_ID_C2H_SND_TXBF] len=%d\n", __FUNCTION__, c2h_payload_len);
-		rtw_bf_c2h_handler(adapter, id, pc2h_data, c2h_len);
+		rtw_bf_c2h_handlerbu(adapter, id, pc2h_data, c2h_len);
 		break;
 #endif /* CONFIG_BEAMFORMING */
 
@@ -576,7 +576,7 @@ static void process_c2h_event(PADAPTER adapter, u8 *c2h, u32 size)
 		struct submit_ctx *chsw_sctx = &hal->chsw_sctx;
 
 		/* RTW_INFO("[C2H], CMD_ID_C2H_CUR_CHANNEL!!\n"); */
-		rtw_sctx_done(&chsw_sctx);
+		rtw_sctx_donebu(&chsw_sctx);
 		break;
 	}
 
@@ -610,12 +610,12 @@ static void process_c2h_event(PADAPTER adapter, u8 *c2h, u32 size)
 
 	/* others for c2h common code */
 	default:
-		c2h_handler(adapter, id, seq, c2h_payload_len, pc2h_payload);
+		c2h_handlerbu(adapter, id, seq, c2h_payload_len, pc2h_payload);
 		break;
 	}
 }
 
-void rtl8822b_c2h_handler(PADAPTER adapter, u8 *pbuf, u16 length)
+void rtl8822b_c2h_handlerbu(PADAPTER adapter, u8 *pbuf, u16 length)
 {
 #ifdef CONFIG_WOWLAN
 	struct pwrctrl_priv *pwrpriv = adapter_to_pwrctl(adapter);
@@ -640,7 +640,7 @@ void rtl8822b_c2h_handler(PADAPTER adapter, u8 *pbuf, u16 length)
  * pbuf = RXDESC + c2h packet
  * length = RXDESC_SIZE + c2h packet size
  */
-void rtl8822b_c2h_handler_no_io(PADAPTER adapter, u8 *pbuf, u16 length)
+void rtl8822b_c2h_handlerbu_no_io(PADAPTER adapter, u8 *pbuf, u16 length)
 {
 	u32 desc_size;
 	u8 id, seq;
@@ -675,7 +675,7 @@ void rtl8822b_c2h_handler_no_io(PADAPTER adapter, u8 *pbuf, u16 length)
 #ifdef CONFIG_LPS_PWR_TRACKING
 		if (id == C2H_EXTEND &&
 			C2H_HDR_GET_C2H_SUB_CMD_ID(pc2h_content) == C2H_SUB_CMD_ID_C2H_PKT_DETECT_THERMAL)
-			rtw_c2h_packet_wk_cmd(adapter, pbuf, length);
+			rtw_c2h_packet_wk_cmdbu(adapter, pbuf, length);
 		else
 #endif
 			process_c2h_event(adapter, pbuf, length);
@@ -683,7 +683,7 @@ void rtl8822b_c2h_handler_no_io(PADAPTER adapter, u8 *pbuf, u16 length)
 
 	default:
 		/* Others may need I/O, run in command thread */
-		res = rtw_c2h_packet_wk_cmd(adapter, pbuf, length);
+		res = rtw_c2h_packet_wk_cmdbu(adapter, pbuf, length);
 		if (res == _FAIL)
 			RTW_ERR("%s: C2H(%d) enqueue FAIL!\n", __FUNCTION__, id);
 		break;

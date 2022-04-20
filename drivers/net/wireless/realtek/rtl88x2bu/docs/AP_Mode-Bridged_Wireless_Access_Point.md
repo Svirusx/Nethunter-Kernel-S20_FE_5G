@@ -115,10 +115,10 @@ rtl8814au chipsets, the following module parameters may be needed for
 best performance when the adapter is set to support 5 GHz band: (if
 using a rtl8812bu based adapter with a Raspberry Pi 4B or 400, you may
 need to limit USB mode to USB2 due to a bug, probably in the Raspberry
-Pi 4B, that causes dropped connections-- rtw_switch_usb_mode=2)
+Pi 4B, that causes dropped connections-- rtw_switch_usb_modebu=2)
 
 ```
-rtw_vht_enable=2 rtw_switch_usb_mode=1
+rtw_vht_enablebu=2 rtw_switch_usb_modebu=1
 ```
 
 Note: For USB2 adapters based on the Realtek rtl8811au and rtl8821cu
@@ -126,7 +126,7 @@ chipset, the following module parameters may be needed for best
 performance when the adapter is set to support 5 GHz band:
 
 ```
-rtw_vht_enable=2
+rtw_vht_enablebu=2
 ```
 
 Note: For USB3 adapters based on the Realtek rtl8812au, rtl8812bu and
@@ -134,7 +134,7 @@ rtl8814au chipsets, the following module parameters may be needed for
 best performance when the adapter is set to support 2.4 GHz band:
 
 ```
-rtw_vht_enable=1 rtw_switch_usb_mode=2
+rtw_vht_enablebu=1 rtw_switch_usb_modebu=2
 ```
 
 Note: For USB2 adapters based on the Realtek rtl8811au and rtl8821cu
@@ -142,7 +142,7 @@ chipset, the following module parameters may be needed for best
 performance when the adapter is set to support 2.4 GHz band:
 
 ```
-rtw_vht_enable=1
+rtw_vht_enablebu=1
 ```
 
 Note: For USB3 adapters based on Mediatek mt7612u chipsets, the

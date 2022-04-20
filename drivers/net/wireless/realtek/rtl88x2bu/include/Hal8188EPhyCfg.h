@@ -81,7 +81,7 @@ int	PHY_BBConfig8188E(PADAPTER	Adapter);
 int	PHY_RFConfig8188E(PADAPTER	Adapter);
 
 /* RF config */
-int	rtl8188e_PHY_ConfigRFWithParaFile( PADAPTER Adapter, u8 *pFileName, enum rf_path eRFPath);
+int	rtl8188e_PHY_ConfigRFWithParaFilebu( PADAPTER Adapter, u8 *pFileName, enum rf_path eRFPath);
 
 /*
  * RF Power setting
@@ -96,7 +96,7 @@ void	PHY_SetTxPowerLevel8188E(PADAPTER		Adapter,
 					u8			channel);
 
 void
-PHY_SetTxPowerIndex_8188E(
+PHY_SetTxPowerIndexbu_8188E(
 		PADAPTER			Adapter,
 		u32					PowerIndex,
 		enum rf_path			RFPath,

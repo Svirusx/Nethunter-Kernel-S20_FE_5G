@@ -220,7 +220,7 @@
 #define RF_0x52			0x52
 #define RF_WeLut_Jaguar		0xEF	/* rtl8723f_phy.c */
 
-/* rtw_lps_state_chk() @hal_com.c */
+/* rtw_lps_state_chkbu() @hal_com.c */
 #define BIT_PWRBIT_OW_EN	BIT_WMAC_TCR_PWRMGT_CTL_8723F
 
 /* 

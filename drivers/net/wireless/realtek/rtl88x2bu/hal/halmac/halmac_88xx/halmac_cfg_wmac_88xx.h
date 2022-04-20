@@ -90,7 +90,7 @@ get_used_cam_entry_num_88xx(struct halmac_adapter *adapter,
 			    enum hal_security_type sec_type);
 
 enum halmac_ret_status
-write_cam_88xx(struct halmac_adapter *adapter, u32 idx,
+write_cambu_88xx(struct halmac_adapter *adapter, u32 idx,
 	       struct halmac_cam_entry_info *info);
 
 enum halmac_ret_status
@@ -98,7 +98,7 @@ read_cam_entry_88xx(struct halmac_adapter *adapter, u32 idx,
 		    struct halmac_cam_entry_format *content);
 
 enum halmac_ret_status
-clear_cam_entry_88xx(struct halmac_adapter *adapter, u32 idx);
+clear_cam_entrybu_88xx(struct halmac_adapter *adapter, u32 idx);
 
 void
 rx_shift_88xx(struct halmac_adapter *adapter, u8 enable);

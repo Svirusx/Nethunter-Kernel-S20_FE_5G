@@ -18,7 +18,7 @@
 extern void sdio_reinit(void);
 extern void extern_wifi_set_enable(int val);
 #ifdef CONFIG_A16T03_BOARD
-extern int sdio_host_is_null(void);
+extern int sdio_host_is_nullbu(void);
 extern void remove_card(void);
 #endif /* CONFIG_A16T03_BOARD */
 

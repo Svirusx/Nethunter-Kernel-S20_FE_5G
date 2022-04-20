@@ -12344,7 +12344,7 @@ odm_read_and_config_mp_8822b_phy_reg_pg(struct dm_struct *dm)
 	void	*adapter = dm->adapter;
 	HAL_DATA_TYPE	*hal_data = GET_HAL_DATA(((PADAPTER)adapter));
 
-	odm_memory_set(dm, hal_data->BufOfLinesPwrByRate, 0,
+	odm_memory_setbu(dm, hal_data->BufOfLinesPwrByRate, 0,
 		       MAX_LINES_HWCONFIG_TXT *
 		       MAX_BYTES_LINE_HWCONFIG_TXT);
 	hal_data->nLinesReadPwrByRate = array_len / 6;
@@ -12445,7 +12445,7 @@ odm_read_and_config_mp_8822b_phy_reg_pg_type12(struct dm_struct *dm)
 	void	*adapter = dm->adapter;
 	HAL_DATA_TYPE	*hal_data = GET_HAL_DATA(((PADAPTER)adapter));
 
-	odm_memory_set(dm, hal_data->BufOfLinesPwrByRate, 0,
+	odm_memory_setbu(dm, hal_data->BufOfLinesPwrByRate, 0,
 		       MAX_LINES_HWCONFIG_TXT *
 		       MAX_BYTES_LINE_HWCONFIG_TXT);
 	hal_data->nLinesReadPwrByRate = array_len / 6;
@@ -12546,7 +12546,7 @@ odm_read_and_config_mp_8822b_phy_reg_pg_type15(struct dm_struct *dm)
 	void	*adapter = dm->adapter;
 	HAL_DATA_TYPE	*hal_data = GET_HAL_DATA(((PADAPTER)adapter));
 
-	odm_memory_set(dm, hal_data->BufOfLinesPwrByRate, 0,
+	odm_memory_setbu(dm, hal_data->BufOfLinesPwrByRate, 0,
 		       MAX_LINES_HWCONFIG_TXT *
 		       MAX_BYTES_LINE_HWCONFIG_TXT);
 	hal_data->nLinesReadPwrByRate = array_len / 6;
@@ -12647,7 +12647,7 @@ odm_read_and_config_mp_8822b_phy_reg_pg_type16(struct dm_struct *dm)
 	void	*adapter = dm->adapter;
 	HAL_DATA_TYPE	*hal_data = GET_HAL_DATA(((PADAPTER)adapter));
 
-	odm_memory_set(dm, hal_data->BufOfLinesPwrByRate, 0,
+	odm_memory_setbu(dm, hal_data->BufOfLinesPwrByRate, 0,
 		       MAX_LINES_HWCONFIG_TXT *
 		       MAX_BYTES_LINE_HWCONFIG_TXT);
 	hal_data->nLinesReadPwrByRate = array_len / 6;
@@ -12748,7 +12748,7 @@ odm_read_and_config_mp_8822b_phy_reg_pg_type17(struct dm_struct *dm)
 	void	*adapter = dm->adapter;
 	HAL_DATA_TYPE	*hal_data = GET_HAL_DATA(((PADAPTER)adapter));
 
-	odm_memory_set(dm, hal_data->BufOfLinesPwrByRate, 0,
+	odm_memory_setbu(dm, hal_data->BufOfLinesPwrByRate, 0,
 		       MAX_LINES_HWCONFIG_TXT *
 		       MAX_BYTES_LINE_HWCONFIG_TXT);
 	hal_data->nLinesReadPwrByRate = array_len / 6;
@@ -12849,7 +12849,7 @@ odm_read_and_config_mp_8822b_phy_reg_pg_type18(struct dm_struct *dm)
 	void	*adapter = dm->adapter;
 	HAL_DATA_TYPE	*hal_data = GET_HAL_DATA(((PADAPTER)adapter));
 
-	odm_memory_set(dm, hal_data->BufOfLinesPwrByRate, 0,
+	odm_memory_setbu(dm, hal_data->BufOfLinesPwrByRate, 0,
 		       MAX_LINES_HWCONFIG_TXT *
 		       MAX_BYTES_LINE_HWCONFIG_TXT);
 	hal_data->nLinesReadPwrByRate = array_len / 6;
@@ -12950,7 +12950,7 @@ odm_read_and_config_mp_8822b_phy_reg_pg_type19(struct dm_struct *dm)
 	void	*adapter = dm->adapter;
 	HAL_DATA_TYPE	*hal_data = GET_HAL_DATA(((PADAPTER)adapter));
 
-	odm_memory_set(dm, hal_data->BufOfLinesPwrByRate, 0,
+	odm_memory_setbu(dm, hal_data->BufOfLinesPwrByRate, 0,
 		       MAX_LINES_HWCONFIG_TXT *
 		       MAX_BYTES_LINE_HWCONFIG_TXT);
 	hal_data->nLinesReadPwrByRate = array_len / 6;
@@ -13051,7 +13051,7 @@ odm_read_and_config_mp_8822b_phy_reg_pg_type2(struct dm_struct *dm)
 	void	*adapter = dm->adapter;
 	HAL_DATA_TYPE	*hal_data = GET_HAL_DATA(((PADAPTER)adapter));
 
-	odm_memory_set(dm, hal_data->BufOfLinesPwrByRate, 0,
+	odm_memory_setbu(dm, hal_data->BufOfLinesPwrByRate, 0,
 		       MAX_LINES_HWCONFIG_TXT *
 		       MAX_BYTES_LINE_HWCONFIG_TXT);
 	hal_data->nLinesReadPwrByRate = array_len / 6;
@@ -13152,7 +13152,7 @@ odm_read_and_config_mp_8822b_phy_reg_pg_type3(struct dm_struct *dm)
 	void	*adapter = dm->adapter;
 	HAL_DATA_TYPE	*hal_data = GET_HAL_DATA(((PADAPTER)adapter));
 
-	odm_memory_set(dm, hal_data->BufOfLinesPwrByRate, 0,
+	odm_memory_setbu(dm, hal_data->BufOfLinesPwrByRate, 0,
 		       MAX_LINES_HWCONFIG_TXT *
 		       MAX_BYTES_LINE_HWCONFIG_TXT);
 	hal_data->nLinesReadPwrByRate = array_len / 6;
@@ -13253,7 +13253,7 @@ odm_read_and_config_mp_8822b_phy_reg_pg_type4(struct dm_struct *dm)
 	void	*adapter = dm->adapter;
 	HAL_DATA_TYPE	*hal_data = GET_HAL_DATA(((PADAPTER)adapter));
 
-	odm_memory_set(dm, hal_data->BufOfLinesPwrByRate, 0,
+	odm_memory_setbu(dm, hal_data->BufOfLinesPwrByRate, 0,
 		       MAX_LINES_HWCONFIG_TXT *
 		       MAX_BYTES_LINE_HWCONFIG_TXT);
 	hal_data->nLinesReadPwrByRate = array_len / 6;
@@ -13354,7 +13354,7 @@ odm_read_and_config_mp_8822b_phy_reg_pg_type5(struct dm_struct *dm)
 	void	*adapter = dm->adapter;
 	HAL_DATA_TYPE	*hal_data = GET_HAL_DATA(((PADAPTER)adapter));
 
-	odm_memory_set(dm, hal_data->BufOfLinesPwrByRate, 0,
+	odm_memory_setbu(dm, hal_data->BufOfLinesPwrByRate, 0,
 		       MAX_LINES_HWCONFIG_TXT *
 		       MAX_BYTES_LINE_HWCONFIG_TXT);
 	hal_data->nLinesReadPwrByRate = array_len / 6;

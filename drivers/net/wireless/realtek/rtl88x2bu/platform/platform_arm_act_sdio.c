@@ -29,7 +29,7 @@ extern void acts_wifi_cleanup(void);
  *	0:	power on successfully
  *	others: power on failed
  */
-int platform_wifi_power_on(void)
+int platform_wifi_power_onbu(void)
 {
 	int ret = 0;
 
@@ -45,7 +45,7 @@ exit:
 	return ret;
 }
 
-void platform_wifi_power_off(void)
+void platform_wifi_power_offbu(void)
 {
 #ifdef CONFIG_PLATFORM_ACTIONS_ATM705X
 	acts_wifi_cleanup();

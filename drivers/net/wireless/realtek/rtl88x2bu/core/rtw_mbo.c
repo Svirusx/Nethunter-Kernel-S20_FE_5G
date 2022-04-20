@@ -49,13 +49,13 @@ static u8 wfa_mbo_oui[] = {0x50, 0x6F, 0x9A, 0x16};
 #define rtw_mbo_get_disallow_res(p) ((u8 *)(p) + 3) 
 
 #define rtw_mbo_set_1byte_ie(p, v, l)	\
-	rtw_set_fixed_ie((p), 1, (v), (l))
+	rtw_set_fixed_iebu((p), 1, (v), (l))
 
 #define rtw_mbo_set_4byte_ie(p, v, l)	\
-	rtw_set_fixed_ie((p), 4, (v), (l))
+	rtw_set_fixed_iebu((p), 4, (v), (l))
 
 #define rtw_mbo_set_nbyte_ie(p, sz, v, l)	\
-	rtw_set_fixed_ie((p), (sz), (v), (l))
+	rtw_set_fixed_iebu((p), (sz), (v), (l))
 
 #define rtw_mbo_subfield_set(p, offset, val) (*(p + offset) = val)
 
@@ -81,7 +81,7 @@ static u8 *rtw_mbo_ie_get(u8 *pie, u32 *plen, u32 limit)
 	*plen = 0;
 	while (1) {
 		if ((*p == _VENDOR_SPECIFIC_IE_) && 
-			(_rtw_memcmp(rtw_mbo_get_oui(p), wfa_mbo_oui, 4))) {
+			(_rtw_memcmpbu(rtw_mbo_get_oui(p), wfa_mbo_oui, 4))) {
 			*plen = *(p + 1);
 			RTW_MBO_DUMP("VENDOR_SPECIFIC_IE MBO: ", p, *(p + 1));
 			return (u8 *)p;
@@ -114,7 +114,7 @@ static u8 *rtw_mbo_attrs_get(u8 *pie, u32 limit, u8 attr_id, u32 *attr_len)
 	plen = plen - 4;
 	RTW_MBO_DUMP("Attributes contents: ", p, plen);
 
-	if ((p = rtw_get_ie(p, attr_id, attr_len, plen)) == NULL)
+	if ((p = rtw_get_iebu(p, attr_id, attr_len, plen)) == NULL)
 		goto exit;
 
 	RTW_MBO_INFO("%s : id=%u(len=%u)\n", __func__, attr_id, *attr_len);
@@ -209,7 +209,7 @@ static void rtw_mbo_update_cell_data_cap(
 		return;
 	}
 
-	rtw_buf_update(&pmlmepriv->pcell_data_cap_ie, 
+	rtw_buf_updatebu(&pmlmepriv->pcell_data_cap_ie, 
 		&pmlmepriv->cell_data_cap_len, (mbo_attr + 2), mbo_attrlen);
 	RTW_MBO_DUMP("rtw_mbo_update_cell_data_cap : ", 
 		pmlmepriv->pcell_data_cap_ie, pmlmepriv->cell_data_cap_len);
@@ -286,7 +286,7 @@ void rtw_mbo_build_supp_op_class_elem(
 	/* Current Operating Class field + Operating Class field 
 		+ OneHundredAndThirty Delimiter field */
 	len = reg_class_nm + 3;	
-	*pframe = rtw_set_ie(*pframe, EID_SupRegulatory, len , 
+	*pframe = rtw_set_iebu(*pframe, EID_SupRegulatory, len , 
 					payload, &(pattrib->pktlen));	
 }
 
@@ -407,7 +407,7 @@ void rtw_mbo_build_exented_cap(
 
 	rtw_wnm_set_ext_cap_btm(content, 1);
 	rtw_mbo_set_ext_cap_internw(content, 1);
-	*pframe = rtw_set_ie(*pframe, 
+	*pframe = rtw_set_iebu(*pframe, 
 				EID_EXTCapability, 
 				8, 
 				content, 
@@ -545,7 +545,7 @@ static void  rtw_mbo_non_pref_chans_del(
 	struct npref_ch_rtp *prpt = &(prfctl->ch_rtp);
 	
 	RTW_INFO("%s : delete non_pref_chan %s\n", __func__, param);
-	_rtw_memset(prpt, 0, sizeof(struct npref_ch_rtp));
+	_rtw_memsetbu(prpt, 0, sizeof(struct npref_ch_rtp));
 }
 
 ssize_t rtw_mbo_proc_non_pref_chans_set(

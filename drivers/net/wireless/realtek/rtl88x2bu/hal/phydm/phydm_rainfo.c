@@ -29,24 +29,24 @@
 #include "mp_precomp.h"
 #include "phydm_precomp.h"
 
-boolean phydm_is_vht_rate(void *dm_void, u8 rate)
+boolean phydm_is_vht_ratebu(void *dm_void, u8 rate)
 {
 	return ((rate & 0x7f) >= ODM_RATEVHTSS1MCS0) ? true : false;
 }
 
-boolean phydm_is_ht_rate(void *dm_void, u8 rate)
+boolean phydm_is_ht_ratebu(void *dm_void, u8 rate)
 {
 	return (((rate & 0x7f) >= ODM_RATEMCS0) &&
 		((rate & 0x7f) <= ODM_RATEMCS31)) ? true : false;
 }
 
-boolean phydm_is_ofdm_rate(void *dm_void, u8 rate)
+boolean phydm_is_ofdm_ratebu(void *dm_void, u8 rate)
 {
 	return (((rate & 0x7f) >= ODM_RATE6M) &&
 		((rate & 0x7f) <= ODM_RATE54M)) ? true : false;
 }
 
-boolean phydm_is_cck_rate(void *dm_void, u8 rate)
+boolean phydm_is_cck_ratebu(void *dm_void, u8 rate)
 {
 	return ((rate & 0x7f) <= ODM_RATE11M) ? true : false;
 }
@@ -64,7 +64,7 @@ u8 phydm_legacy_rate_2_spec_rate(void *dm_void, u8 rate)
 	return legacy_spec_rate_t[rate_idx];
 }
 
-u8 phydm_rate_2_rate_digit(void *dm_void, u8 rate)
+u8 phydm_rate_2_rate_digitbu(void *dm_void, u8 rate)
 {
 	u8 legacy_table[12] = {1, 2, 5, 11, 6, 9, 12, 18, 24, 36, 48, 54};
 	u8 rate_idx = rate & 0x7f; /*remove bit7 SGI*/
@@ -80,7 +80,7 @@ u8 phydm_rate_2_rate_digit(void *dm_void, u8 rate)
 	return rate_digit;
 }
 
-u8 phydm_rate_type_2_num_ss(void *dm_void, enum PDM_RATE_TYPE type)
+u8 phydm_rate_type_2_num_ssbu(void *dm_void, enum PDM_RATE_TYPE type)
 {
 	u8 num_ss = 1;
 
@@ -106,7 +106,7 @@ u8 phydm_rate_type_2_num_ss(void *dm_void, enum PDM_RATE_TYPE type)
 	return num_ss;
 }
 
-u8 phydm_rate_to_num_ss(void *dm_void, u8 data_rate)
+u8 phydm_rate_to_num_ssbu(void *dm_void, u8 data_rate)
 {
 	u8 num_ss = 1;
 
@@ -126,7 +126,7 @@ u8 phydm_rate_to_num_ss(void *dm_void, u8 data_rate)
 	return num_ss;
 }
 
-void phydm_h2C_debug(void *dm_void, char input[][16], u32 *_used,
+void phydm_h2C_debugbu(void *dm_void, char input[][16], u32 *_used,
 		     char *output, u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -156,20 +156,20 @@ void phydm_h2C_debug(void *dm_void, char input[][16], u32 *_used,
 			 "H2C: Byte[%d] = ((0x%x))\n", i, h2c_parameter[i]);
 	}
 
-	odm_fill_h2c_cmd(dm, phydm_h2c_id, H2C_MAX_LENGTH, h2c_parameter);
+	odm_fill_h2c_cmdbu(dm, phydm_h2c_id, H2C_MAX_LENGTH, h2c_parameter);
 
 	*_used = used;
 	*_out_len = out_len;
 }
 
-void phydm_fw_fix_rate(void *dm_void, u8 en, u8 macid, u8 bw, u8 rate)
+void phydm_fw_fix_ratebu(void *dm_void, u8 en, u8 macid, u8 bw, u8 rate)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u32 reg_u32_tmp;
 
 	if (dm->support_ic_type & PHYDM_IC_8051_SERIES) {
 		reg_u32_tmp = (bw << 24) | (rate << 16) | (macid << 8) | en;
-		odm_set_mac_reg(dm, R_0x4a0, MASKDWORD, reg_u32_tmp);
+		odm_set_mac_regbu(dm, R_0x4a0, MASKDWORD, reg_u32_tmp);
 
 	} else {
 		if (en == 1)
@@ -177,21 +177,21 @@ void phydm_fw_fix_rate(void *dm_void, u8 en, u8 macid, u8 bw, u8 rate)
 		else
 			reg_u32_tmp = 0x40000000;
 		if (dm->support_ic_type & ODM_RTL8814B)
-			odm_set_mac_reg(dm, R_0x448, MASKDWORD, reg_u32_tmp);
+			odm_set_mac_regbu(dm, R_0x448, MASKDWORD, reg_u32_tmp);
 		else
-			odm_set_mac_reg(dm, R_0x450, MASKDWORD, reg_u32_tmp);
+			odm_set_mac_regbu(dm, R_0x450, MASKDWORD, reg_u32_tmp);
 	}
 	if (en == 1) {
 		PHYDM_DBG(dm, ODM_COMP_API,
 			  "FW fix TX rate[id =%d], %dM, Rate(%d)=", macid,
 			  (20 << bw), rate);
-		phydm_print_rate(dm, rate, ODM_COMP_API);
+		phydm_print_ratebu(dm, rate, ODM_COMP_API);
 	} else {
 		PHYDM_DBG(dm, ODM_COMP_API, "Auto Rate\n");
 	}
 }
 
-void phydm_ra_debug(void *dm_void, char input[][16], u32 *_used, char *output,
+void phydm_ra_debugbu(void *dm_void, char input[][16], u32 *_used, char *output,
 		    u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -252,7 +252,7 @@ void phydm_ra_debug(void *dm_void, char input[][16], u32 *_used, char *output,
 			 "[FW fix TX Rate] {en, macid,bw,rate}={%d, %d, %d, 0x%x}",
 			 var[1], macid, bw, rate);
 
-		phydm_fw_fix_rate(dm, (u8)var[1], macid, bw, rate);
+		phydm_fw_fix_ratebu(dm, (u8)var[1], macid, bw, rate);
 	} else if (var[0] == 3) { /*@Dynamic RRSR*/
 		ra_tab->dynamic_rrsr_en = (boolean)var[1];
 		PDM_SNPF(out_len, used, output + used, out_len - used,
@@ -269,14 +269,14 @@ void phydm_ra_debug(void *dm_void, char input[][16], u32 *_used, char *output,
 		tmp = (u8)var[2];
 		tx_cls_th = (tmp < 50) ? 0 : (tmp > 81) ? 31 : tmp - 50;
 		if (tx_cls_en) {
-			odm_set_bb_reg(dm, R_0x8f8, BIT(16), 1);
+			odm_set_bb_regbu(dm, R_0x8f8, BIT(16), 1);
 			if (ra_tab->ra_tx_cls_th != 255) {
 				phydm_tx_collsion_th_set(dm, tx_cls_th,
 							 tx_cls_th);
 			}
 
 		} else {
-			odm_set_bb_reg(dm, R_0x8f8, BIT(16), 0);
+			odm_set_bb_regbu(dm, R_0x8f8, BIT(16), 0);
 		}
 
 		if (tx_cls_en & ra_tab->ra_tx_cls_th != 255) {
@@ -307,7 +307,7 @@ void phydm_ra_mask_report_h2c_trigger(void *dm_void,
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ra_table *ra_tab = &dm->dm_ra_table;
 
-	phydm_fw_trace_en_h2c(dm, true, 1, 2, trig_rpt->macid);
+	phydm_fw_trace_en_h2cbu(dm, true, 1, 2, trig_rpt->macid);
 
 	trig_rpt->ra_mask_rpt_stamp = ra_tab->ra_mask_rpt_stamp;
 }
@@ -319,10 +319,10 @@ void phydm_ra_mask_report_c2h_result(void *dm_void, struct ra_mask_rpt *rpt)
 
 	rpt->ra_mask_rpt_stamp = ra_tab->ra_mask_rpt_stamp;
 
-	odm_move_memory(dm, &rpt->ra_mask_buf[0], &ra_tab->ra_mask_buf[0], 8);
+	odm_move_memorybu(dm, &rpt->ra_mask_buf[0], &ra_tab->ra_mask_buf[0], 8);
 }
 
-void odm_c2h_ra_para_report_handler(void *dm_void, u8 *cmd_buf, u8 cmd_len)
+void odm_c2h_ra_para_report_handlerbu(void *dm_void, u8 *cmd_buf, u8 cmd_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ra_table *ra_tab = &dm->dm_ra_table;
@@ -389,7 +389,7 @@ void odm_c2h_ra_para_report_handler(void *dm_void, u8 *cmd_buf, u8 cmd_len)
 				PHYDM_DBG(dm, DBG_FW_TRACE, "RAMASK =  0x%x\n",
 					  cmd_buf[i]);
 
-			odm_move_memory(dm, &ra_tab->ra_mask_buf[0], &cmd_buf[4], 8);
+			odm_move_memorybu(dm, &ra_tab->ra_mask_buf[0], &cmd_buf[4], 8);
 			ra_tab->ra_mask_rpt_stamp++;
 		} else {
 			PHYDM_DBG(dm, DBG_FW_TRACE,
@@ -423,7 +423,7 @@ void odm_c2h_ra_para_report_handler(void *dm_void, u8 *cmd_buf, u8 cmd_len)
 	PHYDM_DBG(dm, DBG_FW_TRACE, "-------------------------------\n");
 }
 
-void phydm_ra_dynamic_retry_count(void *dm_void)
+void phydm_ra_dynamic_retry_countbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
@@ -435,25 +435,25 @@ void phydm_ra_dynamic_retry_count(void *dm_void)
 	if (dm->pre_b_noisy != dm->noisy_decision) {
 		if (dm->noisy_decision) {
 			PHYDM_DBG(dm, DBG_DYN_ARFR, "Noisy Env. RA fallback\n");
-			odm_set_mac_reg(dm, R_0x430, MASKDWORD, 0x0);
-			odm_set_mac_reg(dm, R_0x434, MASKDWORD, 0x04030201);
+			odm_set_mac_regbu(dm, R_0x430, MASKDWORD, 0x0);
+			odm_set_mac_regbu(dm, R_0x434, MASKDWORD, 0x04030201);
 		} else {
 			PHYDM_DBG(dm, DBG_DYN_ARFR, "Clean Env. RA fallback\n");
-			odm_set_mac_reg(dm, R_0x430, MASKDWORD, 0x01000000);
-			odm_set_mac_reg(dm, R_0x434, MASKDWORD, 0x06050402);
+			odm_set_mac_regbu(dm, R_0x430, MASKDWORD, 0x01000000);
+			odm_set_mac_regbu(dm, R_0x434, MASKDWORD, 0x06050402);
 		}
 		dm->pre_b_noisy = dm->noisy_decision;
 	}
 }
 
-void phydm_print_rate(void *dm_void, u8 rate, u32 dbg_component)
+void phydm_print_ratebu(void *dm_void, u8 rate, u32 dbg_component)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u8 rate_idx = rate & 0x7f; /*remove bit7 SGI*/
-	boolean vht_en = phydm_is_vht_rate(dm, rate_idx);
+	boolean vht_en = phydm_is_vht_ratebu(dm, rate_idx);
 	u8 b_sgi = (rate & 0x80) >> 7;
-	u8 rate_ss = phydm_rate_to_num_ss(dm, rate_idx);
-	u8 rate_digit = phydm_rate_2_rate_digit(dm, rate_idx);
+	u8 rate_ss = phydm_rate_to_num_ssbu(dm, rate_idx);
+	u8 rate_digit = phydm_rate_2_rate_digitbu(dm, rate_idx);
 
 	PHYDM_DBG_F(dm, dbg_component, "( %s%s%s%s%s%d%s%s)\n",
 		    (vht_en && (rate_ss == 1)) ? "VHT 1ss " : "",
@@ -466,14 +466,14 @@ void phydm_print_rate(void *dm_void, u8 rate, u32 dbg_component)
 		    (rate_idx >= ODM_RATEMCS0) ? "" : "M");
 }
 
-void phydm_print_rate_2_buff(void *dm_void, u8 rate, char *buf, u16 buf_size)
+void phydm_print_ratebu_2_buff(void *dm_void, u8 rate, char *buf, u16 buf_size)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u8 rate_idx = rate & 0x7f; /*remove bit7 SGI*/
-	boolean vht_en = phydm_is_vht_rate(dm, rate_idx);
+	boolean vht_en = phydm_is_vht_ratebu(dm, rate_idx);
 	u8 b_sgi = (rate & 0x80) >> 7;
-	u8 rate_ss = phydm_rate_to_num_ss(dm, rate_idx);
-	u8 rate_digit = phydm_rate_2_rate_digit(dm, rate_idx);
+	u8 rate_ss = phydm_rate_to_num_ssbu(dm, rate_idx);
+	u8 rate_digit = phydm_rate_2_rate_digitbu(dm, rate_idx);
 
 	PHYDM_SNPRINTF(buf, buf_size, "( %s%s%s%s%s%d%s%s)",
 		       (vht_en && (rate_ss == 1)) ? "VHT 1ss " : "",
@@ -486,7 +486,7 @@ void phydm_print_rate_2_buff(void *dm_void, u8 rate, char *buf, u16 buf_size)
 		       (rate_idx >= ODM_RATEMCS0) ? "" : "M");
 }
 
-void phydm_c2h_ra_report_handler(void *dm_void, u8 *cmd_buf, u8 cmd_len)
+void phydm_c2h_ra_report_handlerbu(void *dm_void, u8 *cmd_buf, u8 cmd_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ra_table *ra_tab = &dm->dm_ra_table;
@@ -533,7 +533,7 @@ void phydm_c2h_ra_report_handler(void *dm_void, u8 *cmd_buf, u8 cmd_len)
 		else if (cmd_buf[3] == 5)
 			PHYDM_DBG(dm, DBG_RA, "Try rate\n");
 	}
-	phydm_print_rate_2_buff(dm, rate, dbg_buf, PHYDM_SNPRINT_SIZE);
+	phydm_print_ratebu_2_buff(dm, rate, dbg_buf, PHYDM_SNPRINT_SIZE);
 	PHYDM_DBG(dm, DBG_RA, "Tx Rate=%s (%d)\n", dbg_buf, rate);
 
 #ifdef MU_EX_MACID
@@ -553,12 +553,12 @@ void phydm_c2h_ra_report_handler(void *dm_void, u8 *cmd_buf, u8 cmd_len)
 	/*trigger power training*/
 #if (DM_ODM_SUPPORT_TYPE & (ODM_WIN | ODM_CE))
 
-	rate_order = phydm_rate_order_compute(dm, rate_idx);
+	rate_order = phydm_rate_order_computebu(dm, rate_idx);
 
 	if (dm->is_one_entry_only ||
 	    (rate_order > ra_tab->highest_client_tx_order &&
 	    ra_tab->power_tracking_flag == 1)) {
-		halrf_update_pwr_track(dm, rate_idx);
+		halrf_update_pwr_trackbu(dm, rate_idx);
 		ra_tab->power_tracking_flag = 0;
 	}
 
@@ -571,11 +571,11 @@ void phydm_c2h_ra_report_handler(void *dm_void, u8 *cmd_buf, u8 cmd_len)
 #endif
 }
 
-void odm_ra_post_action_on_assoc(void *dm_void)
+void odm_ra_post_action_on_assocbu(void *dm_void)
 {
 }
 
-void phydm_modify_RA_PCR_threshold(void *dm_void, u8 ra_ofst_direc,
+void phydm_modify_RA_PCR_thresholdbu(void *dm_void, u8 ra_ofst_direc,
 				   u8 ra_th_ofst)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -744,7 +744,7 @@ void phydm_update_hal_ra_mask(
 
 #endif
 
-void phydm_rate_adaptive_mask_init(void *dm_void)
+void phydm_rate_adaptive_mask_initbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ra_table *ra_t = &dm->dm_ra_table;
@@ -766,15 +766,15 @@ void phydm_rate_adaptive_mask_init(void *dm_void)
 	ra_t->up_ramask_cnt_tmp = 0;
 }
 
-void phydm_refresh_rate_adaptive_mask(void *dm_void)
+void phydm_refresh_rate_adaptive_maskbu(void *dm_void)
 {
 /*@Will be removed*/
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
-	phydm_ra_mask_watchdog(dm);
+	phydm_ra_mask_watchdogbu(dm);
 }
 
-void phydm_show_sta_info(void *dm_void, char input[][16], u32 *_used,
+void phydm_show_sta_infobu(void *dm_void, char input[][16], u32 *_used,
 			 char *output, u32 *_out_len)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -895,7 +895,7 @@ void phydm_show_sta_info(void *dm_void, char input[][16], u32 *_used,
 	*_out_len = out_len;
 }
 
-u8 phydm_get_rx_stream_num(void *dm_void, enum rf_type type)
+u8 phydm_get_rx_stream_numbu(void *dm_void, enum rf_type type)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u8 rx_num = 1;
@@ -914,7 +914,7 @@ u8 phydm_get_rx_stream_num(void *dm_void, enum rf_type type)
 	return rx_num;
 }
 
-u8 phydm_get_tx_stream_num(void *dm_void, enum rf_type type)
+u8 phydm_get_tx_stream_numbu(void *dm_void, enum rf_type type)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u8 tx_num = 1;
@@ -933,7 +933,7 @@ u8 phydm_get_tx_stream_num(void *dm_void, enum rf_type type)
 	return tx_num;
 }
 
-u64 phydm_get_bb_mod_ra_mask(void *dm_void, u8 sta_idx)
+u64 phydm_get_bb_mod_ra_maskbu(void *dm_void, u8 sta_idx)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct phydm_iot_center	*iot_table = &dm->iot_table;
@@ -952,7 +952,7 @@ u64 phydm_get_bb_mod_ra_mask(void *dm_void, u8 sta_idx)
 		ra = &sta->ra_info;
 		bw = ra->ra_bw_mode;
 		wrls_mode = sta->support_wireless_set;
-		tx_stream_num = phydm_get_tx_stream_num(dm, sta->mimo_type);
+		tx_stream_num = phydm_get_tx_stream_numbu(dm, sta->mimo_type);
 		rssi_lv = ra->rssi_level;
 		ra_mask_bitmap = ra->ramask;
 	} else {
@@ -1088,7 +1088,7 @@ u64 phydm_get_bb_mod_ra_mask(void *dm_void, u8 sta_idx)
 	return ra_mask_bitmap;
 }
 
-u8 phydm_get_rate_from_rssi_lv(void *dm_void, u8 sta_idx)
+u8 phydm_get_rate_from_rssi_lvbu(void *dm_void, u8 sta_idx)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct cmn_sta_info *sta = dm->phydm_sta_info[sta_idx];
@@ -1127,7 +1127,7 @@ u8 phydm_get_rate_from_rssi_lv(void *dm_void, u8 sta_idx)
 	return rate_idx;
 }
 
-u8 phydm_get_rate_id(void *dm_void, u8 sta_idx)
+u8 phydm_get_rate_idbu(void *dm_void, u8 sta_idx)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct cmn_sta_info *sta = dm->phydm_sta_info[sta_idx];
@@ -1141,7 +1141,7 @@ u8 phydm_get_rate_id(void *dm_void, u8 sta_idx)
 		ra = &sta->ra_info;
 		bw = ra->ra_bw_mode;
 		wrls_mode = sta->support_wireless_set;
-		tx_stream_num = phydm_get_tx_stream_num(dm, sta->mimo_type);
+		tx_stream_num = phydm_get_tx_stream_numbu(dm, sta->mimo_type);
 
 	} else {
 		PHYDM_DBG(dm, DBG_RA, "[Warning] %s: invalid STA\n", __func__);
@@ -1267,7 +1267,7 @@ void phydm_ra_mode_selection(void *dm_void, u8 mode)
 }
 #endif
 
-void phydm_ra_h2c(void *dm_void, u8 sta_idx, u8 dis_ra, u8 dis_pt,
+void phydm_ra_h2cbu(void *dm_void, u8 sta_idx, u8 dis_ra, u8 dis_pt,
 		  u8 no_update_bw, u8 init_ra_lv, u64 ra_mask)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -1325,7 +1325,7 @@ void phydm_ra_h2c(void *dm_void, u8 sta_idx, u8 dis_ra, u8 dis_pt,
 		  h2c_val[6], h2c_val[5], h2c_val[4], h2c_val[3], h2c_val[2],
 		  h2c_val[1], h2c_val[0]);
 
-	odm_fill_h2c_cmd(dm, PHYDM_H2C_RA_MASK, H2C_MAX_LENGTH, h2c_val);
+	odm_fill_h2c_cmdbu(dm, PHYDM_H2C_RA_MASK, H2C_MAX_LENGTH, h2c_val);
 
 	#if (defined(PHYDM_COMPILE_ABOVE_3SS))
 	if (dm->support_ic_type & (PHYDM_IC_ABOVE_3SS)) {
@@ -1338,13 +1338,13 @@ void phydm_ra_h2c(void *dm_void, u8 sta_idx, u8 dis_ra, u8 dis_pt,
 			  h2c_val[6], h2c_val[5], h2c_val[4], h2c_val[3],
 			  h2c_val[2], h2c_val[1], h2c_val[0]);
 
-		odm_fill_h2c_cmd(dm, PHYDM_RA_MASK_ABOVE_3SS,
+		odm_fill_h2c_cmdbu(dm, PHYDM_RA_MASK_ABOVE_3SS,
 				 H2C_MAX_LENGTH, h2c_val);
 	}
 	#endif
 }
 
-void phydm_ra_registed(void *dm_void, u8 sta_idx,
+void phydm_ra_registedbu(void *dm_void, u8 sta_idx,
 		       /*@index of sta_info array, not MACID*/
 		       u8 rssi_from_assoc)
 {
@@ -1372,14 +1372,14 @@ void phydm_ra_registed(void *dm_void, u8 sta_idx,
 
 	#if (RTL8188E_SUPPORT == 1) && (RATE_ADAPTIVE_SUPPORT == 1)
 	if (dm->support_ic_type == ODM_RTL8188E)
-		ra->rate_id = phydm_get_rate_id_88e(dm, sta_idx);
+		ra->rate_id = phydm_get_rate_idbu_88e(dm, sta_idx);
 	else
 	#endif
 	{
-		ra->rate_id = phydm_get_rate_id(dm, sta_idx);
+		ra->rate_id = phydm_get_rate_idbu(dm, sta_idx);
 	}
 
-	ra_mask = phydm_get_bb_mod_ra_mask(dm, sta_idx);
+	ra_mask = phydm_get_bb_mod_ra_maskbu(dm, sta_idx);
 
 	PHYDM_DBG(dm, DBG_RA_MASK, "rssi_assoc=%d\n", rssi_from_assoc);
 
@@ -1392,8 +1392,8 @@ void phydm_ra_registed(void *dm_void, u8 sta_idx,
 	else
 		init_ra_lv = 0;
 
-	if (ra_t->record_ra_info)
-		ra_t->record_ra_info(dm, sta_idx, sta, ra_mask);
+	if (ra_t->record_ra_infobu)
+		ra_t->record_ra_infobu(dm, sta_idx, sta, ra_mask);
 
 	#if (RTL8188E_SUPPORT == 1) && (RATE_ADAPTIVE_SUPPORT == 1)
 	if (dm->support_ic_type == ODM_RTL8188E)
@@ -1404,12 +1404,12 @@ void phydm_ra_registed(void *dm_void, u8 sta_idx,
 	#endif
 	{
 		/*@FW RA*/
-		phydm_ra_h2c(dm, sta_idx, ra->disable_ra, ra->disable_pt, 0,
+		phydm_ra_h2cbu(dm, sta_idx, ra->disable_ra, ra->disable_pt, 0,
 			     init_ra_lv, ra_mask);
 	}
 }
 
-void phydm_ra_offline(void *dm_void, u8 sta_idx)
+void phydm_ra_offlinebu(void *dm_void, u8 sta_idx)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ra_table *ra_t = &dm->dm_ra_table;
@@ -1426,18 +1426,18 @@ void phydm_ra_offline(void *dm_void, u8 sta_idx)
 	PHYDM_DBG(dm, DBG_RA, "%s ======>\n", __func__);
 	PHYDM_DBG(dm, DBG_RA, "MACID=%d\n", sta->mac_id);
 
-	odm_memory_set(dm, &ra->rate_id, 0, sizeof(struct ra_sta_info));
+	odm_memory_setbu(dm, &ra->rate_id, 0, sizeof(struct ra_sta_info));
 	ra->disable_ra = 1;
 	ra->disable_pt = 1;
 
-	if (ra_t->record_ra_info)
-		ra_t->record_ra_info(dm, sta->mac_id, sta, 0);
+	if (ra_t->record_ra_infobu)
+		ra_t->record_ra_infobu(dm, sta->mac_id, sta, 0);
 
 	if (dm->support_ic_type != ODM_RTL8188E)
-		phydm_ra_h2c(dm, sta->mac_id, 1, 1, 0, 0, 0);
+		phydm_ra_h2cbu(dm, sta->mac_id, 1, 1, 0, 0, 0);
 }
 
-void phydm_ra_mask_watchdog(void *dm_void)
+void phydm_ra_mask_watchdogbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ra_table *ra_t = &dm->dm_ra_table;
@@ -1513,7 +1513,7 @@ void phydm_ra_mask_watchdog(void *dm_void)
 		}
 		#endif
 
-		rssi_lv_new = phydm_rssi_lv_dec(dm, (u32)rssi, ra->rssi_level);
+		rssi_lv_new = phydm_rssi_lv_decbu(dm, (u32)rssi, ra->rssi_level);
 
 		if (ra->rssi_level != rssi_lv_new ||
 		    (force_ra_mask_en && dm->number_linked_client < 10)) {
@@ -1522,10 +1522,10 @@ void phydm_ra_mask_watchdog(void *dm_void)
 
 			ra->rssi_level = rssi_lv_new;
 
-			ra_mask = phydm_get_bb_mod_ra_mask(dm, sta_idx);
+			ra_mask = phydm_get_bb_mod_ra_maskbu(dm, sta_idx);
 
-			if (ra_t->record_ra_info)
-				ra_t->record_ra_info(dm, sta_idx, sta, ra_mask);
+			if (ra_t->record_ra_infobu)
+				ra_t->record_ra_infobu(dm, sta_idx, sta, ra_mask);
 
 			#if (RTL8188E_SUPPORT) && (RATE_ADAPTIVE_SUPPORT)
 			if (dm->support_ic_type == ODM_RTL8188E)
@@ -1537,14 +1537,14 @@ void phydm_ra_mask_watchdog(void *dm_void)
 			#endif
 			{
 				/*@FW RA*/
-				phydm_ra_h2c(dm, sta_idx, ra->disable_ra,
+				phydm_ra_h2cbu(dm, sta_idx, ra->disable_ra,
 					     ra->disable_pt, 1, 0, ra_mask);
 			}
 		}
 	}
 }
 
-u8 phydm_vht_en_mapping(void *dm_void, u32 wireless_mode)
+u8 phydm_vht_en_mappingbu(void *dm_void, u32 wireless_mode)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u8 vht_en_out = 0;
@@ -1559,7 +1559,7 @@ u8 phydm_vht_en_mapping(void *dm_void, u32 wireless_mode)
 	return vht_en_out;
 }
 
-u8 phydm_rftype2rateid_2g_n20(void *dm_void, u8 rf_type)
+u8 phydm_rftype2rateid_2g_n20bu(void *dm_void, u8 rf_type)
 {
 	u8 rate_id_idx = 0;
 
@@ -1574,7 +1574,7 @@ u8 phydm_rftype2rateid_2g_n20(void *dm_void, u8 rf_type)
 	return rate_id_idx;
 }
 
-u8 phydm_rftype2rateid_2g_n40(void *dm_void, u8 rf_type)
+u8 phydm_rftype2rateid_2g_n40bu(void *dm_void, u8 rf_type)
 {
 	u8 rate_id_idx = 0;
 
@@ -1589,7 +1589,7 @@ u8 phydm_rftype2rateid_2g_n40(void *dm_void, u8 rf_type)
 	return rate_id_idx;
 }
 
-u8 phydm_rftype2rateid_5g_n(void *dm_void, u8 rf_type)
+u8 phydm_rftype2rateid_5g_nbu(void *dm_void, u8 rf_type)
 {
 	u8 rate_id_idx = 0;
 
@@ -1604,7 +1604,7 @@ u8 phydm_rftype2rateid_5g_n(void *dm_void, u8 rf_type)
 	return rate_id_idx;
 }
 
-u8 phydm_rftype2rateid_ac80(void *dm_void, u8 rf_type)
+u8 phydm_rftype2rateid_ac80bu(void *dm_void, u8 rf_type)
 {
 	u8 rate_id_idx = 0;
 
@@ -1619,7 +1619,7 @@ u8 phydm_rftype2rateid_ac80(void *dm_void, u8 rf_type)
 	return rate_id_idx;
 }
 
-u8 phydm_rftype2rateid_ac40(void *dm_void, u8 rf_type)
+u8 phydm_rftype2rateid_ac40bu(void *dm_void, u8 rf_type)
 {
 	u8 rate_id_idx = 0;
 
@@ -1634,7 +1634,7 @@ u8 phydm_rftype2rateid_ac40(void *dm_void, u8 rf_type)
 	return rate_id_idx;
 }
 
-u8 phydm_rate_id_mapping(void *dm_void, u32 wireless_mode, u8 rf_type, u8 bw)
+u8 phydm_rate_id_mappingbu(void *dm_void, u32 wireless_mode, u8 rf_type, u8 bw)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u8 rate_id_idx = 0;
@@ -1646,13 +1646,13 @@ u8 phydm_rate_id_mapping(void *dm_void, u32 wireless_mode, u8 rf_type, u8 bw)
 	switch (wireless_mode) {
 	case PHYDM_WIRELESS_MODE_N_24G:
 		if (bw == CHANNEL_WIDTH_40)
-			rate_id_idx = phydm_rftype2rateid_2g_n40(dm, rf_type);
+			rate_id_idx = phydm_rftype2rateid_2g_n40bu(dm, rf_type);
 		else
-			rate_id_idx = phydm_rftype2rateid_2g_n20(dm, rf_type);
+			rate_id_idx = phydm_rftype2rateid_2g_n20bu(dm, rf_type);
 		break;
 
 	case PHYDM_WIRELESS_MODE_N_5G:
-		rate_id_idx = phydm_rftype2rateid_5g_n(dm, rf_type);
+		rate_id_idx = phydm_rftype2rateid_5g_nbu(dm, rf_type);
 		break;
 
 	case PHYDM_WIRELESS_MODE_G:
@@ -1669,15 +1669,15 @@ u8 phydm_rate_id_mapping(void *dm_void, u32 wireless_mode, u8 rf_type, u8 bw)
 
 	case PHYDM_WIRELESS_MODE_AC_5G:
 	case PHYDM_WIRELESS_MODE_AC_ONLY:
-		rate_id_idx = phydm_rftype2rateid_ac80(dm, rf_type);
+		rate_id_idx = phydm_rftype2rateid_ac80bu(dm, rf_type);
 		break;
 
 	case PHYDM_WIRELESS_MODE_AC_24G:
 /*@Becareful to set "Lowest rate" while using PHYDM_ARFR4_AC_3SS in 2.4G/5G*/
 		if (bw >= CHANNEL_WIDTH_80)
-			rate_id_idx = phydm_rftype2rateid_ac80(dm, rf_type);
+			rate_id_idx = phydm_rftype2rateid_ac80bu(dm, rf_type);
 		else
-			rate_id_idx = phydm_rftype2rateid_ac40(dm, rf_type);
+			rate_id_idx = phydm_rftype2rateid_ac40bu(dm, rf_type);
 		break;
 
 	default:
@@ -1690,7 +1690,7 @@ u8 phydm_rate_id_mapping(void *dm_void, u32 wireless_mode, u8 rf_type, u8 bw)
 	return rate_id_idx;
 }
 
-u8 phydm_rssi_lv_dec(void *dm_void, u32 rssi, u8 ratr_state)
+u8 phydm_rssi_lv_decbu(void *dm_void, u32 rssi, u8 ratr_state)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	/*@MCS0 ~ MCS4 , VHT1SS MCS0 ~ MCS4 , G 6M~24M*/
@@ -1722,7 +1722,7 @@ u8 phydm_rssi_lv_dec(void *dm_void, u32 rssi, u8 ratr_state)
 	return new_rssi_lv;
 }
 
-enum phydm_qam_order phydm_get_ofdm_qam_order(void *dm_void, u8 rate_idx)
+enum phydm_qam_order phydm_get_ofdm_qam_orderbu(void *dm_void, u8 rate_idx)
 {
 	u8 tmp_idx = rate_idx;
 	enum phydm_qam_order qam_order = PHYDM_QAM_BPSK;
@@ -1769,7 +1769,7 @@ enum phydm_qam_order phydm_get_ofdm_qam_order(void *dm_void, u8 rate_idx)
 	return qam_order;
 }
 
-u8 phydm_rate_order_compute(void *dm_void, u8 rate_idx)
+u8 phydm_rate_order_computebu(void *dm_void, u8 rate_idx)
 {
 	u8 rate_order = rate_idx & 0x7f;
 
@@ -1803,7 +1803,7 @@ u8 phydm_rate_order_compute(void *dm_void, u8 rate_idx)
 }
 
 #if (DM_ODM_SUPPORT_TYPE == ODM_CE)
-u8 phydm_rate2ss(void *dm_void, u8 rate_idx)
+u8 phydm_rate2ssbu(void *dm_void, u8 rate_idx)
 {
 	u8 ret = 0xff;
 	u8 i, j;
@@ -1828,7 +1828,7 @@ u8 phydm_rate2ss(void *dm_void, u8 rate_idx)
 	return ret;
 }
 
-u8 phydm_rate2plcp(void *dm_void, u8 rate_idx)
+u8 phydm_rate2plcpbu(void *dm_void, u8 rate_idx)
 {
 	u8 rate2ss = 0;
 	u8 ltftime = 0;
@@ -1847,7 +1847,7 @@ u8 phydm_rate2plcp(void *dm_void, u8 rate_idx)
 		else
 			plcptime = 36;
 		/* VHT mode PLCP = 20us + 16us + 4us x Nss */
-		rate2ss = phydm_rate2ss(dm_void, rate_idx);
+		rate2ss = phydm_rate2ssbu(dm_void, rate_idx);
 		if (rate2ss != 0xff)
 			ltftime = (rate2ss + 1) * 4;
 		else
@@ -1858,7 +1858,7 @@ u8 phydm_rate2plcp(void *dm_void, u8 rate_idx)
 	return plcptime;
 }
 
-u8 phydm_get_plcp(void *dm_void, u16 macid)
+u8 phydm_get_plcpbu(void *dm_void, u16 macid)
 {
 	u8 plcp_time = 0;
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
@@ -1867,12 +1867,12 @@ u8 phydm_get_plcp(void *dm_void, u16 macid)
 
 	sta = dm->phydm_sta_info[macid];
 	ra = &sta->ra_info;
-	plcp_time = phydm_rate2plcp(dm, ra->curr_tx_rate);
+	plcp_time = phydm_rate2plcpbu(dm, ra->curr_tx_rate);
 	return plcp_time;
 }
 #endif
 
-void phydm_ra_common_info_update(void *dm_void)
+void phydm_ra_common_info_updatebu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ra_table *ra_tab = &dm->dm_ra_table;
@@ -1895,7 +1895,7 @@ void phydm_ra_common_info_update(void *dm_void)
 			continue;
 
 		rate_idx = sta->ra_info.curr_tx_rate & 0x7f;
-		rate_order_tmp = phydm_rate_order_compute(dm, rate_idx);
+		rate_order_tmp = phydm_rate_order_computebu(dm, rate_idx);
 
 		if (rate_order_tmp >= ra_tab->highest_client_tx_order) {
 			ra_tab->highest_client_tx_order = rate_order_tmp;
@@ -1913,14 +1913,14 @@ void phydm_ra_common_info_update(void *dm_void)
 		  ra_tab->highest_client_tx_order);
 }
 
-void phydm_rrsr_set_register(void *dm_void, u32 rrsr_val)
+void phydm_rrsr_set_registerbu(void *dm_void, u32 rrsr_val)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
-	odm_set_mac_reg(dm, R_0x440, 0xfffff, rrsr_val);
+	odm_set_mac_regbu(dm, R_0x440, 0xfffff, rrsr_val);
 }
 
-void phydm_masked_rrsr_set_register(void *dm_void, u32 rrsr_val)
+void phydm_masked_rrsr_set_registerbu(void *dm_void, u32 rrsr_val)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ra_table *ra_tab = &dm->dm_ra_table;
@@ -1929,10 +1929,10 @@ void phydm_masked_rrsr_set_register(void *dm_void, u32 rrsr_val)
 		return;
 
 	ra_tab->rrsr_val_curr = rrsr_val;
-	odm_set_mac_reg(dm, R_0x440, 0xfffff, rrsr_val);
+	odm_set_mac_regbu(dm, R_0x440, 0xfffff, rrsr_val);
 }
 
-void phydm_rrsr_mask(void *dm_void)
+void phydm_rrsr_maskbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ra_table *ra = &dm->dm_ra_table;
@@ -1947,7 +1947,7 @@ void phydm_rrsr_mask(void *dm_void)
 		return;
 
 	if (!dm->is_linked) {
-		phydm_masked_rrsr_set_register(dm, ra->rrsr_val_init);
+		phydm_masked_rrsr_set_registerbu(dm, ra->rrsr_val_init);
 		return;
 	}
 
@@ -1959,7 +1959,7 @@ void phydm_rrsr_mask(void *dm_void)
 
 		sta_cnt++;
 		tx_rate_idx = sta->ra_info.curr_tx_rate & 0x7f;
-		rate_order = phydm_rate_order_compute(dm, tx_rate_idx);
+		rate_order = phydm_rate_order_computebu(dm, tx_rate_idx);
 		if (rate_order < rate_order_min)
 			rate_order_min = rate_order;
 
@@ -1975,18 +1975,18 @@ void phydm_rrsr_mask(void *dm_void)
 		return;
 	}
 
-	rate_order = phydm_rate_order_compute(dm, sta->ra_info.curr_tx_rate);
+	rate_order = phydm_rate_order_computebu(dm, sta->ra_info.curr_tx_rate);
 #endif
 	if (rate_order_min == 0) {
 		rrsr_mask = 0x1f;
 	} else {
-		rrsr_mask_ofdm = (u32)phydm_gen_bitmask(rate_order_min);
+		rrsr_mask_ofdm = (u32)phydm_gen_bitmaskbu(rate_order_min);
 		rrsr_mask = (rrsr_mask_ofdm << 4) | 0xf;
 	}
 
 	/*ra->rrsr_val_init = 0x15d;*/
 
-	phydm_masked_rrsr_set_register(dm, ra->rrsr_val_init & rrsr_mask);
+	phydm_masked_rrsr_set_registerbu(dm, ra->rrsr_val_init & rrsr_mask);
 
 	PHYDM_DBG(dm, DBG_DYN_ARFR,
 		  "tx{rate, rate_order_min}={0x%x, %d}, rrsr_init=0x%x, ofdm_rrsr_mask=0x%x, rrsr_val=0x%x\n",
@@ -1994,21 +1994,21 @@ void phydm_rrsr_mask(void *dm_void)
 		  rrsr_mask, ra->rrsr_val_curr);
 }
 
-void phydm_ra_info_watchdog(void *dm_void)
+void phydm_ra_info_watchdogbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
-	phydm_ra_common_info_update(dm);
-	phydm_ra_dynamic_retry_count(dm);
-	phydm_rrsr_mask(dm);
-	phydm_ra_mask_watchdog(dm);
+	phydm_ra_common_info_updatebu(dm);
+	phydm_ra_dynamic_retry_countbu(dm);
+	phydm_rrsr_maskbu(dm);
+	phydm_ra_mask_watchdogbu(dm);
 
 #if (DM_ODM_SUPPORT_TYPE == ODM_WIN)
 	odm_refresh_basic_rate_mask(dm);
 #endif
 }
 
-void phydm_rrsr_en(void *dm_void, boolean en_rrsr)
+void phydm_rrsr_enbu(void *dm_void, boolean en_rrsr)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ra_table *ra_tab = &dm->dm_ra_table;
@@ -2022,16 +2022,16 @@ void phydm_arfr_table_init(void *dm_void)
 
 	if (dm->support_ic_type & PHYDM_IC_RATEID_IDX_TYPE2) {
 		/*ARFR table3(2.4g ac 2ss) for rate_id = 16*/
-		odm_set_mac_reg(dm, R_0x494, MASKDWORD, 0xfe01f015);
-		odm_set_mac_reg(dm, R_0x498, MASKDWORD, 0x40000000);
+		odm_set_mac_regbu(dm, R_0x494, MASKDWORD, 0xfe01f015);
+		odm_set_mac_regbu(dm, R_0x498, MASKDWORD, 0x40000000);
 
 		/*ARFR table5(2.4g ac 1ss) for rate_id = 18*/
-		odm_set_mac_reg(dm, R_0x4a4, MASKDWORD, 0x3ff015);
-		odm_set_mac_reg(dm, R_0x4a8, MASKDWORD, 0x40000000);
+		odm_set_mac_regbu(dm, R_0x4a4, MASKDWORD, 0x3ff015);
+		odm_set_mac_regbu(dm, R_0x4a8, MASKDWORD, 0x40000000);
 	}
 }
 
-void phydm_ra_info_init(void *dm_void)
+void phydm_ra_info_initbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct ra_table *ra_tab = &dm->dm_ra_table;
@@ -2040,7 +2040,7 @@ void phydm_ra_info_init(void *dm_void)
 	ra_tab->highest_client_tx_order = 0;
 	ra_tab->ra_th_ofst = 0;
 	ra_tab->ra_ofst_direc = 0;
-	ra_tab->rrsr_val_init = odm_get_mac_reg(dm, R_0x440, MASKDWORD);
+	ra_tab->rrsr_val_init = odm_get_mac_regbu(dm, R_0x440, MASKDWORD);
 	ra_tab->dynamic_rrsr_en = false;
 	ra_tab->ra_trigger_mode = 1; // default TBTT RA
 	ra_tab->ra_tx_cls_th = 255;
@@ -2048,8 +2048,8 @@ void phydm_ra_info_init(void *dm_void)
 	if (dm->support_ic_type == ODM_RTL8822B) {
 		u32 ret_value;
 
-		ret_value = odm_get_mac_reg(dm, R_0x4c8, MASKBYTE2);
-		odm_set_mac_reg(dm, R_0x4cc, MASKBYTE3, (ret_value - 1));
+		ret_value = odm_get_mac_regbu(dm, R_0x4c8, MASKBYTE2);
+		odm_set_mac_regbu(dm, R_0x4cc, MASKBYTE3, (ret_value - 1));
 	}
 #endif
 
@@ -2063,10 +2063,10 @@ void phydm_ra_info_init(void *dm_void)
 
 	phydm_arfr_table_init(dm);
 
-	phydm_rate_adaptive_mask_init(dm);
+	phydm_rate_adaptive_mask_initbu(dm);
 }
 
-u8 odm_find_rts_rate(void *dm_void, u8 tx_rate, boolean is_erp_protect)
+u8 odm_find_rts_ratebu(void *dm_void, u8 tx_rate, boolean is_erp_protect)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	u8 rts_ini_rate = ODM_RATE6M;
@@ -2209,9 +2209,9 @@ void odm_refresh_basic_rate_mask(
 		if (cur_stage == 1) {
 			FillOctetString(os_rate_set, rate_set, 5);
 			FilterSupportRate(mgnt_info->mBrates, &os_rate_set, false);
-			phydm_set_hw_reg_handler_interface(dm, HW_VAR_BASIC_RATE, (u8 *)&os_rate_set);
+			phydm_set_hw_reg_handler_interfacebu(dm, HW_VAR_BASIC_RATE, (u8 *)&os_rate_set);
 		} else if (cur_stage == 3 && (stage == 1 || stage == 2))
-			phydm_set_hw_reg_handler_interface(dm, HW_VAR_BASIC_RATE, (u8 *)(&mgnt_info->mBrates));
+			phydm_set_hw_reg_handler_interfacebu(dm, HW_VAR_BASIC_RATE, (u8 *)(&mgnt_info->mBrates));
 	}
 
 	stage = cur_stage;
@@ -2339,14 +2339,14 @@ void phydm_ra_dynamic_rate_id_on_assoc(
 		    (wireless_mode & (ODM_WM_N24G | ODM_WM_N5G))) {
 			PHYDM_DBG(dm, DBG_RA,
 				  "[ON ASSOC] set N-2SS ARFR5 table\n");
-			odm_set_mac_reg(dm, R_0x4a4, MASKDWORD, 0xfc1ffff); /*N-2SS, ARFR5, rate_id = 0xe*/
-			odm_set_mac_reg(dm, R_0x4a8, MASKDWORD, 0x0); /*N-2SS, ARFR5, rate_id = 0xe*/
+			odm_set_mac_regbu(dm, R_0x4a4, MASKDWORD, 0xfc1ffff); /*N-2SS, ARFR5, rate_id = 0xe*/
+			odm_set_mac_regbu(dm, R_0x4a8, MASKDWORD, 0x0); /*N-2SS, ARFR5, rate_id = 0xe*/
 		} else if ((dm->support_ic_type & (ODM_RTL8812)) &&
 			   (wireless_mode & (ODM_WM_AC_5G | ODM_WM_AC_24G | ODM_WM_AC_ONLY))) {
 			PHYDM_DBG(dm, DBG_RA,
 				  "[ON ASSOC] set AC-2SS ARFR0 table\n");
-			odm_set_mac_reg(dm, R_0x444, MASKDWORD, 0x0fff); /*@AC-2SS, ARFR0, rate_id = 0x9*/
-			odm_set_mac_reg(dm, R_0x448, MASKDWORD, 0xff01f000); /*@AC-2SS, ARFR0, rate_id = 0x9*/
+			odm_set_mac_regbu(dm, R_0x444, MASKDWORD, 0x0fff); /*@AC-2SS, ARFR0, rate_id = 0x9*/
+			odm_set_mac_regbu(dm, R_0x448, MASKDWORD, 0xff01f000); /*@AC-2SS, ARFR0, rate_id = 0x9*/
 		}
 	}
 }
@@ -2357,11 +2357,11 @@ void phydm_ra_dynamic_rate_id_init(
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 
 	if (dm->support_ic_type & (ODM_RTL8812 | ODM_RTL8192E)) {
-		odm_set_mac_reg(dm, R_0x4a4, MASKDWORD, 0xfc1ffff); /*N-2SS, ARFR5, rate_id = 0xe*/
-		odm_set_mac_reg(dm, R_0x4a8, MASKDWORD, 0x0); /*N-2SS, ARFR5, rate_id = 0xe*/
+		odm_set_mac_regbu(dm, R_0x4a4, MASKDWORD, 0xfc1ffff); /*N-2SS, ARFR5, rate_id = 0xe*/
+		odm_set_mac_regbu(dm, R_0x4a8, MASKDWORD, 0x0); /*N-2SS, ARFR5, rate_id = 0xe*/
 
-		odm_set_mac_reg(dm, R_0x444, MASKDWORD, 0x0fff); /*@AC-2SS, ARFR0, rate_id = 0x9*/
-		odm_set_mac_reg(dm, R_0x448, MASKDWORD, 0xff01f000); /*@AC-2SS, ARFR0, rate_id = 0x9*/
+		odm_set_mac_regbu(dm, R_0x444, MASKDWORD, 0x0fff); /*@AC-2SS, ARFR0, rate_id = 0x9*/
+		odm_set_mac_regbu(dm, R_0x448, MASKDWORD, 0xff01f000); /*@AC-2SS, ARFR0, rate_id = 0x9*/
 	}
 }
 

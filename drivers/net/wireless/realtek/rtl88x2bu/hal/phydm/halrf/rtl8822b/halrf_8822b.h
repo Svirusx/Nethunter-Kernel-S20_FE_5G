@@ -29,7 +29,7 @@
 #define AVG_THERMAL_NUM_8822B 4
 #define RF_T_METER_8822B 0x42
 
-void configure_txpower_track_8822b(struct txpwrtrack_cfg *config);
+void configure_txpower_trackbu_8822b(struct txpwrtrack_cfg *config);
 
 void odm_tx_pwr_track_set_pwr8822b(void *dm_void, enum pwrtrack_method method,
 				   u8 rf_path, u8 channel_mapped_index);
@@ -53,7 +53,7 @@ void aac_check_8822b(struct dm_struct *dm);
 
 void phy_lc_calibrate_8822b(void *dm_void);
 
-void halrf_rf_lna_setting_8822b(struct dm_struct *dm, enum halrf_lna_set type);
+void halrf_rf_lna_settingbu_8822b(struct dm_struct *dm, enum halrf_lna_set type);
 
 #if ((DM_ODM_SUPPORT_TYPE & ODM_AP) || (DM_ODM_SUPPORT_TYPE == ODM_CE))
 void phy_set_rf_path_switch_8822b(struct dm_struct *dm,

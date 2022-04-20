@@ -68,7 +68,7 @@ u8 phydm_get_gid(struct dm_struct *dm, u8 *phy_status_inf)
 }
 #endif
 
-void phydm_rx_statistic_cal(struct dm_struct *dm,
+void phydm_rx_statistic_calbu(struct dm_struct *dm,
 			    struct phydm_phyinfo_struct *phy_info,
 			    u8 *phy_status_inf,
 			    struct phydm_perpkt_info_struct *pktinfo)
@@ -178,22 +178,22 @@ void phydm_rx_statistic_cal(struct dm_struct *dm,
 #endif
 }
 
-void phydm_reset_phystatus_avg(struct dm_struct *dm)
+void phydm_reset_phystatus_avgbu(struct dm_struct *dm)
 {
 	struct phydm_phystatus_avg *dbg_avg = NULL;
 
 	dbg_avg = &dm->phy_dbg_info.phystatus_statistic_avg;
-	odm_memory_set(dm, &dbg_avg->rssi_cck_avg, 0,
+	odm_memory_setbu(dm, &dbg_avg->rssi_cck_avg, 0,
 		       sizeof(struct phydm_phystatus_avg));
 }
 
-void phydm_reset_phystatus_statistic(struct dm_struct *dm)
+void phydm_reset_phystatus_statisticbu(struct dm_struct *dm)
 {
 	struct phydm_phystatus_statistic *dbg_s = NULL;
 
 	dbg_s = &dm->phy_dbg_info.physts_statistic_info;
 
-	odm_memory_set(dm, &dbg_s->rssi_cck_sum, 0,
+	odm_memory_setbu(dm, &dbg_s->rssi_cck_sum, 0,
 		       sizeof(struct phydm_phystatus_statistic));
 }
 
@@ -202,7 +202,7 @@ void phydm_reset_phy_info(struct dm_struct *dm,
 {
 	u8 i = 0;
 
-	odm_memory_set(dm, &phy_info->physts_rpt_valid, 0,
+	odm_memory_setbu(dm, &phy_info->physts_rpt_valid, 0,
 		       sizeof(struct phydm_phyinfo_struct));
 
 	phy_info->rx_power = -110;
@@ -255,11 +255,11 @@ void phydm_avg_rssi_evm_snr(void *dm_void,
 		dbg_s->rssi_ofdm_cnt++;
 
 		val = (u16)evm[0];
-		intvl = phydm_find_intrvl(dm, val, dbg_i->evm_hist_th, size_th);
+		intvl = phydm_find_intrvlbu(dm, val, dbg_i->evm_hist_th, size_th);
 		dbg_s->evm_ofdm_hist[intvl]++;
 
 		val = (u16)snr[0];
-		intvl = phydm_find_intrvl(dm, val, dbg_i->snr_hist_th, size_th);
+		intvl = phydm_find_intrvlbu(dm, val, dbg_i->snr_hist_th, size_th);
 		dbg_s->snr_ofdm_hist[intvl]++;
 
 	} else if (pktinfo->rate_ss == 1) {
@@ -274,12 +274,12 @@ void phydm_avg_rssi_evm_snr(void *dm_void,
 		dbg_s->evm_1ss_sum += evm[0];
 		/*@EVM Histogram*/
 		val = (u16)evm[0];
-		intvl = phydm_find_intrvl(dm, val, dbg_i->evm_hist_th, size_th);
+		intvl = phydm_find_intrvlbu(dm, val, dbg_i->evm_hist_th, size_th);
 		dbg_s->evm_1ss_hist[intvl]++;
 
 		/*SNR Histogram*/
 		val = (u16)snr[0];
-		intvl = phydm_find_intrvl(dm, val, dbg_i->snr_hist_th, size_th);
+		intvl = phydm_find_intrvlbu(dm, val, dbg_i->snr_hist_th, size_th);
 		dbg_s->snr_1ss_hist[intvl]++;
 
 		dbg_s->rssi_1ss_cnt++;
@@ -297,13 +297,13 @@ void phydm_avg_rssi_evm_snr(void *dm_void,
 			dbg_s->evm_2ss_sum[i] += evm[i];
 			/*@EVM Histogram*/
 			val = (u16)evm[i];
-			intvl = phydm_find_intrvl(dm, val, dbg_i->evm_hist_th,
+			intvl = phydm_find_intrvlbu(dm, val, dbg_i->evm_hist_th,
 						  size_th);
 			dbg_s->evm_2ss_hist[i][intvl]++;
 
 			/*SNR Histogram*/
 			val = (u16)snr[i];
-			intvl = phydm_find_intrvl(dm, val, dbg_i->snr_hist_th,
+			intvl = phydm_find_intrvlbu(dm, val, dbg_i->snr_hist_th,
 						  size_th);
 			dbg_s->snr_2ss_hist[i][intvl]++;
 		}
@@ -323,13 +323,13 @@ void phydm_avg_rssi_evm_snr(void *dm_void,
 			dbg_s->evm_3ss_sum[i] += evm[i];
 			/*@EVM Histogram*/
 			val = (u16)evm[i];
-			intvl = phydm_find_intrvl(dm, val, dbg_i->evm_hist_th,
+			intvl = phydm_find_intrvlbu(dm, val, dbg_i->evm_hist_th,
 						  size_th);
 			dbg_s->evm_3ss_hist[i][intvl]++;
 
 			/*SNR Histogram*/
 			val = (u16)snr[i];
-			intvl = phydm_find_intrvl(dm, val, dbg_i->snr_hist_th,
+			intvl = phydm_find_intrvlbu(dm, val, dbg_i->snr_hist_th,
 						  size_th);
 			dbg_s->snr_3ss_hist[i][intvl]++;
 		}
@@ -350,13 +350,13 @@ void phydm_avg_rssi_evm_snr(void *dm_void,
 
 			/*@EVM Histogram*/
 			val = (u16)evm[i];
-			intvl = phydm_find_intrvl(dm, val, dbg_i->evm_hist_th,
+			intvl = phydm_find_intrvlbu(dm, val, dbg_i->evm_hist_th,
 						  size_th);
 			dbg_s->evm_4ss_hist[i][intvl]++;
 
 			/*SNR Histogram*/
 			val = (u16)snr[i];
-			intvl = phydm_find_intrvl(dm, val, dbg_i->snr_hist_th,
+			intvl = phydm_find_intrvlbu(dm, val, dbg_i->snr_hist_th,
 						  size_th);
 			dbg_s->snr_4ss_hist[i][intvl]++;
 		}
@@ -365,7 +365,7 @@ void phydm_avg_rssi_evm_snr(void *dm_void,
 	}
 }
 
-void phydm_avg_phystatus_init(void *dm_void)
+void phydm_avg_phystatus_initbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_phy_dbg_info *dbg_i = &dm->phy_dbg_info;
@@ -380,8 +380,8 @@ void phydm_avg_phystatus_init(void *dm_void)
 	u32 size = PHY_HIST_TH_SIZE * 2;
 	u8 i = 0;
 
-	odm_move_memory(dm, dbg_i->snr_hist_th, snr_hist_th, size);
-	odm_move_memory(dm, dbg_i->evm_hist_th, evm_hist_th, size);
+	odm_move_memorybu(dm, dbg_i->snr_hist_th, snr_hist_th, size);
+	odm_move_memorybu(dm, dbg_i->evm_hist_th, evm_hist_th, size);
 	#ifdef PHYDM_PHYSTAUS_AUTO_SWITCH
 	dm->pkt_proc_struct.physts_auto_swch_en = false;
 	for (i = 0; i < PHY_HIST_TH_SIZE; i++)
@@ -389,7 +389,7 @@ void phydm_avg_phystatus_init(void *dm_void)
 	#endif
 }
 
-u8 phydm_get_signal_quality(struct phydm_phyinfo_struct *phy_info,
+u8 phydm_get_signal_qualitybu(struct phydm_phyinfo_struct *phy_info,
 			    struct dm_struct *dm,
 			    struct phy_status_rpt_8192cd *phy_sts)
 {
@@ -653,13 +653,13 @@ phydm_evm_2_percent(s8 value)
 	return (u8)ret_val;
 }
 
-s8 phydm_cck_rssi_convert(struct dm_struct *dm, u16 lna_idx, u8 vga_idx)
+s8 phydm_cck_rssi_convertbu(struct dm_struct *dm, u16 lna_idx, u8 vga_idx)
 {
-	/*@phydm_get_cck_rssi_table_from_reg*/
+	/*@phydm_get_cck_rssibu_table_from_regbu*/
 	return (dm->cck_lna_gain_table[lna_idx] - (vga_idx << 1));
 }
 
-void phydm_get_cck_rssi_table_from_reg(struct dm_struct *dm)
+void phydm_get_cck_rssibu_table_from_regbu(struct dm_struct *dm)
 {
 	u8 used_lna_idx_tmp;
 	u32 reg_0xa80 = 0x7431, reg_0xabc = 0xcbe5edfd;
@@ -674,8 +674,8 @@ void phydm_get_cck_rssi_table_from_reg(struct dm_struct *dm)
 	if (!(dm->support_ic_type & ODM_RTL8197F))
 		return;
 
-	reg_0xa80 = odm_get_bb_reg(dm, R_0xa80, 0xFFFF);
-	reg_0xabc = odm_get_bb_reg(dm, R_0xabc, MASKDWORD);
+	reg_0xa80 = odm_get_bb_regbu(dm, R_0xa80, 0xFFFF);
+	reg_0xabc = odm_get_bb_regbu(dm, R_0xabc, MASKDWORD);
 
 	PHYDM_DBG(dm, ODM_COMP_INIT, "reg_0xa80 = 0x%x\n", reg_0xa80);
 	PHYDM_DBG(dm, ODM_COMP_INIT, "reg_0xabc = 0x%x\n", reg_0xabc);
@@ -694,7 +694,7 @@ void phydm_get_cck_rssi_table_from_reg(struct dm_struct *dm)
 		  dm->cck_lna_gain_table[6], dm->cck_lna_gain_table[7]);
 }
 
-s8 phydm_get_cck_rssi(void *dm_void, u8 lna_idx, u8 vga_idx)
+s8 phydm_get_cck_rssibu(void *dm_void, u8 lna_idx, u8 vga_idx)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	s8 rx_pow = 0;
@@ -702,7 +702,7 @@ s8 phydm_get_cck_rssi(void *dm_void, u8 lna_idx, u8 vga_idx)
 	switch (dm->support_ic_type) {
 	#if (RTL8197F_SUPPORT)
 	case ODM_RTL8197F:
-		rx_pow = phydm_cck_rssi_convert(dm, lna_idx, vga_idx);
+		rx_pow = phydm_cck_rssi_convertbu(dm, lna_idx, vga_idx);
 		break;
 	#endif
 
@@ -851,7 +851,7 @@ void phydm_phy_sts_n_parsing(struct dm_struct *dm,
 		}
 		#endif
 
-		rx_pwr_all = phydm_get_cck_rssi(dm, lna_idx, vga_idx);
+		rx_pwr_all = phydm_get_cck_rssibu(dm, lna_idx, vga_idx);
 
 		PHYDM_DBG(dm, DBG_RSSI_MNTR,
 			  "ext_lna_gain (( %d )), lna_idx: (( 0x%x )), vga_idx: (( 0x%x )), rx_pwr_all: (( %d ))\n",
@@ -879,7 +879,7 @@ void phydm_phy_sts_n_parsing(struct dm_struct *dm,
 			sq = phydm_sq_patch_rt_cid_819x_acer(dm, pktinfo->is_cck_rate, pwdb_all, 0, 0);
 		else
 		#endif
-			sq = phydm_get_signal_quality(phy_info, dm, phy_sts);
+			sq = phydm_get_signal_qualitybu(phy_info, dm, phy_sts);
 
 		/* @dbg_print("cck sq = %d\n", sq); */
 
@@ -969,7 +969,7 @@ void phydm_phy_sts_n_parsing(struct dm_struct *dm,
 
 			phy_info->rx_mimo_evm_dbm[i] = (u8)evm_tmp;
 		}
-		phydm_parsing_cfo(dm, pktinfo,
+		phydm_parsing_cfobu(dm, pktinfo,
 				  phy_sts->path_cfotail, pktinfo->rate_ss);
 	}
 
@@ -1013,7 +1013,7 @@ phydm_evm_dbm(s8 value)
 	return (u8)ret_val;
 }
 
-void phydm_rx_physts_bw_parsing(struct phydm_phyinfo_struct *phy_info,
+void phydm_rx_physts_bw_parsingbu(struct phydm_phyinfo_struct *phy_info,
 				struct phydm_perpkt_info_struct *
 				pktinfo,
 				struct phy_status_rpt_8812 *
@@ -1046,7 +1046,7 @@ void phydm_rx_physts_bw_parsing(struct phydm_phyinfo_struct *phy_info,
 	}
 }
 
-void phydm_get_sq(struct dm_struct *dm, struct phydm_phyinfo_struct *phy_info,
+void phydm_get_sqbu(struct dm_struct *dm, struct phydm_phyinfo_struct *phy_info,
 		  u8 is_cck_rate)
 {
 	u8 sq = 0;
@@ -1086,7 +1086,7 @@ void phydm_get_sq(struct dm_struct *dm, struct phydm_phyinfo_struct *phy_info,
 	phy_info->signal_quality = sq;
 }
 
-void phydm_rx_physts_1st_type(struct dm_struct *dm,
+void phydm_rx_physts_1st_typebu(struct dm_struct *dm,
 			      struct phydm_phyinfo_struct *phy_info,
 			      u8 *phy_status_inf,
 			      struct phydm_perpkt_info_struct *pktinfo)
@@ -1105,7 +1105,7 @@ void phydm_rx_physts_1st_type(struct dm_struct *dm,
 	#endif
 
 	phy_sts = (struct phy_status_rpt_8812 *)phy_status_inf;
-	phydm_rx_physts_bw_parsing(phy_info, pktinfo, phy_sts);
+	phydm_rx_physts_bw_parsingbu(phy_info, pktinfo, phy_sts);
 
 	/* @== [CCK rate] ====================================================*/
 	if (pktinfo->is_cck_rate) {
@@ -1113,7 +1113,7 @@ void phydm_rx_physts_1st_type(struct dm_struct *dm,
 		lna_idx = (cck_agc_rpt & 0xE0) >> 5;
 		vga_idx = cck_agc_rpt & 0x1F;
 
-		rx_pwr_db = phydm_get_cck_rssi(dm, lna_idx, vga_idx);
+		rx_pwr_db = phydm_get_cck_rssibu(dm, lna_idx, vga_idx);
 		rssi = phydm_pw_2_percent(rx_pwr_db);
 
 		if (dm->support_ic_type == ODM_RTL8812 &&
@@ -1199,7 +1199,7 @@ void phydm_rx_physts_1st_type(struct dm_struct *dm,
 			/*@[EVM dBm]*/
 			phy_info->rx_mimo_evm_dbm[i] = phydm_evm_dbm(val_s8);
 		}
-		phydm_parsing_cfo(dm, pktinfo,
+		phydm_parsing_cfobu(dm, pktinfo,
 				  phy_sts->cfotail, pktinfo->rate_ss);
 	}
 
@@ -1208,7 +1208,7 @@ void phydm_rx_physts_1st_type(struct dm_struct *dm,
 	phy_info->rx_power = rx_pwr_db;
 	phy_info->bt_rx_rssi_percentage = phy_info->rx_pwdb_all;
 	phy_info->recv_signal_power = phy_info->rx_power;
-	phydm_get_sq(dm, phy_info, pktinfo->is_cck_rate);
+	phydm_get_sqbu(dm, phy_info, pktinfo->is_cck_rate);
 
 	dm->rx_pwdb_ave = dm->rx_pwdb_ave + phy_info->rx_pwdb_all;
 
@@ -1223,7 +1223,7 @@ void phydm_rx_physts_1st_type(struct dm_struct *dm,
 
 #endif
 
-void phydm_reset_rssi_for_dm(struct dm_struct *dm, u8 station_id)
+void phydm_reset_rssi_for_dmbu(struct dm_struct *dm, u8 station_id)
 {
 	struct cmn_sta_info *sta;
 
@@ -1247,7 +1247,7 @@ void phydm_reset_rssi_for_dm(struct dm_struct *dm, u8 station_id)
 
 #if (ODM_IC_11N_SERIES_SUPPORT || ODM_IC_11AC_SERIES_SUPPORT)
 
-s32 phydm_get_rssi_8814_ofdm(struct dm_struct *dm, u8 *rssi_in)
+s32 phydm_get_rssi_8814_ofdmbu(struct dm_struct *dm, u8 *rssi_in)
 {
 	s32 rssi_avg;
 	u8 rx_count = 0;
@@ -1255,22 +1255,22 @@ s32 phydm_get_rssi_8814_ofdm(struct dm_struct *dm, u8 *rssi_in)
 
 	if (dm->rx_ant_status & BB_PATH_A) {
 		rx_count++;
-		rssi_linear += phydm_db_2_linear(rssi_in[RF_PATH_A]);
+		rssi_linear += phydm_db_2_linearbu(rssi_in[RF_PATH_A]);
 	}
 
 	if (dm->rx_ant_status & BB_PATH_B) {
 		rx_count++;
-		rssi_linear += phydm_db_2_linear(rssi_in[RF_PATH_B]);
+		rssi_linear += phydm_db_2_linearbu(rssi_in[RF_PATH_B]);
 	}
 
 	if (dm->rx_ant_status & BB_PATH_C) {
 		rx_count++;
-		rssi_linear += phydm_db_2_linear(rssi_in[RF_PATH_C]);
+		rssi_linear += phydm_db_2_linearbu(rssi_in[RF_PATH_C]);
 	}
 
 	if (dm->rx_ant_status & BB_PATH_D) {
 		rx_count++;
-		rssi_linear += phydm_db_2_linear(rssi_in[RF_PATH_D]);
+		rssi_linear += phydm_db_2_linearbu(rssi_in[RF_PATH_D]);
 	}
 
 	/* @Rounding and removing fractional bits */
@@ -1288,12 +1288,12 @@ s32 phydm_get_rssi_8814_ofdm(struct dm_struct *dm, u8 *rssi_in)
 		rssi_linear = DIVIDED_4(rssi_linear);
 		break;
 	}
-	rssi_avg = odm_convert_to_db(rssi_linear);
+	rssi_avg = odm_convert_to_dbbu(rssi_linear);
 
 	return rssi_avg;
 }
 
-void phydm_process_rssi_for_dm(struct dm_struct *dm,
+void phydm_process_rssi_for_dmbu(struct dm_struct *dm,
 			       struct phydm_phyinfo_struct *phy_info,
 			       struct phydm_perpkt_info_struct *pktinfo)
 {
@@ -1385,7 +1385,7 @@ void phydm_process_rssi_for_dm(struct dm_struct *dm,
 
 		#if (RTL8814A_SUPPORT == 1)
 		if (dm->support_ic_type & (ODM_RTL8814A)) {
-			rssi_ave = phydm_get_rssi_8814_ofdm(dm, rssi_tmp);
+			rssi_ave = phydm_get_rssi_8814_ofdmbu(dm, rssi_tmp);
 		} else
 		#endif
 		{
@@ -1622,18 +1622,18 @@ void phydm_physts_auto_switch_jgr3_set(void *dm_void, boolean enable,
 
 	if (enable) {
 		/*@per MPDU latch & update phy-staatus*/
-		odm_set_mac_reg(dm, R_0x60c, BIT(31), 1);
+		odm_set_mac_regbu(dm, R_0x60c, BIT(31), 1);
 		/*@Update Period (OFDM Symbol)*/
-		odm_set_bb_reg(dm, R_0x8c0, 0xfc000, 3);
+		odm_set_bb_regbu(dm, R_0x8c0, 0xfc000, 3);
 		/*@switchin bitmap*/
-		odm_set_bb_reg(dm, R_0x8c4, 0x7f80000, bitmap_en);
+		odm_set_bb_regbu(dm, R_0x8c4, 0x7f80000, bitmap_en);
 		/*@mode 3*/
-		odm_set_bb_reg(dm, R_0x8c4, (BIT(28) | BIT(27)), 3);
+		odm_set_bb_regbu(dm, R_0x8c4, (BIT(28) | BIT(27)), 3);
 	} else {
-		odm_set_mac_reg(dm, R_0x60c, BIT(31), 0);
-		odm_set_bb_reg(dm, R_0x8c0, 0xfc000, 0x1);
-		odm_set_bb_reg(dm, R_0x8c4, 0x7f80000, 0x2);
-		odm_set_bb_reg(dm, R_0x8c4, (BIT(28) | BIT(27)), 0);
+		odm_set_mac_regbu(dm, R_0x60c, BIT(31), 0);
+		odm_set_bb_regbu(dm, R_0x8c0, 0xfc000, 0x1);
+		odm_set_bb_regbu(dm, R_0x8c4, 0x7f80000, 0x2);
+		odm_set_bb_regbu(dm, R_0x8c4, (BIT(28) | BIT(27)), 0);
 	}
 }
 
@@ -1658,7 +1658,7 @@ void phydm_avg_condi_num(void *dm_void,
 
 	/*CN Histogram*/
 	val = (u16)dbg_i->condition_num_seg0;
-	intvl = phydm_find_intrvl(dm, val, dbg_i->cn_hist_th, size_th);
+	intvl = phydm_find_intrvlbu(dm, val, dbg_i->cn_hist_th, size_th);
 	dbg_s->cn_hist[arry_idx][intvl]++;
 
 	dbg_i->condi_num = (u32)dbg_i->condition_num_seg0; /*will remove*/
@@ -2111,7 +2111,7 @@ void phydm_get_physts_1_others_jgr3(struct dm_struct *dm, u8 *phy_status_inf,
 		phy_info->is_mu_packet = false;
 	}
 
-	phydm_parsing_cfo(dm, pktinfo, phy_sts->cfo_tail, pktinfo->rate_ss);
+	phydm_parsing_cfobu(dm, pktinfo, phy_sts->cfo_tail, pktinfo->rate_ss);
 
 #if (defined(CONFIG_PHYDM_ANTENNA_DIVERSITY))
 	dm->dm_fat_table.antsel_rx_keep_0 = phy_sts->antidx_a;
@@ -2162,7 +2162,7 @@ void phydm_get_physts_4_others_jgr3(struct dm_struct *dm, u8 *phy_status_inf,
 	dm->dm_fat_table.antsel_rx_keep_2 = phy_sts->antidx_c;
 	dm->dm_fat_table.antsel_rx_keep_3 = phy_sts->antidx_d;
 #endif
-	odm_move_memory(dm, dbg_i->eigen_val, phy_sts->eigenvalue, 4);
+	odm_move_memorybu(dm, dbg_i->eigen_val, phy_sts->eigenvalue, 4);
 	dbg_i->condition_num_seg0 = phy_sts->avg_cond_num_0;
 }
 
@@ -2235,7 +2235,7 @@ void phydm_get_physts_6_jgr3(struct dm_struct *dm, u8 *phy_status_inf,
 	phy_info->rx_pwdb_all = phydm_pw_2_percent(rx_pwr_db_max);
 	phy_info->band_width = CHANNEL_WIDTH_20;
 	
-	//phydm_parsing_cfo(dm, pktinfo, phy_sts->avg_cfo, pktinfo->rate_ss);
+	//phydm_parsing_cfobu(dm, pktinfo, phy_sts->avg_cfo, pktinfo->rate_ss);
 	
 	#ifdef CONFIG_PHYDM_ANTENNA_DIVERSITY
 	dm->dm_fat_table.antsel_rx_keep_0 = phy_sts->antidx_a;
@@ -2353,7 +2353,7 @@ void phydm_process_dm_rssi_jgr3(struct dm_struct *dm,
 		rssi_tmp = phy_info->rx_mimo_signal_strength[i];
 		if (rssi_tmp != 0) {
 			rx_count++;
-			rssi_linear += phydm_db_2_linear(rssi_tmp);
+			rssi_linear += phydm_db_2_linearbu(rssi_tmp);
 		}
 	}
 	/* @Rounding and removing fractional bits */
@@ -2371,7 +2371,7 @@ void phydm_process_dm_rssi_jgr3(struct dm_struct *dm,
 		break;
 	}
 
-	rssi_db = (s16)odm_convert_to_db(rssi_linear);
+	rssi_db = (s16)odm_convert_to_dbbu(rssi_linear);
 
 	if (rssi_t->rssi_acc == 0) {
 		rssi_t->rssi_acc = (s16)(rssi_db << RSSI_MA);
@@ -2511,7 +2511,7 @@ void phydm_print_phy_sts_jgr2(struct dm_struct *dm, u8 *phy_status_inf,
 	rpt = (struct phy_sts_rpt_jgr2_type1 *)phy_status_inf;
 	rpt2 = (struct phy_sts_rpt_jgr2_type2 *)phy_status_inf;
 
-	odm_move_memory(dm, phy_status, phy_status_inf, size);
+	odm_move_memorybu(dm, phy_status, phy_status_inf, size);
 
 	if (!(dm->debug_components & DBG_PHY_STATUS))
 		return;
@@ -2755,7 +2755,7 @@ void phydm_get_phy_sts_type0(struct dm_struct *dm, u8 *phy_status_inf,
 			/*@4bit LNA*/
 			lna_idx = (phy_sts->lna_h << 3) | phy_sts->lna_l;
 		}
-		rx_pow = phydm_get_cck_rssi(dm, lna_idx, vga_idx);
+		rx_pow = phydm_get_cck_rssibu(dm, lna_idx, vga_idx);
 	}
 
 	/* @Confirm CCK RSSI */
@@ -2891,7 +2891,7 @@ void phydm_get_phy_sts_type1(struct dm_struct *dm, u8 *phy_status_inf,
 				  phy_info->rx_mimo_signal_quality[0],
 				  rxsc, phy_info);
 
-	phydm_parsing_cfo(dm, pktinfo, phy_sts->cfo_tail, pktinfo->rate_ss);
+	phydm_parsing_cfobu(dm, pktinfo, phy_sts->cfo_tail, pktinfo->rate_ss);
 	#ifdef PHYDM_LNA_SAT_CHK_TYPE2
 	phydm_parsing_snr(dm, pktinfo, phy_sts->rxsnr);
 	#endif
@@ -2988,7 +2988,7 @@ void phydm_get_phy_sts_type2(struct dm_struct *dm, u8 *phy_status_inf,
 				  false, bw, 0, rxsc, phy_info);
 }
 
-void phydm_process_rssi_for_dm_2nd_type(struct dm_struct *dm,
+void phydm_process_rssi_for_dmbu_2nd_type(struct dm_struct *dm,
 					struct phydm_phyinfo_struct *phy_info,
 					struct phydm_perpkt_info_struct *pktinfo
 					)
@@ -3039,7 +3039,7 @@ void phydm_process_rssi_for_dm_2nd_type(struct dm_struct *dm,
 	for (i = RF_PATH_A; i < PHYDM_MAX_RF_PATH; i++) {
 		rssi_tmp = phy_info->rx_mimo_signal_strength[i];
 		if (rssi_tmp != 0)
-			rssi_linear += phydm_db_2_linear(rssi_tmp);
+			rssi_linear += phydm_db_2_linearbu(rssi_tmp);
 	}
 	/* @Rounding and removing fractional bits */
 	rssi_linear = (rssi_linear + (1 << (FRAC_BITS - 1))) >> FRAC_BITS;
@@ -3056,7 +3056,7 @@ void phydm_process_rssi_for_dm_2nd_type(struct dm_struct *dm,
 		break;
 	}
 
-	rssi_db = (s16)odm_convert_to_db(rssi_linear);
+	rssi_db = (s16)odm_convert_to_dbbu(rssi_linear);
 
 	if (rssi_t->rssi_acc == 0) {
 		rssi_t->rssi_acc = (s16)(rssi_db << RSSI_MA);
@@ -3103,7 +3103,7 @@ void phydm_rx_physts_2nd_type(void *dm_void, u8 *phy_sts,
 /*@==============================================*/
 #endif
 
-boolean odm_phy_status_query(struct dm_struct *dm,
+boolean odm_phy_status_querybu(struct dm_struct *dm,
 			     struct phydm_phyinfo_struct *phy_info,
 			     u8 *phy_sts,
 			     struct phydm_perpkt_info_struct *pktinfo)
@@ -3116,7 +3116,7 @@ boolean odm_phy_status_query(struct dm_struct *dm,
 	u8 page = (*phy_sts & 0xf);
 
 	pktinfo->is_cck_rate = PHYDM_IS_CCK_RATE(rate);
-	pktinfo->rate_ss = phydm_rate_to_num_ss(dm, rate);
+	pktinfo->rate_ss = phydm_rate_to_num_ssbu(dm, rate);
 	dm->rate_ss = pktinfo->rate_ss; /*@For AP EVM SW antenna diversity use*/
 
 	if (pktinfo->is_cck_rate)
@@ -3142,17 +3142,17 @@ boolean odm_phy_status_query(struct dm_struct *dm,
 	} else if (dm->support_ic_type & PHYSTS_2ND_TYPE_IC) {
 		#if (ODM_PHY_STATUS_NEW_TYPE_SUPPORT)
 		phydm_rx_physts_2nd_type(dm, phy_sts, pktinfo, phy_info);
-		phydm_process_rssi_for_dm_2nd_type(dm, phy_info, pktinfo);
+		phydm_process_rssi_for_dmbu_2nd_type(dm, phy_info, pktinfo);
 		#endif
 	} else if (dm->support_ic_type & ODM_IC_11AC_SERIES) {
 		#if ODM_IC_11AC_SERIES_SUPPORT
-		phydm_rx_physts_1st_type(dm, phy_info, phy_sts, pktinfo);
-		phydm_process_rssi_for_dm(dm, phy_info, pktinfo);
+		phydm_rx_physts_1st_typebu(dm, phy_info, phy_sts, pktinfo);
+		phydm_process_rssi_for_dmbu(dm, phy_info, pktinfo);
 		#endif
 	} else if (dm->support_ic_type & ODM_IC_11N_SERIES) {
 		#if ODM_IC_11N_SERIES_SUPPORT
 		phydm_phy_sts_n_parsing(dm, phy_info, phy_sts, pktinfo);
-		phydm_process_rssi_for_dm(dm, phy_info, pktinfo);
+		phydm_process_rssi_for_dmbu(dm, phy_info, pktinfo);
 		#endif
 	}
 	phy_info->signal_strength = phy_info->rx_pwdb_all;
@@ -3187,7 +3187,7 @@ boolean odm_phy_status_query(struct dm_struct *dm,
 		#endif
 		{
 			phydm_avg_rssi_evm_snr(dm, phy_info, pktinfo);
-			phydm_rx_statistic_cal(dm, phy_info, phy_sts, pktinfo);
+			phydm_rx_statistic_calbu(dm, phy_info, phy_sts, pktinfo);
 		}
 	}
 
@@ -3195,7 +3195,7 @@ boolean odm_phy_status_query(struct dm_struct *dm,
 	return true;
 }
 
-void phydm_rx_phy_status_init(void *dm_void)
+void phydm_rx_phy_status_initbu(void *dm_void)
 {
 	struct dm_struct *dm = (struct dm_struct *)dm_void;
 	struct odm_phy_dbg_info *dbg = &dm->phy_dbg_info;
@@ -3204,7 +3204,7 @@ void phydm_rx_phy_status_init(void *dm_void)
 	dbg->show_phy_sts_max_cnt = 1;
 	dbg->show_phy_sts_cnt = 0;
 
-	phydm_avg_phystatus_init(dm);
+	phydm_avg_phystatus_initbu(dm);
 
 	#ifdef PHYDM_PHYSTAUS_AUTO_SWITCH
 	dm->pkt_proc_struct.physts_auto_swch_en = false;

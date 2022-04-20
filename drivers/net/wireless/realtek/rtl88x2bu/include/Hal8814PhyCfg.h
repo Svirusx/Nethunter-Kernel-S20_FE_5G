@@ -117,7 +117,7 @@ PHY_SetTxPowerLevel8814(
 );
 
 u8
-phy_get_tx_power_index_8814a(
+phy_get_tx_power_indexbu_8814a(
 		PADAPTER		Adapter,
 		enum rf_path		RFPath,
 		u8				Rate,
@@ -126,7 +126,7 @@ phy_get_tx_power_index_8814a(
 );
 
 void
-PHY_SetTxPowerIndex_8814A(
+PHY_SetTxPowerIndexbu_8814A(
 		PADAPTER		Adapter,
 		u32				PowerIndex,
 		enum rf_path		RFPath,

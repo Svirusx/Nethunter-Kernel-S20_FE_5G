@@ -32,55 +32,55 @@ typedef enum _HAL_PHYDM_OPS {
 
 
 #define DYNAMIC_FUNC_DISABLE		(0x0)
-	u32 rtw_phydm_ability_ops(_adapter *adapter, HAL_PHYDM_OPS ops, u32 ability);
+	u32 rtw_phydm_abilitybu_opsbu(_adapter *adapter, HAL_PHYDM_OPS ops, u32 ability);
 
 #define rtw_phydm_func_disable_all(adapter)	\
-		rtw_phydm_ability_ops(adapter, HAL_PHYDM_DIS_ALL_FUNC, 0)
+		rtw_phydm_abilitybu_opsbu(adapter, HAL_PHYDM_DIS_ALL_FUNC, 0)
 
 #ifdef CONFIG_RTW_ACS
 #define rtw_phydm_func_for_offchannel(adapter) \
 		do { \
-			rtw_phydm_ability_ops(adapter, HAL_PHYDM_DIS_ALL_FUNC, 0); \
-			if (rtw_odm_adaptivity_needed(adapter)) \
-				rtw_phydm_ability_ops(adapter, HAL_PHYDM_FUNC_SET, ODM_BB_ADAPTIVITY); \
+			rtw_phydm_abilitybu_opsbu(adapter, HAL_PHYDM_DIS_ALL_FUNC, 0); \
+			if (rtw_odm_adaptivity_neededbu(adapter)) \
+				rtw_phydm_abilitybu_opsbu(adapter, HAL_PHYDM_FUNC_SET, ODM_BB_ADAPTIVITY); \
 			if (IS_ACS_ENABLE(adapter))\
-				rtw_phydm_ability_ops(adapter, HAL_PHYDM_FUNC_SET, ODM_BB_ENV_MONITOR); \
+				rtw_phydm_abilitybu_opsbu(adapter, HAL_PHYDM_FUNC_SET, ODM_BB_ENV_MONITOR); \
 		} while (0)
 #else
 #define rtw_phydm_func_for_offchannel(adapter) \
 		do { \
-			rtw_phydm_ability_ops(adapter, HAL_PHYDM_DIS_ALL_FUNC, 0); \
-			if (rtw_odm_adaptivity_needed(adapter)) \
-				rtw_phydm_ability_ops(adapter, HAL_PHYDM_FUNC_SET, ODM_BB_ADAPTIVITY); \
+			rtw_phydm_abilitybu_opsbu(adapter, HAL_PHYDM_DIS_ALL_FUNC, 0); \
+			if (rtw_odm_adaptivity_neededbu(adapter)) \
+				rtw_phydm_abilitybu_opsbu(adapter, HAL_PHYDM_FUNC_SET, ODM_BB_ADAPTIVITY); \
 		} while (0)
 #endif
 
 #define rtw_phydm_func_clr(adapter, ability)	\
-		rtw_phydm_ability_ops(adapter, HAL_PHYDM_FUNC_CLR, ability)
+		rtw_phydm_abilitybu_opsbu(adapter, HAL_PHYDM_FUNC_CLR, ability)
 
-#define rtw_phydm_ability_backup(adapter)	\
-		rtw_phydm_ability_ops(adapter, HAL_PHYDM_ABILITY_BK, 0)
+#define rtw_phydm_abilitybu_backup(adapter)	\
+		rtw_phydm_abilitybu_opsbu(adapter, HAL_PHYDM_ABILITY_BK, 0)
 
-#define rtw_phydm_ability_restore(adapter)	\
-		rtw_phydm_ability_ops(adapter, HAL_PHYDM_ABILITY_RESTORE, 0)
+#define rtw_phydm_abilitybu_restore(adapter)	\
+		rtw_phydm_abilitybu_opsbu(adapter, HAL_PHYDM_ABILITY_RESTORE, 0)
 
 
-static inline u32 rtw_phydm_ability_get(_adapter *adapter)
+static inline u32 rtw_phydm_abilitybu_get(_adapter *adapter)
 {
-	return rtw_phydm_ability_ops(adapter, HAL_PHYDM_ABILITY_GET, 0);
+	return rtw_phydm_abilitybu_opsbu(adapter, HAL_PHYDM_ABILITY_GET, 0);
 }
 
 
-void rtw_odm_init_ic_type(_adapter *adapter);
+void rtw_odm_init_ic_typebu(_adapter *adapter);
 
-void rtw_odm_adaptivity_config_msg(void *sel, _adapter *adapter);
+void rtw_odm_adaptivity_config_msgbu(void *sel, _adapter *adapter);
 
-bool rtw_odm_adaptivity_needed(_adapter *adapter);
-void rtw_odm_adaptivity_parm_msg(void *sel, _adapter *adapter);
-void rtw_odm_adaptivity_parm_set(_adapter *adapter, s8 th_l2h_ini, s8 th_edcca_hl_diff);
-void rtw_odm_get_perpkt_rssi(void *sel, _adapter *adapter);
-void rtw_odm_acquirespinlock(_adapter *adapter,	enum rt_spinlock_type type);
-void rtw_odm_releasespinlock(_adapter *adapter,	enum rt_spinlock_type type);
+bool rtw_odm_adaptivity_neededbu(_adapter *adapter);
+void rtw_odm_adaptivity_parm_msgbu(void *sel, _adapter *adapter);
+void rtw_odm_adaptivity_parm_setbu(_adapter *adapter, s8 th_l2h_ini, s8 th_edcca_hl_diff);
+void rtw_odm_get_perpkt_rssibu(void *sel, _adapter *adapter);
+void rtw_odm_acquirespinlockbu(_adapter *adapter,	enum rt_spinlock_type type);
+void rtw_odm_releasespinlockbu(_adapter *adapter,	enum rt_spinlock_type type);
 
 struct dm_struct;
 s16 rtw_odm_get_tx_power_mbm(struct dm_struct *dm, u8 rfpath, u8 rate, u8 bw, u8 cch);
@@ -94,7 +94,7 @@ void rtw_odm_update_dfs_region(struct dvobj_priv *dvobj);
 u8 rtw_odm_radar_detect_polling_int_ms(struct dvobj_priv *dvobj);
 #endif /* CONFIG_DFS_MASTER */
 
-void rtw_odm_parse_rx_phy_status_chinfo(union recv_frame *rframe, u8 *phys);
+void rtw_odm_parse_rx_phy_status_chinfobu(union recv_frame *rframe, u8 *phys);
 
 #if defined(CONFIG_RTL8822C) && defined(CONFIG_LPS_PG)
 void odm_lps_pg_debug_8822c(void *dm_void);

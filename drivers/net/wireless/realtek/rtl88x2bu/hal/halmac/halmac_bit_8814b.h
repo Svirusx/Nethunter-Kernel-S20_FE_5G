@@ -22441,17 +22441,17 @@
 #define BIT_SET_BSSID_SEL_V1_8814B(x, v)                                       \
 	(BIT_CLEAR_BSSID_SEL_V1_8814B(x) | BIT_BSSID_SEL_V1_8814B(v))
 
-#define BIT_SHIFT_P2P_OUI_TYPE_8814B 0
-#define BIT_MASK_P2P_OUI_TYPE_8814B 0xff
-#define BIT_P2P_OUI_TYPE_8814B(x)                                              \
-	(((x) & BIT_MASK_P2P_OUI_TYPE_8814B) << BIT_SHIFT_P2P_OUI_TYPE_8814B)
-#define BITS_P2P_OUI_TYPE_8814B                                                \
-	(BIT_MASK_P2P_OUI_TYPE_8814B << BIT_SHIFT_P2P_OUI_TYPE_8814B)
-#define BIT_CLEAR_P2P_OUI_TYPE_8814B(x) ((x) & (~BITS_P2P_OUI_TYPE_8814B))
-#define BIT_GET_P2P_OUI_TYPE_8814B(x)                                          \
-	(((x) >> BIT_SHIFT_P2P_OUI_TYPE_8814B) & BIT_MASK_P2P_OUI_TYPE_8814B)
-#define BIT_SET_P2P_OUI_TYPE_8814B(x, v)                                       \
-	(BIT_CLEAR_P2P_OUI_TYPE_8814B(x) | BIT_P2P_OUI_TYPE_8814B(v))
+#define BIT_SHIFT_P2P_OUIbu_TYPE_8814B 0
+#define BIT_MASK_P2P_OUIbu_TYPE_8814B 0xff
+#define BIT_P2P_OUIbu_TYPE_8814B(x)                                              \
+	(((x) & BIT_MASK_P2P_OUIbu_TYPE_8814B) << BIT_SHIFT_P2P_OUIbu_TYPE_8814B)
+#define BITS_P2P_OUIbu_TYPE_8814B                                                \
+	(BIT_MASK_P2P_OUIbu_TYPE_8814B << BIT_SHIFT_P2P_OUIbu_TYPE_8814B)
+#define BIT_CLEAR_P2P_OUIbu_TYPE_8814B(x) ((x) & (~BITS_P2P_OUIbu_TYPE_8814B))
+#define BIT_GET_P2P_OUIbu_TYPE_8814B(x)                                          \
+	(((x) >> BIT_SHIFT_P2P_OUIbu_TYPE_8814B) & BIT_MASK_P2P_OUIbu_TYPE_8814B)
+#define BIT_SET_P2P_OUIbu_TYPE_8814B(x, v)                                       \
+	(BIT_CLEAR_P2P_OUIbu_TYPE_8814B(x) | BIT_P2P_OUIbu_TYPE_8814B(v))
 
 /* 2 REG_RSVD_8814B */
 

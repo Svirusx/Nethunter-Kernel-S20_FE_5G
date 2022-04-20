@@ -36,30 +36,30 @@
 #define	MAX_CHANNEL_NUM		(MAX_CHANNEL_NUM_2G + MAX_CHANNEL_NUM_5G)
 #define MAX_CHANNEL_NUM_OF_BAND rtw_max(MAX_CHANNEL_NUM_2G, MAX_CHANNEL_NUM_5G)
 
-extern u8 center_ch_2g[CENTER_CH_2G_NUM];
-extern u8 center_ch_2g_40m[CENTER_CH_2G_40M_NUM];
+extern u8 center_ch_2gbu[CENTER_CH_2G_NUM];
+extern u8 center_ch_2gbu_40m[CENTER_CH_2G_40M_NUM];
 
-u8 center_chs_2g_num(u8 bw);
-u8 center_chs_2g(u8 bw, u8 id);
+u8 center_chs_2gbu_numbu(u8 bw);
+u8 center_chs_2gbu(u8 bw, u8 id);
 
-extern u8 center_ch_5g_20m[CENTER_CH_5G_20M_NUM];
-extern u8 center_ch_5g_40m[CENTER_CH_5G_40M_NUM];
-extern u8 center_ch_5g_20m_40m[CENTER_CH_5G_20M_NUM + CENTER_CH_5G_40M_NUM];
-extern u8 center_ch_5g_80m[CENTER_CH_5G_80M_NUM];
-extern u8 center_ch_5g_all[CENTER_CH_5G_ALL_NUM];
+extern u8 center_ch_5g_20mbu[CENTER_CH_5G_20M_NUM];
+extern u8 center_ch_5g_40mbu[CENTER_CH_5G_40M_NUM];
+extern u8 center_ch_5g_20mbu_40m[CENTER_CH_5G_20M_NUM + CENTER_CH_5G_40M_NUM];
+extern u8 center_ch_5g_80mbu[CENTER_CH_5G_80M_NUM];
+extern u8 center_ch_5g_allbu[CENTER_CH_5G_ALL_NUM];
 
-u8 center_chs_5g_num(u8 bw);
-u8 center_chs_5g(u8 bw, u8 id);
+u8 center_chs_5gbu_numbu(u8 bw);
+u8 center_chs_5gbu(u8 bw, u8 id);
 
-u8 rtw_get_scch_by_cch_offset(u8 cch, u8 bw, u8 offset);
+u8 rtw_get_scch_by_cch_offsetbu(u8 cch, u8 bw, u8 offset);
 u8 rtw_get_scch_by_cch_opch(u8 cch, u8 bw, u8 opch);
 
-u8 rtw_get_op_chs_by_cch_bw(u8 cch, u8 bw, u8 **op_chs, u8 *op_ch_num);
+u8 rtw_get_op_chs_by_cch_bwbu(u8 cch, u8 bw, u8 **op_chs, u8 *op_ch_num);
 
-u8 rtw_get_offset_by_chbw(u8 ch, u8 bw, u8 *r_offset);
-u8 rtw_get_center_ch(u8 ch, u8 bw, u8 offset);
+u8 rtw_get_offset_by_chbwbu(u8 ch, u8 bw, u8 *r_offset);
+u8 rtw_get_center_chbu(u8 ch, u8 bw, u8 offset);
 
-u8 rtw_get_ch_group(u8 ch, u8 *group, u8 *cck_group);
+u8 rtw_get_ch_groupbu(u8 ch, u8 *group, u8 *cck_group);
 
 typedef enum _CAPABILITY {
 	cESS			= 0x0001,
@@ -107,18 +107,18 @@ enum nb_config {
 };
 #endif
 
-extern const char *const _band_str[];
-#define band_str(band) (((band) >= BAND_MAX) ? _band_str[BAND_MAX] : _band_str[(band)])
+extern const char *const _band_strbu[];
+#define band_str(band) (((band) >= BAND_MAX) ? _band_strbu[BAND_MAX] : _band_strbu[(band)])
 
-extern const u8 _band_to_band_cap[];
-#define band_to_band_cap(band) (((band) >= BAND_MAX) ? _band_to_band_cap[BAND_MAX] : _band_to_band_cap[(band)])
+extern const u8 _band_to_band_capbu[];
+#define band_to_band_cap(band) (((band) >= BAND_MAX) ? _band_to_band_capbu[BAND_MAX] : _band_to_band_capbu[(band)])
 
 
-extern const char *const _ch_width_str[];
-#define ch_width_str(bw) (((bw) < CHANNEL_WIDTH_MAX) ? _ch_width_str[(bw)] : "CHANNEL_WIDTH_MAX")
+extern const char *const _ch_width_strbu[];
+#define ch_width_str(bw) (((bw) < CHANNEL_WIDTH_MAX) ? _ch_width_strbu[(bw)] : "CHANNEL_WIDTH_MAX")
 
-extern const u8 _ch_width_to_bw_cap[];
-#define ch_width_to_bw_cap(bw) (((bw) < CHANNEL_WIDTH_MAX) ? _ch_width_to_bw_cap[(bw)] : 0)
+extern const u8 _ch_width_to_bw_capbu[];
+#define ch_width_to_bw_cap(bw) (((bw) < CHANNEL_WIDTH_MAX) ? _ch_width_to_bw_capbu[(bw)] : 0)
 
 enum opc_bw {
 	OPC_BW20		= 0,
@@ -207,11 +207,11 @@ typedef enum _PROTECTION_MODE {
 
 #define RF_TYPE_VALID(rf_type) (rf_type < RF_TYPE_MAX)
 
-extern const u8 _rf_type_to_rf_tx_cnt[];
-#define rf_type_to_rf_tx_cnt(rf_type) (RF_TYPE_VALID(rf_type) ? _rf_type_to_rf_tx_cnt[rf_type] : 0)
+extern const u8 _rf_type_to_rf_tx_cntbu[];
+#define rf_type_to_rf_tx_cnt(rf_type) (RF_TYPE_VALID(rf_type) ? _rf_type_to_rf_tx_cntbu[rf_type] : 0)
 
-extern const u8 _rf_type_to_rf_rx_cnt[];
-#define rf_type_to_rf_rx_cnt(rf_type) (RF_TYPE_VALID(rf_type) ? _rf_type_to_rf_rx_cnt[rf_type] : 0)
+extern const u8 _rf_type_to_rf_rx_cntbu[];
+#define rf_type_to_rf_rx_cnt(rf_type) (RF_TYPE_VALID(rf_type) ? _rf_type_to_rf_rx_cntbu[rf_type] : 0)
 
 extern const char *const _rf_type_to_rfpath_str[];
 #define rf_type_to_rfpath_str(rf_type) (RF_TYPE_VALID(rf_type) ? _rf_type_to_rfpath_str[rf_type] : "UNKNOWN")
@@ -226,9 +226,9 @@ u8 rtw_restrict_trx_path_bmp_by_rftype(u8 trx_path_bmp, enum rf_type type, u8 *t
 void tx_path_nss_set_default(enum bb_path txpath_nss[], u8 txpath_num_nss[], u8 txpath);
 void tx_path_nss_set_full_tx(enum bb_path txpath_nss[], u8 txpath_num_nss[], u8 txpath);
 
-int rtw_ch2freq(int chan);
-int rtw_freq2ch(int freq);
-bool rtw_chbw_to_freq_range(u8 ch, u8 bw, u8 offset, u32 *hi, u32 *lo);
+int rtw_ch2freqbu(int chan);
+int rtw_freq2chbu(int freq);
+bool rtw_chbw_to_freq_rangebu(u8 ch, u8 bw, u8 offset, u32 *hi, u32 *lo);
 
 struct rf_ctl_t;
 
@@ -248,8 +248,8 @@ typedef enum _REGULATION_TXPWR_LMT {
 	TXPWR_LMT_WW, /* smallest of all available limit, keep last */
 } REGULATION_TXPWR_LMT;
 
-extern const char *const _regd_str[];
-#define regd_str(regd) (((regd) > TXPWR_LMT_WW) ? _regd_str[TXPWR_LMT_WW] : _regd_str[(regd)])
+extern const char *const _regd_strbu[];
+#define regd_str(regd) (((regd) > TXPWR_LMT_WW) ? _regd_strbu[TXPWR_LMT_WW] : _regd_strbu[(regd)])
 
 void txpwr_idx_get_dbm_str(s8 idx, u8 txgi_max, u8 txgi_pdbm, SIZE_T cwidth, char dbm_str[], u8 dbm_str_len);
 
@@ -267,21 +267,21 @@ struct regd_exc_ent {
 	char regd_name[0];
 };
 
-void dump_regd_exc_list(void *sel, struct rf_ctl_t *rfctl);
-void rtw_regd_exc_add_with_nlen(struct rf_ctl_t *rfctl, const char *country, u8 domain, const char *regd_name, u32 nlen);
-void rtw_regd_exc_add(struct rf_ctl_t *rfctl, const char *country, u8 domain, const char *regd_name);
-struct regd_exc_ent *_rtw_regd_exc_search(struct rf_ctl_t *rfctl, const char *country, u8 domain);
-struct regd_exc_ent *rtw_regd_exc_search(struct rf_ctl_t *rfctl, const char *country, u8 domain);
-void rtw_regd_exc_list_free(struct rf_ctl_t *rfctl);
+void dump_regd_exc_listbu(void *sel, struct rf_ctl_t *rfctl);
+void rtw_regd_exc_addbu_with_nlenbu(struct rf_ctl_t *rfctl, const char *country, u8 domain, const char *regd_name, u32 nlen);
+void rtw_regd_exc_addbu(struct rf_ctl_t *rfctl, const char *country, u8 domain, const char *regd_name);
+struct regd_exc_ent *_rtw_regd_exc_searchbubu(struct rf_ctl_t *rfctl, const char *country, u8 domain);
+struct regd_exc_ent *rtw_regd_exc_searchbu(struct rf_ctl_t *rfctl, const char *country, u8 domain);
+void rtw_regd_exc_list_freebu(struct rf_ctl_t *rfctl);
 
-void dump_txpwr_lmt(void *sel, _adapter *adapter);
-void rtw_txpwr_lmt_add_with_nlen(struct rf_ctl_t *rfctl, const char *regd_name, u32 nlen
+void dump_txpwr_lmtbu(void *sel, _adapter *adapter);
+void rtw_txpwr_lmt_addbu_with_nlenbu(struct rf_ctl_t *rfctl, const char *regd_name, u32 nlen
 	, u8 band, u8 bw, u8 tlrs, u8 ntx_idx, u8 ch_idx, s8 lmt);
-void rtw_txpwr_lmt_add(struct rf_ctl_t *rfctl, const char *regd_name
+void rtw_txpwr_lmt_addbu(struct rf_ctl_t *rfctl, const char *regd_name
 	, u8 band, u8 bw, u8 tlrs, u8 ntx_idx, u8 ch_idx, s8 lmt);
-struct txpwr_lmt_ent *_rtw_txpwr_lmt_get_by_name(struct rf_ctl_t *rfctl, const char *regd_name);
-struct txpwr_lmt_ent *rtw_txpwr_lmt_get_by_name(struct rf_ctl_t *rfctl, const char *regd_name);
-void rtw_txpwr_lmt_list_free(struct rf_ctl_t *rfctl);
+struct txpwr_lmt_ent *_rtw_txpwr_lmt_get_by_namebubu(struct rf_ctl_t *rfctl, const char *regd_name);
+struct txpwr_lmt_ent *rtw_txpwr_lmt_get_by_namebu(struct rf_ctl_t *rfctl, const char *regd_name);
+void rtw_txpwr_lmt_list_freebu(struct rf_ctl_t *rfctl);
 #endif /* CONFIG_TXPWR_LIMIT */
 
 #define BB_GAIN_2G 0
@@ -299,9 +299,9 @@ void rtw_txpwr_lmt_list_free(struct rf_ctl_t *rfctl);
 #define BB_GAIN_NUM 1
 #endif
 
-int rtw_ch_to_bb_gain_sel(int ch);
-void rtw_rf_set_tx_gain_offset(_adapter *adapter, u8 path, s8 offset);
-void rtw_rf_apply_tx_gain_offset(_adapter *adapter, u8 ch);
+int rtw_ch_to_bb_gain_selbu(int ch);
+void rtw_rf_set_tx_gain_offsetbu(_adapter *adapter, u8 path, s8 offset);
+void rtw_rf_apply_tx_gain_offsetbu(_adapter *adapter, u8 ch);
 
 /* only check channel ranges */
 #define rtw_is_2g_ch(ch) (ch >= 1 && ch <= 14)
@@ -320,7 +320,7 @@ void rtw_rf_apply_tx_gain_offset(_adapter *adapter, u8 ch);
 	|| (rtw_is_5g_band3(a) && rtw_is_5g_band3(b)) \
 	|| (rtw_is_5g_band4(a) && rtw_is_5g_band4(b)))
 
-bool rtw_is_long_cac_range(u32 hi, u32 lo, u8 dfs_region);
-bool rtw_is_long_cac_ch(u8 ch, u8 bw, u8 offset, u8 dfs_region);
+bool rtw_is_long_cac_rangebu(u32 hi, u32 lo, u8 dfs_region);
+bool rtw_is_long_cac_chbu(u8 ch, u8 bw, u8 offset, u8 dfs_region);
 
 #endif /* _RTL8711_RF_H_ */

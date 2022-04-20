@@ -197,7 +197,7 @@ Chip specific
 -------------------------------------------------------------------------*/
 
 /* pic buffer descriptor */
-#if 1 /* according to the define in the rtw_xmit.h, rtw_recv.h */
+#if 1 /* according to the define in the rtw_xmitbu.h, rtw_recv.h */
 	#define RTL8814AE_SEG_NUM  TX_BUFFER_SEG_NUM /* 0:2 seg, 1: 4 seg, 2: 8 seg */
 	#define TX_DESC_NUM_8814A  TX_BD_NUM   /* 128 */
 	#define RX_DESC_NUM_8814A  PCI_MAX_RX_COUNT /* 128 */
@@ -303,10 +303,10 @@ void SetBeaconRelatedRegisters8814A(PADAPTER padapter);
 void ReadRFType8814A(PADAPTER padapter);
 void InitDefaultValue8814A(PADAPTER padapter);
 
-u8 SetHwReg8814A(PADAPTER padapter, u8 variable, u8 *pval);
-void GetHwReg8814A(PADAPTER padapter, u8 variable, u8 *pval);
-u8 SetHalDefVar8814A(PADAPTER padapter, HAL_DEF_VARIABLE variable, void *pval);
-u8 GetHalDefVar8814A(PADAPTER padapter, HAL_DEF_VARIABLE variable, void *pval);
+u8 SetHwRegbu8814A(PADAPTER padapter, u8 variable, u8 *pval);
+void GetHwRegbu8814A(PADAPTER padapter, u8 variable, u8 *pval);
+u8 SetHalDefVarbu8814A(PADAPTER padapter, HAL_DEF_VARIABLE variable, void *pval);
+u8 GetHalDefVarbu8814A(PADAPTER padapter, HAL_DEF_VARIABLE variable, void *pval);
 void rtl8814_set_hal_ops(struct hal_ops *pHalFunc);
 void init_hal_spec_8814a(_adapter *adapter);
 

@@ -97,25 +97,25 @@
 #define GET_EXT_CAPABILITY_ELE_OP_MODE_NOTIF(_pEleStart)				LE_BITS_TO_1BYTE((_pEleStart)+7, 6, 1)
 
 #define VHT_MAX_MPDU_LEN_MAX 3
-extern const u16 _vht_max_mpdu_len[];
-#define vht_max_mpdu_len(val) (((val) >= VHT_MAX_MPDU_LEN_MAX) ? _vht_max_mpdu_len[VHT_MAX_MPDU_LEN_MAX] : _vht_max_mpdu_len[(val)])
+extern const u16 _vht_max_mpdu_lenbu[];
+#define vht_max_mpdu_len(val) (((val) >= VHT_MAX_MPDU_LEN_MAX) ? _vht_max_mpdu_lenbu[VHT_MAX_MPDU_LEN_MAX] : _vht_max_mpdu_lenbu[(val)])
 
 #define VHT_SUP_CH_WIDTH_SET_MAX 3
-extern const u8 _vht_sup_ch_width_set_to_bw_cap[];
-#define vht_sup_ch_width_set_to_bw_cap(set) (((set) >= VHT_SUP_CH_WIDTH_SET_MAX) ? _vht_sup_ch_width_set_to_bw_cap[VHT_SUP_CH_WIDTH_SET_MAX] : _vht_sup_ch_width_set_to_bw_cap[(set)])
+extern const u8 _vht_sup_ch_width_set_to_bw_capbu[];
+#define vht_sup_ch_width_set_to_bw_cap(set) (((set) >= VHT_SUP_CH_WIDTH_SET_MAX) ? _vht_sup_ch_width_set_to_bw_capbu[VHT_SUP_CH_WIDTH_SET_MAX] : _vht_sup_ch_width_set_to_bw_capbu[(set)])
 #define VHT_MAX_AMPDU_LEN(f) ((1 << (13 + f)) - 1)
 
 #ifdef CONFIG_RTW_DEBUG
-extern const char *const _vht_sup_ch_width_set_str[];
-#define vht_sup_ch_width_set_str(set) (((set) >= VHT_SUP_CH_WIDTH_SET_MAX) ? _vht_sup_ch_width_set_str[VHT_SUP_CH_WIDTH_SET_MAX] : _vht_sup_ch_width_set_str[(set)])
+extern const char *const _vht_sup_ch_width_set_strbu[];
+#define vht_sup_ch_width_set_str(set) (((set) >= VHT_SUP_CH_WIDTH_SET_MAX) ? _vht_sup_ch_width_set_strbu[VHT_SUP_CH_WIDTH_SET_MAX] : _vht_sup_ch_width_set_strbu[(set)])
 
-void dump_vht_cap_ie(void *sel, const u8 *ie, u32 ie_len);
+void dump_vht_cap_iebu(void *sel, const u8 *ie, u32 ie_len);
 
 #define VHT_OP_CH_WIDTH_MAX 4
-extern const char *const _vht_op_ch_width_str[];
-#define vht_op_ch_width_str(ch_width) (((ch_width) >= VHT_OP_CH_WIDTH_MAX) ? _vht_op_ch_width_str[VHT_OP_CH_WIDTH_MAX] : _vht_op_ch_width_str[(ch_width)])
+extern const char *const _vht_op_ch_width_strbubu[];
+#define vht_op_ch_width_strbu(ch_width) (((ch_width) >= VHT_OP_CH_WIDTH_MAX) ? _vht_op_ch_width_strbubu[VHT_OP_CH_WIDTH_MAX] : _vht_op_ch_width_strbubu[(ch_width)])
 
-void dump_vht_op_ie(void *sel, const u8 *ie, u32 ie_len);
+void dump_vht_op_iebu(void *sel, const u8 *ie, u32 ie_len);
 #endif
 
 struct vht_bf_cap {
@@ -159,26 +159,26 @@ struct vht_priv_infra_ap {
 };
 #endif /* ROKU_PRIVATE */
 
-u8	rtw_get_vht_highest_rate(u8 *pvht_mcs_map);
-u16	rtw_vht_mcs_to_data_rate(u8 bw, u8 short_GI, u8 vht_mcs_rate);
-u64	rtw_vht_mcs_map_to_bitmap(u8 *mcs_map, u8 nss);
-void	rtw_vht_use_default_setting(_adapter *padapter);
-u32	rtw_build_vht_operation_ie(_adapter *padapter, u8 *pbuf, u8 channel);
-u32	rtw_build_vht_op_mode_notify_ie(_adapter *padapter, u8 *pbuf, u8 bw);
-u32	rtw_build_vht_cap_ie(_adapter *padapter, u8 *pbuf);
-void	update_sta_vht_info_apmode(_adapter *padapter, void *psta);
-void	update_hw_vht_param(_adapter *padapter);
-void	VHT_caps_handler(_adapter *padapter, PNDIS_802_11_VARIABLE_IEs pIE);
+u8	rtw_get_vht_highest_ratebu(u8 *pvht_mcs_map);
+u16	rtw_vht_mcs_to_data_ratebu(u8 bw, u8 short_GI, u8 vht_mcs_rate);
+u64	rtw_vht_mcs_map_to_bitmapbu(u8 *mcs_map, u8 nss);
+void	rtw_vht_use_default_settingbu(_adapter *padapter);
+u32	rtw_build_vht_operation_iebu(_adapter *padapter, u8 *pbuf, u8 channel);
+u32	rtw_build_vht_op_mode_notify_iebu(_adapter *padapter, u8 *pbuf, u8 bw);
+u32	rtw_build_vht_cap_iebu(_adapter *padapter, u8 *pbuf);
+void	update_sta_vht_info_apmodebu(_adapter *padapter, void *psta);
+void	update_hw_vht_parambu(_adapter *padapter);
+void	VHT_caps_handlerbubu(_adapter *padapter, PNDIS_802_11_VARIABLE_IEs pIE);
 #ifdef ROKU_PRIVATE
-void	VHT_caps_handler_infra_ap(_adapter *padapter, PNDIS_802_11_VARIABLE_IEs pIE);
+void	VHT_caps_handlerbubu_infra_ap(_adapter *padapter, PNDIS_802_11_VARIABLE_IEs pIE);
 #endif /* ROKU_PRIVATE */
-void	VHT_operation_handler(_adapter *padapter, PNDIS_802_11_VARIABLE_IEs pIE);
-void	rtw_process_vht_op_mode_notify(_adapter *padapter, u8 *pframe, void *sta);
-u32	rtw_restructure_vht_ie(_adapter *padapter, u8 *in_ie, u8 *out_ie, uint in_len, uint *pout_len);
-void	VHTOnAssocRsp(_adapter *padapter);
-u8	rtw_vht_mcsmap_to_nss(u8 *pvht_mcs_map);
-void rtw_vht_nss_to_mcsmap(u8 nss, u8 *target_mcs_map, u8 *cur_mcs_map);
-void rtw_vht_ies_attach(_adapter *padapter, WLAN_BSSID_EX *pcur_network);
-void rtw_vht_ies_detach(_adapter *padapter, WLAN_BSSID_EX *pcur_network);
-void rtw_check_for_vht20(_adapter *adapter, u8 *ies, int ies_len);
+void	VHT_operation_handlerbu(_adapter *padapter, PNDIS_802_11_VARIABLE_IEs pIE);
+void	rtw_process_vht_op_mode_notifybu(_adapter *padapter, u8 *pframe, void *sta);
+u32	rtw_restructure_vht_iebu(_adapter *padapter, u8 *in_ie, u8 *out_ie, uint in_len, uint *pout_len);
+void	VHTOnAssocRspbububu(_adapter *padapter);
+u8	rtw_vht_mcsmap_to_nssbu(u8 *pvht_mcs_map);
+void rtw_vht_nss_to_mcsmapbu(u8 nss, u8 *target_mcs_map, u8 *cur_mcs_map);
+void rtw_vht_ies_attachbu(_adapter *padapter, WLAN_BSSID_EX *pcur_network);
+void rtw_vht_ies_detachbu(_adapter *padapter, WLAN_BSSID_EX *pcur_network);
+void rtw_check_for_vht20bu(_adapter *adapter, u8 *ies, int ies_len);
 #endif /* _RTW_VHT_H_ */

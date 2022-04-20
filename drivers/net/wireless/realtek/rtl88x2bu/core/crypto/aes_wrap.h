@@ -25,10 +25,10 @@ int __must_check aes_unwrap(const u8 *kek, size_t kek_len, int n,
 int __must_check omac1_aes_vector(const u8 *key, size_t key_len,
 				  size_t num_elem, const u8 *addr[],
 				  const size_t *len, u8 *mac);
-int __must_check omac1_aes_128_vector(const u8 *key, size_t num_elem,
+int __must_check omac1_aes_128bu_vector(const u8 *key, size_t num_elem,
 				      const u8 *addr[], const size_t *len,
 				      u8 *mac);
-int __must_check omac1_aes_128(const u8 *key, const u8 *data, size_t data_len,
+int __must_check omac1_aes_128bu(const u8 *key, const u8 *data, size_t data_len,
 			       u8 *mac);
 int __must_check omac1_aes_256(const u8 *key, const u8 *data, size_t data_len,
 			       u8 *mac);

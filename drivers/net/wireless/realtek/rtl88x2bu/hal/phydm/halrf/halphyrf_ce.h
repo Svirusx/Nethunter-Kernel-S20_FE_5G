@@ -96,16 +96,16 @@ struct txpwrtrack_cfg {
 	func_set_xtal odm_txxtaltrack_set_xtal;
 };
 
-void configure_txpower_track(void *dm_void, struct txpwrtrack_cfg *config);
+void configure_txpower_trackbu(void *dm_void, struct txpwrtrack_cfg *config);
 
-void odm_clear_txpowertracking_state(void *dm_void);
+void odm_clear_txpowertracking_statebu(void *dm_void);
 
 #if (DM_ODM_SUPPORT_TYPE & ODM_AP)
-void odm_txpowertracking_callback_thermal_meter(void *dm_void);
+void odm_txpowertracking_callback_thermal_meterbu(void *dm_void);
 #elif (DM_ODM_SUPPORT_TYPE & ODM_CE)
-void odm_txpowertracking_callback_thermal_meter(void *dm);
+void odm_txpowertracking_callback_thermal_meterbu(void *dm);
 #else
-void odm_txpowertracking_callback_thermal_meter(void *adapter);
+void odm_txpowertracking_callback_thermal_meterbu(void *adapter);
 #endif
 
 #if (RTL8822C_SUPPORT == 1 || RTL8814B_SUPPORT == 1)
@@ -114,10 +114,10 @@ void odm_txpowertracking_new_callback_thermal_meter(void *dm_void);
 
 #define ODM_TARGET_CHNL_NUM_2G_5G 59
 
-void odm_reset_iqk_result(void *dm_void);
-u8 odm_get_right_chnl_place_for_iqk(u8 chnl);
+void odm_reset_iqk_resultbu(void *dm_void);
+u8 odm_get_right_chnl_place_for_iqkbu(u8 chnl);
 
-void phydm_rf_init(void *dm_void);
-void phydm_rf_watchdog(void *dm_void);
+void phydm_rf_initbu(void *dm_void);
+void phydm_rf_watchdogbu(void *dm_void);
 
 #endif /*__HALPHYRF_H__*/

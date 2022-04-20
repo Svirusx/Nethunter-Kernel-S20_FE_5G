@@ -541,8 +541,8 @@ struct rtw_netdev_priv_indicator {
 	void *priv;
 	u32 sizeof_priv;
 };
-struct net_device *rtw_alloc_etherdev_with_old_priv(int sizeof_priv, void *old_priv);
-extern struct net_device *rtw_alloc_etherdev(int sizeof_priv);
+struct net_device *rtw_alloc_etherdevbu_with_old_privbu(int sizeof_priv, void *old_priv);
+extern struct net_device *rtw_alloc_etherdevbu(int sizeof_priv);
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 24))
 #define rtw_get_same_net_ndev_by_name(ndev, name) dev_get_by_name(name)

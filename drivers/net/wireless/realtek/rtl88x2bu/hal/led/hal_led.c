@@ -17,7 +17,7 @@
 #include <hal_data.h>
 
 #ifdef CONFIG_RTW_LED
-void dump_led_config(void *sel, _adapter *adapter)
+void dump_led_configbu(void *sel, _adapter *adapter)
 {
 	struct dvobj_priv *dvobj = adapter_to_dvobj(adapter);
 	struct led_priv	*ledpriv = adapter_to_led(adapter);
@@ -32,7 +32,7 @@ void dump_led_config(void *sel, _adapter *adapter)
 #endif
 }
 
-void rtw_led_set_strategy(_adapter *adapter, u8 strategy)
+void rtw_led_set_strategybu(_adapter *adapter, u8 strategy)
 {
 	struct led_priv *ledpriv = adapter_to_led(adapter);
 	_adapter *pri_adapter = GET_PRIMARY_ADAPTER(adapter);
@@ -60,10 +60,10 @@ void rtw_led_set_strategy(_adapter *adapter, u8 strategy)
 	ledpriv->LedStrategy = strategy;
 
 #ifdef CONFIG_RTW_SW_LED
-	rtw_hal_sw_led_deinit(pri_adapter);
+	rtw_hal_sw_led_deinitbu(pri_adapter);
 #endif
 
-	rtw_led_control(pri_adapter, RTW_LED_OFF);
+	rtw_led_controlbu(pri_adapter, RTW_LED_OFF);
 }
 
 #ifdef CONFIG_RTW_SW_LED
@@ -158,7 +158,7 @@ void rtw_sw_led_ctl_mode_uc_trx_only(_adapter *adapter, LED_CTL_MODE ctl)
 }
 #endif /* CONFIG_RTW_SW_LED_TRX_DA_CLASSIFY */
 
-void rtw_led_control(_adapter *adapter, LED_CTL_MODE ctl)
+void rtw_led_controlbu(_adapter *adapter, LED_CTL_MODE ctl)
 {
 	struct led_priv	*ledpriv = adapter_to_led(adapter);
 
@@ -181,31 +181,31 @@ void rtw_led_control(_adapter *adapter, LED_CTL_MODE ctl)
 	}
 }
 
-void rtw_led_tx_control(_adapter *adapter, const u8 *da)
+void rtw_led_tx_controlbu(_adapter *adapter, const u8 *da)
 {
 #if CONFIG_RTW_SW_LED_TRX_DA_CLASSIFY
 	if (IS_MCAST(da))
-		rtw_led_control(adapter, LED_CTL_BMC_TX);
+		rtw_led_controlbu(adapter, LED_CTL_BMC_TX);
 	else
-		rtw_led_control(adapter, LED_CTL_UC_TX);
+		rtw_led_controlbu(adapter, LED_CTL_UC_TX);
 #else
-	rtw_led_control(adapter, LED_CTL_TX);
+	rtw_led_controlbu(adapter, LED_CTL_TX);
 #endif
 }
 
-void rtw_led_rx_control(_adapter *adapter, const u8 *da)
+void rtw_led_rx_controlbu(_adapter *adapter, const u8 *da)
 {
 #if CONFIG_RTW_SW_LED_TRX_DA_CLASSIFY
 	if (IS_MCAST(da))
-		rtw_led_control(adapter, LED_CTL_BMC_RX);
+		rtw_led_controlbu(adapter, LED_CTL_BMC_RX);
 	else
-		rtw_led_control(adapter, LED_CTL_UC_RX);
+		rtw_led_controlbu(adapter, LED_CTL_UC_RX);
 #else
-	rtw_led_control(adapter, LED_CTL_RX);
+	rtw_led_controlbu(adapter, LED_CTL_RX);
 #endif
 }
 
-void rtw_led_set_iface_en(_adapter *adapter, u8 en)
+void rtw_led_set_iface_enbu(_adapter *adapter, u8 en)
 {
 	struct led_priv *ledpriv = adapter_to_led(adapter);
 
@@ -215,14 +215,14 @@ void rtw_led_set_iface_en(_adapter *adapter, u8 en)
 		ledpriv->iface_en_mask &= ~BIT(adapter->iface_id);
 }
 
-void rtw_led_set_iface_en_mask(_adapter *adapter, u8 mask)
+void rtw_led_set_iface_enbu_mask(_adapter *adapter, u8 mask)
 {
 	struct led_priv *ledpriv = adapter_to_led(adapter);
 
 	ledpriv->iface_en_mask = mask;
 }
 
-void rtw_led_set_ctl_en_mask(_adapter *adapter, u32 ctl_mask)
+void rtw_led_set_ctl_en_maskbu(_adapter *adapter, u32 ctl_mask)
 {
 	struct led_priv *ledpriv = adapter_to_led(adapter);
 	
@@ -236,14 +236,14 @@ void rtw_led_set_ctl_en_mask(_adapter *adapter, u32 ctl_mask)
 	ledpriv->ctl_en_mask[adapter->iface_id] = ctl_mask;
 }
 
-void rtw_led_set_ctl_en_mask_primary(_adapter *adapter)
+void rtw_led_set_ctl_en_maskbu_primary(_adapter *adapter)
 {
-	rtw_led_set_ctl_en_mask(adapter, 0xFFFFFFFF);
+	rtw_led_set_ctl_en_maskbu(adapter, 0xFFFFFFFF);
 }
 
-void rtw_led_set_ctl_en_mask_virtual(_adapter *adapter)
+void rtw_led_set_ctl_en_maskbu_virtual(_adapter *adapter)
 {
-	rtw_led_set_ctl_en_mask(adapter
+	rtw_led_set_ctl_en_maskbu(adapter
 		, BIT(LED_CTL_POWER_ON) | BIT(LED_CTL_POWER_OFF)
 		| BIT(LED_CTL_TX) | BIT(LED_CTL_RX)
 	);

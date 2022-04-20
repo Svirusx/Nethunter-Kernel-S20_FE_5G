@@ -1852,7 +1852,7 @@ struct btc_coexist {
 	BFP_BTC_GET_PHYDM_VERSION		btc_get_bt_phydm_version;
 	BFP_BTC_SET_TIMER				btc_set_timer;
 	BFP_BTC_SET_ATOMIC			btc_set_atomic;
-	BTC_PHYDM_MODIFY_RA_PCR_THRESHLOD	btc_phydm_modify_RA_PCR_threshold;
+	BTC_PHYDM_MODIFY_RA_PCR_THRESHLOD	btc_phydm_modify_RA_PCR_thresholdbu;
 	BTC_PHYDM_CMNINFOQUERY				btc_phydm_query_PHY_counter;
 	BTC_REDUCE_WL_TX_POWER				btc_reduce_wl_tx_power;
 	BTC_PHYDM_MODIFY_ANTDIV_HWSW		btc_phydm_modify_antdiv_hwsw;

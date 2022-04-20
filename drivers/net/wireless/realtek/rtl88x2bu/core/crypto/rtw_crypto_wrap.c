@@ -6,7 +6,7 @@
 
 int os_memcmp(const void *s1, const void *s2, size_t n)
 {
-	return _rtw_memcmp2(s1, s2, n);
+	return _rtw_memcmpbu2(s1, s2, n);
 }
 
 int os_memcmp_const(const void *a, const void *b, size_t len)
@@ -27,7 +27,7 @@ void* os_memdup(const void *src, u32 sz)
 	void *r = rtw_malloc(sz);
 
 	if (r && src)
-		_rtw_memcpy(r, src, sz);
+		_rtw_memcpybu(r, src, sz);
 	return r;
 }
 
@@ -42,7 +42,7 @@ size_t os_strlen(const char *s)
 
 void forced_memzero(void *ptr, size_t len)
 {
-	_rtw_memset(ptr, 0, len);
+	_rtw_memsetbu(ptr, 0, len);
 }
 
 void bin_clear_free(void *bin, size_t len)

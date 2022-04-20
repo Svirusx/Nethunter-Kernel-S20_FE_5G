@@ -309,9 +309,9 @@ void rtl8822bu_set_hal_ops(PADAPTER padapter)
 	ops->read_adapter_info = read_adapter_info;
 
 	ops->set_hw_reg_handler = sethwreg;
-	ops->GetHwRegHandler = gethwreg;
+	ops->GetHwRegbuHandler = gethwreg;
 	ops->get_hal_def_var_handler = gethaldefvar;
-	ops->SetHalDefVarHandler = sethaldefvar;
+	ops->SetHalDefVarbuHandler = sethaldefvar;
 
 
 	ops->hal_xmit = rtl8822bu_hal_xmit;
