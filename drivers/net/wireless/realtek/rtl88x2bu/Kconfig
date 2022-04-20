@@ -1,0 +1,7 @@
+config RTL8822BU
+	tristate "Realtek 88X2B USB WiFi"
+	depends on USB
+	select WIRELESS_EXT
+	help
+	  Help message of RTL88X2BU
+
