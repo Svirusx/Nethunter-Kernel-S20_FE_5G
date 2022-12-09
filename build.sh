@@ -9,11 +9,11 @@ DEFCONFIG_NAME=wirus_defconfig
 CHIPSET_NAME=kona
 VARIANT=r8q
 ARCH=arm64
-VERSION=Nethunter_WirusMOD_${VARIANT}_v1.2
+VERSION=Nethunter_WirusMOD_${VARIANT}_v4.0_Test
 
 
-BUILD_CROSS_COMPILE=$PARENT_DIR/toolchains/aarch64-linux-android-4.9/bin/aarch64-linux-android-
-KERNEL_LLVM_BIN=$PARENT_DIR/toolchains/llvm-arm-toolchain-ship_8.0.6/bin/clang
+BUILD_CROSS_COMPILE=$DIR/toolchain/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/bin/aarch64-linux-android-
+KERNEL_LLVM_BIN=$DIR/toolchain/llvm-arm-toolchain-ship/10.0/bin/clang
 CLANG_TRIPLE=aarch64-linux-gnu-
 KERNEL_MAKE_ENV="DTC_EXT=$(pwd)/tools/dtc CONFIG_BUILD_ARM64_DT_OVERLAY=y LOCALVERSION=-${VERSION}"
 
@@ -56,6 +56,7 @@ fi
 
 find $PARENT_DIR/out/ -name '*.ko'  -not -path "$PARENT_DIR/build/*" -exec cp --parents -f '{}' $PARENT_DIR/build/$VARIANT/modules  \;
 mv -f $PARENT_DIR/build/$VARIANT/modules/home/svirusx/out/* $PARENT_DIR/build/$VARIANT/modules
+
 
 
 
