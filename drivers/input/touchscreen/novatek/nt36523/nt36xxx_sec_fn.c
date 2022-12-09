@@ -41,8 +41,8 @@
 #define SPAY_SWIPE_LEAVE	0x78
 #define DOUBLE_CLICK_ENTER	0x79
 #define DOUBLE_CLICK_LEAVE	0x7A
-#define SENSITIVITY_ENTER	0x7B
-#define SENSITIVITY_LEAVE	0x7C
+#define SENSITIVITY_TEST_ENTER	0x7B
+#define SENSITIVITY_TEST_LEAVE	0x7C
 #define EXTENDED_CUSTOMIZED_CMD	0x7F
 
 typedef enum {
@@ -52,6 +52,7 @@ typedef enum {
 	SET_PALM_MODE = 4,
 	SET_TOUCH_DEBOUNCE = 5,
 	SET_GAME_MODE = 6,
+	SET_HIGH_SENSITIVITY_MODE = 7,
 } EXTENDED_CUSTOMIZED_CMD_TYPE;
 
 typedef enum {
@@ -69,6 +70,11 @@ typedef enum {
 	GAME_MODE_DISABLE = 0,
 	GAME_MODE_ENABLE = 1,
 } GAME_MODE;
+
+typedef enum {
+	HIGH_SENSITIVITY_DISABLE = 0,
+	HIGH_SENSITIVITY_ENABLE = 1,
+} HIGH_SENSITIVITY_MODE;
 
 #define I2C_TANSFER_LENGTH	64
 
@@ -102,8 +108,10 @@ typedef enum {
 	HOLE_PIXEL,
 	SPAY_SWIPE,
 	DOUBLE_CLICK,
-	SENSITIVITY,
+	SENSITIVITY_TEST,
 	BLOCK_AREA,
+	NOISE,
+	HIGH_SENSITIVITY,
 	FUNCT_MAX,
 } FUNCT_BIT;
 
@@ -114,10 +122,11 @@ typedef enum {
 	HOLE_PIXEL_MASK		= 0x0100,
 	SPAY_SWIPE_MASK		= 0x0200,
 	DOUBLE_CLICK_MASK	= 0x0400,
-	SENSITIVITY_MASK	= 0x0800,
+	SENSITIVITY_TEST_MASK	= 0x0800,
 	BLOCK_AREA_MASK		= 0x1000,
 	NOISE_MASK		= 0x2000,
-	FUNCT_ALL_MASK		= 0x3FE2,
+	HIGH_SENSITIVITY_MASK		= 0x4000,
+	FUNCT_ALL_MASK		= 0x7FE2,
 } FUNCT_MASK;
 
 enum {
@@ -142,6 +151,9 @@ int32_t nvt_ts_set_page(struct nvt_ts_data *ts, uint16_t i2c_addr, uint32_t addr
 int nvt_ts_nt36523_ics_i2c_read(struct nvt_ts_data *ts, u32 address, u8 *data, u16 len);
 int nvt_ts_nt36523_ics_i2c_write(struct nvt_ts_data *ts, u32 address, u8 *data, u16 len);
 
+static void nvt_ts_set_grip_exception_zone(struct nvt_ts_data *ts, int *cmd_param);
+static void nvt_ts_set_grip_portrait_mode(struct nvt_ts_data *ts, int *cmd_param);
+static void nvt_ts_set_grip_landscape_mode(struct nvt_ts_data *ts, int *cmd_param);
 
 static int nvt_ts_set_touchable_area(struct nvt_ts_data *ts)
 {
@@ -1362,10 +1374,54 @@ static int nvt_ts_mode_switch(struct nvt_ts_data *ts, u8 cmd, bool stored)
 	return 0;
 }
 
+static int nvt_ts_mode_switch_extended(struct nvt_ts_data *ts, u8 *cmd, u8 len, bool stored)
+{
+	int i, retry = 5;
+	u8 buf[4] = { 0 };
+
+//	input_info(true, &ts->client->dev, "0x%02X - 0x%02X - 0x%02X, %d\n", cmd[0], cmd[1], cmd[2], len);
+
+	//---set xdata index to EVENT BUF ADDR---
+	buf[0] = 0xFF;
+	buf[1] = ((ts->mmap->EVENT_BUF_ADDR | cmd[0]) >> 16) & 0xFF;
+	buf[2] = ((ts->mmap->EVENT_BUF_ADDR | cmd[0]) >> 8) & 0xFF;
+	nvt_ts_i2c_write(ts, I2C_FW_Address, buf, 3);
+
+	for (i = 0; i < retry; i++) {
+		//---set cmd---
+		nvt_ts_i2c_write(ts, I2C_FW_Address, cmd, len);
+
+		usleep_range(15000, 16000);
+
+		//---read cmd status---
+		buf[0] = cmd[0];
+		nvt_ts_i2c_read(ts, I2C_FW_Address, buf, 2);
+
+		if (buf[1] == 0x00)
+			break;
+		else
+			input_err(true, &ts->client->dev, "%s, retry:%d, buf[1]:0x%x\n", __func__, i, buf[1]);
+	}
+
+	if (unlikely(i == retry)) {
+		input_err(true, &ts->client->dev, "failed to switch mode - 0x%02X 0x%02X\n", cmd[0], cmd[1]);
+		return -EIO;
+	}
+
+	if (stored) {
+		msleep(20);
+		ts->sec_function = nvt_ts_mode_read(ts);
+	}
+
+	input_err(true, &ts->client->dev, "%s: 0x%02X 0x%02X\n", __func__, cmd[0], cmd[1]);
+	return 0;
+}
+
 int nvt_ts_mode_restore(struct nvt_ts_data *ts)
 {
 	u16 func_need_switch;
 	u8 cmd;
+	u8 cmd_list[4] = {0};
 	int i;
 	int ret = 0;
 
@@ -1376,12 +1432,26 @@ int nvt_ts_mode_restore(struct nvt_ts_data *ts)
 
 	for (i = GLOVE; i < FUNCT_MAX; i++) {
 		if ((func_need_switch >> i) & 0x01) {
+			cmd = 0;
 			switch(i) {
 			case GLOVE:
 				if (ts->sec_function & GLOVE_MASK)
 					cmd = GLOVE_ENTER;
 				else
 					cmd = GLOVE_LEAVE;
+				break;
+			case HIGH_SENSITIVITY:
+				if (ts->sec_function & HIGH_SENSITIVITY_MASK) {
+					cmd_list[0] = EVENT_MAP_HOST_CMD;
+					cmd_list[1] = EXTENDED_CUSTOMIZED_CMD;
+					cmd_list[2] = SET_HIGH_SENSITIVITY_MODE;
+					cmd_list[3] = HIGH_SENSITIVITY_ENABLE;
+				} else {
+					cmd_list[0] = EVENT_MAP_HOST_CMD;
+					cmd_list[1] = EXTENDED_CUSTOMIZED_CMD;
+					cmd_list[2] = SET_HIGH_SENSITIVITY_MODE;
+					cmd_list[3] = HIGH_SENSITIVITY_DISABLE;
+				}
 				break;
 /*
 			case EDGE_REJECT_L:
@@ -1422,11 +1492,11 @@ int nvt_ts_mode_restore(struct nvt_ts_data *ts)
 				else
 					cmd = DOUBLE_CLICK_LEAVE;
 				break;
-			case SENSITIVITY:
-				if (ts->sec_function & SENSITIVITY_MASK)
-					cmd = SENSITIVITY_ENTER;
+			case SENSITIVITY_TEST:
+				if (ts->sec_function & SENSITIVITY_TEST_MASK)
+					cmd = SENSITIVITY_TEST_ENTER;
 				else
-					cmd = SENSITIVITY_LEAVE;
+					cmd = SENSITIVITY_TEST_LEAVE;
 				break;
 */
 			case BLOCK_AREA:
@@ -1445,12 +1515,38 @@ int nvt_ts_mode_restore(struct nvt_ts_data *ts)
 					cmd = BLOCK_AREA_LEAVE;
 			}
 
-			ret = nvt_ts_mode_switch(ts, cmd, false);
-			if (ret)
-				input_info(true, &ts->client->dev, "%s: failed to restore %X\n", __func__, cmd);
+			if (cmd) {
+				ret = nvt_ts_mode_switch(ts, cmd, false);
+				if (ret)
+					input_info(true, &ts->client->dev, "%s: failed to restore %X\n", __func__, cmd);
+			} else {
+				ret = nvt_ts_mode_switch_extended(ts, cmd_list, 4, false);
+				if (ret)
+					input_info(true, &ts->client->dev, "%s: failed to restore %X %X %X\n", __func__, cmd_list[1], cmd_list[2], cmd_list[3]);
+			}
 		}
 	}
 	input_info(true, &ts->client->dev, "%s: 0x%X\n", __func__, func_need_switch);
+
+	if (ts->setgrip_restore_data[0] == 1) {
+		input_info(true, &ts->client->dev, "%s restore set grip portrait_mode, %d, %d, %d, %d\n",
+				__func__, ts->setgrip_restore_data[1], ts->setgrip_restore_data[2],
+				ts->setgrip_restore_data[3], ts->setgrip_restore_data[4]);
+		nvt_ts_set_grip_portrait_mode(ts, ts->setgrip_restore_data);
+	} else if (ts->setgrip_restore_data[0] == 2) {
+		input_info(true, &ts->client->dev, "%s restore set grip landscape_mode, %d, %d, %d, %d\n",
+				__func__, ts->setgrip_restore_data[1], ts->setgrip_restore_data[2],
+				ts->setgrip_restore_data[3], ts->setgrip_restore_data[4]);
+		nvt_ts_set_grip_landscape_mode(ts, ts->setgrip_restore_data);
+	}
+
+	if ((ts->grip_edgehandler_restore_data[0] == 0) && (ts->grip_edgehandler_restore_data[1] != 0) && (ts->grip_edgehandler_restore_data[1] < 3)) {
+		input_info(true, &ts->client->dev, "%s restore set grip exeiption zone, %d, %d, %d\n",
+				__func__, ts->grip_edgehandler_restore_data[1], ts->grip_edgehandler_restore_data[2],
+				ts->grip_edgehandler_restore_data[3]);
+		nvt_ts_set_grip_exception_zone(ts, ts->grip_edgehandler_restore_data);
+	}
+
 out:
 	return ret;
 }
@@ -1735,19 +1831,83 @@ out:
 	input_info(true, &ts->client->dev, "%s: %s\n", __func__, buff);
 }
 
-static void glove_mode(void *device_data)
+/*
+ *	cmd_param
+ *		[0], 0 disable high sensitivity mode
+ *		     1 enable high sensitivity mode
+ */
+static void high_sensitivity_mode(struct sec_cmd_data *sec)
 {
-	struct sec_cmd_data *sec = (struct sec_cmd_data *)device_data;
 	struct nvt_ts_data *ts = container_of(sec, struct nvt_ts_data, sec);
 	char buff[SEC_CMD_STR_LEN] = { 0 };
-	int ret;
-	u8 mode;
+	int reti;
+	u8 buf[4];
 
 	sec_cmd_set_default_result(sec);
 
-	/* temp block until tuning */
-	input_err(true, &ts->client->dev, "%s: temp block until tuning\n", __func__);
-	goto out;
+	if (ts->power_status == POWER_OFF_STATUS) {
+		input_err(true, &ts->client->dev, "%s: POWER_STATUS : OFF!\n", __func__);
+		goto out;
+	}
+
+	if (sec->cmd_param[0] < HIGH_SENSITIVITY_DISABLE || sec->cmd_param[0] > HIGH_SENSITIVITY_ENABLE) {
+		input_err(true, &ts->client->dev, "%s: invalid parameter %d\n",
+			__func__, sec->cmd_param[0]);
+		goto out;
+	}
+
+	input_info(true, &ts->client->dev, "%s: %s touch high sensitivity mode, cmd_param=%d\n",
+		__func__, sec->cmd_param[0] ? "enable" : "disable", sec->cmd_param[0]);
+
+	if (mutex_lock_interruptible(&ts->lock)) {
+		input_err(true, &ts->client->dev, "%s: another task is running\n",
+			__func__);
+		goto out;
+	}
+
+	buf[0] = EVENT_MAP_HOST_CMD;
+	buf[1] = EXTENDED_CUSTOMIZED_CMD;
+	buf[2] = SET_HIGH_SENSITIVITY_MODE;
+	buf[3] = (u8)sec->cmd_param[0];
+	reti = nvt_ts_mode_switch_extended(ts, buf, 4, false);
+	if (reti) {
+		input_err(true, &ts->client->dev, "%s failed to switch high sensitivity mode - 0x%02X\n", __func__, buf[3]);
+		mutex_unlock(&ts->lock);
+		goto out;
+	}
+
+	mutex_unlock(&ts->lock);
+
+	snprintf(buff, sizeof(buff), "%s", "OK");
+	sec->cmd_state =  SEC_CMD_STATUS_OK;
+	sec_cmd_set_cmd_result(sec, buff, strnlen(buff, sizeof(buff)));
+	sec_cmd_set_cmd_exit(sec);
+
+	input_info(true, &ts->client->dev, "%s: %s\n", __func__, buff);
+
+	return;
+out:
+	snprintf(buff, sizeof(buff), "%s", "NG");
+	sec->cmd_state = SEC_CMD_STATUS_FAIL;
+	sec_cmd_set_cmd_result(sec, buff, strnlen(buff, sizeof(buff)));
+	sec_cmd_set_cmd_exit(sec);
+
+	input_info(true, &ts->client->dev, "%s: %s\n", __func__, buff);
+}
+
+/*
+ *	cmd_param
+ *		[0], 0 disable glove mode
+ *		     1 enable glove mode
+ */
+static void nvt_ts_glove_mode(struct sec_cmd_data *sec)
+{
+	struct nvt_ts_data *ts = container_of(sec, struct nvt_ts_data, sec);
+	char buff[SEC_CMD_STR_LEN] = { 0 };
+	int ret = 0;
+	u8 mode;
+
+	sec_cmd_set_default_result(sec);
 
 	if (ts->power_status == POWER_OFF_STATUS) {
 		input_err(true, &ts->client->dev, "%s: POWER_STATUS : OFF!\n", __func__);
@@ -1793,6 +1953,18 @@ out:
 	input_info(true, &ts->client->dev, "%s: %s\n", __func__, buff);
 }
 
+static void glove_mode(void *device_data)
+{
+	struct sec_cmd_data *sec = (struct sec_cmd_data *)device_data;
+	struct nvt_ts_data *ts = container_of(sec, struct nvt_ts_data, sec);
+
+	if (ts->platdata->enable_glove_mode) {
+		nvt_ts_glove_mode(sec);
+	} else {
+		high_sensitivity_mode(sec);
+	}
+}
+
 static void set_note_mode(void *device_data)
 {
 	struct sec_cmd_data *sec = (struct sec_cmd_data *)device_data;
@@ -1832,7 +2004,7 @@ static void set_note_mode(void *device_data)
 	buf[1] = EXTENDED_CUSTOMIZED_CMD;
 	buf[2] = SET_PALM_MODE;
 	buf[3] = mode;
-	ret = nvt_ts_i2c_write(ts, I2C_FW_Address, buf, 4);
+	ret = nvt_ts_mode_switch_extended(ts, buf, 4, false);
 	if (ret < 0) {
 		mutex_unlock(&ts->lock);
 		goto out;
@@ -1894,7 +2066,7 @@ static void set_sip_mode(void *device_data)
 	buf[1] = EXTENDED_CUSTOMIZED_CMD;
 	buf[2] = SET_TOUCH_DEBOUNCE;
 	buf[3] = mode;
-	ret = nvt_ts_i2c_write(ts, I2C_FW_Address, buf, 4);
+	ret = nvt_ts_mode_switch_extended(ts, buf, 4, false);
 	if (ret < 0) {
 		mutex_unlock(&ts->lock);
 		goto out;
@@ -1961,7 +2133,7 @@ static void set_game_mode(void *device_data)
 	buf[1] = EXTENDED_CUSTOMIZED_CMD;
 	buf[2] = SET_GAME_MODE;
 	buf[3] = mode;
-	ret = nvt_ts_i2c_write(ts, I2C_FW_Address, buf, 4);
+	ret = nvt_ts_mode_switch_extended(ts, buf, 4, false);
 	if (ret < 0) {
 		mutex_unlock(&ts->lock);
 		goto out;
@@ -2253,23 +2425,22 @@ out_for_touchable:
  *
  *		[3], lower Y coordinate 
  */
-static void nvt_ts_set_grip_exception_zone(struct sec_cmd_data *sec)
+static void nvt_ts_set_grip_exception_zone(struct nvt_ts_data *ts, int *cmd_param)
 {
-	struct nvt_ts_data *ts = container_of(sec, struct nvt_ts_data, sec);
 	u8 buf[8];
 
-	switch (sec->cmd_param[1]) {
+	switch (cmd_param[1]) {
 		case 0:	//disable
 			input_info(true, &ts->client->dev, "%s: disable\n", __func__);
 			buf[0] = EVENT_MAP_HOST_CMD;
 			buf[1] = EXTENDED_CUSTOMIZED_CMD;
 			buf[2] = SET_GRIP_EXECPTION_ZONE;
-			buf[3] = (u8)sec->cmd_param[1];
+			buf[3] = (u8)cmd_param[1];
 			buf[4] = 0;
 			buf[5] = 0;
 			buf[6] = 0;
 			buf[7] = 0;
-			nvt_ts_i2c_write(ts, I2C_FW_Address, buf, 8);
+			nvt_ts_mode_switch_extended(ts, buf, 8, false);
 			goto out;
 		case 1:	//enable left
 			input_info(true, &ts->client->dev, "%s: enable left side\n", __func__);
@@ -2279,7 +2450,7 @@ static void nvt_ts_set_grip_exception_zone(struct sec_cmd_data *sec)
 			break;
 		default:
 			input_err(true, &ts->client->dev, "%s: not support parameter 0x%02X\n",
-					__func__, sec->cmd_param[1]);
+					__func__, cmd_param[1]);
 			goto err;
 	}
 
@@ -2287,12 +2458,12 @@ static void nvt_ts_set_grip_exception_zone(struct sec_cmd_data *sec)
 	buf[0] = EVENT_MAP_HOST_CMD;
 	buf[1] = EXTENDED_CUSTOMIZED_CMD;
 	buf[2] = SET_GRIP_EXECPTION_ZONE;
-	buf[3] = (u8)sec->cmd_param[1];
-	buf[4] = (u8)(sec->cmd_param[2] & 0xFF);
-	buf[5] = (u8)((sec->cmd_param[2] >> 8) & 0xFF);
-	buf[6] = (u8)(sec->cmd_param[3] & 0xFF);
-	buf[7] = (u8)((sec->cmd_param[3] >> 8) & 0xFF);
-	nvt_ts_i2c_write(ts, I2C_FW_Address, buf, 8);
+	buf[3] = (u8)cmd_param[1];
+	buf[4] = (u8)(cmd_param[2] & 0xFF);
+	buf[5] = (u8)((cmd_param[2] >> 8) & 0xFF);
+	buf[6] = (u8)(cmd_param[3] & 0xFF);
+	buf[7] = (u8)((cmd_param[3] >> 8) & 0xFF);
+	nvt_ts_mode_switch_extended(ts, buf, 8, false);
 
 out:
 	msleep(20);
@@ -2310,9 +2481,8 @@ err:
  *
  *		[4], reject zone boundary of Y (divide upper and lower)
  */
-static void nvt_ts_set_grip_portrait_mode(struct sec_cmd_data *sec)
+static void nvt_ts_set_grip_portrait_mode(struct nvt_ts_data *ts, int *cmd_param)
 {
-	struct nvt_ts_data *ts = container_of(sec, struct nvt_ts_data, sec);
 	u8 buf[8];
 
 	input_info(true, &ts->client->dev, "%s: set portrait mode parameters\n", __func__);
@@ -2320,12 +2490,12 @@ static void nvt_ts_set_grip_portrait_mode(struct sec_cmd_data *sec)
 	buf[0] = EVENT_MAP_HOST_CMD;
 	buf[1] = EXTENDED_CUSTOMIZED_CMD;
 	buf[2] = SET_GRIP_PORTRAIT_MODE;
-	buf[3] = (u8)sec->cmd_param[1];
-	buf[4] = (u8)sec->cmd_param[2];
-	buf[5] = (u8)sec->cmd_param[3];
-	buf[6] = (u8)(sec->cmd_param[4] & 0xFF);
-	buf[7] = (u8)((sec->cmd_param[4] >> 8) & 0xFF);
-	nvt_ts_i2c_write(ts, I2C_FW_Address, buf, 8);
+	buf[3] = (u8)cmd_param[1];
+	buf[4] = (u8)cmd_param[2];
+	buf[5] = (u8)cmd_param[3];
+	buf[6] = (u8)(cmd_param[4] & 0xFF);
+	buf[7] = (u8)((cmd_param[4] >> 8) & 0xFF);
+	nvt_ts_mode_switch_extended(ts, buf, 8, false);
 
 	msleep(20);
 }
@@ -2347,36 +2517,35 @@ static void nvt_ts_set_grip_portrait_mode(struct sec_cmd_data *sec)
  *
  *		[7], grip zone (bottom short side)
  */
-static void nvt_ts_set_grip_landscape_mode(struct sec_cmd_data *sec)
+static void nvt_ts_set_grip_landscape_mode(struct nvt_ts_data *ts, int *cmd_param)
 {
-	struct nvt_ts_data *ts = container_of(sec, struct nvt_ts_data, sec);
 	u8 buf[12];
 
-	switch (sec->cmd_param[1]) {
+	switch (cmd_param[1]) {
 		case 0: //use previous portrait setting
 			input_info(true, &ts->client->dev, "%s: use previous portrait settings\n", __func__);
 			buf[0] = EVENT_MAP_HOST_CMD;
 			buf[1] = EXTENDED_CUSTOMIZED_CMD;
 			buf[2] = SET_GRIP_LANDSCAPE_MODE;
-			buf[3] = (u8)sec->cmd_param[1];
-			nvt_ts_i2c_write(ts, I2C_FW_Address, buf, 4);
+			buf[3] = (u8)cmd_param[1];
+			nvt_ts_mode_switch_extended(ts, buf, 4, false);
 			goto out;
 		case 1: //enable landscape mode
 			input_info(true, &ts->client->dev, "%s: set landscape mode parameters\n", __func__);
 			buf[0] = EVENT_MAP_HOST_CMD;
 			buf[1] = EXTENDED_CUSTOMIZED_CMD;
 			buf[2] = SET_GRIP_LANDSCAPE_MODE;
-			buf[3] = (u8)sec->cmd_param[1];
-			buf[4] = (u8)sec->cmd_param[2];
-			buf[5] = (u8)sec->cmd_param[3];
-			buf[6] = (u8)sec->cmd_param[4];
-			buf[7] = (u8)sec->cmd_param[5];
-			buf[8] = (u8)sec->cmd_param[6];
-			buf[9] = (u8)sec->cmd_param[7];
-			nvt_ts_i2c_write(ts, I2C_FW_Address, buf, 10);
+			buf[3] = (u8)cmd_param[1];
+			buf[4] = (u8)cmd_param[2];
+			buf[5] = (u8)cmd_param[3];
+			buf[6] = (u8)cmd_param[4];
+			buf[7] = (u8)cmd_param[5];
+			buf[8] = (u8)cmd_param[6];
+			buf[9] = (u8)cmd_param[7];
+			nvt_ts_mode_switch_extended(ts, buf, 10, false);
 			goto out;
 		default:
-			input_err(true, &ts->client->dev, "%s: not support parameter 0x%02X\n", __func__, sec->cmd_param[1]);
+			input_err(true, &ts->client->dev, "%s: not support parameter 0x%02X\n", __func__, cmd_param[1]);
 			goto err;
 	}
 
@@ -2400,6 +2569,15 @@ static void set_grip_data(void *device_data)
 
 	sec_cmd_set_default_result(sec);
 
+	if (sec->cmd_param[0] == 0) {
+		memcpy(ts->grip_edgehandler_restore_data, sec->cmd_param, sizeof(int) * SEC_CMD_PARAM_NUM);
+	} else if ((sec->cmd_param[0] > 0) && (sec->cmd_param[0] < 3)) {
+		memcpy(ts->setgrip_restore_data, sec->cmd_param, sizeof(int) * SEC_CMD_PARAM_NUM);
+	} else {
+		input_err(true, &ts->client->dev, "%s: cmd0 is abnormal, %d\n",
+					__func__, sec->cmd_param[0]);
+	}
+
 	if (ts->power_status == POWER_OFF_STATUS) {
 		input_err(true, &ts->client->dev, "%s: POWER_STATUS : OFF!\n", __func__);
 		goto out;
@@ -2418,13 +2596,13 @@ static void set_grip_data(void *device_data)
 
 	switch (sec->cmd_param[0]) {
 		case 0:
-			nvt_ts_set_grip_exception_zone(sec);
+			nvt_ts_set_grip_exception_zone(ts, sec->cmd_param);
 			break;
 		case 1:
-			nvt_ts_set_grip_portrait_mode(sec);
+			nvt_ts_set_grip_portrait_mode(ts, sec->cmd_param);
 			break;
 		case 2:
-			nvt_ts_set_grip_landscape_mode(sec);
+			nvt_ts_set_grip_landscape_mode(ts, sec->cmd_param);
 			break;
 		default:
 			input_err(true, &ts->client->dev, "%s: not support mode 0x%02X\n", __func__, sec->cmd_param[0]);
@@ -3541,12 +3719,13 @@ static void clear_cover_mode(void *device_data)
 	/* disable tsp scan when cover is closed (for Tablet) */
 	if (ts->platdata->scanoff_cover_close) {
 		if (ts->flip_enable) {
-			input_info(true, &ts->client->dev, "%s: enter deep standby mode\n", __func__);
-			wbuf[0] = EVENT_MAP_HOST_CMD;
-			wbuf[1] = NVT_CMD_DEEP_SLEEP_MODE;
-			ret = nvt_ts_i2c_write(ts, I2C_FW_Address, wbuf, 2);
-
-			nvt_ts_release_all_finger(ts);
+			input_info(true, &ts->client->dev, "%s: keep record for cover on, and enter deep standby mode when screen off\n", __func__);
+//			input_info(true, &ts->client->dev, "%s: enter deep standby mode\n", __func__);
+//			wbuf[0] = EVENT_MAP_HOST_CMD;
+//			wbuf[1] = NVT_CMD_DEEP_SLEEP_MODE;
+//			ret = nvt_ts_i2c_write(ts, I2C_FW_Address, wbuf, 2);
+//
+//			nvt_ts_release_all_finger(ts);
 		} else {
 			input_info(true, &ts->client->dev, "%s: reset to normal mode\n", __func__);
 			nvt_ts_sw_reset_idle(ts);
@@ -3807,7 +3986,7 @@ static ssize_t clear_all_touch_count_store(struct device *dev,
 	return count;
 }
 
-static ssize_t sensitivity_mode_show(struct device *dev, struct device_attribute *attr,
+static ssize_t sensitivity_test_show(struct device *dev, struct device_attribute *attr,
 					char *buf)
 {
 	struct sec_cmd_data *sec = dev_get_drvdata(dev);
@@ -3831,7 +4010,7 @@ static ssize_t sensitivity_mode_show(struct device *dev, struct device_attribute
 		diff[0], diff[1], diff[2], diff[3], diff[4], diff[5], diff[6], diff[7], diff[8]);
 }
 
-static ssize_t sensitivity_mode_store(struct device *dev, struct device_attribute *attr,
+static ssize_t sensitivity_test_store(struct device *dev, struct device_attribute *attr,
 					const char *buf, size_t count)
 {
 	struct sec_cmd_data *sec = dev_get_drvdata(dev);
@@ -3859,7 +4038,7 @@ static ssize_t sensitivity_mode_store(struct device *dev, struct device_attribut
 	input_info(true, &ts->client->dev, "%s: %s\n", __func__,
 			val ? "enable" : "disable");
 
-	mode = val ? SENSITIVITY_ENTER: SENSITIVITY_LEAVE;
+	mode = val ? SENSITIVITY_TEST_ENTER : SENSITIVITY_TEST_LEAVE;
 
 	if (mutex_lock_interruptible(&ts->lock)) {
 		input_err(true, &ts->client->dev, "%s: another task is running\n",
@@ -3935,6 +4114,12 @@ static ssize_t get_lp_dump(struct device *dev, struct device_attribute *attr, ch
 	input_info(true, &ts->client->dev, "%s: DEBUG format=%d, num=%d, start=%d, end=%d, current_index=%d\n",
 				__func__, dump_format, dump_num, dump_start, dump_end, current_index);
 
+	if (dump_format > 10) {
+		input_err(true, &ts->client->dev, "%s: wrong sponge dump_format size:%d\n", __func__, dump_format);
+		snprintf(buf, SEC_CMD_BUF_SIZE, "NG,wrong sponge_dump_format");
+		goto out;
+	}
+
 	for (i = dump_num - 1 ; i >= 0 ; i--) {
 		u16 data0, data1, data2, data3, data4;
 		char buff[30] = {0, };
@@ -3989,7 +4174,7 @@ static DEVICE_ATTR(module_id, 0444, read_module_id_show, NULL);
 static DEVICE_ATTR(vendor, 0444, read_vendor_show, NULL);
 static DEVICE_ATTR(checksum, 0664, read_checksum_show, clear_checksum_store);
 static DEVICE_ATTR(all_touch_count, 0664, read_all_touch_count_show, clear_all_touch_count_store);
-static DEVICE_ATTR(sensitivity_mode, 0664, sensitivity_mode_show, sensitivity_mode_store);
+static DEVICE_ATTR(sensitivity_mode, 0664, sensitivity_test_show, sensitivity_test_store);
 static DEVICE_ATTR(support_feature, 0444, read_support_feature, NULL);
 static DEVICE_ATTR(get_lp_dump, 0444, get_lp_dump, NULL);
 

@@ -439,6 +439,10 @@ struct sec_battery_info {
 	unsigned int mix_limit;
 	unsigned int vbus_limit;
 
+	/* lrp temperature check */
+	unsigned int lrp_limit;
+	unsigned int lrp_step;
+
 	/* temperature check */
 	int temperature;	/* battery temperature */
 #if defined(CONFIG_ENG_BATTERY_CONCEPT)
@@ -473,6 +477,9 @@ struct sec_battery_info {
 	int dchg_temp;
 #endif
 	int blkt_temp;		/* blanket temperature(instead of batt temp in mix_temp func for tablet model) */
+
+	int lrp;
+	int lrp_test;
 
 	int temp_adc;
 	int temp_ambient_adc;
@@ -650,8 +657,6 @@ struct sec_battery_info {
 	struct delayed_work wpc_txpower_calc_work;
 #endif
 	struct delayed_work slowcharging_work;
-	int slow_charging;
-	struct delayed_work slow_chg_work;
 #if defined(CONFIG_BATTERY_AGE_FORECAST)
 	int batt_cycle;
 #endif
@@ -719,6 +724,7 @@ struct sec_battery_info {
 	bool support_unknown_wpcthm;
 	unsigned int slate_mode;
 	int batt_full_capacity;
+	bool usb_slow_chg;
 };
 
 /* event check */

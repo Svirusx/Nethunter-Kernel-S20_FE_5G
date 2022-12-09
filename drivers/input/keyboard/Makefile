@@ -80,7 +80,6 @@ obj-$(CONFIG_KEYBOARD_TWL4030)		+= twl4030_keypad.o
 obj-$(CONFIG_KEYBOARD_XTKBD)		+= xtkbd.o
 obj-$(CONFIG_KEYBOARD_W90P910)		+= w90p910_keypad.o
 obj-$(CONFIG_KEYBOARD_STM_FSR)		+= stm/fsr1ad04/
-obj-$(CONFIG_LOGICAL_HALL)		+= hall_ic_logical.o
 
 CFLAGS_gpio_keys.o = -Wformat
 obj-$(CONFIG_KEYBOARD_STM32_POGO)	+= stm/stm32l0/

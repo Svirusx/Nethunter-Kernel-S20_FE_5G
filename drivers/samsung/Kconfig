@@ -62,6 +62,12 @@ config SEC_EXT
 	bool "Samsung TN extension Feature"
 	default y
 
+config SAMSUNG_LMKD_DEBUG
+	bool "record lmkd kill history"
+	default y
+	help
+	  record lmkd kill history
+
 menu "Samsung Factory Feature"
 config SEC_FACTORY
 	bool "when it comes to sec factory mode"

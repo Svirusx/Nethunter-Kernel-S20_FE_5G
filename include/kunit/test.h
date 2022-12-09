@@ -534,6 +534,7 @@ static inline void test_expect_binary(struct test *test,
  * (@right)).  See EXPECT_TRUE() for more information.
  */
 #define EXPECT_EQ(test, left, right) EXPECT_BINARY(test, left, ==, right)
+#define EXPECT_PTR_EQ(test, left, right) EXPECT_BINARY(test, left, ==, right)
 
 /**
  * EXPECT_NE() - An expectation that @left and @right are not equal.
@@ -546,6 +547,7 @@ static inline void test_expect_binary(struct test *test,
  * (@right)).  See EXPECT_TRUE() for more information.
  */
 #define EXPECT_NE(test, left, right) EXPECT_BINARY(test, left, !=, right)
+#define EXPECT_PTR_NE(test, left, right) EXPECT_BINARY(test, left, !=, right)
 
 /**
  * EXPECT_LT() - An expectation that @left is less than @right.
@@ -835,6 +837,7 @@ static inline void test_assert_binary(struct test *test,
  * (see ASSERT_TRUE()) when the assertion is not met.
  */
 #define ASSERT_EQ(test, left, right) ASSERT_BINARY(test, left, ==, right)
+#define ASSERT_PTR_EQ(test, left, right) ASSERT_BINARY(test, left, ==, right)
 
 /**
  * ASSERT_NE() - An assertion that @left and @right are not equal.
@@ -847,6 +850,7 @@ static inline void test_assert_binary(struct test *test,
  * (see ASSERT_TRUE()) when the assertion is not met.
  */
 #define ASSERT_NE(test, left, right) ASSERT_BINARY(test, left, !=, right)
+#define ASSERT_PTR_NE(test, left, right) ASSERT_BINARY(test, left, !=, right)
 
 /**
  * ASSERT_LT() - An assertion that @left is less than @right.

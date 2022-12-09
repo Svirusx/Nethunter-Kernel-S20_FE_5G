@@ -236,7 +236,7 @@ ifeq ($(CONFIG_PERF_MGR), y)
 endif
 
 #TZIC
-obj-y  += security/samsung/tzic/
+obj-$(CONFIG_TZIC)  += security/samsung/tzic/
 
 # KUnit
 obj-y				+= kunit/

@@ -1028,7 +1028,7 @@ out_save_result:
 				goto out_ble_charging;
 
 			memset(wac_i2c->ble_hist1, 0x00, WACOM_BLE_HISTORY1_SIZE);
-			memcpy(wac_i2c->ble_hist1, buffer, len);
+			memcpy(wac_i2c->ble_hist1, buffer, WACOM_BLE_HISTORY1_SIZE);
 		}
 	}
 
@@ -1407,10 +1407,10 @@ static ssize_t epen_ble_hist_show(struct device *dev,
 	if (!wac_i2c->ble_hist1)
 		return -ENODEV;
 
-	size1 = strlen(wac_i2c->ble_hist1);
+	size1 = strnlen(wac_i2c->ble_hist1, WACOM_BLE_HISTORY1_SIZE);
 	memcpy(buf, wac_i2c->ble_hist1, size1);
 
-	size = strlen(wac_i2c->ble_hist);
+	size = strnlen(wac_i2c->ble_hist, WACOM_BLE_HISTORY_SIZE);
 	memcpy(buf + size1, wac_i2c->ble_hist, size);
 
 	return size + size1;

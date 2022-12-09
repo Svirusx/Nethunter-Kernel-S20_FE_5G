@@ -454,5 +454,7 @@ void stm32_delay(int ms);
 int stm32_i2c_read_bulk(struct i2c_client *client, u8 *data, u8 length);
 int stm32_i2c_write_burst(struct i2c_client *client, u8 *data, int len);
 int stm32_dev_get_ic_ver(struct stm32_dev *data);
+int hall_logical_init(void);
+void hall_logical_exit(void);
 
 #endif /* __STM32_POGO_I2C_H__*/

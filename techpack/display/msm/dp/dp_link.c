@@ -1394,7 +1394,9 @@ static int dp_link_process_request(struct dp_link *dp_link)
 #ifdef CONFIG_SEC_DISPLAYPORT
 	if (secdp_get_power_status() && !secdp_check_link_stable(dp_link)) {
 		dp_link->status_update_cnt++;
-		DP_INFO("status_update_cnt %d\n", dp_link->status_update_cnt);
+		DP_INFO("[link_request] status_update_cnt %d\n",
+			dp_link->status_update_cnt);
+		secdp_link_backoff_start();
 	}
 #endif
 	if (dp_link_is_test_edid_read(link)) {

@@ -1,7 +1,7 @@
 /*
  * Linux OS Independent Layer
  *
- * Copyright (C) 2021, Broadcom.
+ * Copyright (C) 2022, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -224,6 +224,12 @@ extern void * osl_virt_to_phys(void * va);
 #define OSL_DMADDRWIDTH(osh, addrwidth) ({BCM_REFERENCE(osh); BCM_REFERENCE(addrwidth);})
 
 #define OSL_SMP_WMB()	smp_wmb()
+
+#if defined(__aarch64__)
+#define OSL_ISB()	isb()
+#else
+#define OSL_ISB()	do { /* noop */ } while (0)
+#endif /* __aarch64__ */
 
 /* API for CPU relax */
 extern void osl_cpu_relax(void);

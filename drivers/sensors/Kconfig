@@ -236,3 +236,9 @@ config SEC_SENSORS_ENG_DEBUG
 	default n
 	help
 	  Say Y to provide debugging, crash etc only ENG binary.
+	  
+config SENSORS_SKIP_CABLE_RESET
+	tristate "skip grip reset when usb/ta/data cable attached"
+	default n
+	help
+	  new ANFR concept to skip grip reset  

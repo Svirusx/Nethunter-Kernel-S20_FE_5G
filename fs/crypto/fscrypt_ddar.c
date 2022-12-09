@@ -47,6 +47,23 @@ int update_encryption_context_with_dd_policy(
 	inode_lock(inode);
 
 	ret = inode->i_sb->s_cop->get_context(inode, &ctx, sizeof(ctx));
+	switch (ctx.version) {
+	case FSCRYPT_CONTEXT_V1: {
+		if (ret == offsetof(struct fscrypt_context_v1, knox_flags)) {
+			ctx.v1.knox_flags = 0;
+			ret = sizeof(ctx.v1);
+		}
+		break;
+	}
+	case FSCRYPT_CONTEXT_V2: {
+		if (ret == offsetof(struct fscrypt_context_v2, knox_flags)) {
+			ctx.v2.knox_flags = 0;
+			ret = sizeof(ctx.v2);
+		}
+		break;
+	}
+	}
+
 	if (ret == -ENODATA) {
 		dd_error("failed to set dd policy. empty fscrypto context\n");
 		ret = -EFAULT;

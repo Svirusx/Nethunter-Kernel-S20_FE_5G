@@ -488,6 +488,11 @@ static void stm32_pogo_touchpad_event(struct stm32_touchpad_dev *stm32, char *ev
 				skip_touch_event = stm32_check_skip_move(stm32, i);
 			}
 
+			if (stm32->button == ICON_BUTTON_DOWN) {
+				skip_touch_event = false;
+				stm32->edge_touch[i].action = TOUCHED_AREA_NOTEDGE;
+			}
+
 			if (skip_touch_event == false) {
 				if (stm32->coord[i].action == TOUCH_ACTION_PRESS)
 					stm32_print_event(stm32, i, GENERATE_PRESS);

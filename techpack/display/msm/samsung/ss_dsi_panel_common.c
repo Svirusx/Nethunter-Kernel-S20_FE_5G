@@ -487,8 +487,9 @@ static void ss_wait_for_te_gpio(struct samsung_display_driver_data *vdd, int num
 	preempt_disable();
 	disp_te_gpio = ss_get_te_gpio(vdd);
 	for(iter = 0 ; iter < num_of_te ; iter++) {
-		start_time_1_64 = ktime_to_us(ktime_get());
+		//1. check high te gpio value
 		if (gpio_is_valid(disp_te_gpio)) {
+			start_time_1_64 = ktime_to_us(ktime_get());
 			for (te_count = 0 ; te_count < te_max ; te_count++) {
 				rc = gpio_get_value(disp_te_gpio);
 				if (rc == 1) {
@@ -499,15 +500,28 @@ static void ss_wait_for_te_gpio(struct samsung_display_driver_data *vdd, int num
 				ndelay(5000);
 			}
 		}
+		//2. wait for low gpio value
 		if (te_count == te_max)
 			LCD_ERR("LDI doesn't generate TE");
-
-		if (in_atomic())
-			udelay(200);
-		else
-			usleep_range(200, 220);
+		else {
+			if (gpio_is_valid(disp_te_gpio) && (iter < (num_of_te - 1))) {
+				for (te_count = 0 ; te_count < te_max ; te_count++) {
+					rc = gpio_get_value(disp_te_gpio);
+					if (rc == 0)
+						break;
+					else {
+						if (in_atomic())
+							udelay(200);
+						else
+							usleep_range(200, 220);
+					}
+				}
+			}
+		}
 	}
-	udelay(delay_after_te);
+
+	if (delay_after_te)
+		udelay(delay_after_te);
 	preempt_enable();
 }
 
@@ -1650,6 +1664,14 @@ int ss_send_cmd(struct samsung_display_driver_data *vdd,
 				dsi_display->name, rc);
 		goto error;
 	}
+
+	/* To guarantee below 2 things in Command Mode panel
+	 * 1. To prevent image(video) data tx, we need 2 TE wait
+	 * 2. To make sure the timing of command tx, any command should not be interrupted
+	 */
+	if (vdd->support_optical_fingerprint && vdd->finger_mask_updated &&
+			type == TX_BRIGHT_CTRL && panel->panel_mode == DSI_OP_CMD_MODE)
+		ss_wait_for_te_gpio(vdd, 2, vdd->panel_hbm_entry_after_te);
 
 	dsi_panel_tx_cmd_set(panel, type);
 
@@ -6567,7 +6589,6 @@ int ss_brightness_dcs(struct samsung_display_driver_data *vdd, int level, int ba
 
 		if (backlight_origin == BACKLIGHT_FINGERMASK_ON) {
 			vdd->br_info.common_br.finger_mask_hbm_on = true;
-			ss_wait_for_te_gpio(vdd, 1, vdd->panel_hbm_entry_after_te);
 			backup_acl = vdd->br_info.acl_status;
 			if (vdd->finger_mask_updated) /* do not backup br.bl_level at on to on */
 				backup_bl_level = vdd->br_info.common_br.bl_level;
@@ -6579,7 +6600,6 @@ int ss_brightness_dcs(struct samsung_display_driver_data *vdd, int level, int ba
 		}
 		else if(backlight_origin == BACKLIGHT_FINGERMASK_OFF) {
 			vdd->br_info.common_br.finger_mask_hbm_on = false;
-			ss_wait_for_te_gpio(vdd, 1, vdd->panel_hbm_entry_after_te);
 			vdd->br_info.acl_status = backup_acl;
 			level = backup_bl_level;
 
@@ -7126,6 +7146,7 @@ static void ss_bl_event_work(struct work_struct *work)
 
 	bl_evt_data.bl_level = vdd->br_info.common_br.bl_level;
 	bl_evt_data.aor_data = vdd->br_info.common_br.aor_data;
+	bl_evt_data.finger_mask_hbm_on = vdd->br_info.common_br.finger_mask_hbm_on;
 	bl_evt_data.display_idx = vdd->ndx;
 
 	LCD_DEBUG("%d %d ++\n", bl_evt_data.bl_level, bl_evt_data.aor_data);

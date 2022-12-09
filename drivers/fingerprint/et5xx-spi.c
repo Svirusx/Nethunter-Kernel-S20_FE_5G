@@ -143,6 +143,7 @@ int etspi_Interrupt_Free(struct etspi_data *etspi)
 }
 void etspi_Interrupt_Abort(struct etspi_data *etspi)
 {
+	etspi->finger_on = 1;
 	wake_up_interruptible(&interrupt_waitq);
 }
 unsigned int etspi_fps_interrupt_poll(

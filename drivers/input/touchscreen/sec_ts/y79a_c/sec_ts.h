@@ -993,6 +993,7 @@ struct sec_ts_data {
 	int skipped_mode;
 	
 	u8 lp_sensitivity;
+	u8 low_sensitivity_mode;
 
 	u8 fod_vi_tx;
 	u8 fod_vi_rx;

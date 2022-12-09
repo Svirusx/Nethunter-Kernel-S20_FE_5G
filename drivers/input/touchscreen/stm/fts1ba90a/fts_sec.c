@@ -108,9 +108,7 @@ static void get_tsp_test_result(void *device_data);
 static void increase_disassemble_count(void *device_data);
 static void get_disassemble_count(void *device_data);
 
-#ifdef CONFIG_GLOVE_TOUCH
 static void glove_mode(void *device_data);
-#endif
 static void clear_cover_mode(void *device_data);
 static void report_rate(void *device_data);
 
@@ -200,9 +198,7 @@ struct sec_cmd ft_commands[] = {
 	{SEC_CMD("get_tsp_test_result", get_tsp_test_result),},
 	{SEC_CMD("increase_disassemble_count", increase_disassemble_count),},
 	{SEC_CMD("get_disassemble_count", get_disassemble_count),},
-#ifdef CONFIG_GLOVE_TOUCH
 	{SEC_CMD_H("glove_mode", glove_mode),},
-#endif
 	{SEC_CMD_H("clear_cover_mode", clear_cover_mode),},
 	{SEC_CMD("report_rate", report_rate),},
 	{SEC_CMD("set_wirelesscharger_mode", set_wirelesscharger_mode),},
@@ -3909,7 +3905,6 @@ not_support:
 }
 #endif
 
-#ifdef CONFIG_GLOVE_TOUCH
 static void glove_mode(void *device_data)
 {
 	struct sec_cmd_data *sec = (struct sec_cmd_data *)device_data;
@@ -3945,7 +3940,6 @@ static void glove_mode(void *device_data)
 
 	input_info(true, &info->client->dev, "%s: %s\n", __func__, buff);
 }
-#endif
 
 static void clear_cover_mode(void *device_data)
 {

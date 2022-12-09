@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * Copyright (c) 2017-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
 #include <linux/module.h>
@@ -2154,7 +2154,7 @@ static int cam_eeprom_read_memory(struct cam_eeprom_ctrl_t *e_ctrl,
 								read_size);
 						if(rc < 0){
 							CAM_ERR(CAM_EEPROM, "retry %d times read failed rc %d",retry, rc);
-							mdelay(10);
+							usleep_range(10*1000, 11*1000);
 						}else{
 							CAM_ERR(CAM_EEPROM, "retry %d times success read ",retry);
 							break;
@@ -3134,7 +3134,16 @@ static int32_t cam_eeprom_init_pkt_parser(struct cam_eeprom_ctrl_t *e_ctrl,
 					rc = -EINVAL;
 					goto end;
 				}
+
+				if ((num_map + 1) >=
+					(MSM_EEPROM_MAX_MEM_MAP_CNT *
+					MSM_EEPROM_MEMORY_MAP_MAX_SIZE)) {
+					CAM_ERR(CAM_EEPROM, "OOB error");
+					rc = -EINVAL;
+					goto end;
+				}
 				/* Configure the following map slave address */
+
 				map[num_map + 1].saddr = i2c_info->slave_addr;
 				rc = cam_eeprom_update_slaveInfo(e_ctrl,
 					cmd_buf);
@@ -3743,6 +3752,7 @@ static int32_t cam_eeprom_pkt_parse(struct cam_eeprom_ctrl_t *e_ctrl, void *arg)
 	struct cam_eeprom_soc_private  *soc_private =
 		(struct cam_eeprom_soc_private *)e_ctrl->soc_info.soc_private;
 	struct cam_sensor_power_ctrl_t *power_info = &soc_private->power_info;
+	uint8_t                         crc_check_retry_cnt = 0;
 
 	ioctl_ctrl = (struct cam_control *)arg;
 
@@ -3822,6 +3832,14 @@ static int32_t cam_eeprom_pkt_parse(struct cam_eeprom_ctrl_t *e_ctrl, void *arg)
 			goto error;
 		}
 
+eeropm_crc_check :
+		rc = cam_eeprom_power_up(e_ctrl,
+			&soc_private->power_info);
+		if (rc) {
+			CAM_ERR(CAM_EEPROM, "failed rc %d", rc);
+			goto memdata_free;
+		}
+
 		if (e_ctrl->eeprom_device_type == MSM_CAMERA_SPI_DEVICE) {
 			rc = cam_eeprom_match_id(e_ctrl);
 			if (rc) {
@@ -3829,13 +3847,6 @@ static int32_t cam_eeprom_pkt_parse(struct cam_eeprom_ctrl_t *e_ctrl, void *arg)
 					"eeprom not matching %d", rc);
 				goto memdata_free;
 			}
-		}
-
-		rc = cam_eeprom_power_up(e_ctrl,
-			&soc_private->power_info);
-		if (rc) {
-			CAM_ERR(CAM_EEPROM, "failed rc %d", rc);
-			goto memdata_free;
 		}
 
 		e_ctrl->cam_eeprom_state = CAM_EEPROM_CONFIG;
@@ -3868,15 +3879,26 @@ static int32_t cam_eeprom_pkt_parse(struct cam_eeprom_ctrl_t *e_ctrl, void *arg)
 			}
 
 			if (1 < e_ctrl->cal_data.num_map) {
-				rc = cam_eeprom_get_customInfo(e_ctrl, csl_packet);
+				if (crc_check_retry_cnt == 0) {
+					rc = cam_eeprom_get_customInfo(e_ctrl, csl_packet);
+				}
 
 				e_ctrl->is_supported |= cam_eeprom_match_crc(&e_ctrl->cal_data,
 					e_ctrl->soc_info.index);
 
-				if (e_ctrl->is_supported != normal_crc_value)
+				if (e_ctrl->is_supported != normal_crc_value) {
 					CAM_ERR(CAM_EEPROM, "Any CRC values at F-ROM are not matched.");
-				else
+					if (crc_check_retry_cnt < 3) {
+						crc_check_retry_cnt++;
+						CAM_ERR(CAM_EEPROM, "Retry to read F-ROM : %d", crc_check_retry_cnt);
+						cam_eeprom_power_down(e_ctrl);
+						goto eeropm_crc_check;
+
+					}
+				} else {
 					CAM_INFO(CAM_EEPROM, "All CRC values are matched.");
+					crc_check_retry_cnt = 0;
+				}
 
 				rc = cam_eeprom_update_module_info(e_ctrl);
 				if (rc < 0) {

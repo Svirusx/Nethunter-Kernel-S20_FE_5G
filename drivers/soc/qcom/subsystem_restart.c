@@ -1281,12 +1281,19 @@ int subsystem_restart_dev(struct subsys_device *dev)
 		ssr_disable = sec_debug_is_enabled_for_ssr();
 	} else
 		pr_info("SSR by only ap debug level!!\n");
-	if (strcmp(name, "wlan")) { 
-		if (!sec_debug_is_enabled() || (!ssr_disable))
+
+	if (!sec_debug_is_enabled() || (!ssr_disable))
+		dev->restart_level = RESET_SUBSYS_COUPLED;
+	else
+		dev->restart_level = RESET_SOC;
+
+	if (!strcmp(name, "wlan")) { 
+		if (!sec_debug_is_enabled() || (enable_ramdumps != 3))
 			dev->restart_level = RESET_SUBSYS_COUPLED;
 		else
 			dev->restart_level = RESET_SOC;
 	}
+
 	/* force modem silent ssr */
 	if (!strncmp(name, "esoc", 4) && silent_ssr) {
 		dev->restart_level = RESET_SUBSYS_COUPLED;

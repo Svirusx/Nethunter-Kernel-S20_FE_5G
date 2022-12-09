@@ -76,30 +76,33 @@ static long perf_mgr_ioctl(struct file *file, unsigned int cmd, unsigned long ar
 
 		 /* Sometimes All Task Clear in the list. */
 		if (target_tid < 0) {
-			/*
-			spin_lock(&write_slock);
-			list_for_each_entry_rcu(fi, &head_list, list){
+			rcu_read_lock();
+			list_for_each_entry_rcu(fi, &head_list, list) {
+				if (fi == NULL)
+					continue;
 
-				if ( fi == NULL ) continue;
-
+				fi->last_update_frame = 0;
+				fi->updated_fps_util = 0;
 				task = find_task_by_vpid(fi->orig_fps_info.tid);
-				if (task != NULL) task->drawing_flag = 0;
 
-				//Drawing Flag OFF on Task Struct.
-				//Delete Task Info From Drawing Tasks List.
-				list_del_rcu(&(fi->list));
-				fps_task_count--;
+				if (task == NULL || fi->orig_fps_info.tid != task->pid)
+					continue;
 
+				get_task_struct(task);
+				task->drawing_mig_boost = 0;
+				put_task_struct(task);
 			}
-			spin_unlock(&write_slock);
-			synchronize_rcu();
-			kfree(fi);
-			*/
+			rcu_read_unlock();
 		} else {
 			//Drawing Flag OFF on Task Struct
+			rcu_read_lock();
 			task = find_task_by_vpid(target_tid);
-			if (task != NULL)
+			if (task != NULL) {
+				get_task_struct(task);
 				task->drawing_flag = 0;
+				put_task_struct(task);
+			}
+			rcu_read_unlock();
 
 			fi = get_target_task(target_tid);
 			if (fi == NULL)

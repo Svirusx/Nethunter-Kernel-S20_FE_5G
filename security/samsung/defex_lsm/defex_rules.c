@@ -157,6 +157,7 @@
 	{feature_safeplace_path,"/vendor/bin/dsmsca"},
 	{feature_safeplace_path,"/vendor/bin/hw/android.hardware.usb@1.3-service.coral"},
 	{feature_safeplace_path,"/vendor/bin/hw/vendor.qti.hardware.perf-hal-service"},
+	{feature_safeplace_path,"/vendor/bin/iod"},
 	{feature_safeplace_path,"/system/bin/rdxd"},
 	{feature_safeplace_path,"/system/system_ext/bin/dpmd"},
 	{feature_safeplace_path,"/vendor/bin/init.qti.dcvs.sh"},
@@ -230,6 +231,13 @@
 	{feature_immutable_src_exception,"/init"},
 	{feature_immutable_src_exception,"/system/bin/init"},
 	{feature_immutable_src_exception,"/system/bin/lshal"},
+	{feature_integrity_check,"/vendor/bin/hw/android.hardware.gatekeeper@1.0-service"},
+	{feature_integrity_check,"/vendor/bin/hw/android.hardware.keymaster@4.0-service"},
+	{feature_integrity_check,"/vendor/bin/hw/android.hardware.security.keymint-service"},
+	{feature_integrity_check,"/vendor/bin/hw/vendor.samsung.hardware.tlc.kg@1.0-service"},
+	{feature_integrity_check,"/vendor/bin/vendor.samsung.hardware.security.wsm@1.0-service"},
+	{feature_integrity_check,"/vendor/bin/vaultkeeperd"},
+	{feature_integrity_check,"/vendor/bin/hw/vendor.samsung.hardware.tlc.kg@1.1-service"},
 	/* Rules will be added here */
 	/* Never modify the above line. Rules will be added for buildtime */
 #endif /* if 0 */

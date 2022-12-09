@@ -2,7 +2,7 @@
  * Broadcom Dongle Host Driver (DHD), Linux-specific network interface.
  * Basically selected code segments from usb-cdc.c and usb-rndis.c
  *
- * Copyright (C) 2021, Broadcom.
+ * Copyright (C) 2022, Broadcom.
  *
  *      Unless you and Broadcom execute a separate written software license
  * agreement governing use of this software, this software is licensed to you
@@ -4907,11 +4907,6 @@ dhd_dbg_periodic_cntrs_start(dhd_pub_t * dhdp)
 	dhd_info_t *dhd = NULL;
 	uint32 current_time = wl_cfgdbg_current_timestamp();
 
-	if (FW_SUPPORTED(dhdp, ecounters)) {
-		/* Not required DHD periodic conters */
-		return;
-	}
-
 	if (dhdp && dhdp->info) {
 		dhd = (dhd_info_t *)dhdp->info;
 	} else {
@@ -4919,6 +4914,11 @@ dhd_dbg_periodic_cntrs_start(dhd_pub_t * dhdp)
 	}
 
 	if (dhdp->dongle_reset) {
+		return;
+	}
+
+	if (FW_SUPPORTED(dhdp, ecounters)) {
+		/* Not required DHD periodic conters */
 		return;
 	}
 
@@ -6002,7 +6002,7 @@ dhd_add_monitor_if(dhd_info_t *dhd)
 	if (FW_SUPPORTED((&dhd->pub), monitor)) {
 #ifdef DHD_PCIE_RUNTIMEPM
 		/* Disable RuntimePM in monitor mode */
-		DHD_DISABLE_RUNTIME_PM(&dhd->pub);
+		DHD_STOP_RPM_TIMER(&dhd->pub);
 		DHD_ERROR(("%s : disable runtime PM in monitor mode\n", __FUNCTION__));
 #endif /* DHD_PCIE_RUNTIME_PM */
 		scan_suppress = TRUE;
@@ -6036,7 +6036,7 @@ dhd_del_monitor_if(dhd_info_t *dhd)
 	if (FW_SUPPORTED((&dhd->pub), monitor)) {
 #ifdef DHD_PCIE_RUNTIMEPM
 		/* Enable RuntimePM */
-		DHD_ENABLE_RUNTIME_PM(&dhd->pub);
+		DHD_START_RPM_TIMER(&dhd->pub);
 		DHD_ERROR(("%s : enabled runtime PM\n", __FUNCTION__));
 #endif /* DHD_PCIE_RUNTIME_PM */
 		scan_suppress = FALSE;
@@ -7189,6 +7189,11 @@ dhd_open(struct net_device *net)
 
 exit:
 	mutex_unlock(&dhd->pub.ndev_op_sync);
+
+	if (dhd_query_bus_erros(&dhd->pub)) {
+		ret = BCME_ERROR;
+	}
+
 	if (ret) {
 		dhd_stop(net);
 	}
@@ -16419,6 +16424,10 @@ static void dhd_hang_process(struct work_struct *work_data)
 	dhd = container_of(work_data, dhd_info_t, dhd_hang_process_work);
 	GCC_DIAGNOSTIC_POP();
 
+	if (!dhd) {
+		return;
+	}
+
 	dev = dhd->iflist[0]->net;
 
 	if (dev) {
@@ -16447,7 +16456,7 @@ static void dhd_hang_process(struct work_struct *work_data)
 #endif /* HANG_DELAY_BEFORE_DEV_CLOSE */
 
 	rtnl_lock();
-	for (i = 0; i < DHD_MAX_IFS && dhd; i++) {
+	for (i = 0; i < DHD_MAX_IFS; i++) {
 		ndev = dhd->iflist[i] ? dhd->iflist[i]->net : NULL;
 		if (ndev && (ndev->flags & IFF_UP)) {
 			DHD_ERROR(("ndev->name : %s dev close\n",

@@ -1218,6 +1218,12 @@ static void sec_ts_read_event(struct sec_ts_data *ts)
 		return;
 	}
 
+	if (ts->low_sensitivity_mode > 1 && read_event_buff[0][1] == 0x74)
+		input_info(true, &ts->client->dev, "LOWSENS: %02X %02X %02X %02X %02X %02X %02X %02X\n",
+				read_event_buff[0][0], read_event_buff[0][1],
+				read_event_buff[0][2], read_event_buff[0][3],
+				read_event_buff[0][4], read_event_buff[0][5],
+				read_event_buff[0][6], read_event_buff[0][7]);
 	if (ts->debug_flag & SEC_TS_DEBUG_PRINT_ONEEVENT)
 		input_info(true, &ts->client->dev, "ONE: %02X %02X %02X %02X %02X %02X %02X %02X\n",
 				read_event_buff[0][0], read_event_buff[0][1],

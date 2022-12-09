@@ -212,6 +212,7 @@ struct pn547_dev {
 	struct mutex read_mutex;
 	struct i2c_client *client;
 	struct miscdevice pn547_device;
+	struct mutex dev_ref_mutex;
 	int ven_gpio;
 	int firm_gpio;
 	int irq_gpio;
@@ -233,6 +234,7 @@ struct pn547_dev {
 #endif
 	bool spi_ven_enabled;
 	bool nfc_ven_enabled;
+	bool release_read;
 
 	atomic_t irq_enabled;
 	spinlock_t irq_enabled_lock;

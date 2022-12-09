@@ -68,6 +68,7 @@ static bool is_fw_dwnld_enabled = false;
 
 /* Maximum UCI packet size supported from the driver */
 #define MAX_UCI_PKT_SIZE 4200
+#define UCI_MT_MASK 0xE0
 #define DEBUG_LOG
 enum spi_status_codes{
      spi_transcive_success,
@@ -222,6 +223,7 @@ static void sr100_disable_irq(struct sr100_dev* sr100_dev) {
 
   spin_lock_irqsave(&sr100_dev->irq_enabled_lock, flags);
   if((sr100_dev->irq_enabled)){
+    disable_irq_wake(sr100_dev->spi->irq);
     disable_irq_nosync(sr100_dev->spi->irq);
     sr100_dev->irq_received = true;
     sr100_dev->irq_enabled = false;
@@ -247,6 +249,7 @@ static void sr100_enable_irq(struct sr100_dev* sr100_dev) {
   spin_lock_irqsave(&sr100_dev->irq_enabled_lock, flags);
   if(!sr100_dev->irq_enabled){
     enable_irq(sr100_dev->spi->irq);
+    enable_irq_wake(sr100_dev->spi->irq);
     sr100_dev->irq_enabled = true;
     sr100_dev->irq_received = false;
   }
@@ -487,10 +490,23 @@ static int sr100_dev_transceive(struct sr100_dev* sr100_dev, int op_mode, int co
         UWB_LOG_ERR("sr100_dev_read: spi read error %d\n ", ret);
         goto transcive_end;
       }
-      sr100_dev->IsExtndLenIndication = (sr100_dev->rx_buffer[EXTND_LEN_INDICATOR_OFFSET] & EXTND_LEN_INDICATOR_OFFSET_MASK);
-      sr100_dev->totalBtyesToRead = sr100_dev->rx_buffer[NORMAL_MODE_LEN_OFFSET];
-      if(sr100_dev->IsExtndLenIndication){
-        sr100_dev->totalBtyesToRead = ((sr100_dev->totalBtyesToRead << 8) | sr100_dev->rx_buffer[EXTENDED_LENGTH_OFFSET]);
+      if ((sr100_dev->rx_buffer[0] & UCI_MT_MASK) == 0) {
+        sr100_dev->totalBtyesToRead =
+            sr100_dev->rx_buffer[NORMAL_MODE_LEN_OFFSET];
+        sr100_dev->totalBtyesToRead =
+            ((sr100_dev->totalBtyesToRead << 8) |
+             sr100_dev->rx_buffer[EXTENDED_LENGTH_OFFSET]);
+      } else {
+        sr100_dev->IsExtndLenIndication =
+            (sr100_dev->rx_buffer[EXTND_LEN_INDICATOR_OFFSET] &
+             EXTND_LEN_INDICATOR_OFFSET_MASK);
+        sr100_dev->totalBtyesToRead =
+            sr100_dev->rx_buffer[NORMAL_MODE_LEN_OFFSET];
+        if (sr100_dev->IsExtndLenIndication) {
+          sr100_dev->totalBtyesToRead =
+              ((sr100_dev->totalBtyesToRead << 8) |
+               sr100_dev->rx_buffer[EXTENDED_LENGTH_OFFSET]);
+        }
       }
       if(sr100_dev->totalBtyesToRead > (MAX_UCI_PKT_SIZE - NORMAL_MODE_HEADER_LEN)) {
         UWB_LOG_ERR("Length %d  exceeds the max limit %d....\n",(int)sr100_dev->totalBtyesToRead,(int)MAX_UCI_PKT_SIZE);
@@ -1212,7 +1228,7 @@ static int sr100_probe(struct spi_device* spi) {
        */
   //irq_flags = IRQF_TRIGGER_RISING;
   irq_flags = IRQ_TYPE_LEVEL_HIGH;
-  sr100_dev->irq_enabled = true;
+  sr100_dev->irq_enabled = false;
   sr100_dev->irq_received = false;
 
   ret = request_irq(sr100_dev->spi->irq, sr100_dev_irq_handler, irq_flags,
@@ -1220,8 +1236,10 @@ static int sr100_probe(struct spi_device* spi) {
   if (ret) {
     UWB_LOG_ERR("request_irq failed\n");
     goto err_exit3;
+  } else {
+    disable_irq_nosync(sr100_dev->spi->irq);
   }
-  sr100_disable_irq(sr100_dev);
+
   if((int)sr100_dev->rtc_sync_gpio > 0) {
     UWB_LOG_INFO("gpio_set_value rtc_sync 0\n");
     gpio_set_value(sr100_dev->rtc_sync_gpio, 0);
@@ -1288,22 +1306,25 @@ err_exit:
 static int sr100_remove(struct spi_device* spi) {
   struct sr100_dev* sr100_dev = sr100_get_data(spi);
   UWB_LOG_INFO("Entry : %s\n", __FUNCTION__);
-  sr100_regulator_onoff(&spi->dev, sr100_dev, false);
-  gpio_free(sr100_dev->ce_gpio);
-  mutex_destroy(&sr100_dev->sr100_access_lock);
-  free_irq(sr100_dev->spi->irq, sr100_dev);
-  gpio_free(sr100_dev->irq_gpio);
-  gpio_free(sr100_dev->spi_handshake_gpio);
-  if((int)sr100_dev->rtc_sync_gpio > 0) {
-    gpio_free(sr100_dev->rtc_sync_gpio);
+  if(sr100_dev != NULL) {
+    sr100_regulator_onoff(&spi->dev, sr100_dev, false);
+    gpio_free(sr100_dev->ce_gpio);
+    mutex_destroy(&sr100_dev->sr100_access_lock);
+    free_irq(sr100_dev->spi->irq, sr100_dev);
+    gpio_free(sr100_dev->irq_gpio);
+    gpio_free(sr100_dev->spi_handshake_gpio);
+    if((int)sr100_dev->rtc_sync_gpio > 0) {
+      gpio_free(sr100_dev->rtc_sync_gpio);
+    }
+    if((int)sr100_dev->ant_connection_status_gpio > 0) {
+      gpio_free(sr100_dev->ant_connection_status_gpio);
+    }
+    misc_deregister(&sr100_dev->sr100_device);
+
+    if (sr100_dev->tx_buffer != NULL) kfree(sr100_dev->tx_buffer);
+    if (sr100_dev->rx_buffer != NULL) kfree(sr100_dev->rx_buffer);
+    kfree(sr100_dev);
   }
-  if((int)sr100_dev->ant_connection_status_gpio > 0) {
-    gpio_free(sr100_dev->ant_connection_status_gpio);
-  }
-  misc_deregister(&sr100_dev->sr100_device);
-  if (sr100_dev->tx_buffer != NULL) kfree(sr100_dev->tx_buffer);
-  if (sr100_dev->rx_buffer != NULL) kfree(sr100_dev->rx_buffer);
-  if (sr100_dev != NULL) kfree(sr100_dev);
   UWB_LOG_INFO("Exit : %s\n", __FUNCTION__);
   return 0;
 }

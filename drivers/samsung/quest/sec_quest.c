@@ -1513,14 +1513,30 @@ static ssize_t store_quest_main(struct device *dev,
 	QUEST_PRINT("%s : start STEP_MAIN\n", __func__);
 	param_quest_data.curr_step = STEP_MAIN;
 	param_quest_data.main_item_result = 0;
+#if defined(CONFIG_SEC_A73XQ_PROJECT)
+	param_quest_data.hlos_remained_count = 3;
+#else
 	param_quest_data.hlos_remained_count = 1;
+#endif
 #if defined(CONFIG_SEC_QUEST_UEFI)
+#if defined(CONFIG_SEC_A73XQ_PROJECT)
+	param_quest_data.quefi_remained_count = 3*MAIN_QUEST_QUEFI_REPEATS;
+#else
 	param_quest_data.quefi_remained_count = MAIN_QUEST_QUEFI_REPEATS;
 #endif
+#endif
 #if defined(CONFIG_SEC_QUEST_UEFI_ENHANCEMENT)
+#if defined(CONFIG_SEC_A73XQ_PROJECT)
+	param_quest_data.suefi_remained_count = 3;
+#else
 	param_quest_data.suefi_remained_count = 1;
 #endif
+#endif
+#if defined(CONFIG_SEC_A73XQ_PROJECT)
+	param_quest_data.ddrscan_remained_count = 3;
+#else
 	param_quest_data.ddrscan_remained_count = 1;
+#endif
 
 	param_quest_data.hlos_remained_count--;
 	QUEST_SET_ITEM_SUBITEM_RESULT(param_quest_data.main_item_result, QUESTHLOS_HLOS_ITEM_MAIN_CAL, ITEM_RESULT_INCOMPLETED);

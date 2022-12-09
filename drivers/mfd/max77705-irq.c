@@ -272,12 +272,10 @@ static irqreturn_t max77705_irq_thread(int irq, void *data)
 		pr_debug("[%s] fuelgauge interrupt\n", __func__);
 		pr_debug("[%s]IRQ_BASE(%d), NESTED_IRQ(%d)\n",
 			__func__, max77705->irq_base, max77705->irq_base + MAX77705_FG_IRQ_ALERT);
-		handle_nested_irq(max77705->irq_base + MAX77705_FG_IRQ_ALERT);
-
+		irq_reg[FUEL_INT] = 1 << 1;
 #if defined(CONFIG_SEC_FACTORY)
 		wake_unlock(&max77705_irq_wakelock);
 #endif
-		goto done;
 	}
 
 	if (irq_src & MAX77705_IRQSRC_TOP) {
@@ -401,8 +399,6 @@ static irqreturn_t max77705_irq_thread(int irq, void *data)
 #if defined(CONFIG_SEC_FACTORY)
 	wake_unlock(&max77705_irq_wakelock);
 #endif
-
-done:
 
 	max77705->doing_irq = 0;
 #if defined(CONFIG_CCIC_MAX77705)

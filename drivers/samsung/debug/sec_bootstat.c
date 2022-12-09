@@ -109,6 +109,9 @@ enum boot_events_type {
 	RIL_COMPLETE_CONNECTION,
 	RIL_CS_REG,
 	RIL_GPRS_ATTACH,
+#ifdef CONFIG_SEC_FACTORY
+	FACTORY_BOOT_COMPLETE,
+#endif /* CONFIG_SEC_FACTORY */
 	NUM_BOOT_EVENTS,
 };
 
@@ -210,6 +213,10 @@ static struct boot_event boot_events[] = {
 			"CS Registered", 0, 0},
 	{RIL_GPRS_ATTACH, EVT_RIL,
 			"GPRS Attached", 0, 0},
+#ifdef CONFIG_SEC_FACTORY
+	{FACTORY_BOOT_COMPLETE, EVT_PLATFORM,
+			"Factory Process [Boot Completed]", 0, 0},
+#endif /* CONFIG_SEC_FACTORY */
 	{0, EVT_INVALID, NULL, 0, 0},
 };
 

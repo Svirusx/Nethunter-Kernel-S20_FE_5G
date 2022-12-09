@@ -70,7 +70,7 @@ static void get_pat_information(void *device_data);
 static void tclm_test_cmd(void *device_data);
 static void get_calibration(void *device_data);
 #endif
-
+static void low_sensitivity_mode_enable(void *device_data);
 static void set_tsp_test_result(void *device_data);
 static void get_tsp_test_result(void *device_data);
 static void clear_tsp_test_result(void *device_data);
@@ -185,6 +185,7 @@ static struct sec_cmd sec_cmds[] = {
 	{SEC_CMD("tclm_test_cmd", tclm_test_cmd),},
 	{SEC_CMD("get_calibration", get_calibration),},
 #endif
+	{SEC_CMD("low_sensitivity_mode_enable", low_sensitivity_mode_enable),},
 	{SEC_CMD("set_tsp_test_result", set_tsp_test_result),},
 	{SEC_CMD("get_tsp_test_result", get_tsp_test_result),},
 	{SEC_CMD("clear_tsp_test_result", clear_tsp_test_result),},
@@ -4456,6 +4457,44 @@ void minority_report_sync_latest_value(struct sec_ts_data *ts)
 	ts->defect_probability = temp;
 }
 #endif
+
+static void low_sensitivity_mode_enable(void *device_data)
+{
+	struct sec_cmd_data *sec = (struct sec_cmd_data *)device_data;
+	struct sec_ts_data *ts = container_of(sec, struct sec_ts_data, sec);
+	char buff[SEC_CMD_STR_LEN] = { 0 };
+	char data;
+	int ret = 0;
+
+	input_info(true, &ts->client->dev, "%s\n", __func__);
+
+	sec_cmd_set_default_result(sec);
+
+	if (ts->power_status == SEC_TS_STATE_POWER_OFF) {
+		input_err(true, &ts->client->dev, "%s: [ERROR] Touch is stopped\n",
+				__func__);
+		snprintf(buff, sizeof(buff), "NG");
+		sec_cmd_set_cmd_result(sec, buff, strnlen(buff, sizeof(buff)));
+		sec->cmd_state = SEC_CMD_STATUS_FAIL;
+		sec_cmd_set_cmd_exit(sec);
+		return;
+	}
+
+	if (sec->cmd_param[0] < 0 || sec->cmd_param[0] > 4) {
+		snprintf(buff, sizeof(buff), "NG");
+		sec->cmd_state = SEC_CMD_STATUS_FAIL;
+		goto out;
+	}
+
+	ts->low_sensitivity_mode = data = sec->cmd_param[0];
+	ret = ts->sec_ts_i2c_write(ts, SEC_TS_CMD_SET_LOW_POWER_SENSITIVITY, &data, 1);
+
+	snprintf(buff, sizeof(buff), "OK");
+out:
+	sec_cmd_set_cmd_result(sec, buff, strnlen(buff, sizeof(buff)));
+	sec->cmd_state = SEC_CMD_STATUS_OK;
+	sec_cmd_set_cmd_exit(sec);
+}
 
 /* FACTORY TEST RESULT SAVING FUNCTION
  * bit 3 ~ 0 : OCTA Assy

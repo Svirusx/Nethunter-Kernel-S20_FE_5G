@@ -16,6 +16,15 @@
 #include <linux/init.h>
 #include <linux/module.h>
 #include "adsp.h"
+#if defined(CONFIG_SEC_BLOOMXQ_PROJECT) && defined(CONFIG_DSP_SLEEP_RECOVERY)
+#define FORCE_SSR_FOR_TIMEOUT
+#endif
+#ifdef FORCE_SSR_FOR_TIMEOUT
+#include <linux/adsp/slpi-loader.h>
+#define MAX_SSR_LIMIT 3
+#define SSR_TRIGGER_CNT 10
+#endif
+
 #define VENDOR "AKM"
 #define CHIP_ID "AK09970"
 #define IDX_180_X 0
@@ -587,7 +596,10 @@ static ssize_t backup_restore_auto_cal_store(struct device *dev,
 	int new_value;
 	int32_t auto_cal_buf[58] = { 0, };
 	uint8_t cnt = 0;
-
+#ifdef FORCE_SSR_FOR_TIMEOUT
+	static uint8_t timeout_cnt;
+	static uint8_t ssr_cnt;
+#endif
 	if (sysfs_streq(buf, "0"))
 		new_value = 0;
 	else if (sysfs_streq(buf, "1"))
@@ -609,10 +621,29 @@ static ssize_t backup_restore_auto_cal_store(struct device *dev,
 		mutex_unlock(&data->digital_hall_mutex);
 
 		if (cnt >= 3) {
+#ifdef FORCE_SSR_FOR_TIMEOUT
+			if (ssr_cnt < MAX_SSR_LIMIT) {
+				timeout_cnt++;
+
+				pr_err("[FACTORY] %s: Timeout (%d, %d)!!!\n", __func__, timeout_cnt, ssr_cnt);
+				if (timeout_cnt == SSR_TRIGGER_CNT) {
+					timeout_cnt = 0;
+					ssr_cnt++;
+					slpi_ssr();
+				}
+			} else {
+				pr_err("[FACTORY] %s: Timeout (%d, %d)!!!\n", __func__, timeout_cnt, ssr_cnt);
+			}
+#else
 			pr_err("[FACTORY] %s: Timeout!!!\n", __func__);
+#endif
 			return size;
 		}
 
+#ifdef FORCE_SSR_FOR_TIMEOUT
+		timeout_cnt = 0;
+		ssr_cnt = 0;
+#endif
 		pr_info("[FACTORY] %s: flg_update=%d\n", __func__, data->msg_buf[MSG_DIGITAL_HALL_ANGLE][0]);
 
 		if (!data->msg_buf[MSG_DIGITAL_HALL_ANGLE][0])

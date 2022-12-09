@@ -90,6 +90,27 @@ static inline long get_switch_state(bool preempt, struct task_struct *p)
 	return preempt ? TASK_RUNNING | TASK_STATE_MAX : p->state;
 }
 
+struct sec_debug_sched_clock {
+	u64 val;
+	u64 comp;
+};
+static DEFINE_PER_CPU(struct sec_debug_sched_clock, sched_clock_per_cpu);
+
+static inline u64 sec_debug_cpu_clock(int cpu)
+{
+	struct sec_debug_sched_clock *last = &per_cpu(sched_clock_per_cpu, cpu);
+	u64 cur = cpu_clock(cpu);
+
+	if (unlikely(last->val == cur)) {
+		last->comp++;
+	} else {
+		last->val = cur;
+		last->comp = 0;
+	}
+
+	return last->val + last->comp;
+}
+
 void sec_debug_task_sched_log(int cpu, bool preempt,
 		struct task_struct *task, struct task_struct *prev)
 {
@@ -113,7 +134,7 @@ void sec_debug_task_sched_log(int cpu, bool preempt,
 	sched_buf = &secdbg_log->sched[cpu].buf[i];
 #endif
 
-	sched_buf->time = cpu_clock(cpu);
+	sched_buf->time = sec_debug_cpu_clock(cpu);
 	sec_debug_strcpy_task_comm(sched_buf->comm, task->comm);
 	sched_buf->pid = task->pid;
 	sched_buf->pTask = task;
@@ -148,7 +169,7 @@ void sec_debug_softirq_sched_log(unsigned int irq, void *fn,
 	irq_buf = &secdbg_log->irq[cpu].buf[i];
 #endif
 
-	irq_buf->time = cpu_clock(cpu);
+	irq_buf->time = sec_debug_cpu_clock(cpu);
 	irq_buf->irq = irq;
 	irq_buf->fn = fn;
 	irq_buf->name = name;
@@ -186,7 +207,7 @@ void sec_debug_irq_sched_log(unsigned int irq, void *desc_or_fn,
 	irq_buf = &secdbg_log->irq[cpu].buf[i];
 #endif
 
-	irq_buf->time = cpu_clock(cpu);
+	irq_buf->time = sec_debug_cpu_clock(cpu);
 	irq_buf->irq = irq;
 #if defined(CONFIG_SEC_DEBUG_SCHED_LOG_IRQ_V2)
 	irq_buf->fn = action->handler;
@@ -303,7 +324,7 @@ int sec_debug_sched_msg(char *fmt, ...)
 	}
 	va_end(args);
 
-	sched_buf->time = cpu_clock(cpu);
+	sched_buf->time = sec_debug_cpu_clock(cpu);
 	sched_buf->pid = current->pid;
 	sched_buf->pTask = NULL;
 

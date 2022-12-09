@@ -81,6 +81,11 @@ struct sec_param_data {
 #else
 	unsigned int reserved9;
 #endif
+#if defined(CONFIG_VIB_STORE_LE_PARAM)
+	unsigned int vib_le_est;
+#else
+	unsigned int Reserved_VibLeEst;
+#endif
 };
 
 struct sec_param_data_s {
@@ -133,6 +138,9 @@ enum sec_param_index {
 	param_index_quest_bps_data,
 #endif
 	param_index_VrrStatus,
+#if defined(CONFIG_VIB_STORE_LE_PARAM)
+	param_vib_le_est,
+#endif
 #ifdef CONFIG_PD_CHARGER_HV_DISABLE
 	param_index_pd_hv_disable,
 #endif

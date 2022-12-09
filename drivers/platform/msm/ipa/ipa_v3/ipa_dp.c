@@ -1972,7 +1972,7 @@ begin:
 			goto fail_kmem_cache_alloc;
 		rx_pkt = ipa3_alloc_rx_pkt_page(GFP_KERNEL, true);
 		if (unlikely(!rx_pkt)) {
-			IPAERR("ipa3_alloc_rx_pkt_page fails\n");
+			IPAERR_RL("ipa3_alloc_rx_pkt_page fails\n");
 			break;
 		}
 		rx_pkt->sys = sys;

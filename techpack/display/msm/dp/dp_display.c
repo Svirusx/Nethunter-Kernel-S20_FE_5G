@@ -325,7 +325,7 @@ bool secdp_check_if_lpm_mode(void)
 	return retval;
 }
 
-void secdp_send_poor_connection_event(void)
+static void secdp_send_poor_connection_event(bool edid_fail)
 {
 	struct dp_display_private *dp = g_secdp_priv;
 #ifndef CONFIG_SWITCH
@@ -334,9 +334,10 @@ void secdp_send_poor_connection_event(void)
 	char *envp[3];
 #endif
 
-	DP_INFO("poor connection!\n");
+	DP_INFO("poor connection++ %d\n", edid_fail);
 
-	dp->link->poor_connection = true;
+	if (!edid_fail)
+		dp->link->poor_connection = true;
 #ifdef CONFIG_SWITCH
 	switch_set_state(&switch_secdp_msg, 1);
 	switch_set_state(&switch_secdp_msg, 0);
@@ -1761,7 +1762,7 @@ static int dp_display_process_hpd_high(struct dp_display_private *dp)
 	int rc = -EINVAL;
 #ifdef CONFIG_SEC_DISPLAYPORT
 	int  wait;
-	bool is_poor_connection = false;
+	bool is_poor_connection = false, edid_fail = false;
 #endif
 
 	DP_DEBUG("+++\n");
@@ -1833,7 +1834,9 @@ static int dp_display_process_hpd_high(struct dp_display_private *dp)
 			goto off;
 		}
 
-		DP_INFO("fall through failsafe\n");
+		DP_INFO("fall through fail safe %d\n", rc);
+		if (rc == -EINVAL)
+			edid_fail = true;
 		is_poor_connection = true;
 		goto notify;
 	}
@@ -1879,7 +1882,7 @@ notify:
 	secdp_set_wakelock(dp, true);
 
 	if (is_poor_connection)
-		secdp_send_poor_connection_event();
+		secdp_send_poor_connection_event(edid_fail);
 #endif
 
 end:
@@ -1939,7 +1942,7 @@ off:
 	mutex_unlock(&dp->session_lock);
 
 	if (is_poor_connection)
-		secdp_send_poor_connection_event();
+		secdp_send_poor_connection_event(false);
 
 	return rc;
 #endif
@@ -1975,6 +1978,7 @@ static int dp_display_process_hpd_low(struct dp_display_private *dp)
 	cancel_delayed_work_sync(&dp->sec.hdcp_start_work);
 	cancel_delayed_work(&dp->sec.link_status_work);
 	cancel_delayed_work(&dp->sec.poor_discon_work);
+	secdp_link_backoff_stop();
 #endif
 	dp_audio_enable(dp, false);
 	dp_display_process_mst_hpd_low(dp);
@@ -2131,6 +2135,7 @@ static void dp_display_clean(struct dp_display_private *dp)
 	cancel_delayed_work_sync(&dp->sec.hdcp_start_work);
 	cancel_delayed_work(&dp->sec.link_status_work);
 	cancel_delayed_work(&dp->sec.poor_discon_work);
+	secdp_link_backoff_stop();
 #endif
 
 	if (dp_display_is_hdcp_enabled(dp) &&
@@ -2193,7 +2198,7 @@ static void dp_display_disconnect_sync(struct dp_display_private *dp)
 
 #ifdef CONFIG_SEC_DISPLAYPORT
 	if (dp->link->poor_connection) {
-		secdp_send_poor_connection_event();
+		secdp_send_poor_connection_event(false);
 		dp->link->status_update_cnt = 0;
 		dp->sec.hdcp_retry = 0;
 	}
@@ -2559,7 +2564,7 @@ static void secdp_process_attention(struct dp_display_private *dp,
 
 				/* SECDP_ADT_SST */
 				if (dp->link->poor_connection) {
-					DP_INFO("poor connection\n");
+					DP_INFO("poor connection!!\n");
 					goto end;
 				}
 
@@ -3112,12 +3117,69 @@ static void secdp_poor_disconnect_work(struct work_struct *work)
 {
 	struct dp_display_private *dp = g_secdp_priv;
 
-	DP_DEBUG("+++, poor_connection: %d\n", dp->link->poor_connection);
+	DP_INFO("poor:%d\n", dp->link->poor_connection);
 
 	if (!dp->link->poor_connection)
 		dp->link->poor_connection = true;
 
 	dp_display_disconnect_sync(dp);
+}
+
+#define LINK_BACKOFF_TIMER	120000	/*2min*/
+
+void secdp_link_backoff_start(void)
+{
+	struct dp_display_private *dp = g_secdp_priv;
+	struct secdp_misc *sec = &dp->sec;
+
+	if (sec->backoff_start) {
+		//DP_DEBUG("[backoff] already queued\n");
+		return;
+	}
+
+	schedule_delayed_work(&sec->link_backoff_work,
+			msecs_to_jiffies(LINK_BACKOFF_TIMER));
+	sec->backoff_start = true;
+	DP_INFO("[backoff] started\n");
+}
+
+void secdp_link_backoff_stop(void)
+{
+	struct dp_display_private *dp = g_secdp_priv;
+	struct secdp_misc *sec = &dp->sec;
+
+	if (!sec->backoff_start) {
+		//DP_DEBUG("[backoff] already cancelled\n");
+		return;
+	}
+
+	cancel_delayed_work(&sec->link_backoff_work);
+	sec->backoff_start = false;
+	DP_INFO("[backoff] stopped\n");
+}
+
+static void secdp_link_backoff_work(struct work_struct *work)
+{
+	struct dp_display_private *dp = g_secdp_priv;
+	struct secdp_misc *sec = &dp->sec;
+
+	if (!secdp_get_cable_status() || !dp_display_state_is(DP_STATE_ENABLED))
+		return;
+
+	//DP_DEBUG("[backoff] status_update_cnt %d\n", dp->link->status_update_cnt);
+
+	if (dp->link->status_update_cnt > 0)
+		dp->link->status_update_cnt--;
+
+	if (!dp->link->status_update_cnt) {
+		sec->backoff_start = false;
+		DP_INFO("[backoff] finished\n");
+		return;
+	}
+
+	schedule_delayed_work(&sec->link_backoff_work,
+			msecs_to_jiffies(LINK_BACKOFF_TIMER));
+	DP_INFO("[backoff] re-started %d\n", dp->link->status_update_cnt);
 }
 
 /**
@@ -3129,10 +3191,10 @@ static void secdp_link_status_work(struct work_struct *work)
 {
 	struct dp_display_private *dp = g_secdp_priv;
 
-	DP_INFO("+++ status_update_cnt %d\n", dp->link->status_update_cnt);
+	DP_INFO("[link_work] status_update_cnt %d\n", dp->link->status_update_cnt);
 
 	if (dp->link->poor_connection) {
-		DP_INFO("poor_connection!\n");
+		DP_INFO("[link_work] poor connection!\n");
 		goto poor_disconnect;
 	}
 
@@ -3177,6 +3239,7 @@ static int secdp_init(struct dp_display_private *dp)
 	INIT_DELAYED_WORK(&dp->sec.hpd_noti_work, secdp_hpd_noti_work);
 	INIT_DELAYED_WORK(&dp->sec.hdcp_start_work, secdp_hdcp_start_work);
 	INIT_DELAYED_WORK(&dp->sec.link_status_work, secdp_link_status_work);
+	INIT_DELAYED_WORK(&dp->sec.link_backoff_work, secdp_link_backoff_work);
 	INIT_DELAYED_WORK(&dp->sec.poor_discon_work, secdp_poor_disconnect_work);
 
 	INIT_DELAYED_WORK(&dp->sec.ccic_noti_reg_work, secdp_ccic_noti_register);
@@ -4071,6 +4134,7 @@ static int dp_display_pre_disable(struct dp_display *dp_display, void *panel)
 	cancel_delayed_work_sync(&dp->sec.hdcp_start_work);
 	cancel_delayed_work(&dp->sec.link_status_work);
 	cancel_delayed_work(&dp->sec.poor_discon_work);
+	secdp_link_backoff_stop();
 #endif
 
 	if (dp_display_is_hdcp_enabled(dp) &&

@@ -540,6 +540,9 @@ void sec_peripheral_secure_check_fail(void)
 {
 	if (!sec_debug_is_enabled()) {
 		sec_debug_set_qc_dload_magic(0);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,4,0)                                           
+		sec_debug_update_restart_reason("peripheral_hw_reset", 0, RESTART_NORMAL);
+#endif                                                                                    
 		sec_debug_pm_restart("peripheral_hw_reset");
 		/* never reach here */
 	}
@@ -987,7 +990,9 @@ void dump_cpu_stat(void)
 	guest = guest_nice = 0;
 	getboottime64(&boottime);
 
-	for_each_possible_cpu(i) {
+	for_each_present_cpu(i) {
+		BUG_ON(i >= NR_CPUS);
+
 		user += kcpustat_cpu(i).cpustat[CPUTIME_USER];
 		nice += kcpustat_cpu(i).cpustat[CPUTIME_NICE];
 		system += kcpustat_cpu(i).cpustat[CPUTIME_SYSTEM];

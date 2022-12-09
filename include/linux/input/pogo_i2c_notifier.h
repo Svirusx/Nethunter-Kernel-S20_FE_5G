@@ -8,6 +8,7 @@ typedef enum {
 	POGO_NOTIFY_DEV_TOUCHPAD = 0,
 	POGO_NOTIFY_DEV_KEYPAD,
 	POGO_NOTIFY_DEV_HALLIC,
+	POGO_NOTIFY_DEV_SENSOR,
 } pogo_notifier_device_t;
 
 enum STM32_ED_ID {

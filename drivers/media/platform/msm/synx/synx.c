@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
-* Copyright (c) 2019-2020, The Linux Foundation. All rights reserved.
+* Copyright (c) 2019-2021, The Linux Foundation. All rights reserved.
 */
 #define pr_fmt(fmt) "synx: " fmt
 
@@ -490,10 +490,10 @@ static int synx_release_core(struct synx_table_row *row)
 	 * (definitely for merged synx on invoing deinit)
 	 * be carefull while accessing the metadata
 	 */
-	mutex_lock(&synx_dev->row_locks[row->index]);
-	fence = row->fence;
 	idx = row->index;
-	if (!idx) {
+	mutex_lock(&synx_dev->row_locks[idx]);
+	fence = row->fence;
+	if ((!idx) || (!fence)) {
 		mutex_unlock(&synx_dev->row_locks[idx]);
 		pr_err("object already cleaned up at %d\n", idx);
 		return -EINVAL;
@@ -1143,22 +1143,8 @@ static int synx_handle_bind(struct synx_private_ioctl_arg *k_ioctl)
 
 static int synx_handle_addrefcount(struct synx_private_ioctl_arg *k_ioctl)
 {
-	struct synx_addrefcount addrefcount_info;
-
-	if (k_ioctl->size != sizeof(addrefcount_info))
-		return -EINVAL;
-
-	if (copy_from_user(&addrefcount_info,
-		u64_to_user_ptr(k_ioctl->ioctl_ptr),
-		k_ioctl->size))
-		return -EFAULT;
-
-	pr_debug("calling synx_addrefcount: 0x%x, %d\n",
-		addrefcount_info.synx_obj, addrefcount_info.count);
-	k_ioctl->result = synx_addrefcount(addrefcount_info.synx_obj,
-		addrefcount_info.count);
-
-	return k_ioctl->result;
+	/* API deprecated for userspace */
+	return 0;
 }
 
 static int synx_handle_release(struct synx_private_ioctl_arg *k_ioctl)

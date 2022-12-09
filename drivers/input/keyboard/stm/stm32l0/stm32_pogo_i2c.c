@@ -2060,6 +2060,9 @@ static int stm32_dev_probe(struct i2c_client *client,
 	if (device_data->stm32_bus_perf_client)
 		INIT_DELAYED_WORK(&device_data->bus_voting_work, stm32_bus_voting_work);
 
+	BLOCKING_INIT_NOTIFIER_HEAD(&pogo_notifier.pogo_notifier_call_chain);
+	hall_logical_init();
+
 	ret = request_threaded_irq(device_data->dev_irq, NULL, stm32_dev_isr,
 					device_data->dtdata->irq_type,
 					STM32_DRV_NAME, device_data);
@@ -2094,8 +2097,6 @@ static int stm32_dev_probe(struct i2c_client *client,
 	}
 
 	device_init_wakeup(&client->dev, 1);
-
-	BLOCKING_INIT_NOTIFIER_HEAD(&pogo_notifier.pogo_notifier_call_chain);
 
 	device_data->connect_state = gpio_get_value(device_data->dtdata->gpio_conn);
 	if (device_data->connect_state)

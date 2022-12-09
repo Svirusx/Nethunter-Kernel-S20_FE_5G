@@ -78,8 +78,8 @@
 		qcom,mdss-dsi-mdp-trigger = "none";
 		qcom,mdss-dsi-dma-trigger = "trigger_sw";
 
-		qcom,mdss-pan-physical-width-dimension = <272>; /* 272.82, round off */
-		qcom,mdss-pan-physical-height-dimension = <175>; /* 175.0608, round off */
+		qcom,mdss-pan-physical-width-dimension = <267>; /* 267.12, round off */
+		qcom,mdss-pan-physical-height-dimension = <167>; /* 167.1408, round off */
 
 		qcom,mdss-dsi-reset-sequence = <0 1>, <1 1>;
 

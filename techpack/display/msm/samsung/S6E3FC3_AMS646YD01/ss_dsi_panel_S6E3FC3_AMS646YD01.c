@@ -203,12 +203,12 @@ static struct dsi_panel_cmd_set *ss_vrr_hbm(struct samsung_display_driver_data *
 	return __ss_vrr(vdd, level_key, is_hbm, is_hmt);
 }
 
-#define FRAME_WAIT_60FPS (17)
-#define FRAME_WAIT_90FPS (12)
-#define FRAME_WAIT_120FPS (9)
-#define HBM_NORMAL_DELAY_60FPS (16)
-#define HBM_NORMAL_DELAY_90FPS (3)
-#define HBM_NORMAL_DELAY_120FPS (9)
+#define FRAME_WAIT_60FPS (34)		/* HBM   : 17 => 34 */
+#define FRAME_WAIT_120FPS (17)		/* HBM   :  9 => 17 */
+#define NORMAL_HBM_DELAY_60FPS (6)	/* HBM   : 16 => 6  */
+#define NORMAL_HBM_DELAY_120FPS (8)	/* HBM   :  9 => 8  */
+#define HBM_NORMAL_DELAY_60FPS (8)	/* NORMAL: 16 => 8  */
+#define HBM_NORMAL_DELAY_120FPS (8)	/* NORMAL:  9 => 8  */
 
 static bool last_br_hbm;
 
@@ -377,9 +377,9 @@ static struct dsi_panel_cmd_set *ss_brightness_gamma_mode2_hbm
 			pcmds->cmds[6].last_command = 1;
 
 			if (vdd->vrr.cur_refresh_rate > 60)
-				pcmds->cmds[6].post_wait_ms = HBM_NORMAL_DELAY_120FPS;
+				pcmds->cmds[6].post_wait_ms = NORMAL_HBM_DELAY_120FPS;
 			else
-				pcmds->cmds[6].post_wait_ms = HBM_NORMAL_DELAY_60FPS;
+				pcmds->cmds[6].post_wait_ms = NORMAL_HBM_DELAY_60FPS;
 		} else {
 			pcmds->cmds[6].last_command = 0;
 			pcmds->cmds[6].post_wait_ms = 0;
@@ -422,9 +422,9 @@ static struct dsi_panel_cmd_set *ss_brightness_gamma_mode2_hbm
 			pcmds->cmds[6].last_command = 1;
 
 			if (vdd->vrr.cur_refresh_rate > 60)
-				pcmds->cmds[6].post_wait_ms = HBM_NORMAL_DELAY_120FPS;
+				pcmds->cmds[6].post_wait_ms = NORMAL_HBM_DELAY_120FPS;
 			else
-				pcmds->cmds[6].post_wait_ms = HBM_NORMAL_DELAY_60FPS;
+				pcmds->cmds[6].post_wait_ms = NORMAL_HBM_DELAY_60FPS;
 		} else {
 			pcmds->cmds[6].last_command = 0;
 			pcmds->cmds[6].post_wait_ms = 0;
@@ -809,7 +809,7 @@ static struct dsi_panel_cmd_set *ss_acl_off(struct samsung_display_driver_data *
 
 enum LPMON_CMD_ID {
 	LPM_BL_CMDID_CTRL = 1,
-	LPM_ON_CMDID_BL = 2,
+	LPM_ON_CMDID_BL = 4,
 };
 
 static void ss_set_panel_lpm_brightness(struct samsung_display_driver_data *vdd)

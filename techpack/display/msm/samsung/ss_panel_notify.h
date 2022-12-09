@@ -48,6 +48,7 @@ struct panel_bl_event_data {
 	int bl_level;
 	int aor_data;
 	int display_idx;
+	int finger_mask_hbm_on;
 };
 
 struct panel_dms_data {
