@@ -9,7 +9,7 @@ DEFCONFIG_NAME=wirus_defconfig
 CHIPSET_NAME=kona
 VARIANT=r8q
 ARCH=arm64
-VERSION=Nethunter_WirusMOD_${VARIANT}_v4.0
+VERSION=Nethunter_WirusMOD_${VARIANT}_v4.0.1
 
 
 BUILD_CROSS_COMPILE=$DIR/toolchain/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/bin/aarch64-linux-android-
