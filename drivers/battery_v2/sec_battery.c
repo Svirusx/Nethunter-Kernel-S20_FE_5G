@@ -1094,16 +1094,37 @@ void sec_bat_check_lrp_temp(
 				*input_current = battery->pdata->lrp_curr[LRP_25W].st_icl[lrp_step - 1];
 				*charging_current = battery->pdata->lrp_curr[LRP_25W].st_fcc[lrp_step - 1];
 			} else {
-				if (*input_current > (60000 / battery->input_voltage))
-					*input_current = 60000 / battery->input_voltage;
+				if (lcd_sts) {
+					if (*input_current > (60000 / battery->input_voltage))
+						*input_current = 60000 / battery->input_voltage;
+				} else {
+					if (*input_current > battery->pdata->chg_input_limit_current)
+						*input_current = battery->pdata->chg_input_limit_current;
+					if (*charging_current > battery->pdata->chg_charging_limit_current)
+						*charging_current = battery->pdata->chg_charging_limit_current;
+				}
 			}
 		} else if (is_hv_wire_type(ct)) {
 			if (is_hv_wire_12v_type(battery->cable_type)) {
-				if (*input_current > battery->pdata->siop_hv_12v_input_limit_current)
-					*input_current = battery->pdata->siop_hv_12v_input_limit_current;
+				if (lcd_sts) {
+					if (*input_current > battery->pdata->siop_hv_12v_input_limit_current)
+						*input_current = battery->pdata->siop_hv_12v_input_limit_current;
+				} else {
+					if (*input_current > battery->pdata->chg_input_limit_current)
+						*input_current = battery->pdata->chg_input_limit_current;
+					if (*charging_current > battery->pdata->chg_charging_limit_current)
+						*charging_current = battery->pdata->chg_charging_limit_current;
+				}
 			} else {
-				if (*input_current > battery->pdata->siop_hv_input_limit_current)
-					*input_current = battery->pdata->siop_hv_input_limit_current;
+				if (lcd_sts) {
+					if (*input_current > battery->pdata->siop_hv_input_limit_current)
+						*input_current = battery->pdata->siop_hv_input_limit_current;
+				} else {
+					if (*input_current > battery->pdata->chg_input_limit_current)
+						*input_current = battery->pdata->chg_input_limit_current;
+					if (*charging_current > battery->pdata->chg_charging_limit_current)
+						*charging_current = battery->pdata->chg_charging_limit_current;
+				}
 			}
 		} else {
 			if (*input_current > battery->pdata->siop_input_limit_current)

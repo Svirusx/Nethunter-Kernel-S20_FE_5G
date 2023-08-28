@@ -143,6 +143,8 @@ extern int sysctl_oom_kill_allocating_task;
 extern int sysctl_panic_on_oom;
 extern int sysctl_reap_mem_on_sigkill;
 
+extern atomic64_t last_oom_jiffies;
+
 /* calls for LMK reaper */
 extern void add_to_oom_reaper(struct task_struct *p);
 extern void check_panic_on_foreground_kill(struct task_struct *p);

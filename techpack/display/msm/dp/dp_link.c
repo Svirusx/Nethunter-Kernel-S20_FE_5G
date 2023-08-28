@@ -1337,18 +1337,6 @@ bool secdp_check_link_stable(struct dp_link *dp_link)
 		goto exit;
 	}
 
-	if (!(get_link_status(link->link_status, DP_SINK_STATUS) &
-			DP_RECEIVE_PORT_0_STATUS)) {
-		DP_ERR("[205h] port0: out of sync\n");
-		goto exit;
-	}
-/*
- *	if (!(get_link_status(link->link_status, DP_LANE_ALIGN_STATUS_UPDATED) &
- *			DP_LINK_STATUS_UPDATED)) {
- *		DP_ERR("[204h] link_status_updated is zero!\n");
- *		goto exit;
- *	}
- */
 	if (!(get_link_status(link->link_status, DP_LANE_ALIGN_STATUS_UPDATED) &
 			DP_INTERLANE_ALIGN_DONE)) {
 		DP_ERR("[204h] interlane_align_done is zero!\n");

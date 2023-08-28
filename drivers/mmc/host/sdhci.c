@@ -1968,7 +1968,8 @@ static void sdhci_request(struct mmc_host *mmc, struct mmc_request *mrq)
 	 * Check SDcard busy signal by DAT0 before sending CMD13
 	 * about 10ms : 100us * 100 times
 	 */
-	if (present && (mrq->cmd->opcode == MMC_SEND_STATUS)) {
+	if (present && (mrq->cmd->opcode == MMC_SEND_STATUS) &&
+			mmc_can_retune(mmc)) {
 		int tries = 100;
 		while (sdhci_card_busy(mmc) && --tries)
 			usleep_range(95, 105);

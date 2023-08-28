@@ -92,7 +92,6 @@ struct zt_ts_platform_data {
 	u8 area_indicator;
 	u8 area_navigation;
 	u8 area_edge;
-	u16 page_size;
 	u8 orientation;
 	bool support_spay;
 	bool support_aod;

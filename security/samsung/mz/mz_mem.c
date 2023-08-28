@@ -89,6 +89,8 @@ int mz_addr_init(void)
 			(unsigned long long)virt_to_phys(list_addr_mz2));
 	MZ_LOG(err_level_debug, "list addr3 : 0x%pK(0x%llx)\n", list_addr_mz3,
 			(unsigned long long)virt_to_phys(list_addr_mz3));
+#else
+	MZ_LOG(err_level_error, "%s no tz config\n", __func__);
 #endif
 
 	addr_list = kmalloc(sizeof(uint64_t) * ADDR_INIT_SIZE, GFP_KERNEL);
@@ -131,6 +133,8 @@ int set_mz_mem(void)
 	__raw_writel(addr_list1, list_addr_mz1);
 	__raw_writel(addr_list2, list_addr_mz2);
 	__raw_writel(mz_magic, list_addr_mz3);
+#else
+	MZ_LOG(err_level_error, "%s mz_magic set fail\n", __func__);
 #endif
 
 	MZ_LOG(err_level_debug, "addr_list addr : (0x%llx) (0x%llx) (0x%llx)\n",

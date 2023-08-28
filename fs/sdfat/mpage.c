@@ -123,7 +123,12 @@ static inline void __sdfat_submit_bio_write2(int flags, struct bio *bio)
 }
 #endif
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 1, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 12, 0)
+static inline int bio_get_nr_vecs(struct block_device *bdev)
+{
+	return BIO_MAX_VECS;
+}
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 1, 0)
 static inline int bio_get_nr_vecs(struct block_device *bdev)
 {
 	return BIO_MAX_PAGES;

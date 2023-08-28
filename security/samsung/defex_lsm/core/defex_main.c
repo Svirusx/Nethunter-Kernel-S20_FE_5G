@@ -30,6 +30,7 @@
 #include <linux/unistd.h>
 #include <linux/version.h>
 #include <linux/vmalloc.h>
+#include <linux/binfmts.h>
 #include "include/defex_caches.h"
 #include "include/defex_catch_list.h"
 #include "include/defex_config.h"
@@ -431,6 +432,29 @@ out:
 
 #ifdef DEFEX_TRUSTED_MAP_ENABLE
 /* Trusted map feature decision function */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
+__visible_for_testing int task_defex_trusted_map(struct defex_context *dc, va_list ap)
+{
+	int ret = DEFEX_ALLOW, argc;
+	struct linux_binprm *bprm;
+
+	if (!CHECK_ROOT_CREDS(&dc->cred))
+		goto out;
+
+	bprm = va_arg(ap, struct linux_binprm *);
+	argc = bprm->argc;
+#ifdef DEFEX_DEBUG_ENABLE
+	if (argc <= 0)
+		pr_crit("[DEFEX][DTM] Invalid trusted map arguments - check integration on fs/exec.c (argc %d)", argc);
+#endif
+
+	ret = defex_trusted_map_lookup(dc, argc, bprm);
+	if (defex_tm_mode_enabled(DEFEX_TM_PERMISSIVE_MODE))
+		ret = DEFEX_ALLOW;
+out:
+	return ret;
+}
+#else
 __visible_for_testing int task_defex_trusted_map(struct defex_context *dc, va_list ap)
 {
 	int ret = DEFEX_ALLOW, argc;
@@ -452,6 +476,7 @@ __visible_for_testing int task_defex_trusted_map(struct defex_context *dc, va_li
 out:
 	return ret;
 }
+#endif
 #endif /* DEFEX_TRUSTED_MAP_ENABLE */
 
 #ifdef DEFEX_IMMUTABLE_ENABLE
@@ -521,7 +546,11 @@ int task_defex_enforce(struct task_struct *p, struct file *f, int syscall, ...)
 	if (!p || p->pid == 1 || !p->mm || !is_task_used(p))
 		return ret;
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 14, 0))
 	if ((p->state & (__TASK_STOPPED | TASK_DEAD)) || (p->exit_state & (EXIT_ZOMBIE | EXIT_DEAD)))
+#else
+	if ((p->__state & (__TASK_STOPPED | TASK_DEAD)) || (p->exit_state & (EXIT_ZOMBIE | EXIT_DEAD)))
+#endif
 		return ret;
 
 	if (syscall < 0) {
@@ -620,11 +649,12 @@ do_allow:
 	release_defex_context(&dc);
 	put_task_struct(p);
 	return DEFEX_ALLOW;
-
+#if defined(DEFEX_IMMUTABLE_ENABLE) || defined(DEFEX_TRUSTED_MAP_ENABLE)
 do_deny:
 	release_defex_context(&dc);
 	put_task_struct(p);
 	return -DEFEX_DENY;
+#endif /* DEFEX_IMMUTABLE_ENABLE || DEFEX_TRUSTED_MAP_ENABLE */
 }
 
 int task_defex_zero_creds(struct task_struct *tsk)
@@ -636,7 +666,11 @@ int task_defex_zero_creds(struct task_struct *tsk)
 	if (is_task_creds_ready()) {
 		is_fork = ((tsk->flags & PF_FORKNOEXEC) && (!tsk->on_rq));
 #ifdef TASK_NEW
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 14, 0))
 		if (!is_fork && (tsk->state & TASK_NEW))
+#else
+		if (!is_fork && (tsk->__state & TASK_NEW))
+#endif
 			is_fork = 1;
 #endif /* TASK_NEW */
 		set_task_creds_tcnt(tsk, is_fork?1:-1);

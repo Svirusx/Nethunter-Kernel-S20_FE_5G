@@ -192,6 +192,10 @@ static int samsung_kbd_input_mapping(struct hid_device *hdev,
 		case 0x223:
 			samsung_kbd_mouse_map_key_clear(KEY_HOMEPAGE);
 			break;
+		/* Smtart Voice Key */
+		case 0x300:
+			samsung_kbd_mouse_map_key_clear(BTN_TRIGGER_HAPPY13);
+			break;
 		/* RECENTAPPS */
 		case 0x301:
 			samsung_kbd_mouse_map_key_clear(BTN_TRIGGER_HAPPY1);

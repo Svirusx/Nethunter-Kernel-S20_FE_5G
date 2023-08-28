@@ -4096,14 +4096,14 @@ static void addrconf_dad_work(struct work_struct *w)
 	}
 
 	ifp->dad_probes--;
-	if (!strcmp(ifp->idev->dev->name, "aware_data0")) {
-		pr_info("Reduce waing time from %lu to %lu (HZ=%lu) to send NS for quick transmission for %s\n",
+	if (ifp->idev->dev != NULL && !strcmp(ifp->idev->dev->name, "aware_data0")) {
+		pr_info("Reduce wating time from %lu to %lu (HZ=%lu) to send NS for quick transmission for %s\n",
 			NEIGH_VAR(ifp->idev->nd_parms, RETRANS_TIME),
-			NEIGH_VAR(ifp->idev->nd_parms, RETRANS_TIME)/10,
+			NEIGH_VAR(ifp->idev->nd_parms, RETRANS_TIME)/100,
 			HZ,
 			ifp->idev->dev->name);
 		addrconf_mod_dad_work(ifp,
-					NEIGH_VAR(ifp->idev->nd_parms, RETRANS_TIME)/10);
+					NEIGH_VAR(ifp->idev->nd_parms, RETRANS_TIME)/100);
 	} else
 	addrconf_mod_dad_work(ifp,
 			      NEIGH_VAR(ifp->idev->nd_parms, RETRANS_TIME));

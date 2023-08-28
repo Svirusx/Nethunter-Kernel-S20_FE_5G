@@ -20,6 +20,7 @@
 #include <linux/xattr.h>
 #include <linux/fs.h>
 #include <linux/proca.h>
+#include <linux/cdev.h>
 
 #include "proca_identity.h"
 #include "proca_certificate.h"
@@ -28,6 +29,8 @@
 #include "proca_log.h"
 #include "proca_config.h"
 #include "proca_porting.h"
+
+#define PROCA_DEV_NAME "proca_config"
 
 #define XATTR_PA_SUFFIX "pa"
 #define XATTR_NAME_PA (XATTR_USER_PREFIX XATTR_PA_SUFFIX)
@@ -70,6 +73,9 @@ static struct five_hook_list five_ops[] = {
 
 static struct proca_table g_proca_table;
 struct proca_config g_proca_config;
+static dev_t proca_dev;
+static struct cdev proca_cdev;
+static struct class *proca_class;
 
 static int g_proca_inited;
 
@@ -318,11 +324,72 @@ int proca_get_task_cert(const struct task_struct *task,
 	return 0;
 }
 
+static ssize_t proca_cdev_read(struct file *filp, char __user *buf, size_t count,
+			loff_t *f_pos)
+{
+	phys_addr_t p = virt_to_phys(&g_proca_config);
+
+	if (!proca_table_get_by_task(&g_proca_table, current) ||
+		!task_integrity_user_read(TASK_INTEGRITY(current))) {
+		PROCA_ERROR_LOG("Access to config is restricted.\n");
+		return -EPERM;
+	}
+
+	return simple_read_from_buffer(buf, count, f_pos, &p, sizeof(p));
+}
+
+static const struct file_operations proca_cdev_fops = {
+	.owner = THIS_MODULE,
+	.read = proca_cdev_read,
+};
+
+static int init_proca_config_device(void)
+{
+	if ((alloc_chrdev_region(&proca_dev, 0, 1, PROCA_DEV_NAME)) < 0) {
+		PROCA_ERROR_LOG("Cannot allocate major number\n");
+		return -1;
+	}
+
+	proca_class = class_create(THIS_MODULE, PROCA_DEV_NAME);
+	if (IS_ERR(proca_class)) {
+		PROCA_ERROR_LOG("Cannot create class\n");
+		goto region_cleanup;
+	}
+
+	cdev_init(&proca_cdev, &proca_cdev_fops);
+	if ((cdev_add(&proca_cdev, proca_dev, 1)) < 0) {
+		PROCA_ERROR_LOG("Cannot add the device to the system\n");
+		goto class_cleanup;
+	}
+
+	if (!device_create(proca_class, NULL, proca_dev, NULL, PROCA_DEV_NAME)) {
+		PROCA_ERROR_LOG("Cannot create device\n");
+		goto device_cleanup;
+	}
+
+	PROCA_INFO_LOG("Config driver is inited.\n");
+	return 0;
+
+device_cleanup:
+	cdev_del(&proca_cdev);
+
+class_cleanup:
+	class_destroy(proca_class);
+
+region_cleanup:
+	unregister_chrdev_region(proca_dev, 1);
+	return -1;
+}
+
 static __init int proca_module_init(void)
 {
 	int ret;
 
 	ret = init_proca_config(&g_proca_config, &g_proca_table);
+	if (ret)
+		return ret;
+
+	ret = init_proca_config_device();
 	if (ret)
 		return ret;
 

@@ -192,3 +192,12 @@ bool esoc_cmd_eng_enabled(struct esoc_clink *esoc_clink);
 /* Modem boot fail actions */
 int esoc_set_boot_fail_action(struct esoc_clink *esoc_clink, u32 action);
 int esoc_set_n_pon_tries(struct esoc_clink *esoc_clink, u32 n_tries);
+
+#ifdef CONFIG_ESOC_MDM_4x
+extern int esoc_do_silentreset(void);
+#else
+int esoc_do_silentreset(void)
+{
+	return -1;
+}
+#endif

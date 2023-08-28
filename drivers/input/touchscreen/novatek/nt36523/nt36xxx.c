@@ -1640,6 +1640,7 @@ static struct nvt_ts_platdata *nvt_ts_parse_dt(struct device *dev)
 	platdata->enable_settings_aot = of_property_read_bool(np, "enable_settings_aot");
 	platdata->scanoff_cover_close = of_property_read_bool(np, "novatek,scanoff_when_cover_closed");
 	platdata->enable_glove_mode = of_property_read_bool(np, "novatek,enable_glove_mode");
+	platdata->enable_sysinput_enabled = of_property_read_bool(np, "enable_sysinput_enabled");
 
 	if (of_property_read_u32(np, "novatek,bringup", &platdata->bringup) < 0)
 		platdata->bringup = 0;

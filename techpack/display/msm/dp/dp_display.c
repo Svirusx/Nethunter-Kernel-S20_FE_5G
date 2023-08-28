@@ -471,7 +471,7 @@ int secdp_read_branch_revision(struct dp_display_private *dp)
 	}
 
 	drm_aux = dp->aux->drm_aux;
-	fw_ver = dp->sec.dex.fw_ver;
+	fw_ver  = dp->sec.adapter.fw_ver;
 
 	rlen = drm_dp_dpcd_read(drm_aux, DPCD_BRANCH_HW_REVISION, fw_ver,
 			LEN_BRANCH_REVISION);
@@ -500,7 +500,7 @@ void secdp_clear_branch_info(struct dp_display_private *dp)
 	if (!dp)
 		goto end;
 
-	fw_ver = dp->sec.dex.fw_ver;
+	fw_ver = dp->sec.adapter.fw_ver;
 	for (i = 0; i < LEN_BRANCH_REVISION; i++)
 		fw_ver[i] = 0;
 
@@ -565,44 +565,93 @@ void secdp_dex_adapter_skip_store(bool skip)
  * check connected dongle type with given vid and pid. Based upon this info,
  * we can decide maximum dex resolution for that cable/adapter.
  */
-static enum dex_support_res_t secdp_dex_adapter_check(CC_NOTI_TYPEDEF *noti)
+static void secdp_adapter_check_dex(struct dp_display_private *dp)
 {
-	struct dp_display_private *dp = g_secdp_priv;
-	enum dex_support_res_t type = DEX_RES_DFT; /* default resolution */
-	uint ven_id, prod_id;
-
-	ven_id = (uint)(noti->sub2);
-	prod_id = (uint)(noti->sub3);
-	DP_INFO("ven_id(0x%04x), prod_id(0x%04x)\n", ven_id, prod_id);
+	struct secdp_adapter *adapter = &dp->sec.adapter;
+	enum dex_support_res_t dex_type = DEX_RES_DFT;
+	bool ss_fan = false;
 
 #ifdef NOT_SUPPORT_DEX_RES_CHANGE
-	return DEX_RES_NOT_SUPPORT;
+	adapter->dex_type = DEX_RES_NOT_SUPPORT;
+	return;
 #endif
 
 	if (dp->parser->dex_dft_res > DEX_RES_NOT_SUPPORT) {
-		type = dp->parser->dex_dft_res;
+		dex_type = dp->parser->dex_dft_res;
 		goto end;
 	}
 
-	if (ven_id == SAMSUNG_VENDOR_ID) {
-		switch (prod_id) {
-		case DEXDOCK_PRODUCT_ID:
-		case DEXPAD_PRODUCT_ID:
-			type = DEX_RES_MAX;
-			break;
-		default:
-			DP_INFO("it's SS dongle but UNKNOWN\n");
-			break;
-		}
-	} else {
-		DP_INFO("it's NOT SS dongle\n");
+	if (adapter->ven_id != SAMSUNG_VENDOR_ID) {
+		goto end;
 	}
 
+	switch (adapter->prod_id) {
+	case DEXDOCK_PRODUCT_ID:
+	case DEXPAD_PRODUCT_ID:
+		dex_type = DEX_RES_MAX;
+		ss_fan = true;
+		break;
+	default:
+		break;
+	}
 end:
-	DP_INFO("type: %s\n", secdp_dex_res_to_string(type));
-	dp->sec.adapter.ven_id = ven_id;
-	dp->sec.adapter.prod_id = prod_id;
-	return type;
+	DP_INFO("fan:%d %s\n", ss_fan, secdp_dex_res_to_string(dex_type));
+	adapter->dex_type = dex_type;
+}
+
+static void secdp_adapter_check_legacy(struct dp_display_private *dp)
+{
+	struct secdp_adapter *adapter = &dp->sec.adapter;
+	bool legacy = false;
+	if (adapter->ven_id != SAMSUNG_VENDOR_ID) {
+		goto end;
+	}
+
+	switch (adapter->prod_id) {
+	case DEXPAD_PRODUCT_ID:
+	case DEXCABLE_PRODUCT_ID:
+	case MPA2_PRODUCT_ID:
+	case MPA3_PRODUCT_ID:
+		legacy = true;
+		break;
+	default:
+		break;
+	}
+
+	DP_INFO("ss_legacy:%d\n", legacy);
+end:
+	adapter->ss_legacy = legacy;
+}
+
+static void secdp_adapter_init(struct dp_display_private *dp)
+{
+	struct secdp_adapter *adapter = &dp->sec.adapter;
+
+	memset(adapter, 0, sizeof(struct secdp_adapter));
+}
+
+static void secdp_adapter_check(struct dp_display_private *dp,
+		CC_NOTI_TYPEDEF *noti, bool connect)
+{
+	struct secdp_adapter *adapter = &dp->sec.adapter;
+
+	secdp_adapter_init(dp);
+
+	if (!connect)
+		goto end;
+
+	adapter->ven_id  = (uint)(noti->sub2);
+	adapter->prod_id = (uint)(noti->sub3);
+	if (adapter->ven_id == SAMSUNG_VENDOR_ID)
+		adapter->ss_genuine = true;
+
+	DP_INFO("venId:0x%04x prodId:0x%04x genuine:%d\n", adapter->ven_id,
+		adapter->prod_id, adapter->ss_genuine);
+
+	secdp_adapter_check_dex(dp);
+	secdp_adapter_check_legacy(dp);
+end:
+	return;
 }
 
 enum {
@@ -2418,6 +2467,12 @@ cp_irq:
 		dp->hdcp.ops->cp_irq(dp->hdcp.data);
 
 	if (!dp->mst.mst_active) {
+#if defined(CONFIG_SECDP)
+		if (dp->sec.hpd_noti_deferred) {
+			DP_INFO("noti_deferred! skip noti\n");
+			goto exit;
+		}
+#endif
 		/*
 		 * It is possible that the connect_work skipped sending
 		 * the HPD notification if the attention message was
@@ -2786,17 +2841,18 @@ static void secdp_ccic_connect_init(struct dp_display_private *dp,
 	dp->sec.cnt_mst_hpd     = 0;
 	dp->sec.hdcp_retry      = 0;
 
+	secdp_adapter_check(dp, noti, connect);
+
 	/* set flags here as soon as disconnected
 	 * resource clear will be made later at "secdp_process_attention"
 	 */
 	dp->sec.dex.res = connect ?
-		secdp_dex_adapter_check(noti) : DEX_RES_NOT_SUPPORT;
+		dp->sec.adapter.dex_type : DEX_RES_NOT_SUPPORT;
 	dp->sec.dex.prev = dp->sec.dex.curr = dp->sec.dex.status = DEX_DISABLED;
 	dp->sec.dex.reconnecting = 0;
 
 	secdp_clear_branch_info(dp);
 	secdp_clear_link_status_update_cnt(dp->link);
-	secdp_logger_set_max_count(300);
 
 #ifdef CONFIG_SEC_DISPLAYPORT_BIGDATA
 	if (connect) {
@@ -2829,6 +2885,7 @@ static int secdp_ccic_noti_cb(struct notifier_block *nb, unsigned long action,
 		break;
 
 	case CCIC_NOTIFY_ID_DP_CONNECT:
+		secdp_logger_set_max_count(300);
 		DP_INFO("CCIC_NOTIFY_ID_DP_CONNECT, <%d>\n", noti.sub1);
 
 		switch (noti.sub1) {
@@ -2901,6 +2958,8 @@ static int secdp_ccic_noti_cb(struct notifier_block *nb, unsigned long action,
 		break;
 
 	case CCIC_NOTIFY_ID_DP_HPD:
+		if (!(noti.sub1 == CCIC_NOTIFY_HIGH && noti.sub2 == CCIC_NOTIFY_IRQ)) /* if it's not cp irq */
+			secdp_logger_set_max_count(300);
 		DP_INFO("CCIC_NOTIFY_ID_DP_HPD, sub1 <%s>, sub2<%s>\n",
 			(noti.sub1 == CCIC_NOTIFY_HIGH) ? "high" :
 				((noti.sub1 == CCIC_NOTIFY_LOW) ? "low" : "??"),
@@ -2912,7 +2971,6 @@ static int secdp_ccic_noti_cb(struct notifier_block *nb, unsigned long action,
 		}
 
 		if (noti.sub1 == CCIC_NOTIFY_HIGH) {
-			secdp_logger_set_max_count(300);
 			atomic_set(&dp->sec.hpd, 1);
 			dp->hpd->hpd_high = true;
 		} else/* if (noti.sub1 == CCIC_NOTIFY_LOW)*/ {
@@ -3079,7 +3137,7 @@ int secdp_send_deferred_hpd_noti(void)
 	struct dp_display_private *dp = g_secdp_priv;
 	int rc = 0;
 
-	DP_DEBUG("+++\n");
+	DP_INFO("noti_deferred:%d\n", dp->sec.hpd_noti_deferred);
 
 	cancel_delayed_work_sync(&dp->sec.hpd_noti_work);
 
@@ -3095,7 +3153,7 @@ static void secdp_hpd_noti_work(struct work_struct *work)
 {
 	struct dp_display_private *dp = g_secdp_priv;
 
-	DP_DEBUG("+++\n");
+	DP_INFO("hpd_noti_work:%d\n", dp->sec.hpd_noti_deferred);
 
 	dp_display_send_hpd_notification(dp);
 	dp->sec.hpd_noti_deferred = false;
@@ -4353,14 +4411,9 @@ void secdp_dex_res_init(void)
 	sec->prefer_ratio    = MON_RATIO_NA;
 
 	sec->has_prefer      = false;
-	sec->ignore_prefer   = false;
 	sec->prefer_hdisp    = 0;
 	sec->prefer_vdisp    = 0;
 	sec->prefer_refresh  = 0;
-
-#ifdef SECDP_IGNORE_PREFER_IF_DEX_RES_EXIST
-	sec->dex.res_exist   = false;
-#endif
 }
 
 static struct secdp_display_timing secdp_supported_resolution[] = {
@@ -4471,26 +4524,6 @@ bool secdp_check_dex_reconnect(void)
 end:
 	return ret;
 }
-
-#ifdef SECDP_IGNORE_PREFER_IF_DEX_RES_EXIST
-/* check if given ratio is one of dex ratios (16:9,16:10,21:9) */
-static bool secdp_check_dex_ratio(enum mon_aspect_ratio_t ratio)
-{
-	bool ret = false;
-
-	switch (ratio) {
-	case MON_RATIO_16_9:
-	case MON_RATIO_16_10:
-	case MON_RATIO_21_9:
-		ret = true;
-		break;
-	default:
-		break;
-	}
-
-	return ret;
-}
-#endif
 
 static inline char *secdp_aspect_ratio_to_string(enum mon_aspect_ratio_t ratio)
 {
@@ -4620,13 +4653,7 @@ static bool secdp_check_supported_resolution(struct dp_display_private *dp,
 			sec->max_mir_res_idx, sec->max_dex_res_idx,
 			sec->prefer_res_idx);
 
-#ifndef SECDP_IGNORE_PREFER_IF_DEX_RES_EXIST
 		if (!prefer_support) {
-#else
-		if (!prefer_support || (secdp_check_dex_mode() &&
-				!secdp_check_dex_ratio(sec->prefer_ratio) &&
-				sec->dex.res_exist)) {
-#endif
 			DP_INFO("remove prefer!\n");
 			mode->type &= (~DRM_MODE_TYPE_PREFERRED);
 		}
@@ -4646,7 +4673,7 @@ static bool secdp_check_supported_resolution(struct dp_display_private *dp,
 		}
 	}
 
-	if (!supported)
+	if (!supported || mode->vrefresh < MIRROR_REFRESH_MIN)
 		goto end;
 
 	mode_refresh_rate = drm_mode_vrefresh(mode);
@@ -4690,11 +4717,7 @@ static bool secdp_check_supported_resolution(struct dp_display_private *dp,
 				secdp_timing[i].index == 1/*720x480*/))
 			ret = true;
 
-#ifndef SECDP_IGNORE_PREFER_IF_DEX_RES_EXIST
 		if (ret) {
-#else
-		if (ret && !secdp_check_dex_ratio(sec->prefer_ratio)) {
-#endif
 			if (sec->max_dex_res_idx < secdp_timing[i].index)
 				sec->max_dex_res_idx = secdp_timing[i].index;
 		}
@@ -4702,26 +4725,13 @@ static bool secdp_check_supported_resolution(struct dp_display_private *dp,
 		if (prefer_support) {
 			/* sink's preferred resolution */
 			if (mode_is_prefer) {
-				if (!sec->ignore_prefer) {
-					sec->prefer_hdisp   = mode->hdisplay;
-					sec->prefer_vdisp   = mode->vdisplay;
-					sec->prefer_refresh = mode_refresh_rate;
+				sec->prefer_hdisp   = mode->hdisplay;
+				sec->prefer_vdisp   = mode->vdisplay;
+				sec->prefer_refresh = mode_refresh_rate;
 
-					/* update preferred index */
-					sec->prefer_res_idx = secdp_timing[i].index;
-					sec->has_prefer     = true;
-				} else {
-					sec->prefer_hdisp   = 0;
-					sec->prefer_vdisp   = 0;
-					sec->prefer_refresh = 0;
-
-					/* init preferred index */
-					sec->prefer_res_idx = -2;
-					sec->has_prefer     = false;
-
-					/* clear preferred flag */
-					mode->type &= (~DRM_MODE_TYPE_PREFERRED);
-				}
+				/* update preferred index */
+				sec->prefer_res_idx = secdp_timing[i].index;
+				sec->has_prefer     = true;
 			} else if (sec->prefer_refresh > 0) {
 				if (mode->hdisplay == sec->prefer_hdisp &&
 					mode->vdisplay == sec->prefer_vdisp &&
@@ -4729,7 +4739,7 @@ static bool secdp_check_supported_resolution(struct dp_display_private *dp,
 					/* found same h/v display but higher
 					 * refresh than preferred timing
 					 */
-					sec->ignore_prefer = true;
+					mode->type |= DRM_MODE_TYPE_PREFERRED;
 				}
 			}
 		}
@@ -4750,15 +4760,6 @@ static bool secdp_check_supported_resolution(struct dp_display_private *dp,
 	}
 
 end:
-#ifdef SECDP_IGNORE_PREFER_IF_DEX_RES_EXIST
-	if (sec && secdp_check_dex_mode() &&
-			secdp_check_dex_ratio(secdp_get_aspect_ratio(mode)) &&
-			!sec->dex.res_exist) {
-		DP_INFO("Dex resolution found! %dx%d@%dhz\n",
-			mode->hdisplay, mode->vdisplay, mode->vrefresh);
-		sec->dex.res_exist = true;
-	}
-#endif
 	return ret;
 }
 #endif/*CONFIG_SEC_DISPLAYPORT*/
@@ -4812,7 +4813,7 @@ static enum drm_mode_status dp_display_validate_mode(
 
 	mode_rate_khz = mode->clock * mode_bpp;
 	rate = drm_dp_bw_code_to_link_rate(dp->link->link_params.bw_code);
-	supported_rate_khz = link_info->num_lanes * rate * 8;
+	supported_rate_khz = dp->link->link_params.lane_count * rate * 8;
 	tmds_max_clock = dp_panel->connector->display_info.max_tmds_clock;
 
 	if (mode_rate_khz > supported_rate_khz) {

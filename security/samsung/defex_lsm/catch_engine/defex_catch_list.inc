@@ -351,7 +351,7 @@ static const struct local_syscall_struct syscall_catch_arr[DEFEX_CATCH_COUNT] = 
 	SYSCALL_CATCH(getresgid, -EFAULT),
 #endif
 #ifdef __NR_rt_sigprocmask
-	SYSCALL_CATCH(rt_sigprocmask, -EFAULT),
+	SYSCALL_CATCH(rt_sigprocmask, 0), //-EFAULT, Skip this syscall due to HTML5 score of Geekbench5.4
 #endif
 #ifdef __NR_socketpair
 	SYSCALL_CATCH(socketpair, -EFAULT),

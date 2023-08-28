@@ -212,6 +212,7 @@ struct reg_ioctl {
 #define ZT7532_CHIP_CODE	0xE532
 #define ZT7554_CHIP_CODE	0xE700
 #define ZT7650_CHIP_CODE	0xE650
+#define ZT7650M_CHIP_CODE	0x650E
 
 /////////////////////////////////////////////////////
 //[Judge download type]
@@ -226,7 +227,7 @@ struct reg_ioctl {
 
 #define VCMD_UPGRADE_PART_ERASE_START			0x01DA
 
-#if defined(CONFIG_TOUCHSCREEN_ZINITIX_ZT7650)
+#if defined(CONFIG_TOUCHSCREEN_ZINITIX_ZT7650) || defined(CONFIG_TOUCHSCREEN_ZINITIX_ZT7650M)
 #define VCMD_UPGRADE_INIT_FLASH				0x20F0
 #define VCMD_UPGRADE_WRITE_FLASH			0x21F0
 #define VCMD_UPGRADE_READ_FLASH				0x22F0
@@ -240,7 +241,7 @@ struct reg_ioctl {
 #define VCMD_NVM_INIT					0x12F0
 #define VCMD_NVM_WRITE_ENABLE				0x13F0
 #define VCMD_INTN_CLR					0x14F0
-#define VCMD_OSC_SEL					0x1AF0
+#define VCMD_OSC_FREQ_SEL				0x1AF0
 
 #define VCMD_ID						0x17F0
 #define VCMD_ENABLE					0x10F0
@@ -260,7 +261,7 @@ struct reg_ioctl {
 #define VCMD_NVM_INIT					0xC002
 #define VCMD_NVM_WRITE_ENABLE				0xC003
 #define VCMD_INTN_CLR					0xC004
-#define VCMD_OSC_SEL					0xC201
+#define VCMD_OSC_FREQ_SEL				0xC201
 
 #define VCMD_ID						0xCC00
 #define VCMD_ENABLE					0xC000
@@ -845,6 +846,9 @@ struct zt_ts_info {
 	int flip_cover_flag;
 
 	u8 ito_test[4];
+	int tsp_page_size;
+	int fuzing_udelay;
+	bool zt7650m_enabled;
 	struct sec_tclm_data *tdata;
 };
 
@@ -1991,6 +1995,14 @@ static bool ts_read_coord(struct zt_ts_info *info)
 
 	if (info->touch_info[0].byte00.value.eid == COORDINATE_EVENT) {
 		info->touched_finger_num = info->touch_info[0].byte07.value.left_event;
+
+		if (info->zt7650m_enabled) {
+			if(info->touched_finger_num > (info->cap_info.multi_fingers-1)){
+				input_err(true, &client->dev, "Invalid touched_finger_num(%d)\n", info->touched_finger_num);
+				info->touched_finger_num = 0;
+			}
+		}
+
 		if (info->touched_finger_num > 0) {
 			if (read_data(info->client, ZT_POINT_STATUS_REG1, (u8 *)(&info->touch_info[1]),
 						(info->touched_finger_num)*sizeof(struct point_info)) < 0) {
@@ -2464,24 +2476,24 @@ static bool ts_check_need_upgrade(struct zt_ts_info *info,
 #define TC_SECTOR_SZ_READ		8
 #endif
 
+#define TSP_PAGE_SIZE_ZT7650M	128
+#define FUZING_UDELAY_ZT7650M 15000
+
 #if defined(CONFIG_TOUCHSCREEN_ZINITIX_ZT7650)
 #define TSP_PAGE_SIZE	1024
-#define FUZING_UDELAY 28000
-#endif
-
-#if defined(CONFIG_TOUCHSCREEN_ZINITIX_ZT7554)
+#define FUZING_UDELAY 28000 
+#elif defined(CONFIG_TOUCHSCREEN_ZINITIX_ZT7554)
 #define TSP_PAGE_SIZE		128
 #define FUZING_UDELAY	8000
-#endif
-
-#if defined(CONFIG_TOUCHSCREEN_ZINITIX_ZT7548) || defined(CONFIG_TOUCHSCREEN_ZINITIX_ZT7538)
+#elif defined(CONFIG_TOUCHSCREEN_ZINITIX_ZT7548) || defined(CONFIG_TOUCHSCREEN_ZINITIX_ZT7538)
 #define TSP_PAGE_SIZE		64
 #define FUZING_UDELAY	8000
-#endif
-
-#if defined(CONFIG_TOUCHSCREEN_ZINITIX_ZT7532)
+#elif defined(CONFIG_TOUCHSCREEN_ZINITIX_ZT7532)
 #define TSP_PAGE_SIZE		64
 #define FUZING_UDELAY	30000
+#else
+#define TSP_PAGE_SIZE	1024
+#define FUZING_UDELAY 28000 
 #endif
 
 #define USB_POR_OFF_DELAY	1500
@@ -2622,6 +2634,11 @@ static bool upgrade_fw_full_download(struct zt_ts_info *info, const u8 *firmware
 #if defined(CONFIG_TOUCHSCREEN_ZINITIX_ZT7650)
 	unsigned short int erase_info[2];
 #endif
+	// change erase/program time
+	u32	icNvmDelayRegister = 0x001E002C;
+	u32	icNvmDelayTime = 0x00004FC2;
+	u8 cData[8];
+
 	nmemsz = fw_info_size + fw_core_size + fw_cust_size + fw_regi_size;
 	if (nmemsz % nrdsectorsize > 0)
 		nmemsz = (nmemsz / nrdsectorsize) * nrdsectorsize + nrdsectorsize;
@@ -2634,8 +2651,36 @@ static bool upgrade_fw_full_download(struct zt_ts_info *info, const u8 *firmware
 		input_err(true, &client->dev, "%s: power sequence error (nvm init)\n", __func__);
 		return false;
 	}
-
 	zt_delay(5);
+
+	if (info->zt7650m_enabled) {
+		//====================================================
+		// change erase/program time
+
+		// set default OSC Freq - 44Mhz
+		if (write_reg(client, VCMD_OSC_FREQ_SEL , 128) != I2C_SUCCESS) {
+			input_err(true, &client->dev, "%s: fail to write VCMD_OSC_FREQ_SEL\n", __func__);
+			return false;
+		}
+		zt_delay(5);
+
+		// address : Talpgm - 4.5msec
+		cData[0] = (icNvmDelayRegister) & 0xFF;
+		cData[1] = (icNvmDelayRegister >> 8) & 0xFF;
+		cData[2] = (icNvmDelayRegister >> 16) & 0xFF;
+		cData[3] = (icNvmDelayRegister >> 24) & 0xFF;
+		// data
+		cData[4] = (icNvmDelayTime) & 0xFF;
+		cData[5] = (icNvmDelayTime >> 8) & 0xFF;
+		cData[6] = (icNvmDelayTime >> 16) & 0xFF;
+		cData[7] = (icNvmDelayTime >> 24) & 0xFF;
+
+		if (write_data(client, VCMD_REG_WRITE, (u8 *)&cData[0], 8) < 0) {
+			input_err(true, &client->dev, "%s: fail to change erase/program time\n", __func__);
+			return false;
+		}
+		zt_delay(5);
+	}
 
 	input_info(true, &client->dev, "%s: init flash\n", __func__);
 
@@ -2693,7 +2738,7 @@ static bool upgrade_fw_full_download(struct zt_ts_info *info, const u8 *firmware
 	zt_delay(1);
 
 	for (flash_addr = 0; flash_addr < nmemsz; ) {
-		for (i = 0; i < TSP_PAGE_SIZE/TC_SECTOR_SZ; i++) {
+		for (i = 0; i < info->tsp_page_size/TC_SECTOR_SZ; i++) {
 			if (write_data(client,
 						VCMD_UPGRADE_WRITE_FLASH,
 						(u8 *)&firmware_data[flash_addr],TC_SECTOR_SZ) < 0) {
@@ -2704,7 +2749,7 @@ static bool upgrade_fw_full_download(struct zt_ts_info *info, const u8 *firmware
 			usleep_range(100, 100);
 		}
 
-		usleep_range(FUZING_UDELAY, FUZING_UDELAY); /*for fuzing delay*/
+		usleep_range(info->fuzing_udelay, info->fuzing_udelay); /*for fuzing delay*/
 	}
 
 	input_err(true, &client->dev, "%s: [UPGRADE] UPGRADE END. VERIFY START.\n", __func__);	//[DEBUG]
@@ -2746,7 +2791,7 @@ static bool upgrade_fw_partial_download(struct zt_ts_info *info, const u8 *firmw
 	if (nmemsz % nrdsectorsize > 0)
 		nmemsz = (nmemsz / nrdsectorsize) * nrdsectorsize + nrdsectorsize;
 
-	erase_start_page_num = (fw_info_size + fw_core_size) / TSP_PAGE_SIZE;
+	erase_start_page_num = (fw_info_size + fw_core_size) / info->tsp_page_size;
 
 	if (write_reg(client, VCMD_NVM_INIT, 0x0001) != I2C_SUCCESS) {
 		input_err(true, &client->dev, "%s: power sequence error (nvm init)\n", __func__);
@@ -2779,7 +2824,7 @@ static bool upgrade_fw_partial_download(struct zt_ts_info *info, const u8 *firmw
 	erase_info[1] = 0x0000;	/* Page num. */
 	write_data(client, VCMD_UPGRADE_BLOCK_ERASE , (u8 *)&erase_info[0] , 4);
 
-	for (i = erase_start_page_num; i < nmemsz/TSP_PAGE_SIZE; i++) {
+	for (i = erase_start_page_num; i < nmemsz/info->tsp_page_size; i++) {
 		zt_delay(50);
 		erase_info[0] = 0x0000;
 		erase_info[1] = i;	/* Page num.*/
@@ -2808,7 +2853,7 @@ static bool upgrade_fw_partial_download(struct zt_ts_info *info, const u8 *firmw
 #endif
 
 	for (i = 0; i < fw_info_size; ) {
-		for (idx = 0; idx < TSP_PAGE_SIZE / nsectorsize; idx++) {
+		for (idx = 0; idx < info->tsp_page_size / nsectorsize; idx++) {
 			if (write_data(client, VCMD_UPGRADE_WRITE_FLASH, (char *)&firmware_data[i], nsectorsize) != 0) {
 				input_err(true, &client->dev, "%s: failed to write flash\n", __func__);
 				return false;
@@ -2817,10 +2862,10 @@ static bool upgrade_fw_partial_download(struct zt_ts_info *info, const u8 *firmw
 			usleep_range(100, 100);
 		}
 
-		usleep_range(FUZING_UDELAY, FUZING_UDELAY); /*for fuzing delay*/
+		usleep_range(info->fuzing_udelay, info->fuzing_udelay); /*for fuzing delay*/
 	}
 
-#if defined(CONFIG_TOUCHSCREEN_ZINITIX_ZT7650)
+#if defined(CONFIG_TOUCHSCREEN_ZINITIX_ZT7650) || defined(CONFIG_TOUCHSCREEN_ZINITIX_ZT7650M)
 	if (write_reg(client, VCMD_UPGRADE_START_PAGE , erase_start_page_num) != I2C_SUCCESS) {
 		input_err(true, &client->dev, "%s: failed to start addr. (erase end)\n", __func__);
 		return false;
@@ -2829,8 +2874,8 @@ static bool upgrade_fw_partial_download(struct zt_ts_info *info, const u8 *firmw
 	zt_delay(5);
 #endif
 
-	for (i = TSP_PAGE_SIZE * erase_start_page_num; i < nmemsz; ) {
-		for (idx = 0; idx < TSP_PAGE_SIZE  / nsectorsize; idx++) {	//npagesize = 1024 // nsectorsize : 8
+	for (i = info->tsp_page_size * erase_start_page_num; i < nmemsz; ) {
+		for (idx = 0; idx < info->tsp_page_size  / nsectorsize; idx++) {	//npagesize = 1024 // nsectorsize : 8
 			if (write_data(client, VCMD_UPGRADE_WRITE_FLASH, (char *)&firmware_data[i], nsectorsize) != 0) {
 				input_err(true, &client->dev, "%s: failed to write flash\n", __func__);
 				return false;
@@ -2839,7 +2884,7 @@ static bool upgrade_fw_partial_download(struct zt_ts_info *info, const u8 *firmw
 			usleep_range(100, 100);
 		}
 
-		usleep_range(FUZING_UDELAY, FUZING_UDELAY); /*for fuzing delay*/
+		usleep_range(info->fuzing_udelay, info->fuzing_udelay); /*for fuzing delay*/
 	}
 
 	input_info(true, &client->dev, "%s: [UPGRADE] PARTIAL UPGRADE END. VERIFY START.\n", __func__);
@@ -2919,7 +2964,7 @@ retry_upgrade:
 	else
 		size = info->cap_info.ic_fw_size;
 
-	input_info(true, &client->dev, "f/w size = 0x%x Page_sz = %d\n", size, TSP_PAGE_SIZE);
+	input_info(true, &client->dev, "f/w size = 0x%x Page_sz = %d\n", size, info->tsp_page_size);
 	usleep_range(10, 10);
 
 	/////////////////////////////////////////////////////////////////////////////////////////
@@ -3164,7 +3209,9 @@ fw_request_fail:
 static bool init_touch(struct zt_ts_info *info)
 {
 	struct zt_ts_platform_data *pdata = info->pdata;
+#if ESD_TIMER_INTERVAL
 	u16 reg_val = 0;
+#endif
 	u8 data[6] = {0};
 
 	/* get x,y data */
@@ -6147,7 +6194,7 @@ static void get_disassemble_count(void *device_data)
 	sec->cmd_state = SEC_CMD_STATUS_OK;
 }
 
-#if defined(CONFIG_TOUCHSCREEN_ZINITIX_ZT7650)
+#if defined(CONFIG_TOUCHSCREEN_ZINITIX_ZT7650) || defined(CONFIG_TOUCHSCREEN_ZINITIX_ZT7650M)
 #define DEF_IUM_ADDR_OFFSET		0xB000
 #else
 #define DEF_IUM_ADDR_OFFSET		0xF0A0
@@ -6233,6 +6280,7 @@ int set_zt_tsp_nvm_data(struct zt_ts_info *info, u8 addr, u8 *values, u16 length
 		input_err(true, &client->dev, "%s: failed ium lock\n", __func__);
 		goto fail_ium_random_write;
 	}
+	zt_delay(40);
 
 	buff_start = addr;	//custom setting address(0~62, 0,2,4,6)
 
@@ -9224,14 +9272,6 @@ static int zt_ts_parse_dt(struct device_node *np,
 		pdata->area_edge = (u8) px_zone[2];
 	}
 
-	ret = of_property_read_u32(np, "zinitix,page_size", &temp);
-	if (ret) {
-		input_info(true, dev, "%s: Unable to read controller version\n", __func__);
-		return ret;
-	} else {
-		pdata->page_size = (u16) temp;
-	}
-
 	pdata->gpio_int = of_get_named_gpio(np, "zinitix,irq_gpio", 0);
 	if (pdata->gpio_int < 0) {
 		pr_err("%s: of_get_named_gpio failed: tsp_gpio %d\n", __func__,
@@ -9271,10 +9311,8 @@ static int zt_ts_parse_dt(struct device_node *np,
 
 	of_property_read_u32(np, "zinitix,bringup", &pdata->bringup);
 
-	input_err(true, dev, "%s: x_r:%d, y_r:%d FW:%s, CN:%s,"
-			" Spay:%d, AOD:%d, AOT:%d, ED:%d, Bringup:%d, MISCAL:%d, DEX:%d, OPEN/SHORT:%d"
+	input_err(true, dev, "%s: x_r:%d, y_r:%d Spay:%d, AOD:%d, AOT:%d, ED:%d, Bringup:%d, MISCAL:%d, DEX:%d, OPEN/SHORT:%d"
 			" \n",  __func__, pdata->x_resolution, pdata->y_resolution,
-			pdata->firmware_name, pdata->chip_name,
 			pdata->support_spay, pdata->support_aod, pdata->support_aot,
 			pdata->support_ear_detect, pdata->bringup, pdata->mis_cal_check,
 			pdata->support_dex, pdata->support_open_short_test);
@@ -9794,7 +9832,7 @@ static int zt_ts_probe(struct i2c_client *client,
 
 #ifdef CONFIG_DISPLAY_SAMSUNG
 	lcdtype = get_lcd_attached("GET");
-	if (lcdtype == 0xFFFFFF || ((lcdtype >> 8) != 0x8000)) {
+	if (lcdtype == 0xFFFFFF || (((lcdtype >> 8) != 0x8000) && ((lcdtype >> 8) != 0x8040))) {
 		input_err(true, &client->dev, "%s: lcd is not attached %X\n", __func__, lcdtype);
 		return -ENODEV;
 	}
@@ -9815,12 +9853,11 @@ static int zt_ts_probe(struct i2c_client *client,
 	input_info(true, &client->dev, "%s: lcd is connected\n", __func__);
 
 	lcdtype = get_lcd_info("id");
-	if (lcdtype < 0 || ((lcdtype >> 8) != 0x8000)) {
+	if (lcdtype < 0 || (((lcdtype >> 8) != 0x8000) && ((lcdtype >> 8) != 0x8040))) {
 		input_err(true, &client->dev, "%s: Failed to get lcd info %X\n", __func__, lcdtype);
 		return -EINVAL;
 	}
 #endif
-	input_info(true, &client->dev, "%s: lcdtype: %X\n", __func__, lcdtype);
 
 	if (client->dev.of_node) {
 		if (!pdata) {
@@ -9864,6 +9901,23 @@ static int zt_ts_probe(struct i2c_client *client,
 	i2c_set_clientdata(client, info);
 	info->client = client;
 	info->pdata = pdata;
+
+	if ((lcdtype >> 8) == 0x8040/* ZT7650M*/) {
+		info->tsp_page_size = TSP_PAGE_SIZE_ZT7650M;
+		info->fuzing_udelay = FUZING_UDELAY_ZT7650M;
+		info->zt7650m_enabled = true;
+		info->pdata->firmware_name = "tsp_zinitix/zt7650m_r8.bin";
+		info->pdata->chip_name = "ZT7650M";
+		tdata->tclm_level = 2;
+		tdata->afe_base = 0x0003;
+	} else {
+		info->tsp_page_size = TSP_PAGE_SIZE;
+		info->fuzing_udelay = FUZING_UDELAY;
+		info->zt7650m_enabled = false;
+	}
+	input_info(true, &client->dev, "%s: lcdtype: %X, tsp_page_size %d, fuzing_udelay:%d, zt7650m_enabled:%d FW:%s, CN:%s, tclm_level %d, afe_base %04X \n",
+				__func__, lcdtype, info->tsp_page_size, info->fuzing_udelay,
+				info->zt7650m_enabled, pdata->firmware_name, pdata->chip_name, tdata->tclm_level, tdata->afe_base);
 
 	info->tdata = tdata;
 	if (!info->tdata)
