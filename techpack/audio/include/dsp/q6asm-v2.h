@@ -144,6 +144,9 @@ enum {
 	SOFT_PAUSE_CURVE_LOG,
 };
 
+#ifdef CONFIG_SND_SOC_SAMSUNG_AUDIO
+#define SOFT_VOLUME_MMAP_PERIOD       0   /* ramp up/down for mmap 0ms    */
+#endif
 #define SOFT_VOLUME_PERIOD       30   /* ramp up/down for 30ms    */
 #define SOFT_VOLUME_STEP         0 /* Step value 0ms or 0us */
 enum {

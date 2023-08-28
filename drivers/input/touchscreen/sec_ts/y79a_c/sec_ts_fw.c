@@ -1089,6 +1089,21 @@ int sec_ts_firmware_update_on_hidden_menu(struct sec_ts_data *ts, int update_typ
 		break;
 	}
 
+#ifdef TCLM_CONCEPT
+	if (ts->plat_data->support_multi_cal) {
+		if (ts->tdata2->nvdata.cal_count == 0xFF || ts->tdata2->nvdata.cal_position >= CALPOSITION_MAX) {
+			ts->tdata2->nvdata.cal_count = 0;
+			ts->tdata2->nvdata.cal_position = 0;
+			ts->tdata2->nvdata.tune_fix_ver = 0;
+			ts->tdata2->nvdata.cal_pos_hist_cnt = 0;
+			ts->tdata2->nvdata.cal_pos_hist_lastp = 0;
+			input_info(true, &ts->client->dev, "%s: HS cal data is abnormal, set None\n", __func__);
+
+			ts->tdata2->tclm_write(ts->tdata->client, SEC_TCLM_NVM_ALL_DATA);
+		}
+	}
+#endif
+
 	sec_ts_check_custom_library(ts);
 
 	return ret;

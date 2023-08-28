@@ -159,7 +159,7 @@ static inline struct dentry *d_real_comp(struct dentry *dentry)
 #else
 static inline struct dentry *d_real_comp(struct dentry *dentry)
 {
-	return d_real(dentry, dentry->d_inode);
+	return d_real(dentry, d_real_inode(dentry));
 }
 #endif
 

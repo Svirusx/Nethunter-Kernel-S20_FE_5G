@@ -3081,7 +3081,11 @@ static ssize_t rear_actuator_power_store(struct device *dev,
 #if defined(CONFIG_SAMSUNG_ACTUATOR_PREVENT_SHAKING)
 	int i = 0, cnt = 0, rc = 0;
 	cnt = (int)(sizeof(g_a_ctrls) / sizeof(g_a_ctrls[0]));
-
+#if defined(CONFIG_SEC_Z3Q_PROJECT) || defined(CONFIG_SEC_C2Q_PROJECT)
+	if (g_a_ctrls[0] != NULL) {
+		mutex_lock(&(g_a_ctrls[0]->actuator_mutex));
+	}
+#endif
 	switch (buf[0]) {
 	case '0':
 		if (actuator_power == 0) {
@@ -3142,7 +3146,7 @@ static ssize_t rear_actuator_power_store(struct device *dev,
 				else
 #endif
 				cam_actuator_power_up(g_a_ctrls[i]);
-                cam_actuator_default_init_setting(g_a_ctrls[i]);
+				cam_actuator_default_init_setting(g_a_ctrls[i]);
 				pr_info("%s: actuator %d power up", __func__, i);
 			}
 		}
@@ -3154,6 +3158,11 @@ static ssize_t rear_actuator_power_store(struct device *dev,
 
 #if defined(CONFIG_SAMSUNG_OIS_MCU_STM32) || defined(CONFIG_SAMSUNG_OIS_RUMBA_S4)
 	error:
+#endif
+#if defined(CONFIG_SEC_Z3Q_PROJECT) || defined(CONFIG_SEC_C2Q_PROJECT)
+	if (g_a_ctrls[0] != NULL) {
+		 mutex_unlock(&(g_a_ctrls[0]->actuator_mutex));
+	}
 #endif
 #endif
 	return size;

@@ -936,7 +936,7 @@ static ssize_t sx9360_normal_threshold_show(struct device *dev,
 {
 	struct sx9360_p *data = dev_get_drvdata(dev);
 	u8 th_buf = 0, hyst = 0;
-	u32 threshold = 0;
+	u32 hyst_delta = 0, threshold = 0;
 
 	sx9360_i2c_read(data, SX9360_PROXCTRL5_REG, &th_buf);
 	threshold = (u32)th_buf * (u32)th_buf / 2;
@@ -946,13 +946,13 @@ static ssize_t sx9360_normal_threshold_show(struct device *dev,
 
 	switch (hyst) {
 	case 0x01: /* 6% */
-		hyst = threshold >> 4;
+		hyst_delta = threshold >> 4;
 		break;
 	case 0x02: /* 12% */
-		hyst = threshold >> 3;
+		hyst_delta = threshold >> 3;
 		break;
 	case 0x03: /* 25% */
-		hyst = threshold >> 2;
+		hyst_delta = threshold >> 2;
 		break;
 	default:
 		/* None */
@@ -960,7 +960,7 @@ static ssize_t sx9360_normal_threshold_show(struct device *dev,
 	}
 
 	return snprintf(buf, PAGE_SIZE, "%lu,%lu\n",
-		(u32)threshold + (u32)hyst, (u32)threshold - (u32)hyst);
+		(u32)threshold + hyst_delta, (u32)threshold - hyst_delta);
 }
 
 static ssize_t sx9360_onoff_show(struct device *dev,
@@ -1964,11 +1964,11 @@ exit_of_node:
 	mutex_destroy(&data->mode_mutex);
 	mutex_destroy(&data->read_mutex);
 	wake_lock_destroy(&data->grip_wake_lock);
+	input_unregister_device(data->noti_input_dev);
 exit_noti_input_init:
 	sysfs_remove_group(&data->input->dev.kobj, &sx9360_attribute_group);
 	sensors_remove_symlink(&data->input->dev.kobj, data->input->name);
 	input_unregister_device(data->input);
-	input_unregister_device(data->noti_input_dev);
 exit_input_init:
 	kfree(data);
 exit_kzalloc:

@@ -163,7 +163,9 @@ __visible_for_testing ssize_t debug_store(struct kobject *kobj, struct kobj_attr
 		privesc_status_store(buf + l);
 		break;
 	case DBG_SET_IM_STATUS:
+#ifdef DEFEX_IMMUTABLE_ENABLE
 		immutable_status_store(buf + l);
+#endif /* DEFEX_IMMUTABLE_ENABLE */
 		break;
 	case DBG_SET_SP_STATUS:
 		safeplace_status_store(buf + l);

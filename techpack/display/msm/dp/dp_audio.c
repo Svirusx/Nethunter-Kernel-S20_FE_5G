@@ -460,6 +460,13 @@ static int dp_audio_get_edid_blk(struct platform_device *pdev,
 
 	blk->audio_data_blk = edid->audio_data_block;
 	blk->audio_data_blk_size = edid->adb_size;
+#if defined(CONFIG_SEC_DISPLAYPORT)
+	print_hex_dump(KERN_DEBUG, "AUDIO_BLK: ",
+			DUMP_PREFIX_NONE, 16, 1, blk->audio_data_blk,
+			blk->audio_data_blk_size, false);
+	secdp_logger_hex_dump(blk->audio_data_blk, "AUDIO_BLK:",
+			blk->audio_data_blk_size);
+#endif
 
 	blk->spk_alloc_data_blk = edid->spkr_alloc_data_block;
 	blk->spk_alloc_data_blk_size = edid->sadb_size;

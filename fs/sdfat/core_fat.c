@@ -106,7 +106,7 @@ static u32 __calc_default_au_size(struct super_block *sb)
 	 * ex2)    16GB -> 8MB
 	 * ex3) >= 32GB -> 16MB
 	 */
-	total_sect = disk->part0.nr_sects;
+	total_sect = get_capacity(disk);
 	est_au_size = total_sect >> 2;
 
 	/* au_size assumed that bytes per sector is 512 */
@@ -684,33 +684,36 @@ rewind:
 				EXT_DENTRY_T *ext_ep = (EXT_DENTRY_T *)ep;
 				u32 cur_ord = (u32)ext_ep->order;
 				u32 cur_chksum = (s32)ext_ep->checksum;
+				u32 new_lfn = (cur_ord & MSDOS_LAST_LFN);
 				s32 len = 13;
 				u16 unichar;
 
+				cur_ord &= ~(MSDOS_LAST_LFN);
 				num_empty = 0;
 				candi_empty.eidx = -1;
 
+				/* check invalid lfn order */
+				if (!cur_ord || (cur_ord > MAX_LFN_ORDER))
+					goto reset_dentry_set;
+
 				/* check whether new lfn or not */
-				if (cur_ord & MSDOS_LAST_LFN) {
-					cur_ord &= ~(MSDOS_LAST_LFN);
+				if (new_lfn) {
 					chksum = cur_chksum;
-					len = (13 * (cur_ord-1));
+					len = (13 * (cur_ord - 1));
 					uniname = (p_uniname->name + len);
 					lfn_ord = cur_ord + 1;
 					lfn_len = 0;
 
 					/* check minimum name length */
-					if (cur_ord &&
-						(len > p_uniname->name_len)) {
+					if (len > p_uniname->name_len) {
 						/* MISMATCHED NAME LENGTH */
 						lfn_len = -1;
 					}
 					len = 0;
 				}
 
-				/* invalid lfn order */
-				if (!cur_ord || (cur_ord > MAX_LFN_ORDER) ||
-					((cur_ord + 1) != lfn_ord))
+				/* check if lfn is a consecutive number */
+				if ((cur_ord + 1) != lfn_ord)
 					goto reset_dentry_set;
 
 				/* check checksum of directory entry set */
@@ -1354,6 +1357,23 @@ s32 mount_fat16(struct super_block *sb, pbr_t *p_pbr)
 	return 0;
 } /* end of mount_fat16 */
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
+static u8 bdev_get_partno(struct block_device *bdev)
+{
+	return bdev->bd_partno;
+}
+#else
+static struct block_device *bdev_whole(struct block_device *bdev)
+{
+	return bdev->bd_contains;
+}
+
+static u8 bdev_get_partno(struct block_device *bdev)
+{
+	return bdev->bd_part->partno;
+}
+#endif
+
 static sector_t __calc_hidden_sect(struct super_block *sb)
 {
 	struct block_device *bdev = sb->s_bdev;
@@ -1362,10 +1382,10 @@ static sector_t __calc_hidden_sect(struct super_block *sb)
 	if (!bdev)
 		goto out;
 
-	hidden = bdev->bd_part->start_sect;
+	hidden = get_start_sect(bdev);
 	/* a disk device, not a partition */
 	if (!hidden) {
-		if (bdev != bdev->bd_contains)
+		if (bdev != bdev_whole(bdev))
 			sdfat_log_msg(sb, KERN_WARNING,
 				"hidden(0), but disk has a partition table");
 		goto out;
@@ -1378,7 +1398,7 @@ static sector_t __calc_hidden_sect(struct super_block *sb)
 
 out:
 	sdfat_log_msg(sb, KERN_INFO, "start_sect of part(%d)    : %lld",
-		bdev ? bdev->bd_part->partno : -1, (s64)hidden);
+		bdev ? bdev_get_partno(bdev) : -1, (s64)hidden);
 	return hidden;
 
 }

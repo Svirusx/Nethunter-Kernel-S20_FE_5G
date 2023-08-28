@@ -17,6 +17,10 @@
 #include <linux/kthread.h>
 #include <linux/mhi.h>
 
+#ifdef CONFIG_SEC_R8Q_PROJECT
+#include <linux/oom.h>
+#endif
+
 #define MHI_NETDEV_DRIVER_NAME "mhi_netdev"
 #define WATCHDOG_TIMEOUT (30 * HZ)
 #define IPC_LOG_PAGES (100)
@@ -284,12 +288,20 @@ static void mhi_netdev_queue(struct mhi_netdev *mhi_netdev,
 	struct list_head *pool = mhi_netdev->recycle_pool;
 	int nr_tre = mhi_get_no_free_descriptors(mhi_dev, DMA_FROM_DEVICE);
 	int i, ret;
-	const int  max_peek = 4;
+	int max_peek = 4;
 
 	MSG_VERB("Enter free_desc:%d\n", nr_tre);
 
 	if (!nr_tre)
 		return;
+#ifdef CONFIG_SEC_R8Q_PROJECT
+	/* R8Q project got many memory issues(cannot alloc order3 page),
+	*  Need to find buffer in recycle_pool even if it is delayed.
+	*/ 
+	max_peek = 20;
+	if (jiffies < (unsigned long)(atomic64_read(&last_oom_jiffies) + (10 * HZ))) 
+		max_peek = 2500;
+#endif
 
 	/* try going thru reclaim pool first */
 	for (i = 0; i < nr_tre; i++) {

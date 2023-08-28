@@ -293,14 +293,13 @@ static ssize_t dex_ver_show(struct class *class,
 {
 	int rc;
 	struct secdp_sysfs_private *sysfs = g_secdp_sysfs;
-	struct secdp_misc *sec = sysfs->sec;
-	struct secdp_dex *dex = &sec->dex;
+	struct secdp_adapter *adapter = &sysfs->sec->adapter;
 
 	DP_INFO("branch revision: HW(0x%X), SW(0x%X, 0x%X)\n",
-		dex->fw_ver[0], dex->fw_ver[1], dex->fw_ver[2]);
+		adapter->fw_ver[0], adapter->fw_ver[1], adapter->fw_ver[2]);
 
 	rc = scnprintf(buf, PAGE_SIZE, "%02X%02X\n",
-		dex->fw_ver[1], dex->fw_ver[2]);
+		adapter->fw_ver[1], adapter->fw_ver[2]);
 
 	return rc;
 }

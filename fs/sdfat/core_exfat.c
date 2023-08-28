@@ -1086,6 +1086,9 @@ s32 load_alloc_bmp(struct super_block *sb)
 
 				sector = CLUS_TO_SECT(fsi, fsi->map_clu);
 
+				/* trigger read amap ahead */
+				bdev_readahead(sb, sector, fsi->map_sectors);
+
 				for (j = 0; j < fsi->map_sectors; j++) {
 					fsi->vol_amap[j] = NULL;
 					ret = read_sect(sb, sector+j, &(fsi->vol_amap[j]), 1);

@@ -22,7 +22,7 @@
 #ifdef FORCE_SSR_FOR_TIMEOUT
 #include <linux/adsp/slpi-loader.h>
 #define MAX_SSR_LIMIT 3
-#define SSR_TRIGGER_CNT 10
+#define SSR_TRIGGER_CNT 5
 #endif
 
 #define VENDOR "AKM"
@@ -629,6 +629,7 @@ static ssize_t backup_restore_auto_cal_store(struct device *dev,
 				if (timeout_cnt == SSR_TRIGGER_CNT) {
 					timeout_cnt = 0;
 					ssr_cnt++;
+					pr_err("[FACTORY] %s: Trigger slpi ssr!!!\n", __func__);
 					slpi_ssr();
 				}
 			} else {

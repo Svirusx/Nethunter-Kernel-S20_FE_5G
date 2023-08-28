@@ -6625,7 +6625,7 @@ static int qseecom_create_key(struct qseecom_dev_handle *data,
 	struct qseecom_create_key_req create_key_req;
 	struct qseecom_key_generate_ireq generate_key_ireq;
 	struct qseecom_key_select_ireq set_key_ireq;
-	uint32_t entries = 0;
+	int32_t entries = 0;
 
 	ret = copy_from_user(&create_key_req, argp, sizeof(create_key_req));
 	if (ret) {

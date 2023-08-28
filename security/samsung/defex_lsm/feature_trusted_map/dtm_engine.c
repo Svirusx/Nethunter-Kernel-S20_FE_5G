@@ -138,7 +138,7 @@ int dtm_enforce(struct dtm_context *context)
 		pptree_find_path(pptree, 0, 0, &pp_ctx);
 	} else {
 		pp_ctx.types &= ~PTREE_FIND_PEEK;
-		if (!(pptree_find_path(pptree, program_name, 0, &pp_ctx) &&
+		if (!(pptree_find_path(pptree, *program_name == '/' ? program_name + 1 : program_name, '/', &pp_ctx) &&
 		      (pp_ctx.types & PTREE_DATA_INT2))) {
 			pr_info("(6) [DEFEX] TMED callee '%s', caller '%s': program '%s' not found.",
 				callee_path, caller_path, program_name);

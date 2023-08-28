@@ -61,7 +61,7 @@ ifeq ($(CONFIG_DEFEX_KERNEL_ONLY), y)
     endif
 endif
 
-ifeq ($(CONFIG_SEC_FACTORY), y)
+ifeq ($(SEC_FACTORY_BUILD), true)
     DEFEX_DEFINES += -DDEFEX_FACTORY_ENABLE
 endif
 

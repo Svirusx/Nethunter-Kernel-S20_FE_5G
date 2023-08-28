@@ -326,7 +326,11 @@ int load_rules_late(unsigned int is_system)
 	int f_index, res = 0;
 	static unsigned long start_time;
 	static unsigned long last_time;
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 11, 0)
 	unsigned long cur_time = get_seconds();
+#else
+	unsigned long cur_time = ktime_get_seconds();
+#endif
 	static DEFINE_SPINLOCK(load_lock);
 	static atomic_t in_progress = ATOMIC_INIT(0);
 	const struct rules_file_struct *item;
@@ -347,7 +351,11 @@ int load_rules_late(unsigned int is_system)
 
 	/* The first try to load, initialize time values */
 	if (!start_time)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 11, 0)
 		start_time = get_seconds();
+#else
+		start_time = ktime_get_seconds();
+#endif
 	/* Skip this try, wait for next second */
 	if (cur_time == last_time)
 		goto do_exit;
@@ -372,6 +380,10 @@ int load_rules_late(unsigned int is_system)
 			if (!IS_ERR_OR_NULL(f)) {
 				pr_info("[DEFEX] Late load rules file: %s.\n", item->name);
 				break;
+			}
+			else {
+				if (f_index == 3)
+					pr_err("[DEFEX] Failed to open system rules file (%ld)\n", (long)PTR_ERR(f));
 			}
 		}
 	}

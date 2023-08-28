@@ -27,6 +27,7 @@
 #define INPUT_FEATURE_ENABLE_PRESSURE		(1 << 1) /* homekey pressure */
 #define INPUT_FEATURE_ENABLE_SYNC_RR120		(1 << 2) /* sync reportrate 120hz */
 #define INPUT_FEATURE_ENABLE_VRR		(1 << 3) /* variable refresh rate (support 240hz) */
+#define INPUT_FEATURE_ENABLE_SYSINPUT_ENABLED		(1 << 5) /* resume/suspend called by system input service */
 
 #define INPUT_FEATURE_SUPPORT_OPEN_SHORT_TEST		(1 << 8) /* open/short test support */
 #define INPUT_FEATURE_SUPPORT_MIS_CALIBRATION_TEST	(1 << 9) /* mis-calibration test support */

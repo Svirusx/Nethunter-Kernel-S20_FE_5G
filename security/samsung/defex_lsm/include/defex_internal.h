@@ -16,7 +16,9 @@
 #include <linux/slab.h>
 #include <linux/string.h>
 #include <linux/sysfs.h>
+#include <linux/version.h>
 #include <linux/vmalloc.h>
+#include <linux/binfmts.h>
 #include <linux/defex.h>
 #include "defex_config.h"
 
@@ -151,7 +153,11 @@ static inline int defex_tm_mode_enabled(int mode_flag)
 }
 
 struct defex_context;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
+int defex_trusted_map_lookup(struct defex_context *dc, int argc, struct linux_binprm *bprm);
+#else
 int defex_trusted_map_lookup(struct defex_context *dc, int argc, void *argv);
+#endif
 
 /* -------------------------------------------------------------------------- */
 /* Common Helper API */

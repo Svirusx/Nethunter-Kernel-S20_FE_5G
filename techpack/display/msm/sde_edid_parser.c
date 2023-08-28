@@ -62,11 +62,13 @@ sde_cea_db_tag(const u8 *db)
 	return db[0] >> 5;
 }
 
+#if !defined(CONFIG_SEC_DISPLAYPORT)
 static int
 sde_cea_revision(const u8 *cea)
 {
 	return cea[1];
 }
+#endif
 
 static int
 sde_cea_db_offsets(const u8 *cea, int *start, int *end)
@@ -101,6 +103,7 @@ static bool sde_cea_db_is_hdmi_hf_vsdb(const u8 *db)
 	return hdmi_id == HDMI_FORUM_IEEE_OUI;
 }
 
+#if !defined(CONFIG_SEC_DISPLAYPORT)
 static u8 *sde_edid_find_extended_tag_block(struct edid *edid, int blk_id)
 {
 	u8 *db = NULL;
@@ -156,7 +159,7 @@ sde_edid_find_block(struct edid *edid, int blk_id)
 	}
 	return NULL;
 }
-
+#endif
 
 static const u8 *_sde_edid_find_block(const u8 *in_buf, u32 start_offset,
 	u8 type, u8 *len)
@@ -218,6 +221,7 @@ static void sde_edid_extract_vendor_id(struct sde_edid_ctrl *edid_ctrl)
 	SDE_EDID_DEBUG("%s -", __func__);
 }
 
+#if !defined(CONFIG_SEC_DISPLAYPORT)
 static void sde_edid_set_y420_support(struct drm_connector *connector,
 u32 video_format)
 {
@@ -356,6 +360,7 @@ struct drm_connector *connector, struct sde_edid_ctrl *edid_ctrl)
 
 	SDE_EDID_DEBUG("%s -\n", __func__);
 }
+#endif
 
 static void _sde_edid_update_dc_modes(
 struct drm_connector *connector, struct sde_edid_ctrl *edid_ctrl)
@@ -1219,7 +1224,9 @@ int _sde_edid_update_modes(struct drm_connector *connector,
 #endif
 
 		rc = drm_add_edid_modes(connector, edid_ctrl->edid);
+#if !defined(CONFIG_SEC_DISPLAYPORT)
 		sde_edid_set_mode_format(connector, edid_ctrl);
+#endif
 		_sde_edid_update_dc_modes(connector, edid_ctrl);
 		SDE_EDID_DEBUG("%s -", __func__);
 		return rc;

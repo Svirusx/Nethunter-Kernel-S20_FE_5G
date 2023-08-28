@@ -283,7 +283,7 @@ static void ufshcd_update_uic_error_cnt(struct ufs_hba *hba, u32 reg, int type)
 #ifdef CONFIG_SCSI_UFS_SUPPORT_TW_MAN_GC
 #define UFS_TW_MANUAL_FLUSH_THRESHOLD   5
 #endif
-#define UFS_TW_DISABLE_THRESHOLD	7
+#define UFS_TW_DISABLE_THRESHOLD	9
 
 #define SEC_UFS_TW_INFO_DIFF(t, n, o, member) ({		\
 		(t)->member = (n)->member - (o)->member;	\

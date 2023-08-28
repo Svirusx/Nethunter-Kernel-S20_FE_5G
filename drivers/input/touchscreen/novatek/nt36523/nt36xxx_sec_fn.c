@@ -1998,6 +1998,12 @@ static void set_note_mode(void *device_data)
 		goto out;
 	}
 
+	if (ts->display_state_in_progress) {
+		input_info(true, &ts->client->dev, "%s: display state is in progress. skip cmd\n",
+				__func__);
+		goto ok;
+	}
+
 	input_info(true, &ts->client->dev, "%s: change palm mode to %d\n", __func__, mode);
 
 	buf[0] = EVENT_MAP_HOST_CMD;
@@ -2010,6 +2016,7 @@ static void set_note_mode(void *device_data)
 		goto out;
 	}
 
+ok:
 	mutex_unlock(&ts->lock);
 
 	snprintf(buff, sizeof(buff), "%s", "OK");
@@ -2059,6 +2066,12 @@ static void set_sip_mode(void *device_data)
 		goto out;
 	}
 
+	if (ts->display_state_in_progress) {
+		input_info(true, &ts->client->dev, "%s: display state is in progress. skip cmd\n",
+				__func__);
+		goto ok;
+	}
+
 	input_info(true, &ts->client->dev, "%s: use %s touch debounce\n",
 			__func__, mode ? "lower" : "normal");
 
@@ -2072,6 +2085,7 @@ static void set_sip_mode(void *device_data)
 		goto out;
 	}
 
+ok:
 	mutex_unlock(&ts->lock);
 
 	snprintf(buff, sizeof(buff), "%s", "OK");
@@ -2589,6 +2603,12 @@ static void set_grip_data(void *device_data)
 		goto out;
 	}
 
+	if (ts->display_state_in_progress) {
+		input_info(true, &ts->client->dev, "%s: display state is in progress. skip cmd\n",
+				__func__);
+		goto ok;
+	}
+
 	// print parameters (debug use)
 	input_dbg(true, &ts->client->dev, "%s: 0x%X, 0x%X, 0x%X, 0x%X, 0x%X, 0x%X, 0x%X, 0x%X\n", 
 		__func__, sec->cmd_param[0], sec->cmd_param[1], sec->cmd_param[2], sec->cmd_param[3],
@@ -2609,6 +2629,7 @@ static void set_grip_data(void *device_data)
 			goto err;
 	}
 
+ok:
 	mutex_unlock(&ts->lock);
 
 	snprintf(buff, sizeof(buff), "%s", "OK");
@@ -3706,6 +3727,8 @@ static void clear_cover_mode(void *device_data)
 	if (mutex_lock_interruptible(&ts->lock)) {
 		input_err(true, &ts->client->dev, "%s: another task is running\n",
 			__func__);
+		snprintf(buff, sizeof(buff), "NG");
+		sec->cmd_state = SEC_CMD_STATUS_FAIL;
 		goto out;
 	}
 
@@ -3715,6 +3738,13 @@ static void clear_cover_mode(void *device_data)
 		ts->flip_enable = true;
 	else
 		ts->flip_enable = false;
+
+	if (ts->display_state_in_progress) {
+		input_info(true, &ts->client->dev, "%s: display state is in progress. skip cmd\n",
+				__func__);
+		ret = 0;
+		goto out_unlock;
+	}
 
 	/* disable tsp scan when cover is closed (for Tablet) */
 	if (ts->platdata->scanoff_cover_close) {
@@ -3754,6 +3784,7 @@ static void clear_cover_mode(void *device_data)
 		}
 	}
 
+out_unlock:
 	mutex_unlock(&ts->lock);
 	if (ret < 0) {
 		snprintf(buff, sizeof(buff), "NG");
@@ -4065,9 +4096,12 @@ static ssize_t read_support_feature(struct device *dev,
 
 	if (ts->platdata->enable_settings_aot)
 		feature |= INPUT_FEATURE_ENABLE_SETTINGS_AOT;
+	if (ts->platdata->enable_sysinput_enabled)
+		feature |= INPUT_FEATURE_ENABLE_SYSINPUT_ENABLED;
 
-	input_info(true, &ts->client->dev, "%s: %d%s\n", __func__, feature,
-			feature & INPUT_FEATURE_ENABLE_SETTINGS_AOT ? " aot" : "");
+	input_info(true, &ts->client->dev, "%s: %d%s%s\n", __func__, feature,
+			feature & INPUT_FEATURE_ENABLE_SETTINGS_AOT ? " aot" : "",
+			feature & INPUT_FEATURE_ENABLE_SYSINPUT_ENABLED ? " SE" : "");
 
 	return snprintf(buf, SEC_CMD_BUF_SIZE, "%d", feature);
 }
@@ -4168,6 +4202,48 @@ out:
 	return strlen(buf);
 }
 
+static ssize_t enabled_show(struct device *dev, struct device_attribute *attr,
+					char *buf)
+{
+	struct sec_cmd_data *sec = dev_get_drvdata(dev);
+	struct nvt_ts_data *ts = container_of(sec, struct nvt_ts_data, sec);
+
+	input_info(true, &ts->client->dev, "%s: power_status %d\n", __func__, ts->power_status);
+
+	return snprintf(buf, SEC_CMD_BUF_SIZE, "%d", ts->power_status);
+}
+
+static ssize_t enabled_store(struct device *dev, struct device_attribute *attr,
+					const char *buf, size_t count)
+{
+	struct sec_cmd_data *sec = dev_get_drvdata(dev);
+	struct nvt_ts_data *ts = container_of(sec, struct nvt_ts_data, sec);
+	int buff[2];
+	int ret;
+
+	ret = sscanf(buf, "%d,%d", &buff[0], &buff[1]);
+	if (ret != 2) {
+		input_err(true, &ts->client->dev,
+				"%s: failed read params [%d]\n", __func__, ret);
+		return -EINVAL;
+	}
+
+	input_info(true, &ts->client->dev, "%s: %d %d\n", __func__, buff[0], buff[1]);
+
+	if (buff[1] == DISPLAY_EVENT_EARLY) {
+		mutex_lock(&ts->lock);
+		ts->display_state_in_progress = true;
+		mutex_unlock(&ts->lock);
+	} else {
+		mutex_lock(&ts->lock);
+		ts->display_state_in_progress = false;
+		mutex_unlock(&ts->lock);
+	}
+
+	return count;
+}
+
+
 static DEVICE_ATTR(multi_count, 0664, read_multi_count_show, clear_multi_count_store);
 static DEVICE_ATTR(comm_err_count, 0664, read_comm_err_count_show, clear_comm_err_count_store);
 static DEVICE_ATTR(module_id, 0444, read_module_id_show, NULL);
@@ -4177,6 +4253,7 @@ static DEVICE_ATTR(all_touch_count, 0664, read_all_touch_count_show, clear_all_t
 static DEVICE_ATTR(sensitivity_mode, 0664, sensitivity_test_show, sensitivity_test_store);
 static DEVICE_ATTR(support_feature, 0444, read_support_feature, NULL);
 static DEVICE_ATTR(get_lp_dump, 0444, get_lp_dump, NULL);
+static DEVICE_ATTR(enabled, 0664, enabled_show, enabled_store);
 
 static struct attribute *cmd_attributes[] = {
 	&dev_attr_multi_count.attr,
@@ -4188,6 +4265,7 @@ static struct attribute *cmd_attributes[] = {
 	&dev_attr_sensitivity_mode.attr,
 	&dev_attr_support_feature.attr,
 	&dev_attr_get_lp_dump.attr,
+	&dev_attr_enabled.attr,
 	NULL,
 };
 

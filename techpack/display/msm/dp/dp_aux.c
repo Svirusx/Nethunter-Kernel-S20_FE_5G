@@ -630,13 +630,15 @@ static ssize_t dp_aux_transfer(struct drm_dp_aux *drm_aux,
 	if ((ret < 0) && !atomic_read(&aux->aborted)) {
 #ifdef CONFIG_SEC_DISPLAYPORT
 		if (!secdp_get_cable_status() || !secdp_get_hpd_status()) {
-			DP_INFO("hpd_low or cable_lost\n");
+			DP_INFO("hpd_low or cable_lost %d\n", ret);
 			/*
 			 * don't need to repeat aux.
 			 * exit loop in drm_dp_dpcd_access()
 			 */
-			msg->reply = DP_AUX_NATIVE_REPLY_ACK;
+			msg->reply = aux->native ?
+				DP_AUX_NATIVE_REPLY_ACK : DP_AUX_I2C_REPLY_ACK;
 			ret = msg->size;
+			aux->retry_cnt = 0;
 			goto unlock_exit;
 		}
 #endif

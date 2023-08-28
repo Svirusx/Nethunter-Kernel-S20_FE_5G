@@ -76,7 +76,7 @@ fw-external-$(CONFIG_SENSORS_A96T3X6_SUB) += abov/a96t365_bloomxq_sub_eur.bin
 endif
 
 fw-external-$(CONFIG_TOUCHSCREEN_MELFAS_MSS100) += tsp_melfas/mss100_r8.bin
-fw-external-$(CONFIG_TOUCHSCREEN_ZINITIX_ZT7650) += tsp_zinitix/zt7650_r8.bin
+fw-external-$(CONFIG_TOUCHSCREEN_ZINITIX_ZT7650) += tsp_zinitix/zt7650_r8.bin tsp_zinitix/zt7650m_r8.bin
 fw-external-$(CONFIG_TOUCHSCREEN_STM_FTS5CU56A) += tsp_stm/fts5cu56a_r8.bin
 
 ifdef CONFIG_SEC_C2Q_PROJECT

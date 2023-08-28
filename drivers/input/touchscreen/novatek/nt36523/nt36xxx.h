@@ -138,6 +138,7 @@ struct nvt_ts_platdata {
 	bool enable_settings_aot;
 	bool scanoff_cover_close;
 	bool enable_glove_mode;
+	bool enable_sysinput_enabled;
 };
 
 struct nvt_ts_data {
@@ -197,6 +198,7 @@ struct nvt_ts_data {
 
 	int debug_flag;
 	bool flip_enable;
+	bool display_state_in_progress;
 
 	int grip_edgehandler_restore_data[SEC_CMD_PARAM_NUM];
 	int setgrip_restore_data[SEC_CMD_PARAM_NUM];
@@ -238,6 +240,23 @@ enum {
 	POWER_OFF_STATUS = 0,
 	POWER_LPM_STATUS,
 	POWER_ON_STATUS
+};
+
+enum display_state {
+	DISPLAY_STATE_SERVICE_SHUTDOWN = -1,
+	DISPLAY_STATE_NONE = 0,
+	DISPLAY_STATE_OFF,
+	DISPLAY_STATE_ON,
+	DISPLAY_STATE_DOZE,
+	DISPLAY_STATE_DOZE_SUSPEND,
+	DISPLAY_STATE_LPM_OFF = 20,
+	DISPLAY_STATE_FORCE_OFF,
+	DISPLAY_STATE_FORCE_ON,
+};
+
+enum display_event {
+	DISPLAY_EVENT_EARLY = 0,
+	DISPLAY_EVENT_LATE,
 };
 
 void nvt_ts_run_rawdata_all(struct nvt_ts_data *ts);

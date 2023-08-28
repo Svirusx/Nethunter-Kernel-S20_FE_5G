@@ -565,6 +565,35 @@ static void mdm_notify(enum esoc_notify notify, struct esoc_clink *esoc)
 	};
 }
 
+struct mdm_ctrl *g_mdm;
+
+int esoc_do_silentreset(void)
+{
+	struct mdm_ctrl *mdm = g_mdm;
+	struct device *dev;
+
+	if (!mdm)
+		return -1;
+
+	dev = mdm->dev;
+	
+	pr_err("%s Force Modem Silent Reset\n", __func__);
+	
+	subsys_set_modem_silent_ssr(true);
+
+	if(gpio_is_valid(MDM_GPIO(mdm, AP2MDM_ERRFATAL2))) {
+		dev_err(dev,
+		"ESOC_FORCE_SILENT_RESET: setting AP2MDM_ERRFATAL2 = 1\n");
+		gpio_set_value(MDM_GPIO(mdm, AP2MDM_ERRFATAL2), 1);
+	}
+	dev_err(dev,
+		"ESOC_FORCE_SILENT_RESET: setting AP2MDM_ERRFATAL = 1\n");
+	gpio_set_value(MDM_GPIO(mdm, AP2MDM_ERRFATAL), 1);
+	
+	return 0;
+}
+EXPORT_SYMBOL(esoc_do_silentreset);
+
 static irqreturn_t mdm_errfatal(int irq, void *dev_id)
 {
 	struct mdm_ctrl *mdm = (struct mdm_ctrl *)dev_id;
@@ -844,6 +873,7 @@ status_err:
 		mdm->pblrdy_irq = irq;
 	}
 	mdm_disable_irqs(mdm);
+	g_mdm = mdm;
 pblrdy_err:
 	return 0;
 fatal_err:

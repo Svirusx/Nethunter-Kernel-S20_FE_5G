@@ -34,8 +34,13 @@ static void compact_addr_list(void);
 static void update_list(void);
 #endif /* CONFIG_SEC_KUNIT */
 static void unload_trusted_app_wq(struct work_struct *work);
-
 static DECLARE_WORK(mz_ta_unload_work, unload_trusted_app_wq);
+
+struct tgid_wk_t {
+	pid_t tgid;
+	struct work_struct remove_target_from_all_list_work;
+};
+static void remove_target_from_all_list_wq(struct work_struct *work);
 
 static int add_count;
 
@@ -64,6 +69,7 @@ static void vh_mz_exit(void *data, struct task_struct *p)
 {
 	pid_t cur_tgid = p->pid;
 	bool ret;
+	struct tgid_wk_t *wk;
 
 	if (!is_mz_target(cur_tgid)) {
 		mz_pt_list[cur_tgid].is_ta_fail_target = false;
@@ -74,21 +80,38 @@ static void vh_mz_exit(void *data, struct task_struct *p)
 
 	mz_pt_list[cur_tgid].target = false;
 
-	remove_target_from_all_list(cur_tgid);
+	wk = kmalloc(sizeof(*wk), GFP_ATOMIC);
+	if (!wk) {
+		MZ_LOG(err_level_error, "%s wk kmalloc fail\n", __func__);
+		return;
+	}
+	wk->tgid = cur_tgid;
+	INIT_WORK(&(wk->remove_target_from_all_list_work), remove_target_from_all_list_wq);
+	ret = schedule_work(&(wk->remove_target_from_all_list_work));
+	if (!ret)
+		MZ_LOG(err_level_error, "%s remove_target_from_all_list workqueue fail %d\n", __func__, ret);
+
 #ifdef MZ_TA
-#ifdef CONFIG_MZ_USE_QSEECOM
 	ret = queue_work(system_long_wq, &mz_ta_unload_work);
 	if (!ret)
 		MZ_LOG(err_level_error, "%s unload_trusted_app workqueue fail %d\n", __func__, ret);
-#else
-	unload_trusted_app();
-#endif
 #endif /* MZ_TA */
 }
 
 static void unload_trusted_app_wq(struct work_struct *work)
 {
 	unload_trusted_app();
+}
+
+static void remove_target_from_all_list_wq(struct work_struct *work)
+{
+	struct tgid_wk_t *wk = container_of(work, struct tgid_wk_t, remove_target_from_all_list_work);
+
+	MZ_LOG(err_level_debug, "%s start\n", __func__);
+
+	remove_target_from_all_list(wk->tgid);
+	kfree(wk);
+	MZ_LOG(err_level_debug, "%s end\n", __func__);
 }
 
 __visible_for_testing bool is_mz_target(pid_t tgid)
