@@ -128,7 +128,6 @@ extern int sysctl_nr_trim_pages;
 static int sixty __read_only = 60;
 #endif
 
-<<<<<<< HEAD
 static int __maybe_unused neg_one __read_only = -1;
 static int __maybe_unused neg_three  __read_only = -3;
 

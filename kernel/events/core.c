@@ -5914,7 +5914,7 @@ accounting:
 	lock_limit >>= PAGE_SHIFT;
 	locked = vma->vm_mm->pinned_vm + extra;
 
-	if ((locked > lock_limit) && perf_is_paranoid() &&
+	if ((locked > lock_limit) && perf_paranoid_tracepoint_raw() &&
 		!capable(CAP_IPC_LOCK)) {
 		ret = -EPERM;
 		goto unlock;
