@@ -1,0 +1,77 @@
+The following are the changes in the 10.0.6 release of the Snapdragon LLVM
+ARM C/C++ Toolchain over the 10.0.5 release.
+
+1. Fix non-determinism in tail duplication optimization pass
+
+The following are the changes in the 10.0.5 release of the Snapdragon LLVM
+ARM C/C++ Toolchain over the 10.0.4 release.
+
+1. Prevent lld from discarding notes in comdat
+
+The following are the changes in the 10.0.4 release of the Snapdragon LLVM
+ARM C/C++ Toolchain over the 10.0.3 release.
+
+1. Fix corner case assertion in auto-vectorizer in ARM 32 path
+2. Bring in fixes from llvm.org for unaligned memory access under
+   -mstrict-align
+
+The following are the changes in the 10.0.3 release of the Snapdragon LLVM
+ARM C/C++ Toolchain over the 10.0.2 release. This version includes all changes
+from llvm.org for the period 9/28/2019 through 1/16/2020 (llvm.org 10.0 branch
+point).  The release notes for the llvm.org 10.0 release are available using
+the link below and includes information about new warnings.
+
+https://prereleases.llvm.org/10.0.0/rc1/tools/clang/docs/ReleaseNotes.html
+
+The following are the changes in the 10.0.2 release of the Snapdragon LLVM
+ARM C/C++ Toolchain over the 10.0.1 release.
+
+1. Cherry-Pick Google patch for R_ARM_NONE relocations for exception
+   unwinding
+
+The following are the changes in the 10.0.1 release of the Snapdragon LLVM
+ARM C/C++ Toolchain over the 10.0 release.
+
+1. Disable Cortex fix for partial linking
+2. Handle missed cases in Auto-Vectorizer parallel code generation
+3. Match SDLLVM behavior with AOSP LLVM LLD
+4. Fix corner case linkerscript issue when ALIGN is specified for the output
+   section
+
+This is the release of Snapdragon LLVM ARM C/C++ compiler toolchain version
+10.0. This is a cross toolchain built to run on x86 64-bit Ubuntu Linux
+(versions 14.04 and later) and Windows platform (Windows 7 64-bit and later).
+The Snapdragon LLVM ARM Compiler will generate code for ARM and X86 targets 
+and will not generate code for any of the other targets supported by the
+llvm.org compiler.
+
+Version 10.0 of the Snapdragon LLVM ARM toolchain includes all changes in the
+llvm.org 9.0 mainline as of 9/27/19. The Snapdragon LLVM ARM toolchain 10.0 
+release includes proprietary features and optimizations that are not available
+in the llvm.org 9.0 mainline.
+
+The Snapdragon LLVM ARM Compiler uses the integrated assembler for assembling
+and includes a full featured proprietary linker (QC Linker) for linking.
+
+The following link contains all the new features in the llvm.org 9.0 release.
+http://releases.llvm.org/9.0.0/tools/clang/docs/ReleaseNotes.html
+
+The Snapdragon LLVM ARM 10.0 toolchain contains all the above features, and 
+additionally contains the following key features compared to the Snapdragon
+LLVM ARM 8.0 toolchain:
+
+1. Auto-Vectorization performance improvements for image processing
+2. Code size improvements for Baremetal images
+3. X86 code generation
+4. Performance tuning of optimizations, such as the unroller for Baremetal 
+   workloads
+5. Code size tuning for Android-Go images
+6. Support for structured exception handling (SEH) for ARM 64-bit targets
+
+Basic Usage & Examples
+Use the following link for details on SDLLVM setup and usage:
+http://qwiki.qualcomm.com/quic-llvm-arm/
+Snapdragon_LLVM_Basic_Usage_and_Examples
+
+Please contact your QTI (Qualcomm Technologies, Inc) Android support POC for
+more details or documentation.
