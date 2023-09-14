@@ -5,11 +5,11 @@
 DIR=`readlink -f .`;
 PARENT_DIR=`readlink -f ${DIR}/..`;
 
-DEFCONFIG_NAME=wirus_defconfig
+DEFCONFIG_NAME=hardened_defconfig
 CHIPSET_NAME=kona
 VARIANT=r8q
 ARCH=arm64
-VERSION=Nethunter_WirusMOD_${VARIANT}_v1.2
+VERSION=Hardened_WirusMOD_${VARIANT}_v1.0
 
 
 BUILD_CROSS_COMPILE=$PARENT_DIR/toolchains/aarch64-linux-android-4.9/bin/aarch64-linux-android-
