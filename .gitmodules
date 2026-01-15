@@ -4,3 +4,6 @@
 [submodule "drivers/net/can/can-isotp"]
 	path = drivers/net/can/can-isotp
 	url = https://github.com/V0lk3n/can-isotp
+[submodule "drivers/net/can/elmcan"]
+	path = drivers/net/can/elmcan
+	url = https://github.com/V0lk3n/elmcan
