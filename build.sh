@@ -9,15 +9,27 @@ DEFCONFIG_NAME=wirus_defconfig
 CHIPSET_NAME=kona
 VARIANT=r8q
 ARCH=arm64
-VERSION=Nethunter_WirusMOD_${VARIANT}_v4.0.1
+VERSION=Nethunter_${VARIANT}_v1.0
 
 
-BUILD_CROSS_COMPILE=$DIR/toolchain/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/bin/aarch64-linux-android-
-KERNEL_LLVM_BIN=$DIR/toolchain/llvm-arm-toolchain-ship/10.0/bin/clang
+BUILD_CROSS_COMPILE=$PARENT_DIR/aarch64-linux-android-4.9/bin/aarch64-linux-android-
+KERNEL_LLVM_BIN=$PARENT_DIR/clang/bin
 CLANG_TRIPLE=aarch64-linux-gnu-
 KERNEL_MAKE_ENV="DTC_EXT=$(pwd)/tools/dtc CONFIG_BUILD_ARM64_DT_OVERLAY=y LOCALVERSION=-${VERSION}"
 
 DTS_DIR=$PARENT_DIR/out/arch/$ARCH/boot/dts
+
+export LLVM=1
+export LLVM_IAS=1
+export CC=clang
+export LD=ld.lld
+export AR=llvm-ar
+export NM=llvm-nm
+export OBJCOPY=llvm-objcopy
+export OBJDUMP=llvm-objdump
+export STRIP=llvm-strip
+export PATH=$PATH:$KERNEL_LLVM_BIN
+
 
 #Compile kernel:
 [ ! -d "$PARENT_DIR/out" ] && mkdir $PARENT_DIR/out
@@ -46,16 +58,19 @@ fi
   elif [ -e $PARENT_DIR/out/arch/arm64/boot/Image.gz ]; then
     cp $PARENT_DIR/out/arch/arm64/boot/Image.gz $PARENT_DIR/AnyKernel3/zImage
   else
-    echo "Error"
+      echo "Kernel image not found!"
+      exit 1
   fi
   cd $PARENT_DIR/AnyKernel3
 
   mkdir -p $PARENT_DIR/build/$VARIANT/modules
+  find $PARENT_DIR/out/ -name '*.ko'  -not -path "$PARENT_DIR/build/*" -exec cp --parents -f '{}' $PARENT_DIR/build/$VARIANT/modules  \;
   zip -r9 $PARENT_DIR/build/$VARIANT/${VERSION}.zip * -x .git README.md *placeholder
   cd $DIR
 
-find $PARENT_DIR/out/ -name '*.ko'  -not -path "$PARENT_DIR/build/*" -exec cp --parents -f '{}' $PARENT_DIR/build/$VARIANT/modules  \;
-mv -f $PARENT_DIR/build/$VARIANT/modules/home/svirusx/out/* $PARENT_DIR/build/$VARIANT/modules
+
+
+
 
 
 
