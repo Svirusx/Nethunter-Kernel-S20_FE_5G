@@ -9,12 +9,12 @@ DEFCONFIG_NAME=wirus_defconfig
 CHIPSET_NAME=kona
 VARIANT=r8q
 ARCH=arm64
-VERSION=Nethunter_${VARIANT}_v1.0
+VERSION=Nethunter_WirusMOD_${VARIANT}_v4.1
 
 
-BUILD_CROSS_COMPILE=$PARENT_DIR/aarch64-linux-android-4.9/bin/aarch64-linux-android-
-KERNEL_LLVM_BIN=$PARENT_DIR/clang/bin
-CLANG_TRIPLE=aarch64-linux-gnu-
+#BUILD_CROSS_COMPILE=$PARENT_DIR/aarch64-linux-android-4.9/bin/aarch64-linux-android-
+#KERNEL_LLVM_BIN=$PARENT_DIR/clang/bin
+#CLANG_TRIPLE=aarch64-linux-gnu-
 KERNEL_MAKE_ENV="DTC_EXT=$(pwd)/tools/dtc CONFIG_BUILD_ARM64_DT_OVERLAY=y LOCALVERSION=-${VERSION}"
 
 DTS_DIR=$PARENT_DIR/out/arch/$ARCH/boot/dts
@@ -29,6 +29,10 @@ export OBJCOPY=llvm-objcopy
 export OBJDUMP=llvm-objdump
 export STRIP=llvm-strip
 export PATH=$PATH:$KERNEL_LLVM_BIN
+
+BUILD_CROSS_COMPILE=$(pwd)/toolchain/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/bin/aarch64-linux-android-
+KERNEL_LLVM_BIN=$(pwd)/toolchain/llvm-arm-toolchain-ship/10.0/bin/clang
+CLANG_TRIPLE=aarch64-linux-gnu-
 
 
 #Compile kernel:
