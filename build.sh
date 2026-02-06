@@ -55,6 +55,12 @@ fi
     echo "Copy AnyKernel3 to Parent DIR - Flashable Zip Template"
     cp -rf ${DIR}/AnyKernel3 $PARENT_DIR/AnyKernel3
   fi
+  
+# Copy kernel modules into AnyKernel3 (/system/lib/modules for LineageOS)
+  MODULES_DIR=$PARENT_DIR/AnyKernel3/system/lib/modules
+  mkdir -p $MODULES_DIR
+  find $PARENT_DIR/out/ -name '*.ko' -exec cp -f {} $MODULES_DIR \;
+
 
   [ -e $PARENT_DIR/${VERSION}.zip ] && rm $PARENT_DIR/${VERSION}.zip
   if [ -e $PARENT_DIR/out/arch/arm64/boot/Image.gz-dtb ]; then
@@ -68,7 +74,8 @@ fi
   cd $PARENT_DIR/AnyKernel3
 
   mkdir -p $PARENT_DIR/build/$VARIANT/modules
-  find $PARENT_DIR/out/ -name '*.ko'  -not -path "$PARENT_DIR/build/*" -exec cp --parents -f '{}' $PARENT_DIR/build/$VARIANT/modules  \;
+  find $PARENT_DIR/out -name '*.ko' -exec cp -f {} $PARENT_DIR/build/$VARIANT/modules \;
+
   zip -r9 $PARENT_DIR/build/$VARIANT/${VERSION}.zip * -x .git README.md *placeholder
   cd $DIR
 
